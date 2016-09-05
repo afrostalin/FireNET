@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\CryModule.cpp" />
+    <ClCompile Include="src\CVars.cpp" />
+    <ClCompile Include="src\FlowNodes.cpp" />
+    <ClCompile Include="src\Global.cpp" />
+    <ClCompile Include="src\StdAdx.cpp" />
+    <ClCompile Include="src\UIEvents.cpp" />
+    <ClCompile Include="src\XmlWorker.cpp" />
+    <ClCompile Include="src\Network.cpp" />
+    <ClCompile Include="src\moc_network.cpp">
+      <Filter>Moc</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\CryModule.h" />
+    <ClInclude Include="src\CVars.h" />
+    <ClInclude Include="src\Global.h" />
+    <ClInclude Include="src\UIEvents.h" />
+    <ClInclude Include="src\XmlWorker.h" />
+    <ClInclude Include="src\Network.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Moc">
+      <UniqueIdentifier>{ef858701-5fe3-4434-ac92-41df16e1f480}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
