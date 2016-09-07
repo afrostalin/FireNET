@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;3rd\includes;3rd\includes\libssh2;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;temp\moc\server;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;3rd\includes;3rd\includes\libssh2;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;temp\moc\server;C:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\obj\server\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -76,8 +76,8 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>D:\CodeProjects\FireNET\3rd\libs\windows\Release\qredisclient.lib;D:\CodeProjects\FireNET\3rd\libs\windows\Release\libssh2.lib;D:\CodeProjects\FireNET\3rd\libs\windows\Release\libeay32.lib;D:\CodeProjects\FireNET\3rd\libs\windows\Release\ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;$(QTDIR)\lib\Qt5Network.lib;$(QTDIR)\lib\Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;D:\CodeProjects\FireNET\3rd\libs\windows\Release;D:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>qredisclient.lib;libssh2.lib;libeay32.lib;ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;$(QTDIR)\lib\Qt5Network.lib;$(QTDIR)\lib\Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;.\3rd\libs\windows\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;3rd\includes;3rd\includes\libssh2;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;temp\moc\server;..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;3rd\includes;3rd\includes\libssh2;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;temp\moc\server;C:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>temp\obj\server\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -119,8 +119,8 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>D:\CodeProjects\FireNET\3rd\libs\windows\Debug\qredisclient.lib;D:\CodeProjects\FireNET\3rd\libs\windows\Debug\libssh2.lib;D:\CodeProjects\FireNET\3rd\libs\windows\Debug\libeay32.lib;D:\CodeProjects\FireNET\3rd\libs\windows\Debug\ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;$(QTDIR)\lib\Qt5Networkd.lib;$(QTDIR)\lib\Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;D:\CodeProjects\FireNET\3rd\libs\windows\Debug;D:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>qredisclient.lib;libssh2.lib;libeay32.lib;ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;$(QTDIR)\lib\Qt5Networkd.lib;$(QTDIR)\lib\Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;.\3rd\libs\windows\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -152,9 +152,9 @@
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\server\clientquerys.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing clientquerys.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing clientquerys.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
@@ -163,9 +163,9 @@
     </CustomBuild>
     <ClInclude Include="src\server\global.h" />
     <CustomBuild Include="src\server\redisconnector.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing redisconnector.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing redisconnector.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
@@ -173,9 +173,9 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="src\server\tcpconnection.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing tcpconnection.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing tcpconnection.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
@@ -183,9 +183,9 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="src\server\tcpserver.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing tcpserver.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing tcpserver.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
@@ -193,9 +193,9 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="src\server\tcpthread.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing tcpthread.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-I.\..\..\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\3rd\includes" "-I.\3rd\includes\libssh2" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore" "-I.\temp\moc\server" "-IC:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing tcpthread.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\temp\moc\server\moc_%(Filename).cpp</Outputs>
