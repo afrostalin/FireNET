@@ -14,11 +14,13 @@ The server is distributed under the MIT license.
 # Building
 For building project and modules you need have installed QT 5.7
 
-On Linux :
+On Linux (QT Creator) :
 
-* apt-get install 
-* .....
-* .....
+* Open FireNET.pro
+* Configure project
+* Select Debug or Release build type
+* Build project
+
 
 On Windows (QT Creator) :
 
@@ -50,11 +52,11 @@ On Windows :
 
 On Linux :
 
-* $ cd .../3rd/bin/linux/redis/
-* $ ./redis-server
-* $ cd .../bin/linux/release
-* $ ./firenet
-* $ ./simpleclient
+* `$ cd .../3rd/bin/linux/redis/`
+* `$ ./redis-server`
+* `$ cd .../bin/linux/release`
+* `$ ./firenet`
+* `$ ./simpleclient`
 
 # Examples
 
