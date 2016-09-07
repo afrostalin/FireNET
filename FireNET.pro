@@ -31,11 +31,9 @@ HEADERS += \
     src/server/global.h \
 
 INCLUDEPATH += $$PWD/3rd/includes
-
+INCLUDEPATH += $$PWD/3rd/includes/libssh2
 
 win32 {
-    INCLUDEPATH += $$PWD/3rd/includes/libssh2
-
 CONFIG(debug, debug|release) {
     LIBS += -L$$PWD/3rd/libs/windows/Debug -lqredisclient -llibssh2 -llibeay32 -lssleay32 -lgdi32 -lws2_32 -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32
 }
@@ -45,6 +43,10 @@ CONFIG(release, debug|release) {
 }
 
 unix {
-    INCLUDEPATH += $$PWD/3rd/includes/libssh2
-    LIBS += -L$$PWD/3rd/libs/linux -lqredisclient -lz -lssh2
+CONFIG(debug, debug|release) {
+    LIBS += -L$$PWD/3rd/libs/linux/Debug -lqredisclient -lz -lssh2
+}
+CONFIG(release, debug|release) {
+    LIBS += -L$$PWD/3rd/libs/linux/Release -lqredisclient -lz -lssh2
+}
 }
