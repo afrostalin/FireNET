@@ -17,8 +17,6 @@ void TcpConnection::connected()
 {
     if(!m_socket) return;
 
-	//QMutexLocker locker(&m_globalMutex);
-
 	SClient client;
 	client.socket = m_socket;
 	client.profile = nullptr;
@@ -34,7 +32,6 @@ void TcpConnection::connected()
 void TcpConnection::disconnected()
 {
 	if (!m_socket) return;
-	//QMutexLocker locker(&m_globalMutex);
 
 	QVector<SClient>::iterator it;
 	for (it = vClients.begin(); it != vClients.end(); ++it)
@@ -57,17 +54,14 @@ void TcpConnection::readyRead()
 
 	if (!pRedis->connectStatus)
 	{
-		qDebug() << "[ClientQuerys] Client can't use database functions without connection to redis!!!";
+        qDebug() << "[ClientQuerys] Client can't use database functions without connection to Redis!!!";
 		return;
 	}
 	QByteArray bytes;
 
-    qDebug() << "[TcpConnection] Read message from client";
+    qDebug() << "[TcpConnection] Read message from client...";
 
-	
 	bytes = m_socket->readAll();
-
-   // qDebug() << "[TcpConnection] Message = {" << bytes << "}";
 
     QXmlStreamReader xml(bytes);
 
@@ -81,8 +75,6 @@ void TcpConnection::readyRead()
         {
             if (xml.name() == "query")
             {
-                //qDebug() << "[TcpConnection] Parsing query data....";
-
                 QXmlStreamAttributes attributes = xml.attributes();
                 QString type = attributes.value("type").toString();
 
@@ -170,7 +162,7 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
-	//qDebug() << "[TcpConnection] SocketError: " << error;
+    qDebug() << "[TcpConnection] SocketError: " << error;
 }
 
 void TcpConnection::close()

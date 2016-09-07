@@ -34,7 +34,6 @@ QXmlStreamAttributes ClientQuerys::GetAttributesFromString(QString data)
 
         if (xml.name() == "data")
         {
-            //qDebug() << "[ClientQuerys] Parsing attributes from string...";
             return xml.attributes();
         }
     }
@@ -44,15 +43,12 @@ QXmlStreamAttributes ClientQuerys::GetAttributesFromString(QString data)
 
 int ClientQuerys::GetUidBySocket(QSslSocket* socket)
 {
-	//QMutexLocker locker(&m_globalMutex);
-
 	int uid = 0;
 	QVector<SClient>::iterator it;
 	for (it = vClients.begin(); it != vClients.end(); ++it)
 	{
 		if (it->socket == socket)
 		{
-			//
 			if (it->profile)
 			{
 				uid = it->profile->uid;
@@ -80,8 +76,10 @@ int ClientQuerys::GetUidByName(QString name)
 bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
 {
 	if (!pRedis->connectStatus)
+    {
+        qDebug() << "[ClientQuerys] Can't update profile, because Redis not connected!";
         return false;
-	//QMutexLocker locker(&m_globalMutex);
+    }
 
 	QString dbProfile = "<data>"
         "<profile id='" + QString::number(profile->uid) +
@@ -96,7 +94,7 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
         "<stats>" + profile->stats + "</stats>"
         "</data>";
 
-    // Проверяем наличие профиля игрока в базе данных
+    // Check profile is there in database
     QString key = "profiles:" + QString::number(profile->uid);
     QString buff = pRedis->SendSyncQuery("GET", key, "");
 
@@ -126,14 +124,13 @@ SProfile* ClientQuerys::GetProfileByUid(int uid)
 		return false;
 
     SProfile* profile = new SProfile;
-    // Проверяем наличие профиля игрока в базе данных
+
+    // Check profile is there in database
     QString key = "profiles:" + QString::number(uid);
     QString buff = pRedis->SendSyncQuery("GET", key, "");
 
     if (!buff.isEmpty())
     {
-        //qDebug() << "[ClientQuerys] Get profile by uid";
-
         QXmlStreamReader xml(buff);
         xml.readNext();
         while (!xml.atEnd() && !xml.hasError())
@@ -236,8 +233,6 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
 
     shop = file.readAll();
 
-    //qDebug() << "[ClientQuerys] Get shop items by name = " << name;
-
     QXmlStreamReader xml(shop);
     xml.readNext();
 
@@ -259,8 +254,6 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
                     item.description = attributes.value("description").toString();
                     item.cost = attributes.value("cost").toInt();
                     item.minLnl = attributes.value("minLvl").toInt();
-
-                    //qDebug() << "[ClientQuerys] Shop item [name = " << item.name << " icon = " << item.icon << " description = " << item.description << " cost = " << item.cost << " minLvl = " << item.minLnl << "]";
                     return item;
                 }
             }
@@ -324,8 +317,6 @@ QString ClientQuerys::ProfileToString(SProfile * profile)
 
 void ClientQuerys::AcceptProfileToGlobalList(QSslSocket* socket, SProfile * profile, int status)
 {
-	//QMutexLocker locker(&m_globalMutex);
-
 	if (socket == nullptr)
 		return;
 

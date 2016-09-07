@@ -37,7 +37,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
     if(!pThread)
     {
-        qCritical() << "[TcpServer] No thread!";
+        qCritical() << "[TcpServer] No free thread!";
         return;
     }
 
@@ -46,7 +46,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 void TcpServer::close()
 {
-    qDebug() << "[TcpServer] Closing server";
+    qDebug() << "[TcpServer] Closing server...";
     emit stop();
 
     m_threads.clear();
@@ -106,12 +106,11 @@ TcpThread *TcpServer::freeThread()
 	int threadsCount = 0;
 	int maxClientsInThread = 0;
 
-	// Находим самый загруженный поток
+    // Detect maximum clients in thread
 	for (threadsCount; threadsCount != m_pool->maxThreadCount(); threadsCount++)
 	{
 		pThread = m_threads.at(threadsCount);
 		int clientsInThread = pThread->m_clients;
-		//qDebug() << "[TcpServer] Clients count in thread " << pThread << "=" << clientsInThread;
 
 		if (clientsInThread > maxClientsInThread)
 			maxClientsInThread = clientsInThread;
@@ -119,7 +118,7 @@ TcpThread *TcpServer::freeThread()
 
 	threadsCount = 0;
 
-    // Возвращаем самы ненагруженный поток
+    // Return thread with minimal clients count
 	for (threadsCount; threadsCount != m_pool->maxThreadCount(); threadsCount++)
 	{
 		pThread = m_threads.at(threadsCount);

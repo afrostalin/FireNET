@@ -6,4 +6,3 @@
 TcpServer* pServer;
 RedisConnector* pRedis;
 QVector <SClient> vClients;
-//QMutex m_globalMutex;

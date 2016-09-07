@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QThread>
-#include <QSSLSocket>
+#include <QSslSocket>
 #include <QList>
 #include "clientquerys.h"
 

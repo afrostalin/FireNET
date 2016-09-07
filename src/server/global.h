@@ -32,6 +32,5 @@ struct SClient
 extern TcpServer* pServer;
 extern RedisConnector* pRedis;
 extern QVector <SClient> vClients;
-//extern QMutex m_globalMutex;
 
 #endif // GLOBAL_H

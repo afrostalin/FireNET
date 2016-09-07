@@ -18,12 +18,10 @@ void RedisConnector::run()
 		m_thread = QThread::currentThread();
 
 		qDebug() << "[RedysConnector] Redis work on " << m_thread;
-		//m_loop = new QEventLoop();
-		//m_loop->exec();
 	}
 	else
 	{
-		qDebug() << "[RedysConnector] Failed connect to redis! Database functions not be work!";
+        qDebug() << "[RedysConnector] Failed connect to Redis! Database functions not be work!";
 		return;
 	}
 }

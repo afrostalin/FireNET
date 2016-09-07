@@ -16,8 +16,6 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing login query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString login = attributes.value("login").toString();
 			QString password = attributes.value("password").toString();
@@ -49,7 +47,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				QString pass = attr.value("password").toString();
 				QString ban = attr.value("ban").toString();
 
-				// Проверяем статус игрока, если он забанен - возвращаем ему ошибку
+                // Check ban status
 				if (ban == "1")
 				{
 					qDebug() << "[ClientQuerys] -----------------------Account blocked------------------------";
@@ -60,7 +58,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 					return;
 				}
 
-				// Сверяем пароли
+                // Check passwords
 				if (password == pass)
 				{
 					SProfile* dbProfile = GetProfileByUid(uid.toInt());
@@ -123,25 +121,23 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing register query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString login = attributes.value("login").toString();
 			QString password = attributes.value("password").toString();
 			QString uid, buff;
 
-			// Проверяем существует ли в базе такой логин, если нет, то регистрируем нового игрока
+            // Check if login is there in database. If it is not - register new user
 			QString key = "users:" + login;
 			buff = pRedis->SendSyncQuery("GET", key, "");
 
 			if (buff.isEmpty() && !login.isEmpty() && !password.isEmpty())
 			{
-				// Получаем и создаем uid
+                // Get uids row and create new uid if uids row are empty
 				buff = pRedis->SendSyncQuery("GET", "uids", "");
 
 				if (buff.isEmpty())
 				{
-					//qDebug() << "[ClientQuerys] Key uids not found! Creating key uids!";
+                    //qDebug() << "[ClientQuerys] Key 'uids' not found! Creating key 'uids'!";
 					buff = pRedis->SendSyncQuery("SET", "uids", "100001");
 
 					if (buff == "OK")
@@ -150,8 +146,8 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 					}
 					else
 					{
-						//qDebug() << "[ClientQuerys] Error creating key uids!!!";
-						// DO something!
+                        qDebug() << "[ClientQuerys] Error creating key 'uids'!!!";
+                        // do smth
 						return;
 					}
 
@@ -160,7 +156,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 				else
 				{
 					int tmp = buff.toInt() + 1;
-					//qDebug() << "[ClientQuerys] Key uids found! Creating new uid = " << QString::number(tmp);
+                    //qDebug() << "[ClientQuerys] Key 'uids' found! Creating new uid = " << tmp;
 					buff = pRedis->SendSyncQuery("SET", "uids", QString::number(tmp));
 
 					if (buff == "OK")
@@ -171,14 +167,14 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 					else
 					{
 						qDebug() << "[ClientQuerys] Error creating uid!";
-						//DO something!
+                        //do smth
 						return;
 					}
 				}
 
 				buff.clear();
 
-				// Создаем новую запись в базе данных
+                // Create new database row
 				QString value = "<data uid = '" + uid + "' login='" + login + "' password = '" + password + "' ban='0'/>";
 				buff = pRedis->SendSyncQuery("SET", key, value);
 				if (buff == "OK")
@@ -231,16 +227,13 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing create profile query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString nickname = attributes.value("nickname").toString();
 			QString model = attributes.value("model").toString();
 
-			// Проверяем данные
 			if (nickname.isEmpty() || model.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Nickname = " << nickname << " Model = " << model << " Uid = " << uid;
+                qDebug() << "[ClientQuerys] Some values empty!!! Nickname = " << nickname << " Model = " << model << " Uid = " << uid;
 				return;
 			}
 
@@ -257,7 +250,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 			QString key = "nicknames:" + nickname;
 			QString buff = pRedis->SendSyncQuery("GET", key, "");
 
-			// Проверяем существует ли такой никнейм в базе, если нет - создаем новый профиль
+            // Check if nickname is there in databasse. If it is not - create new profile
 			if (buff.isEmpty())
 			{
 				clientProfile->nickname = nickname;
@@ -270,7 +263,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 				clientProfile->stats = "<stats kills='0' deaths='0' kd='0'/>";
 
 				key.clear(); buff.clear();
-				// Создаем ключ для профиля и ключ для никнейма
+
+                // Create key for profile and for nickname
 				key = "profiles:" + uid;
 				QString key2 = "nicknames:" + nickname;
 
@@ -387,15 +381,12 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing buy item query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString itemName = attributes.value("item").toString();
 
-			// Проверяем данные
 			if (itemName.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Item = " << itemName << " Uid = " << uid;
+                qDebug() << "[ClientQuerys] Some values empty!!! Item = " << itemName << " Uid = " << uid;
 				return;
 			}
 
@@ -405,7 +396,7 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 			{
 				if (!item.name.isEmpty())
 				{
-					// Проверяем наличие предмета в инвентаре
+                    // Check if it is there in inventory
 					if (CheckAttributeInRow(clientProfile->items, "item", "name", item.name))
 					{
 						qDebug() << "[ClientQuerys] ------------------This item alredy purchased------------------";
@@ -415,7 +406,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 						return;
 					}
-					// Проверяем минимальный уровень игрока для покупки предмета
+
+                    // Check minimal player level for buy this item
 					if (clientProfile->lvl < item.minLnl)
 					{
 						qDebug() << "[ClientQuerys] -----------------Profile level < minimal level----------------";
@@ -428,14 +420,15 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 
 					if (clientProfile->money - item.cost >= 0)
 					{
-						//qDebug() << "[ClientQuerys] Client can buy this item";
+                        //qDebug() << "[ClientQuerys] Client can buy this item";
 
+                        // Add item and update money
 						clientProfile->money = clientProfile->money - item.cost;
 						clientProfile->items = clientProfile->items + "<item name='" + item.name +
 							"' icon='" + item.icon +
 							"' description='" + item.description + "'/>";
 
-						// Обновляем профиль
+                        // Update profile
 						if (UpdateProfile(m_socket, clientProfile))
 						{
 							qDebug() << "[ClientQuerys] ----------------------Profile updated----------------------";
@@ -477,7 +470,6 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 			}
 			else
 			{
-				// Ошибка получения профиля игрока
 				qDebug() << "[ClientQuerys] ----------------------Profile not found-----------------------";
 				qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
@@ -509,24 +501,21 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing remove item query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString itemName = attributes.value("name").toString();
 
-			// Проверяем данные
 			if (itemName.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Item = " << itemName << " Uid = " << uid;
+                qDebug() << "[ClientQuerys] Some values empty!!! Item = " << itemName << " Uid = " << uid;
 				return;
 			}
 
 			if (!clientProfile->nickname.isEmpty())
 			{
-				// Проверяем наличие предмета в списке предметов
+                // Check item if it is there in item list
 				if (!CheckAttributeInRow(clientProfile->items, "item", "name", itemName))
 				{
-					qDebug() << "[ClientQuerys] -------------------Item not found in invetory--------------------";
+                    qDebug() << "[ClientQuerys] -------------------Item not found in inventory--------------------";
 					qDebug() << "[ClientQuerys] ------------------------REMOVE ITEM FAILED-----------------------";
 
 					QString result = "<error type='remove_item_failed' reason = '3'/>";
@@ -535,11 +524,11 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 				}
 				else
 				{
-					// Ищем предмет в таблице магазина
+                    // Search item in shop list
 					SShopItem item = GetShopItemByName(itemName);
 					if (item.name.isEmpty())
 					{
-						qDebug() << "[ClientQuerys] -------------------Item not found in shop table------------------";
+                        qDebug() << "[ClientQuerys] -------------------Item not found in shop list-------------------";
 						qDebug() << "[ClientQuerys] ------------------------REMOVE ITEM FAILED-----------------------";
 
 						QString result = "<error type='remove_item_failed' reason = '2'/>";
@@ -547,12 +536,11 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 						return;
 					}
 
-
-					// Удаляем предмет
+                    // Remove item
 					QString removeItem = "<item name='" + item.name + "' icon='" + item.icon + "' description='" + item.description + "'/>";
 					clientProfile->items = RemoveElementFromRow(clientProfile->items, removeItem);
 
-					// Обновляем профиль
+                    // Update profile
 					if (UpdateProfile(m_socket, clientProfile))
 					{
 						qDebug() << "[ClientQuerys] -----------------------Profile updated------------------------";
@@ -608,13 +596,13 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			QString inviteType = attributes.value("invite_type").toString();
 			QString reciver = attributes.value("to").toString();
 
-			// Проверяем данные
 			if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Invite typ = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
+                qDebug() << "[ClientQuerys] Some values empty!!! Invite type = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
 				return;
 			}
 
+            // Friend invite
 			if (inviteType == "friend_invite")
 			{
 				QString key = "nicknames:" + reciver;
@@ -633,6 +621,7 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 
 				if (reciverSocket != nullptr)
 				{
+                    // Send invite to client
 					QString query = "<invite type='friend_invite' from='" + clientProfile->nickname + "'/>";
 					pServer->sendMessageToClient(reciverSocket, query.toStdString().c_str());
 					return;
@@ -647,12 +636,16 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 				}
 			}
 
+            // Game invite
 			if (inviteType == "game_invite")
 			{
+                // do smth
 			}
 
+            // Clan invite
 			if (inviteType == "clan_invite")
 			{
+                // do smth
 			}
 		}
 	}
@@ -671,57 +664,47 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 	QXmlStreamReader xml(bytes);
 	xml.readNext();
 	while (!xml.atEnd() && !xml.hasError())
-	{
-		xml.readNext();
+    {
+        xml.readNext();
 
-		if (xml.name() == "data")
-		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString inviteType = attributes.value("invite_type").toString();
-			QString reciver = attributes.value("to").toString();
+        if (xml.name() == "data")
+        {
+            QXmlStreamAttributes attributes = xml.attributes();
+            // We don't need know invite type for this operation, but we can get it if we need it
+            QString inviteType = attributes.value("invite_type").toString();
+            QString reciver = attributes.value("to").toString();
 
-			// Проверяем данные
-			if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
-			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Invite type = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
-				return;
-			}
+            if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
+            {
+                qDebug() << "[ClientQuerys] Some values empty!!! Invite type = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
+                return;
+            }
 
-			if (inviteType == "friend_invite")
-			{
-				QString key = "nicknames:" + reciver;
-				QString reciverUid = pRedis->SendSyncQuery("GET", key, "");
+            QString key = "nicknames:" + reciver;
+            QString reciverUid = pRedis->SendSyncQuery("GET", key, "");
 
-				if (reciverUid.isEmpty())
-				{
-					qDebug() << "[ClientQuerys] User not found!";
-					return;
-				}
+            if (reciverUid.isEmpty())
+            {
+                qDebug() << "[ClientQuerys] User not found!";
+                return;
+            }
 
-				QSslSocket* reciverSocket = GetSocketByUid(reciverUid.toInt());
+            QSslSocket* reciverSocket = GetSocketByUid(reciverUid.toInt());
 
-				if (reciverSocket != nullptr)
-				{
-					QString result = "<error type='invite_failed' reason = '2'/>";
-					pServer->sendMessageToClient(reciverSocket, result.toStdString().c_str());
-					return;
-				}
-				else
-				{
-					qDebug() << "[ClientQuerys] Client can't decline  invite, because reciver not online!";
-					return;
-				}
-			}
-
-			if (inviteType == "game_invite")
-			{
-			}
-
-			if (inviteType == "clan_invite")
-			{
-			}
-		}
-	}
+            if (reciverSocket != nullptr)
+            {
+                // Send decline invite to invite sender
+                QString result = "<error type='invite_failed' reason = '2'/>";
+                pServer->sendMessageToClient(reciverSocket, result.toStdString().c_str());
+                return;
+            }
+            else
+            {
+                qDebug() << "[ClientQuerys] Client can't decline  invite, because reciver not online!";
+                return;
+            }
+        }
+    }
 }
 
 void ClientQuerys::onAddFriend(QByteArray &bytes)
