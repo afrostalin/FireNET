@@ -14,11 +14,13 @@ The server is distributed under the MIT license.
 # Building
 For building project and modules you need have installed QT 5.7
 
-On Linux :
+On Linux (QT Creator) :
 
-* apt-get install 
-* .....
-* .....
+* Open FireNET.pro
+* Configure project
+* Select Debug or Release build type
+* Build project
+
 
 On Windows (QT Creator) :
 
@@ -32,11 +34,11 @@ On Windows (Visual Studio 2015) :
 * Install Qt5Package.vsix (see 3rd folder)
 * Open FireNET.sln
 * Go to Qt plugin settings and configure him
-* Set paths to QT libs and includes in project settings
-* Choose build type
+* Set paths to QT inclusions in project settings
+* Choose type of building 
 * Build solution
 
-See Wiki for more instructions.
+See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
 
 # Using
 
@@ -50,11 +52,13 @@ On Windows :
 
 On Linux :
 
-* $ cd .../3rd/bin/linux/redis/
-* $ ./redis-server
-* $ cd .../bin/linux/release
-* $ ./firenet
-* $ ./simpleclient
+* `$ cd .../3rd/bin/linux/redis/`
+* `$ ./redis-server`
+* `$ cd .../bin/linux/release`
+* `$ ./firenet`
+* `$ ./simpleclient`
+
+See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
 
 # Examples
 
