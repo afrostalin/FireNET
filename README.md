@@ -36,7 +36,7 @@ On Windows (Visual Studio 2015) :
 * Choose build type
 * Build solution
 
-See Wiki for more instructions.
+See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for more instructions.
 
 # Using
 
