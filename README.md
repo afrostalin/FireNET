@@ -34,11 +34,11 @@ On Windows (Visual Studio 2015) :
 * Install Qt5Package.vsix (see 3rd folder)
 * Open FireNET.sln
 * Go to Qt plugin settings and configure him
-* Set paths to QT libs and includes in project settings
-* Choose build type
+* Set paths to QT inclusions in project settings
+* Choose type of building 
 * Build solution
 
-See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for more instructions.
+See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
 
 # Using
 
@@ -57,6 +57,8 @@ On Linux :
 * `$ cd .../bin/linux/release`
 * `$ ./firenet`
 * `$ ./simpleclient`
+
+See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
 
 # Examples
 
