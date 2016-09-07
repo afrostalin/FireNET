@@ -12,6 +12,8 @@ The server is based on the QT 5.7 framework, uses the NoSql Redis database, also
 The server is distributed under the MIT license.
 
 # Building
+For building project and modules you need have installed QT 5.7
+
 On Linux :
 * apt-get install 
 * .....
