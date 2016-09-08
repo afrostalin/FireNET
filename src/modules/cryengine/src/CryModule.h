@@ -11,7 +11,7 @@ Copyright (C), chernecoff@gmail.com, 2016
 #endif
 
 #include "StdAfx.h"
-#include "FlowNodes\Helpers\FlowBaseNode.h"
+#include "CryFlowGraph\IFlowBaseNode.h"
 
 #include "Global.h"
 
@@ -21,7 +21,7 @@ GamePlay_API void RegisterFlowNodes()
 
 	if (IFlowSystem* pFlow= gEnv->pGame->GetIGameFramework()->GetIFlowSystem())
 	{
-		for (CAutoRegFlowNodeBaseZero* pFactory = CAutoRegFlowNodeBaseZero::m_pFirst; pFactory; pFactory = pFactory->m_pNext )
+		for (CAutoRegFlowNodeBase* pFactory = CAutoRegFlowNodeBase::m_pFirst; pFactory; pFactory = pFactory->m_pNext )
 		{
 			TFlowNodeTypeId nTypeId = pFlow->RegisterType( pFactory->m_sClassName, pFactory );
 

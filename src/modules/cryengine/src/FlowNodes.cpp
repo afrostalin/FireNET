@@ -4,12 +4,12 @@ Copyright (C), chernecoff@gmail.com, 2016
 *************************************************************************/
 
 #include "StdAfx.h"
-#include "FlowNodes\Helpers\FlowBaseNode.h"
+#include "CryFlowGraph\IFlowBaseNode.h"
 #include "Global.h"
 #include <thread>
 
-CAutoRegFlowNodeBaseZero* CAutoRegFlowNodeBaseZero::m_pFirst = 0;
-CAutoRegFlowNodeBaseZero* CAutoRegFlowNodeBaseZero::m_pLast = 0;
+CAutoRegFlowNodeBase* CAutoRegFlowNodeBase::m_pFirst = 0;
+CAutoRegFlowNodeBase* CAutoRegFlowNodeBase::m_pLast = 0;
 
 
 
