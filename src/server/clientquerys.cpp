@@ -725,15 +725,12 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing add friend query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString friendName = attributes.value("name").toString();
 
-			// Проверяем данные
 			if (friendName.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Friend = " << friendName << " Uid = " << uid;
+				qDebug() << "[ClientQuerys] Some values empty!!! Friend = " << friendName << " Uid = " << uid;
 				return;
 			}
 
@@ -746,7 +743,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 				if (!clientProfile->nickname.isEmpty() && friendProfile != nullptr)
 				{
-					// Проверяем наличие друга в списке друзей
+					// Check friend is there in friends list
 					if (CheckAttributeInRow(clientProfile->friends, "friend", "name", friendName))
 					{
 						qDebug() << "[ClientQuerys] --------------------This friend alredy added--------------------";
@@ -757,7 +754,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 						return;
 					}
 
-					// Запрещаем самовлюбленному пользователю добавить себя же
+					// Block add yourself in friends
 					if (clientProfile->nickname == friendName)
 					{
 						qDebug() << "[ClientQuerys] ----------------Can't add yourself to friends--------------";
@@ -842,15 +839,12 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 		if (xml.name() == "data")
 		{
-			//qDebug() << "[ClientQuerys] Parsing remove friend query....";
-
 			QXmlStreamAttributes attributes = xml.attributes();
 			QString friendName = attributes.value("name").toString();
 
-			// Проверяем данные
 			if (friendName.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Friend = " << friendName << " Uid = " << uid;
+				qDebug() << "[ClientQuerys] Some values epmty!!! Friend = " << friendName << " Uid = " << uid;
 				return;
 			}
 
@@ -861,7 +855,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 			if (!clientProfile->nickname.isEmpty() && friendProfile != nullptr)
 			{
-				// Проверяем наличие друга в списке друзей
+				// Check friend is there in friends list
 				if (!CheckAttributeInRow(clientProfile->friends, "friend", "name", friendName))
 				{
 					qDebug() << "[ClientQuerys] --------------------------Friend not found-------------------------";
@@ -873,10 +867,10 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 				}
 				else
 				{
-					// Удаляем друга из профиля клиента	
+					// Delete friend from client's profile
 					QString removeFriend = "<friend name='" + friendName + "' uid='" + friendUid + "' status='0'/>";
 					clientProfile->friends = RemoveElementFromRow(clientProfile->friends, removeFriend);
-					// Удаляем клиента из профиля друга
+					// Delete client from friend's profile
 					removeFriend.clear();
 					removeFriend = "<friend name='" + clientProfile->nickname + "' uid='" +uid + "' status='0'/>";
 					friendProfile->friends = RemoveElementFromRow(friendProfile->friends, removeFriend);
@@ -947,7 +941,6 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 			QString message = attributes.value("message").toString();
 			QString reciver = attributes.value("to").toString();
 
-			// Проверяем данные
 			if (message.isEmpty() || reciver.isEmpty())
 			{
 				qDebug() << "[ClientQuerys] Some values emty!!! Message = " << message << " Reciver = " << reciver;
@@ -962,9 +955,11 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 			if (!clientProfile->nickname.isEmpty() && reciver == "all")
 			{
-				QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
+				// We don't need to use global chat because this operation needs big resources (network + cpu time)
 
-				pServer->sendGlobalMessage(chat.toStdString().c_str());
+				/*QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
+
+				pServer->sendGlobalMessage(chat.toStdString().c_str());*/
 				return;
 			}
 			else
