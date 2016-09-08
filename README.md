@@ -53,10 +53,10 @@ On Windows :
 On Linux :
 
 * `$ cd .../3rd/bin/linux/redis/`
-* `$ ./redis-server`
+* `$ src/redis-server`
 * `$ cd .../bin/linux/release`
-* `$ ./firenet`
-* `$ ./simpleclient`
+* `$ firenet`
+* `$ simpleclient`
 
 See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
 
