@@ -53,6 +53,7 @@ On Windows :
 On Linux :
 
 * `$ cd .../3rd/bin/linux/redis/`
+* `$ make`
 * `$ src/redis-server`
 * `$ cd .../bin/linux/release`
 * `$ firenet`
