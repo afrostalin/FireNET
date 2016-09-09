@@ -1,0 +1,7 @@
+set OPENSSL_CONF=C:\afrostalin\FireNET\FireNET\3rd\bin\windows\openssl\bin\openssl.cfg
+
+openssl req -x509 -newkey rsa:1024 -keyout key.key -out key.pem -days 365 -nodes
+
+
+!!! WARNING !!!
+Common Name (e.g. server FQDN or YOUR name) []: 127.0.0.1 (SERVER IP ADDRESS HERE)
