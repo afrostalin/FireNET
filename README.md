@@ -38,8 +38,6 @@ On Windows (Visual Studio 2015) :
 * Choose type of building 
 * Build solution
 
-See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
-
 # Using
 
 On Windows :
@@ -59,7 +57,8 @@ On Linux :
 * `$ firenet`
 * `$ simpleclient`
 
-See [WIKI](https://github.com/afrostalin/FireNET/wiki#building) for get more instructions.
+# WIKI
+Please see FireNET [WIKI](https://github.com/afrostalin/FireNET/wiki)
 
 # Examples
 
