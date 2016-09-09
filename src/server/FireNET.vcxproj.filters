@@ -27,63 +27,63 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\server\clientquerys.cpp">
+    <ClCompile Include="clientquerys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\global.cpp">
+    <ClCompile Include="global.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\main.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\redisconnector.cpp">
+    <ClCompile Include="redisconnector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\tcpconnection.cpp">
+    <ClCompile Include="tcpconnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\tcpserver.cpp">
+    <ClCompile Include="tcpserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\tcpthread.cpp">
+    <ClCompile Include="tcpthread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="temp\moc\server\moc_clientquerys.cpp">
+    <ClCompile Include="..\..\temp\moc\server\moc_clientquerys.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="temp\moc\server\moc_redisconnector.cpp">
+    <ClCompile Include="..\..\temp\moc\server\moc_redisconnector.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="temp\moc\server\moc_tcpconnection.cpp">
+    <ClCompile Include="..\..\temp\moc\server\moc_tcpconnection.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="temp\moc\server\moc_tcpserver.cpp">
+    <ClCompile Include="..\..\temp\moc\server\moc_tcpserver.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="temp\moc\server\moc_tcpthread.cpp">
+    <ClCompile Include="..\..\temp\moc\server\moc_tcpthread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\server\helper.cpp">
+    <ClCompile Include="helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="src\server\clientquerys.h">
+    <CustomBuild Include="clientquerys.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <ClInclude Include="src\server\global.h">
+    <ClInclude Include="global.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <CustomBuild Include="src\server\redisconnector.h">
+    <CustomBuild Include="redisconnector.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\server\tcpconnection.h">
+    <CustomBuild Include="tcpconnection.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\server\tcpserver.h">
+    <CustomBuild Include="tcpserver.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="src\server\tcpthread.h">
+    <CustomBuild Include="tcpthread.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
