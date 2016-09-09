@@ -93,7 +93,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\..\bin\WIN64\_modules\cryengine\</OutDir>
+    <OutDir>..\..\..\bin\WIN64\_modules\cryengine\debug\</OutDir>
     <IntDir>..\..\..\temp\modules\cryengine\</IntDir>
     <TargetName>Online</TargetName>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -103,7 +103,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\..\bin\WIN64\_modules\cryengine\</OutDir>
+    <OutDir>..\..\..\bin\WIN64\_modules\cryengine\release\</OutDir>
     <IntDir>..\..\..\temp\modules\cryengine\</IntDir>
     <TargetName>Online</TargetName>
   </PropertyGroup>
