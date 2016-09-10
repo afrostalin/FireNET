@@ -1,0 +1,20 @@
+# Temporary directories.
+/temp/*
+/.vs/*
+
+# Solution temp files
+*.db
+*.opendb
+*.user
+
+# Build temp files
+*.ilk
+*.exp
+*.lib
+*.iobj
+*.ipdb
+*.Debug
+*.Release
+
+/3rd/bin/windows/redis/server_log.txt
+/bin/WIN64/Makefile
