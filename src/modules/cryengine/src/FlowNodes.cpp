@@ -818,7 +818,7 @@ namespace FireNET
 		{
 			static const SInputPortConfig in_ports[] =
 			{
-				InputPortConfig_Void("DeclineFriendInvite", _HELP("Decline friend invite from user")),
+				InputPortConfig_Void("DeclineInvite", _HELP("Decline invite from user")),
 				InputPortConfig<string>("UserName", _HELP("User name")),
 				{ 0 }
 			};
@@ -828,7 +828,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Decline friend invite from user");
+			config.sDescription = _HELP("Decline invite from user");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -854,7 +854,7 @@ namespace FireNET
 					else
 					{
 						string userName = GetPortString(pActInfo, EIP_UserName);
-						string query = "<query type='decline_invite'><data invite_type='friend_invite' to='" + userName + "'/></query>";
+						string query = "<query type='decline_invite'><data to='" + userName + "'/></query>";
 						gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
@@ -1488,6 +1488,7 @@ REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET::CFlowNode_GetFri
 //REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", Online::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
 REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
 
+// This need only for creating 3D menu with character selection
 REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnArchetypeEntity2, CFlowNode_SpawnArchetypeEntity2);
 
 REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET::CFlowNode_SendInvite, CFlowNode_SendInvite);

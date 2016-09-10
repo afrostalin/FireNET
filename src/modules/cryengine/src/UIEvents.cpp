@@ -11,7 +11,7 @@ bool CModuleUIEvents::RegisterUIEvents()
 
 	if (gEnv->pFlashUI)
 	{		
-		m_pGameEvents = gEnv->pFlashUI->CreateEventSystem("Online", IUIEventSystem::eEST_SYSTEM_TO_UI);
+		m_pGameEvents = gEnv->pFlashUI->CreateEventSystem("FireNET", IUIEventSystem::eEST_SYSTEM_TO_UI);
 
 		// On error
 		SUIEventDesc OnError("Error", "Error", "Event when client give some error from online server");

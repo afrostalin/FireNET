@@ -8,6 +8,7 @@
 *.user
 
 # Build temp files
+*.pdb
 *.ilk
 *.exp
 *.lib

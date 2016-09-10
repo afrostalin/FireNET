@@ -673,13 +673,11 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
         if (xml.name() == "data")
         {
             QXmlStreamAttributes attributes = xml.attributes();
-            // We don't need know invite type for this operation, but we can get it if we need it
-            QString inviteType = attributes.value("invite_type").toString();
             QString reciver = attributes.value("to").toString();
 
-            if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
+            if (clientProfile->nickname.isEmpty() || reciver.isEmpty())
             {
-                qDebug() << "[ClientQuerys] Some values empty!!! Invite type = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
+                qDebug() << "[ClientQuerys] Some values empty!!! Client = " << clientProfile->nickname << "Reciver = " << reciver;
                 return;
             }
 
