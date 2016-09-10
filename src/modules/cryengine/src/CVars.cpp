@@ -18,10 +18,13 @@ void _NetworkThread()
 
 void ConnectToFireNET(IConsoleCmdArgs* pArgs)
 {
-	gEnv->pLog->LogWarning(TITLE "Connecting to FireNET...");
+	if (!gCryModule->bConnected)
+	{
+		gEnv->pLog->LogWarning(TITLE "Connecting to FireNET...");
 
-	std::thread nerworkThread(_NetworkThread);
-	nerworkThread.detach();
+		std::thread nerworkThread(_NetworkThread);
+		nerworkThread.detach();
+	}
 }
 
 void RegisterGameServer(IConsoleCmdArgs* pArgs)

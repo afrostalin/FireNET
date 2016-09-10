@@ -19,7 +19,6 @@ public slots:
 	void onBytesWritten(qint64 bytes);
 	void onDisconnected();
 private:
-	bool connected;
 	QSslSocket* m_socket;
 public:
 	void ConnectToServer();

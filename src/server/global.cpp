@@ -9,3 +9,4 @@
 TcpServer* pServer;
 RedisConnector* pRedis;
 QVector <SClient> vClients;
+QVector <SGameServer> vServers;

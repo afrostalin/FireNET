@@ -7,7 +7,6 @@
 
 CNetwork::CNetwork(QObject *parent) : QObject(parent)
 {
-	connected = false;
 	m_socket = nullptr;
 }
 
@@ -69,7 +68,7 @@ void CNetwork::SendQuery(QByteArray data)
 void CNetwork::onConnectedToServer()
 {
 	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Connection with FireNET establishment");
-	connected = true;
+	gCryModule->bConnected = true;
 	gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnConnectionEstablishment);
 }
 
@@ -96,7 +95,7 @@ void CNetwork::onBytesWritten(qint64 bytes)
 void CNetwork::onDisconnected()
 {
 	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Connection with FireNET lost!!!");
-	connected = false;
+	gCryModule->bConnected = false;
 
 	SUIArguments args;
 	args.AddArgument("@connectionLost");

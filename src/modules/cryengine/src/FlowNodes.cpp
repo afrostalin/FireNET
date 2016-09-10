@@ -21,7 +21,7 @@ void NetworkThread()
 		return;
 }
 
-namespace Online
+namespace FireNET
 {
 	// Connect to master server
 	class CFlowNode_ConnectToMS : public CFlowBaseNode<eNCT_Instanced>
@@ -1468,27 +1468,27 @@ namespace Online
 
 
 
-REGISTER_FLOW_NODE_EX("Online:Server:ConnectToOnlineServer", Online::CFlowNode_ConnectToMS, CFlowNode_ConnectToMS);
+REGISTER_FLOW_NODE_EX("FireNET:Server:ConnectToOnlineServer", FireNET::CFlowNode_ConnectToMS, CFlowNode_ConnectToMS);
 
-REGISTER_FLOW_NODE_EX("Online:AuthSystem:Login", Online::CFlowNode_Login, CFlowNode_Login);
-REGISTER_FLOW_NODE_EX("Online:AuthSystem:Register", Online::CFlowNode_Register, CFlowNode_Register);
+REGISTER_FLOW_NODE_EX("FireNET:AuthSystem:Login", FireNET::CFlowNode_Login, CFlowNode_Login);
+REGISTER_FLOW_NODE_EX("FireNET:AuthSystem:Register", FireNET::CFlowNode_Register, CFlowNode_Register);
 
-REGISTER_FLOW_NODE_EX("Online:Profile:CreateProfile", Online::CFlowNode_CreateProfile, CFlowNode_CreateProfile);
-REGISTER_FLOW_NODE_EX("Online:Profile:GetProfile", Online::CFlowNode_GetProfile, CFlowNode_GetProfile);
+REGISTER_FLOW_NODE_EX("FireNET:Profile:CreateProfile", FireNET::CFlowNode_CreateProfile, CFlowNode_CreateProfile);
+REGISTER_FLOW_NODE_EX("FireNET:Profile:GetProfile", FireNET::CFlowNode_GetProfile, CFlowNode_GetProfile);
 
-REGISTER_FLOW_NODE_EX("Online:Shop:GetShopItems", Online::CFlowNode_GetShopItems, CFlowNode_GetShopItems);
-REGISTER_FLOW_NODE_EX("Online:Shop:BuyItem", Online::CFlowNode_BuyItem, CFlowNode_BuyItem);
-REGISTER_FLOW_NODE_EX("Online:Invenrory:RemoveItem", Online::CFlowNode_RemoveItem, CFlowNode_RemoveItem);
+REGISTER_FLOW_NODE_EX("FireNET:Shop:GetShopItems", FireNET::CFlowNode_GetShopItems, CFlowNode_GetShopItems);
+REGISTER_FLOW_NODE_EX("FireNET:Shop:BuyItem", FireNET::CFlowNode_BuyItem, CFlowNode_BuyItem);
+REGISTER_FLOW_NODE_EX("FireNET:Invenrory:RemoveItem", FireNET::CFlowNode_RemoveItem, CFlowNode_RemoveItem);
 
-REGISTER_FLOW_NODE_EX("Online:Friends:AddFriend", Online::CFlowNode_AddFriend, CFlowNode_AddFriend);
-REGISTER_FLOW_NODE_EX("Online:Friends:RemoveFriend", Online::CFlowNode_RemoveFriend, CFlowNode_RemoveFriend);
-REGISTER_FLOW_NODE_EX("Online:Friends:GetFriendList", Online::CFlowNode_GetFriends, CFlowNode_GetFriends);
+REGISTER_FLOW_NODE_EX("FireNET:Friends:AddFriend", FireNET::CFlowNode_AddFriend, CFlowNode_AddFriend);
+REGISTER_FLOW_NODE_EX("FireNET:Friends:RemoveFriend", FireNET::CFlowNode_RemoveFriend, CFlowNode_RemoveFriend);
+REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET::CFlowNode_GetFriends, CFlowNode_GetFriends);
 
-// Global chat blocked now
+// If you need use global chat - uncommented this line
 //REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", Online::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
-REGISTER_FLOW_NODE_EX("Online:Chat:SendPrivateMessage", Online::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
+REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
 
-REGISTER_FLOW_NODE_EX("Online:Other:SpawnPlayerAI", Online::CFlowNode_SpawnArchetypeEntity2, CFlowNode_SpawnArchetypeEntity2);
+REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnArchetypeEntity2, CFlowNode_SpawnArchetypeEntity2);
 
-REGISTER_FLOW_NODE_EX("Online:Invites:SendInvite", Online::CFlowNode_SendInvite, CFlowNode_SendInvite);
-REGISTER_FLOW_NODE_EX("Online:Invites:DeclineInvite", Online::CFlowNode_DeclineInvite, CFlowNode_DeclineInvite);
+REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET::CFlowNode_SendInvite, CFlowNode_SendInvite);
+REGISTER_FLOW_NODE_EX("FireNET:Invites:DeclineInvite", FireNET::CFlowNode_DeclineInvite, CFlowNode_DeclineInvite);

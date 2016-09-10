@@ -47,6 +47,8 @@ public:
 	// Invite system
 	void onInvite(QByteArray &bytes);
 	void onDeclineInvite(QByteArray &bytes);
+	// Game servers tools
+	void onGameServerRegister(QByteArray &bytes);
 
 private:
     bool UpdateProfile(QSslSocket* socket, SProfile* profile);

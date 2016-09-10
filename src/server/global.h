@@ -30,10 +30,24 @@ struct SClient
 	QSslSocket* socket;
 	SProfile* profile;
 	int status;
+	bool isGameServer;
+};
+
+struct SGameServer
+{
+	QSslSocket* socket;
+	QString name;
+	QString ip;
+	int port;
+	QString map;
+	QString gamerules;
+	int online;
+	int maxPlayers;
 };
 
 extern TcpServer* pServer;
 extern RedisConnector* pRedis;
 extern QVector <SClient> vClients;
+extern QVector <SGameServer> vServers;
 
 #endif // GLOBAL_H

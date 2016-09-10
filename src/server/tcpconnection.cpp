@@ -24,12 +24,13 @@ void TcpConnection::connected()
 	client.socket = m_socket;
 	client.profile = nullptr;
 	client.status = 0;
+	client.isGameServer = false;
 	
 	vClients.push_back(client);
 
 	pQuery->SetSocket(m_socket);
 	
-	qDebug() << "[TcpConnection] Online = " << vClients.size();
+	qDebug() << "[TcpConnection] Connected clients count = " << vClients.size();
 }
 
 void TcpConnection::disconnected()
@@ -42,7 +43,23 @@ void TcpConnection::disconnected()
 		if (it->socket == m_socket)
 		{
 			vClients.erase(it);
-			qDebug() << "[TcpConnection] Online = " << vClients.size();
+
+			// If it is game server - delete him from servers list
+			if (it->isGameServer == true)
+			{
+				QVector<SGameServer>::iterator gsIt;
+				for (gsIt = vServers.begin(); gsIt != vServers.end(); ++gsIt)
+				{
+					if (gsIt->socket == m_socket)
+					{
+						vServers.erase(gsIt);
+						qDebug() << "[TcpConnection] Connected game servers count = " << vServers.size();
+						break;
+					}
+				}
+			}
+
+			qDebug() << "[TcpConnection] Connected clients count = " << vClients.size();
 			break;
 		}
 	}
@@ -113,6 +130,9 @@ void TcpConnection::readyRead()
 				// Chat
 				if (type == "chat_message")
 					pQuery->onChatMessage(bytes);
+				// Game servers
+				if (type == "register_game_server")
+					pQuery->onGameServerRegister(bytes);
 
             }
 
@@ -165,7 +185,7 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
-    qDebug() << "[TcpConnection] SocketError: " << error;
+    qDebug() << "[TcpConnection] SocketError : " << error;
 }
 
 void TcpConnection::close()
