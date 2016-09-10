@@ -30,7 +30,7 @@ void TcpConnection::connected()
 
 	pQuery->SetSocket(m_socket);
 	
-	qDebug() << "[TcpConnection] Connected clients count = " << vClients.size();
+	qInfo() << "[TcpConnection] Connected clients count = " << vClients.size();
 }
 
 void TcpConnection::disconnected()
@@ -53,13 +53,13 @@ void TcpConnection::disconnected()
 					if (gsIt->socket == m_socket)
 					{
 						vServers.erase(gsIt);
-						qDebug() << "[TcpConnection] Connected game servers count = " << vServers.size();
+						qInfo() << "[TcpConnection] Connected game servers count = " << vServers.size();
 						break;
 					}
 				}
 			}
 
-			qDebug() << "[TcpConnection] Connected clients count = " << vClients.size();
+			qInfo() << "[TcpConnection] Connected clients count = " << vClients.size();
 			break;
 		}
 	}
@@ -74,7 +74,7 @@ void TcpConnection::readyRead()
 
 	if (!pRedis->connectStatus)
 	{
-        qDebug() << "[ClientQuerys] Client can't use database functions without connection to Redis!!!";
+        qCritical() << "[ClientQuerys] Client can't use database functions without connection to Redis!!!";
 		return;
 	}
 	QByteArray bytes;
@@ -158,7 +158,7 @@ void TcpConnection::accept(qint64 socketDescriptor)
 
 	if (!m_socket->setSocketDescriptor(socketDescriptor))
 	{
-		qDebug() << "[TcpConnection] Can't accept socket!";
+		qCritical() << "[TcpConnection] Can't accept socket!";
 		return;
 	}
 
@@ -177,7 +177,7 @@ void TcpConnection::accept(qint64 socketDescriptor)
 
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
 {
-	qDebug() << "[TcpConnection] Soket ssl error";
+	qCritical() << "[TcpConnection] Soket ssl error";
 	foreach(QSslError item, list) {
 		qDebug() << item.errorString();
 	}
@@ -185,7 +185,7 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
-    qDebug() << "[TcpConnection] SocketError : " << error;
+    qCritical() << "[TcpConnection] SocketError : " << error;
 }
 
 void TcpConnection::close()

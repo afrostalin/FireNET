@@ -27,7 +27,7 @@ void TcpServer::setMaxThreads(int maximum)
 
 bool TcpServer::listen(const QHostAddress &address, quint16 port)
 {
-    qDebug() << "[TcpServer] Start listening on port " << port;
+	qInfo() << "[TcpServer] Start listening on port " << port;
     startThreads();
     return QTcpServer::listen(address,port);
 }
@@ -49,7 +49,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 void TcpServer::close()
 {
-    qDebug() << "[TcpServer] Closing server...";
+	qInfo() << "[TcpServer] Closing server...";
     emit stop();
 
     m_threads.clear();
@@ -79,7 +79,7 @@ void TcpServer::sendGlobalMessage(QByteArray data)
 
 void TcpServer::startThreads()
 {
-    qDebug() << "[TcpServer] Starting threads :" << m_pool->maxThreadCount();
+	qInfo() << "[TcpServer] Starting threads :" << m_pool->maxThreadCount();
 
     for(int i = 0; i < m_pool->maxThreadCount(); i++)
     {

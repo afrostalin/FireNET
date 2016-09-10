@@ -25,7 +25,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 			if (login.isEmpty() || password.isEmpty())
 			{
-				qDebug() << "Some values empty. Login = " << login << "Password = " << password;
+				qWarning() << "Some values empty. Login = " << login << "Password = " << password;
 				return;
 			}
 
@@ -34,8 +34,8 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 			if (buff.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] -----------------------Login not found------------------------";
-				qDebug() << "[ClientQuerys] ---------------------AUTHORIZATION FAILED---------------------";
+				qInfo() << "[ClientQuerys] -----------------------Login not found------------------------";
+				qInfo() << "[ClientQuerys] ---------------------AUTHORIZATION FAILED---------------------";
 
 				QString result = "<error type='auth_failed' reason = '0'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -53,8 +53,8 @@ void ClientQuerys::onLogin(QByteArray &bytes)
                 // Check ban status
 				if (ban == "1")
 				{
-					qDebug() << "[ClientQuerys] -----------------------Account blocked------------------------";
-					qDebug() << "[ClientQuerys] ---------------------AUTHORIZATION FAILED---------------------";
+					qInfo() << "[ClientQuerys] -----------------------Account blocked------------------------";
+					qInfo() << "[ClientQuerys] ---------------------AUTHORIZATION FAILED---------------------";
 
 					QString result = "<error type='auth_failed' reason = '1'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -72,8 +72,8 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 						clientStatus = 1;
 						AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
 
-						qDebug() << "[ClientQuerys] -------------------------Profile found--------------------------";
-						qDebug() << "[ClientQuerys] ---------------------AUTHORIZATION COMPLETE---------------------";
+						qInfo() << "[ClientQuerys] -------------------------Profile found--------------------------";
+						qInfo() << "[ClientQuerys] ---------------------AUTHORIZATION COMPLETE---------------------";
 
 						QString result = "<result type='auth_complete'><data uid='" + uid + "'/></result>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -84,8 +84,8 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 					}
 					else
 					{
-						qDebug() << "[ClientQuerys] -----------------------Profile not found------------------------";
-						qDebug() << "[ClientQuerys] ---------------------AUTHORIZATION COMPLETE---------------------";
+						qInfo() << "[ClientQuerys] -----------------------Profile not found------------------------";
+						qInfo() << "[ClientQuerys] ---------------------AUTHORIZATION COMPLETE---------------------";
 
 						QString result = "<result type='auth_complete'><data uid='" + uid + "'/></result>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -101,8 +101,8 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] ----------------------Incorrect password----------------------";
-					qDebug() << "[ClientQuerys] ---------------------AUTHORIZATION FAILED---------------------";
+					qInfo() << "[ClientQuerys] ----------------------Incorrect password----------------------";
+					qInfo() << "[ClientQuerys] ---------------------AUTHORIZATION FAILED---------------------";
 
 					QString result = "<error type='auth_failed' reason = '2'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -149,7 +149,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 					}
 					else
 					{
-                        qDebug() << "[ClientQuerys] Error creating key 'uids'!!!";
+                        qCritical() << "[ClientQuerys] Error creating key 'uids'!!!";
                         // do smth
 						return;
 					}
@@ -169,7 +169,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 					}
 					else
 					{
-						qDebug() << "[ClientQuerys] Error creating uid!";
+						qCritical() << "[ClientQuerys] Error creating uid!";
                         //do smth
 						return;
 					}
@@ -182,7 +182,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 				buff = pRedis->SendSyncQuery("SET", key, value);
 				if (buff == "OK")
 				{
-					qDebug() << "[ClientQuerys] ---------------------REGISTRATION COMPLETE---------------------";
+					qInfo() << "[ClientQuerys] ---------------------REGISTRATION COMPLETE---------------------";
 
 					QString result = "<result type='reg_complete'><data uid='" + uid + "'/></result>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -190,8 +190,8 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] --------------Can't create account in database!--------------";
-					qDebug() << "[ClientQuerys] ---------------------REGISTRATION FAILED---------------------";
+					qInfo() << "[ClientQuerys] --------------Can't create account in database!--------------";
+					qInfo() << "[ClientQuerys] ---------------------REGISTRATION FAILED---------------------";
 
 					QString result = "<error type='reg_failed' reason = '1'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -200,8 +200,8 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 			}
 			else
 			{
-				qDebug() << "[ClientQuerys] ----------Login alredy register or some values empty!--------";
-				qDebug() << "[ClientQuerys] ---------------------REGISTRATION FAILED---------------------";
+				qInfo() << "[ClientQuerys] ----------Login alredy register or some values empty!--------";
+				qInfo() << "[ClientQuerys] ---------------------REGISTRATION FAILED---------------------";
 				QString result = "<error type='reg_failed' reason = '0'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 				return;
@@ -216,7 +216,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't create profile without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't create profile without authorization!!!";
 		return;
 	}
 
@@ -236,14 +236,14 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 
 			if (nickname.isEmpty() || model.isEmpty())
 			{
-                qDebug() << "[ClientQuerys] Some values empty!!! Nickname = " << nickname << " Model = " << model << " Uid = " << uid;
+                qWarning() << "[ClientQuerys] Some values empty!!! Nickname = " << nickname << " Model = " << model << " Uid = " << uid;
 				return;
 			}
 
 			if (!clientProfile->nickname.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] ------------------Client alredy have profile-------------------";
-				qDebug() << "[ClientQuerys] ---------------------CREATE PROFILE FAILED---------------------";
+				qInfo() << "[ClientQuerys] ------------------Client alredy have profile-------------------";
+				qInfo() << "[ClientQuerys] ---------------------CREATE PROFILE FAILED---------------------";
 
 				QString result = "<error type='create_profile_failed' reason = '2'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -276,7 +276,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 
 				if (buff == "OK" && buff2 == "OK")
 				{
-					qDebug() << "[ClientQuerys] ---------------------CREATE PROFILE COMPLETE---------------------";
+					qInfo() << "[ClientQuerys] ---------------------CREATE PROFILE COMPLETE---------------------";
 
 					QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -289,8 +289,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] ---------------------Database return error---------------------";
-					qDebug() << "[ClientQuerys] ---------------------CREATE PROFILE FAILED---------------------";
+					qInfo() << "[ClientQuerys] ---------------------Database return error---------------------";
+					qInfo() << "[ClientQuerys] ---------------------CREATE PROFILE FAILED---------------------";
 
 					QString result = "<error type='create_profile_failed' reason = '0'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -299,8 +299,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 			}
 			else
 			{
-				qDebug() << "[ClientQuerys] -------------------Nickname alredy registered!-------------------";
-				qDebug() << "[ClientQuerys] ---------------------CREATE PROFILE FAILED---------------------";
+				qInfo() << "[ClientQuerys] -------------------Nickname alredy registered!-------------------";
+				qInfo() << "[ClientQuerys] ---------------------CREATE PROFILE FAILED---------------------";
 
 				QString result = "<error type='create_profile_failed' reason = '1'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -317,7 +317,7 @@ void ClientQuerys::onGetProfile(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't get profile without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't get profile without authorization!!!";
 		return;
 	}
 
@@ -325,16 +325,16 @@ void ClientQuerys::onGetProfile(QByteArray &bytes)
 
 	if (!clientProfile->nickname.isEmpty())
 	{
-		qDebug() << "[ClientQuerys] -------------------------Profile found--------------------------";
-		qDebug() << "[ClientQuerys] ----------------------GET PROFILE COMPLETE----------------------";
+		qInfo() << "[ClientQuerys] -------------------------Profile found--------------------------";
+		qInfo() << "[ClientQuerys] ----------------------GET PROFILE COMPLETE----------------------";
 
 		QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 	}
 	else
 	{
-		qDebug() << "[ClientQuerys] ----------------------Profile not found-----------------------";
-		qDebug() << "[ClientQuerys] ----------------------GET PROFILE FAILED----------------------";
+		qInfo() << "[ClientQuerys] ----------------------Profile not found-----------------------";
+		qInfo() << "[ClientQuerys] ----------------------GET PROFILE FAILED----------------------";
 
 		QString result = "<error type='get_profile_failed' reason = '0'/>";
 		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -349,7 +349,7 @@ void ClientQuerys::onGetShopItems(QByteArray &bytes)
 
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		qDebug() << "[ClientQuerys] Can't get shop.xml!!!";
+		qCritical() << "[ClientQuerys] Can't get shop.xml!!!";
 
 		QString result = "<error type='get_shop_items_failed' reason = '0'/>";
 		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -369,7 +369,7 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't buy item without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't buy item without authorization!!!";
 		return;
 	}
 
@@ -389,7 +389,7 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 
 			if (itemName.isEmpty())
 			{
-                qDebug() << "[ClientQuerys] Some values empty!!! Item = " << itemName << " Uid = " << uid;
+                qWarning() << "[ClientQuerys] Some values empty!!! Item = " << itemName << " Uid = " << uid;
 				return;
 			}
 
@@ -402,8 +402,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
                     // Check if it is there in inventory
 					if (CheckAttributeInRow(clientProfile->items, "item", "name", item.name))
 					{
-						qDebug() << "[ClientQuerys] ------------------This item alredy purchased------------------";
-						qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
+						qInfo() << "[ClientQuerys] ------------------This item alredy purchased------------------";
+						qInfo() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
 						QString result = "<error type='buy_item_failed' reason = '4'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -413,8 +413,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
                     // Check minimal player level for buy this item
 					if (clientProfile->lvl < item.minLnl)
 					{
-						qDebug() << "[ClientQuerys] -----------------Profile level < minimal level----------------";
-						qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
+						qInfo() << "[ClientQuerys] -----------------Profile level < minimal level----------------";
+						qInfo() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
 						QString result = "<error type='buy_item_failed' reason = '5'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -434,8 +434,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
                         // Update profile
 						if (UpdateProfile(m_socket, clientProfile))
 						{
-							qDebug() << "[ClientQuerys] ----------------------Profile updated----------------------";
-							qDebug() << "[ClientQuerys] ---------------------BUI ITEM COMPLETE---------------------";
+							qInfo() << "[ClientQuerys] ----------------------Profile updated----------------------";
+							qInfo() << "[ClientQuerys] ---------------------BUI ITEM COMPLETE---------------------";
 
 							QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 							pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -443,8 +443,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 						}
 						else
 						{
-							qDebug() << "[ClientQuerys] ---------------------Can't update profile---------------------";
-							qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
+							qInfo() << "[ClientQuerys] ---------------------Can't update profile---------------------";
+							qInfo() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
 							QString result = "<error type='buy_item_failed' reason = '3'/>";
 							pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -453,8 +453,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 					}
 					else
 					{
-						qDebug() << "[ClientQuerys] -------------------Insufficient money to buy-----------------";
-						qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
+						qInfo() << "[ClientQuerys] -------------------Insufficient money to buy-----------------";
+						qInfo() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
 						QString result = "<error type='buy_item_failed' reason = '2'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -463,8 +463,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] ------------------------Item not found------------------------";
-					qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
+					qInfo() << "[ClientQuerys] ------------------------Item not found------------------------";
+					qInfo() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
 					QString result = "<error type='buy_item_failed' reason = '1'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -473,8 +473,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 			}
 			else
 			{
-				qDebug() << "[ClientQuerys] ----------------------Profile not found-----------------------";
-				qDebug() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
+				qInfo() << "[ClientQuerys] ----------------------Profile not found-----------------------";
+				qInfo() << "[ClientQuerys] ------------------------BUY ITEM FAILED-----------------------";
 
 				QString result = "<error type='buy_item_failed' reason = '0'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -490,7 +490,7 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't remove item without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't remove item without authorization!!!";
 		return;
 	}
 
@@ -509,7 +509,7 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 			if (itemName.isEmpty())
 			{
-                qDebug() << "[ClientQuerys] Some values empty!!! Item = " << itemName << " Uid = " << uid;
+                qWarning() << "[ClientQuerys] Some values empty!!! Item = " << itemName << " Uid = " << uid;
 				return;
 			}
 
@@ -518,8 +518,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
                 // Check item if it is there in item list
 				if (!CheckAttributeInRow(clientProfile->items, "item", "name", itemName))
 				{
-                    qDebug() << "[ClientQuerys] -------------------Item not found in inventory--------------------";
-					qDebug() << "[ClientQuerys] ------------------------REMOVE ITEM FAILED-----------------------";
+					qInfo() << "[ClientQuerys] -------------------Item not found in inventory--------------------";
+					qInfo() << "[ClientQuerys] ------------------------REMOVE ITEM FAILED-----------------------";
 
 					QString result = "<error type='remove_item_failed' reason = '3'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -531,8 +531,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 					SShopItem item = GetShopItemByName(itemName);
 					if (item.name.isEmpty())
 					{
-                        qDebug() << "[ClientQuerys] -------------------Item not found in shop list-------------------";
-						qDebug() << "[ClientQuerys] ------------------------REMOVE ITEM FAILED-----------------------";
+						qInfo() << "[ClientQuerys] -------------------Item not found in shop list-------------------";
+						qInfo() << "[ClientQuerys] ------------------------REMOVE ITEM FAILED-----------------------";
 
 						QString result = "<error type='remove_item_failed' reason = '2'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -546,8 +546,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
                     // Update profile
 					if (UpdateProfile(m_socket, clientProfile))
 					{
-						qDebug() << "[ClientQuerys] -----------------------Profile updated------------------------";
-						qDebug() << "[ClientQuerys] ---------------------REMOVE ITEM COMPLETE---------------------";
+						qInfo() << "[ClientQuerys] -----------------------Profile updated------------------------";
+						qInfo() << "[ClientQuerys] ---------------------REMOVE ITEM COMPLETE---------------------";
 
 						QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -555,8 +555,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 					}
 					else
 					{
-						qDebug() << "[ClientQuerys] --------------------Can't update profile--------------------";
-						qDebug() << "[ClientQuerys] ---------------------REMOVE ITEM FAILED---------------------";
+						qInfo() << "[ClientQuerys] --------------------Can't update profile--------------------";
+						qInfo() << "[ClientQuerys] ---------------------REMOVE ITEM FAILED---------------------";
 
 						QString result = "<error type='remove_item_failed' reason = '1'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -566,8 +566,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 			}
 			else
 			{
-				qDebug() << "[ClientQuerys] ---------------------Error get profile----------------------";
-				qDebug() << "[ClientQuerys] ---------------------REMOVE ITEM FAILED---------------------";
+				qInfo() << "[ClientQuerys] ---------------------Error get profile----------------------";
+				qInfo() << "[ClientQuerys] ---------------------REMOVE ITEM FAILED---------------------";
 
 				QString result = "<error type='remove_item_failed' reason = '0'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -581,7 +581,7 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't send invite without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't send invite without authorization!!!";
 		return;
 	}
 
@@ -601,7 +601,7 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 
 			if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
 			{
-                qDebug() << "[ClientQuerys] Some values empty!!! Invite type = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
+                qWarning() << "[ClientQuerys] Some values empty!!! Invite type = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
 				return;
 			}
 
@@ -613,7 +613,8 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 
 				if (reciverUid.isEmpty())
 				{
-					qDebug() << "[ClientQuerys] User not found!";
+					qInfo() << "[ClientQuerys] ------------------------User not found------------------------";
+					qInfo() << "[ClientQuerys] ---------------------INVITE FRIEND FAILED---------------------";
 
 					QString result = "<error type='invite_failed' reason = '0'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -631,7 +632,8 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] Client can't send invite, because reciver not online!";
+					qInfo() << "[ClientQuerys] ----------------------Reciver not online----------------------";
+					qInfo() << "[ClientQuerys] ---------------------INVITE FRIEND FAILED---------------------";
 
 					QString result = "<error type='invite_failed' reason = '1'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -658,7 +660,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't decline invite without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't decline invite without authorization!!!";
 		return;
 	}
 
@@ -677,7 +679,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 
             if (clientProfile->nickname.isEmpty() || reciver.isEmpty())
             {
-                qDebug() << "[ClientQuerys] Some values empty!!! Client = " << clientProfile->nickname << "Reciver = " << reciver;
+                qWarning() << "[ClientQuerys] Some values empty!!! Client = " << clientProfile->nickname << "Reciver = " << reciver;
                 return;
             }
 
@@ -686,7 +688,8 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 
             if (reciverUid.isEmpty())
             {
-                qDebug() << "[ClientQuerys] User not found!";
+				qInfo() << "[ClientQuerys] ------------------------User not found-------------------------";
+				qInfo() << "[ClientQuerys] ---------------------DECLINE INVITE FAILED---------------------";
                 return;
             }
 
@@ -701,7 +704,8 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
             }
             else
             {
-                qDebug() << "[ClientQuerys] Client can't decline  invite, because reciver not online!";
+				qInfo() << "[ClientQuerys] ----------------------Reciver not online-----------------------";
+				qInfo() << "[ClientQuerys] ---------------------DECLINE INVITE FAILED---------------------";
                 return;
             }
         }
@@ -712,7 +716,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't add friend without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't add friend without authorization!!!";
 		return;
 	}
 
@@ -731,7 +735,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 			if (friendName.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values empty!!! Friend = " << friendName << " Uid = " << uid;
+				qWarning() << "[ClientQuerys] Some values empty!!! Friend = " << friendName << " Uid = " << uid;
 				return;
 			}
 
@@ -747,8 +751,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 					// Check friend is there in friends list
 					if (CheckAttributeInRow(clientProfile->friends, "friend", "name", friendName))
 					{
-						qDebug() << "[ClientQuerys] --------------------This friend alredy added--------------------";
-						qDebug() << "[ClientQuerys] ------------------------ADD FRIEND FAILED-----------------------";
+						qInfo() << "[ClientQuerys] --------------------This friend alredy added--------------------";
+						qInfo() << "[ClientQuerys] ------------------------ADD FRIEND FAILED-----------------------";
 
 						QString result = "<error type='add_friend_failed' reason = '4'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -758,8 +762,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 					// Block add yourself in friends
 					if (clientProfile->nickname == friendName)
 					{
-						qDebug() << "[ClientQuerys] ----------------Can't add yourself to friends--------------";
-						qDebug() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
+						qInfo() << "[ClientQuerys] ----------------Can't add yourself to friends--------------";
+						qInfo() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
 
 						QString result = "<error type='add_friend_failed' reason = '3'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -773,8 +777,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 					if (UpdateProfile(m_socket, clientProfile) && UpdateProfile(friendSocket, friendProfile))
 					{
-						qDebug() << "[ClientQuerys] -----------------------Profile updated-----------------------";
-						qDebug() << "[ClientQuerys] ---------------------ADD FRIEND COMPLETE---------------------";
+						qInfo() << "[ClientQuerys] -----------------------Profile updated-----------------------";
+						qInfo() << "[ClientQuerys] ---------------------ADD FRIEND COMPLETE---------------------";
 
 						QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -791,8 +795,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 					}
 					else
 					{
-						qDebug() << "[ClientQuerys] -------------------Can't update profile--------------------";
-						qDebug() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
+						qInfo() << "[ClientQuerys] -------------------Can't update profile--------------------";
+						qInfo() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
 
 						QString result = "<error type='add_friend_failed' reason = '2'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -801,8 +805,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] ---------------------Error get profile---------------------";
-					qDebug() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
+					qInfo() << "[ClientQuerys] ---------------------Error get profile---------------------";
+					qInfo() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
 
 					QString result = "<error type='add_friend_failed' reason = '1'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -811,8 +815,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 			}
 			else
 			{
-				qDebug() << "[ClientQuerys] ---------------------Friend not found----------------------";
-				qDebug() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
+				qInfo() << "[ClientQuerys] ---------------------Friend not found----------------------";
+				qInfo() << "[ClientQuerys] ---------------------ADD FRIEND FAILED---------------------";
 
 				QString result = "<error type='add_friend_failed' reason = '0'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -826,7 +830,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't remove friend without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't remove friend without authorization!!!";
 		return;
 	}
 
@@ -845,7 +849,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 			if (friendName.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values epmty!!! Friend = " << friendName << " Uid = " << uid;
+				qWarning() << "[ClientQuerys] Some values epmty!!! Friend = " << friendName << " Uid = " << uid;
 				return;
 			}
 
@@ -859,8 +863,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 				// Check friend is there in friends list
 				if (!CheckAttributeInRow(clientProfile->friends, "friend", "name", friendName))
 				{
-					qDebug() << "[ClientQuerys] --------------------------Friend not found-------------------------";
-					qDebug() << "[ClientQuerys] ------------------------REMOVE FRIEND FAILED-----------------------";
+					qInfo() << "[ClientQuerys] --------------------------Friend not found-------------------------";
+					qInfo() << "[ClientQuerys] ------------------------REMOVE FRIEND FAILED-----------------------";
 
 					QString result = "<error type='remove_friend_failed' reason = '2'/>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -880,8 +884,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 					if (UpdateProfile(m_socket, clientProfile) && UpdateProfile(friendSocket, friendProfile))
 					{
-						qDebug() << "[ClientQuerys] ------------------------Profile updated-------------------------";
-						qDebug() << "[ClientQuerys] ---------------------REMOVE FRIEND COMPLETE---------------------";
+						qInfo() << "[ClientQuerys] ------------------------Profile updated-------------------------";
+						qInfo() << "[ClientQuerys] ---------------------REMOVE FRIEND COMPLETE---------------------";
 
 						QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -897,8 +901,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 					}
 					else
 					{
-						qDebug() << "[ClientQuerys] ---------------------Can't update profile---------------------";
-						qDebug() << "[ClientQuerys] ---------------------REMOVE FRIEND FAILED---------------------";
+						qInfo() << "[ClientQuerys] ---------------------Can't update profile---------------------";
+						qInfo() << "[ClientQuerys] ---------------------REMOVE FRIEND FAILED---------------------";
 
 						QString result = "<error type='remove_friend_failed' reason = '1'/>";
 						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -908,8 +912,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 			}
 			else
 			{
-				qDebug() << "[ClientQuerys] ----------------------Error get profile-----------------------";
-				qDebug() << "[ClientQuerys] ---------------------REMOVE FRIEND FAILED---------------------";
+				qInfo() << "[ClientQuerys] ----------------------Error get profile-----------------------";
+				qInfo() << "[ClientQuerys] ---------------------REMOVE FRIEND FAILED---------------------";
 
 				QString result = "<error type='remove_friend_failed' reason = '0'/>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -923,7 +927,7 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 {
 	if (clientProfile->uid <= 0)
 	{
-		qDebug() << "[ClientQuerys] Client can't remove friend without authorization!!!";
+		qWarning() << "[ClientQuerys] Client can't remove friend without authorization!!!";
 		return;
 	}
 
@@ -944,13 +948,14 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 			if (message.isEmpty() || reciver.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! Message = " << message << " Reciver = " << reciver;
+				qWarning() << "[ClientQuerys] Some values emty!!! Message = " << message << " Reciver = " << reciver;
 				return;
 			}
 
 			if (reciver == clientProfile->nickname)
 			{
-				qDebug() << "[ClientQuerys] Client can't send message to himself!";
+				qInfo() << "[ClientQuerys] --------------Client cannot send message to himself---------------";
+				qInfo() << "[ClientQuerys] ---------------------SEND CHAT MESSAGE FAILED---------------------";
 				return;
 			}
 
@@ -975,7 +980,8 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 				}
 				else
 				{
-					qDebug() << "[ClientQuerys] Client can't send chat message, because reciver not found!";
+					qInfo() << "[ClientQuerys] -------------------Reciver not found or offline-------------------";
+					qInfo() << "[ClientQuerys] ---------------------SEND CHAT MESSAGE FAILED---------------------";
 				}
 
 				return;
@@ -1006,7 +1012,7 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 
 			if(serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
 			{
-				qDebug() << "[ClientQuerys] Some values emty!!! ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+				qWarning() << "[ClientQuerys] Some values emty!!! ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
 				return;
 			}
 
@@ -1015,12 +1021,14 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 			{
 				if (it->name == serverName)
 				{
-					qDebug() << "[ClientQuerys] Can't register game server because server with this name alredy register!";
+					qInfo() << "[ClientQuerys] ---------------Server with this name alredy registered---------------";
+					qInfo() << "[ClientQuerys] ---------------------REGISTER GAME SERVER FAILED---------------------";
 					return;
 				}
 				if (it->ip == serverIp && it->port == serverPort)
 				{
-					qDebug() << "[ClientQuerys] Can't register game server because server with this adress alredy register!";
+					qInfo() << "[ClientQuerys] -------------Server with this address alredy registered--------------";
+					qInfo() << "[ClientQuerys] ---------------------REGISTER GAME SERVER FAILED---------------------";
 					return;
 				}
 			}
@@ -1049,8 +1057,8 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 				}
 			}
 
-			qDebug() << "[ClientQuerys] Game server [" << serverName << "] registered!";
-			qDebug() << "[TcpConnection] Connected game servers count = " << vServers.size();
+			qInfo() << "[ClientQuerys] Game server [" << serverName << "] registered!";
+			qInfo() << "[TcpConnection] Connected game servers count = " << vServers.size();
 
 			return;
 		}

@@ -80,7 +80,7 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
 {
 	if (!pRedis->connectStatus)
     {
-        qDebug() << "[ClientQuerys] Can't update profile, because Redis not connected!";
+        qCritical() << "[ClientQuerys] Can't update profile, because Redis not connected!";
         return false;
     }
 
@@ -113,10 +113,10 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
 			return true;
         }
         else
-            qDebug() << "[ClientQuerys] Profile can't be updated! Database return error!!!";
+            qCritical() << "[ClientQuerys] Profile can't be updated! Database return error!!!";
     }
     else
-        qDebug() << "[ClientQuerys] Profile can't be updated, because profile not finded!!!";
+        qCritical() << "[ClientQuerys] Profile can't be updated, because profile not finded!!!";
 
     return false;
 }
@@ -230,7 +230,7 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
 
     if (!file.open(QIODevice::ReadOnly))
     {
-        qDebug() << "[ClientQuerys] Can't get shop.xml!!!";
+        qCritical() << "[ClientQuerys] Can't get shop.xml!!!";
         return item;
     }
 
@@ -264,7 +264,7 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
     }
 
     if (item.name.isEmpty())
-        qDebug() << "[ClientQuerys] Shop item not finded!!!";
+        qWarning() << "[ClientQuerys] Shop item not finded!!!";
 
     return item;
 }

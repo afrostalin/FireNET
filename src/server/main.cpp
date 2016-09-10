@@ -7,46 +7,65 @@
 #include <QDebug>
 #include <QThread>
 #include <QSettings>
+#include <QFile>
+#include <QDir>
+#include <QScopedPointer>
+#include <QTextStream>
+#include <QDateTime>
+#include <QLoggingCategory>
 
+QScopedPointer<QFile> m_logFile;
+int logLevel;
+
+void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
 int main(int argc, char *argv[])
 {
 	QCoreApplication *a = new QCoreApplication(argc, argv);
 
-    QCoreApplication::setApplicationName("FireNET");
-    QCoreApplication::setApplicationVersion("2.0");
+	QCoreApplication::setApplicationName("FireNET");
+	QCoreApplication::setApplicationVersion("2.0");
 
-    qDebug() << "*******************************************************************************";
-    qDebug() << "*                                FireNET 2.0                                  *";
-    qDebug() << "*                         Created by Ilya Chernetsov                          *";
-    qDebug() << "*                      Copyright (c) All rights reserved                      *";
-    qDebug() << "*******************************************************************************";
+	qInfo() << "*******************************************************************************";
+	qInfo() << "*                                FireNET 2.0                                  *";
+	qInfo() << "*                         Created by Ilya Chernetsov                          *";
+	qInfo() << "*                      Copyright (c) All rights reserved                      *";
+	qInfo() << "*******************************************************************************";
 
-	qDebug() << "Reading server configuration...";
+
+	// Init logging
+	QString logFileName = "FireNET.log";
+	QFile::remove(logFileName);
+	m_logFile.reset(new QFile(logFileName));
+	m_logFile.data()->open(QFile::Append | QFile::Text);
+	qInstallMessageHandler(messageHandler);
 
 	// Reading server config
+	qInfo() << "[Main] Reading server configuration...";
 	QSettings settings(QString("server.cfg"), QSettings::IniFormat);
 
 	QString serverIP = settings.value("sv_ip", "127.0.0.1").toString();
 	int serverPort = settings.value("sv_port", "3322").toInt();
 	QString serverAdmin = settings.value("sv_admin", "admin").toString();
 	QString serverAdminPassword = settings.value("sv_adminPassword", "qwerty").toString();
-	int debugLevel = settings.value("sv_debuglevel", "0").toInt();
-	int logLevel = settings.value("sv_loglevel", "0").toInt();
+	logLevel = settings.value("sv_loglevel", "0").toInt();
 	int maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
 	int maxServers = settings.value("sv_maxservers", "100").toInt();
 	int maxThreads = settings.value("sv_maxthreads", "4").toInt();
 
-	qDebug() << "[Main] Start server on" << serverIP;
+	qWarning() << "Test warning";
+	qDebug() << "Test debug";
+
+	qInfo() << "[Main] Start server on" << serverIP;
 
 	pServer = new TcpServer;
 	pServer->setMaxThreads(maxThreads);
 
 	if (pServer->listen(QHostAddress(serverIP), serverPort))
 	{
-		qDebug() << "[Main] Server started!";
+		qInfo() << "[Main] Server started!";
 
-		qDebug() << "[Main] Start redis....";
+		qInfo() << "[Main] Start redis....";
 		QThread* redisThread = new QThread;
 		pRedis = new RedisConnector;
 		pRedis->moveToThread(redisThread);
@@ -56,9 +75,68 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		qDebug() << "[Main] Server can't start. Reason = " << pServer->errorString();
+		qCritical() << "[Main] Server can't start. Reason = " << pServer->errorString();
 	}
 
-    return a->exec();
+	return a->exec();
 }
 
+void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+	QTextStream out(m_logFile.data());
+	QTextStream consoleOut(stdout);
+
+	switch (type)
+	{
+	case QtInfoMsg:
+	{
+		out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
+		out << "[INFO] ";
+		out << ": " << msg << endl;
+		consoleOut << "[INFO] " << msg << endl;
+		break;
+	}
+	case QtDebugMsg:
+	{
+		if (logLevel == 2)
+		{
+			out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
+			out << "[DEBAG] ";
+			out << ": " << msg << endl;
+			consoleOut << "[DEBAG] " << msg << endl;
+		}
+
+		break;
+	}
+	case QtWarningMsg:
+	{
+		if (logLevel > 0)
+		{
+			out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
+			out << "[WARNING] ";
+			out << ": " << msg << endl;
+			consoleOut << "[WARNING] " << msg << endl;
+		}
+		break;
+	}
+	case QtCriticalMsg:
+	{
+		out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
+		out << "[CRITICAL] ";
+		out << ": " << msg << endl;
+		consoleOut << "[CRITICAL] " << msg << endl;
+		break;
+	}
+	case QtFatalMsg:
+	{
+		out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
+		out << "[FATAL] ";
+		out << ": " << msg << endl;
+		consoleOut << "[FATAL] " << msg << endl;
+		break;
+	}
+
+	out.flush();
+	consoleOut.flush();
+	}
+}

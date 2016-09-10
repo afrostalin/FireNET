@@ -7,6 +7,9 @@
 *.opendb
 *.user
 
+# Log files
+*.log
+
 # Build temp files
 *.pdb
 *.ilk
