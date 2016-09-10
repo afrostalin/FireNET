@@ -19,10 +19,10 @@ void CNetwork::ConnectToServer()
 	char* argv[1] = {};
 	QCoreApplication networker(argc, argv);
 
-	QString adrress = gEnv->pConsole->GetCVar("online_ms_address")->GetString();
-	int port = gEnv->pConsole->GetCVar("online_ms_port")->GetIVal();
+	QString adrress = gEnv->pConsole->GetCVar("firenet_ip")->GetString();
+	int port = gEnv->pConsole->GetCVar("firenet_port")->GetIVal();
 
-	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Connecting to server...");
+	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Connecting to FireNET...");
 
 	QByteArray certificate = "-----BEGIN CERTIFICATE-----\n"
 		"MIIDCDCCAnGgAwIBAgIJAPSN9sMotF78MA0GCSqGSIb3DQEBCwUAMIGcMQswCQYD\n"
@@ -60,18 +60,15 @@ void CNetwork::ConnectToServer()
 
 void CNetwork::SendQuery(QByteArray data)
 {
-	if (!m_socket)
-		return;
-
-	if (connected)
+	if (m_socket != nullptr)
 		m_socket->write(data);
 	else
-		gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Client not connected to online server!");
+		gEnv->pLog->LogError(TITLE ONLINE_TITLE "Can't send query to FireNET because you not conneted!!!");
 }
 
 void CNetwork::onConnectedToServer()
 {
-	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Client connected to online server!");
+	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Connection with FireNET establishment");
 	connected = true;
 	gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnConnectionEstablishment);
 }
@@ -81,7 +78,7 @@ void CNetwork::onReadyRead()
 	if (!m_socket)
 		return;
 
-	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Client recived new message");
+	gEnv->pLog->Log(TITLE ONLINE_TITLE "Recived new message from FireNET");
 
 	QByteArray rawmessage;
 	rawmessage = m_socket->readAll();
@@ -93,12 +90,12 @@ void CNetwork::onBytesWritten(qint64 bytes)
 	if (!m_socket)
 		return;
 
-	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Client sended message to server!");
+	gEnv->pLog->Log(TITLE ONLINE_TITLE "Message to FireNET sended");
 }
 
 void CNetwork::onDisconnected()
 {
-	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Online server disconnected!");
+	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Connection with FireNET lost!!!");
 	connected = false;
 
 	SUIArguments args;

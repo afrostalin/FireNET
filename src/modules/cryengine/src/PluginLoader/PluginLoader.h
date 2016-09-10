@@ -11,7 +11,7 @@ typedef HINSTANCE__* HINSTANCE;
 
 #include "StdAfx.h"
 
-#define PLUGIN_NAME "Online.dll"
+#define PLUGIN_NAME "FireNET.dll"
 
 #define PLUGIN_LOADED "[" PLUGIN_NAME "] " "Plugin loaded!"
 #define PLUGIN_ERROR "[" PLUGIN_NAME "] " "Error loading plugin!"

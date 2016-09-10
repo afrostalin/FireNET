@@ -10,7 +10,7 @@
 #include "XmlWorker.h"
 #include "Network.h"
 
-#define TITLE "[Plugin] "
+#define TITLE "[FireNET plugin] "
 #define ONLINE_TITLE "[ONLINE] "
 
 struct SFriend
@@ -83,6 +83,7 @@ struct SGlobalCryModule
 		pUIEvents = new CModuleUIEvents;
 		pXmlWorker = new CXmlWorker;
 		m_profile = nullptr;
+		pNetwork = nullptr;
 	}
 
 };

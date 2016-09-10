@@ -50,7 +50,7 @@ GamePlay_API void InitModule(SSystemGlobalEnvironment& gCryEnv)
 
 		// Register CVars, commands
 		gCryModule->pCVars->RegisterCVars();
-		gCryModule->pCVars->RegistevCComands();
+		gCryModule->pCVars->RegisterCComands();
 		gCryModule->pUIEvents->RegisterUIEvents();
 	}
 	else

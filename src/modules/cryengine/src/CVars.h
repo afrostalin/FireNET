@@ -11,7 +11,7 @@ public:
 	~CModuleCVars(){}
 public:
 	bool RegisterCVars();
-	bool RegistevCComands();
+	bool RegisterCComands();
 };
 
 
