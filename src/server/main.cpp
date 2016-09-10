@@ -3,6 +3,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QThread>
+#include <QSettings>
 
 
 int main(int argc, char *argv[])
@@ -18,12 +19,27 @@ int main(int argc, char *argv[])
     qDebug() << "*                      Copyright (c) All rights reserved                      *";
     qDebug() << "*******************************************************************************";
 
-	qDebug() << "[Main] Start TcpServer....";
+	qDebug() << "Reading server configuration...";
+
+	// Reading server config
+	QSettings settings(QString("server.cfg"), QSettings::IniFormat);
+
+	QString serverIP = settings.value("sv_ip", "127.0.0.1").toString();
+	int serverPort = settings.value("sv_port", "3322").toInt();
+	QString serverAdmin = settings.value("sv_admin", "admin").toString();
+	QString serverAdminPassword = settings.value("sv_adminPassword", "qwerty").toString();
+	int debugLevel = settings.value("sv_debuglevel", "0").toInt();
+	int logLevel = settings.value("sv_loglevel", "0").toInt();
+	int maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
+	int maxServers = settings.value("sv_maxservers", "100").toInt();
+	int maxThreads = settings.value("sv_maxthreads", "4").toInt();
+
+	qDebug() << "[Main] Start server on" << serverIP;
 
 	pServer = new TcpServer;
-	pServer->setMaxThreads(4);
+	pServer->setMaxThreads(maxThreads);
 
-	if (pServer->listen(QHostAddress::Any, 3322))
+	if (pServer->listen(QHostAddress(serverIP), serverPort))
 	{
 		qDebug() << "[Main] Server started!";
 
