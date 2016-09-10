@@ -1,7 +1,5 @@
-/*************************************************************************
-Copyright (C), chernecoff@gmail.com, 2016
-
-*************************************************************************/
+// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: http://opensource.org/licenses/MITû
 
 #ifndef _CVars_H_
 #define _CVars_H_

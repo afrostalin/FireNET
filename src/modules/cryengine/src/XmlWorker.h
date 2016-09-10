@@ -1,7 +1,5 @@
-/*************************************************************************
-Copyright (C), chernecoff@gmail.com, 2016
-
-*************************************************************************/
+// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: http://opensource.org/licenses/MIT
 
 #ifndef _Xml_Worker_H_
 #define _Xml_Worker_H_

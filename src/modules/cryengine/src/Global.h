@@ -1,7 +1,6 @@
-/*************************************************************************
-Copyright (C), chernecoff@gmail.com, 2016
+// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: http://opensource.org/licenses/MIT
 
-*************************************************************************/
 #ifndef _ModuleGlobal_
 #define _ModuleGlobal_
 

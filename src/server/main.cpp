@@ -1,3 +1,6 @@
+// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: http://opensource.org/licenses/MIT
+
 #include "tcpserver.h"
 #include "global.h"
 #include <QCoreApplication>
@@ -15,7 +18,7 @@ int main(int argc, char *argv[])
 
     qDebug() << "*******************************************************************************";
     qDebug() << "*                                FireNET 2.0                                  *";
-    qDebug() << "*                           Created by AfroStalin                             *";
+    qDebug() << "*                         Created by Ilya Chernetsov                          *";
     qDebug() << "*                      Copyright (c) All rights reserved                      *";
     qDebug() << "*******************************************************************************";
 
