@@ -153,7 +153,6 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Send))
 				{
-					// Это дерьмище с кучей вложенности нужно исправить!!!
 					if (GetPortString(pActInfo, 1).size() < 5)
 					{
 						SUIArguments args;
@@ -173,7 +172,9 @@ namespace FireNET
 							string login = GetPortString(pActInfo, 1);
 							string password = GetPortString(pActInfo, 2);
 							string query = "<query type='auth'><data login='" + login + "' password='" + password + "'/></query>";
-							gCryModule->pNetwork->SendQuery(query.c_str());
+
+							if (gCryModule->pNetwork != nullptr)
+								gCryModule->pNetwork->SendQuery(query.c_str());
 						}
 					}
 				}
@@ -248,7 +249,6 @@ namespace FireNET
 				if (IsPortActive(pActInfo, EIP_Send))
 				{
 
-					// Это дерьмище с кучей вложенности нужно исправить!!!
 					if (GetPortString(pActInfo, 1).size() < 5)
 					{
 						SUIArguments args;
@@ -269,7 +269,9 @@ namespace FireNET
 							string login = GetPortString(pActInfo, 1);
 							string password = GetPortString(pActInfo, 2);
 							string query = "<query type='register'><data login='" + login + "' password='" + password + "'/></query>";
-							gCryModule->pNetwork->SendQuery(query.c_str());
+
+							if (gCryModule->pNetwork != nullptr)
+								gCryModule->pNetwork->SendQuery(query.c_str());
 						}
 					}
 				}
@@ -354,7 +356,9 @@ namespace FireNET
 						string nickname = GetPortString(pActInfo, 1);
 						string model = GetPortString(pActInfo, 2);
 						string query = "<query type='create_profile'><data nickname='" + nickname + "' model='" + model + "'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -423,7 +427,9 @@ namespace FireNET
 				if (IsPortActive(pActInfo, EIP_Get))
 				{
 					string query = "<query type='get_profile'/>";
-					gCryModule->pNetwork->SendQuery(query.c_str());
+
+					if (gCryModule->pNetwork != nullptr)
+						gCryModule->pNetwork->SendQuery(query.c_str());
 				}
 			}
 			break;
@@ -491,7 +497,9 @@ namespace FireNET
 				if (IsPortActive(pActInfo, EIP_Get))
 				{
 					string query = "<query type='get_shop_items'/>";
-					gCryModule->pNetwork->SendQuery(query.c_str());
+
+					if (gCryModule->pNetwork != nullptr)
+						gCryModule->pNetwork->SendQuery(query.c_str());
 				}
 			}
 			break;
@@ -571,7 +579,9 @@ namespace FireNET
 
 						string itemName = GetPortString(pActInfo, 1);
 						string query = "<query type='buy_item'><data item = '" + itemName + "'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -652,7 +662,9 @@ namespace FireNET
 
 						string itemName = GetPortString(pActInfo, 1);
 						string query = "<query type='remove_item'><data name = '" + itemName + "'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -767,7 +779,9 @@ namespace FireNET
 						if (!userAdded)
 						{
 							string query = "<query type='invite'><data invite_type='friend_invite' to='" + userName + "'/></query>";
-							gCryModule->pNetwork->SendQuery(query.c_str());
+
+							if (gCryModule->pNetwork != nullptr)
+								gCryModule->pNetwork->SendQuery(query.c_str());
 						}
 					}
 				}
@@ -855,7 +869,9 @@ namespace FireNET
 					{
 						string userName = GetPortString(pActInfo, EIP_UserName);
 						string query = "<query type='decline_invite'><data to='" + userName + "'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -936,7 +952,9 @@ namespace FireNET
 
 						string friendName = GetPortString(pActInfo, 1);
 						string query = "<query type='add_friend'><data name = '" + friendName + "'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -1017,7 +1035,9 @@ namespace FireNET
 
 						string friendName = GetPortString(pActInfo, EIP_Friend);
 						string query = "<query type='remove_friend'><data name = '" + friendName + "'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -1091,7 +1111,7 @@ namespace FireNET
 						SUIArguments args;
 						args.AddArgument(it->nickname.toStdString().c_str());
 						args.AddArgument(it->uid);
-						
+
 						if (it->status == 0)
 							args.AddArgument("offline");
 						if (it->status == 1)
@@ -1115,7 +1135,7 @@ namespace FireNET
 	};
 
 	// Send global chat message
-	class CFlowNode_SendGlobalChatMessage: public CFlowBaseNode<eNCT_Instanced>
+	class CFlowNode_SendGlobalChatMessage : public CFlowBaseNode<eNCT_Instanced>
 	{
 		enum INPUTS
 		{
@@ -1184,7 +1204,9 @@ namespace FireNET
 
 						string message = GetPortString(pActInfo, EIP_Message);
 						string query = "<query type = 'chat_message'><data message = '" + message + "' to = 'all'/></query>";
-						gCryModule->pNetwork->SendQuery(query.c_str());
+
+						if (gCryModule->pNetwork != nullptr)
+							gCryModule->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -1271,7 +1293,9 @@ namespace FireNET
 						if (reciver != "")
 						{
 							string query = "<query type = 'chat_message'><data message = '" + message + "' to = '" + reciver + "'/></query>";
-							gCryModule->pNetwork->SendQuery(query.c_str());
+
+							if (gCryModule->pNetwork != nullptr)
+								gCryModule->pNetwork->SendQuery(query.c_str());
 						}
 						else
 						{
@@ -1464,6 +1488,86 @@ namespace FireNET
 			s->Add(*this);
 		}
 	};
+
+	// Get game server
+	class CFlowNode_GetGameServer : public CFlowBaseNode<eNCT_Instanced>
+	{
+		enum INPUTS
+		{
+			EIP_Get = 0,
+			EIP_Map,
+			EIP_Gamerules,
+			EIP_Name,
+		};
+
+	public:
+		CFlowNode_GetGameServer(SActivationInfo * pActInfo)
+		{
+		}
+
+		~CFlowNode_GetGameServer()
+		{
+		}
+
+		IFlowNodePtr Clone(SActivationInfo* pActInfo)
+		{
+			return new CFlowNode_GetGameServer(pActInfo);
+		}
+
+		virtual void GetMemoryUsage(ICrySizer * s) const
+		{
+			s->Add(*this);
+		}
+
+		void GetConfiguration(SFlowNodeConfig& config)
+		{
+			static const SInputPortConfig in_ports[] =
+			{
+				InputPortConfig_Void("Get", _HELP("Get game server from online server by map/gamerules/name")),
+				InputPortConfig<string>("MapName", _HELP("Get game server by map name")),
+				InputPortConfig<string>("Gamerules", _HELP("Get game server by gamerules")),
+				InputPortConfig<string>("ServerName", _HELP("Get game server by name")),
+				{ 0 }
+			};
+			static const SOutputPortConfig out_ports[] =
+			{
+				{ 0 }
+			};
+			config.pInputPorts = in_ports;
+			config.pOutputPorts = out_ports;
+			config.sDescription = _HELP("Send get game server request to online server");
+			config.SetCategory(EFLN_APPROVED);
+		}
+
+		void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
+		{
+			switch (event)
+			{
+			case eFE_Initialize:
+			{
+				m_actInfo = *pActInfo;
+			}
+			break;
+			case eFE_Activate:
+			{
+				if (IsPortActive(pActInfo, EIP_Get))
+				{
+					string mapName = GetPortString(pActInfo, EIP_Map);
+					string gamerules = GetPortString(pActInfo, EIP_Gamerules);
+					string serverName = GetPortString(pActInfo, EIP_Name);
+
+					string query = "<query type='get_game_server'><data map = '" + mapName + "' gamerules = '" + gamerules + "' name = '" + serverName + "'/><query/>";
+
+					if (gCryModule->pNetwork != nullptr)
+						gCryModule->pNetwork->SendQuery(query.c_str());
+				}
+			}
+			break;
+			}
+		}
+	protected:
+		SActivationInfo m_actInfo;
+	};
 }
 
 
@@ -1493,3 +1597,5 @@ REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnArc
 
 REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET::CFlowNode_SendInvite, CFlowNode_SendInvite);
 REGISTER_FLOW_NODE_EX("FireNET:Invites:DeclineInvite", FireNET::CFlowNode_DeclineInvite, CFlowNode_DeclineInvite);
+
+REGISTER_FLOW_NODE_EX("FireNET:Matchmaking:GetGameServer", FireNET::CFlowNode_GetGameServer, CFlowNode_GetGameServer);
