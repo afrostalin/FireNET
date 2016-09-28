@@ -29,7 +29,7 @@ bool UpdateUberFileList(QString cryEngineFolder)
                                  "\t\t\"PluginLoader\":\n"
                                  "\t\t[\n"
                                  "\t\t\t\"PluginLoader/PluginLoader.h\",\n"
-                                 "\t\t\t\"PluginLoader/PluginLoader.cpp\",\n"
+                                 "\t\t\t\"PluginLoader/PluginLoader.cpp\"\n"
                                  "\t\t" ;
 
                 int index0 = buffer.indexOf("]\r\n\t},\r\n   \"CryGameSDKDLL_uber_0.cpp\"");
