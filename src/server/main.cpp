@@ -53,9 +53,6 @@ int main(int argc, char *argv[])
 	int maxServers = settings.value("sv_maxservers", "100").toInt();
 	int maxThreads = settings.value("sv_maxthreads", "4").toInt();
 
-	qWarning() << "Test warning";
-	qDebug() << "Test debug";
-
 	qInfo() << "[Main] Start server on" << serverIP;
 
 	pServer = new TcpServer;
@@ -64,8 +61,8 @@ int main(int argc, char *argv[])
 	if (pServer->listen(QHostAddress(serverIP), serverPort))
 	{
 		qInfo() << "[Main] Server started!";
-
 		qInfo() << "[Main] Start redis....";
+
 		QThread* redisThread = new QThread;
 		pRedis = new RedisConnector;
 		pRedis->moveToThread(redisThread);
