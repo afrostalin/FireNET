@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFile>
 #include <QTextStream>
+#include <QTextCodec>
 
 QString codeFolder = "/Code/GameSDK/GameDll";
 QString pluginIncludesFolder = "PluginLoader";
@@ -13,48 +14,72 @@ QString pluginIncludesFolder = "PluginLoader";
 bool UpdateUberFileList(QString cryEngineFolder)
 {
     qInfo() << "Updating gamesdk.waf_files ...";
+
     QFile oldFile(cryEngineFolder + codeFolder + "/gamedllsdk.waf_files");
-    if(oldFile.exists())
+    bool line0Finded = false;
+
+    if(oldFile.exists() && !QFile::exists(cryEngineFolder + codeFolder + "/gamedllsdk.waf_files.bak"))
     {
         qInfo() << "gamedllsdk.waf_files finded";
-        if(oldFile.open(QIODevice::ReadOnly))
+        if(oldFile.open(QIODevice::ReadWrite))
         {
             qInfo() << "gamedllsdk.waf_files opened";
+
             QTextStream in (&oldFile);
-            QByteArray buffer = in.readAll().toStdString().c_str();
+            in.setCodec(QTextCodec::codecForName("UTF-8"));
 
-            if( !buffer.isEmpty())
+            QByteArray textBuffer;
+            int lineNumber = 0;
+
+            QString paste0 = ",\n"
+                             "\t\t\"PluginLoader\":\n"
+                             "\t\t[\n"
+                             "\t\t\t\"PluginLoader/PluginLoader.h\",\n"
+                             "\t\t\t\"PluginLoader/PluginLoader.cpp\"\n"
+                             "\t\t]";
+
+            QString line;
+            do
             {
-                QString paste0 = "],\n"
-                                 "\t\t\"PluginLoader\":\n"
-                                 "\t\t[\n"
-                                 "\t\t\t\"PluginLoader/PluginLoader.h\",\n"
-                                 "\t\t\t\"PluginLoader/PluginLoader.cpp\"\n"
-                                 "\t\t" ;
+                line = in.readLine();
+                textBuffer.append(line);
+                lineNumber++;
 
-                int index0 = buffer.indexOf("]\r\n\t},\r\n   \"CryGameSDKDLL_uber_0.cpp\"");
+                if(lineNumber == 35)
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    textBuffer.append(paste0);
+                    line0Finded = true;
+                }
 
-                if(!buffer.contains(paste0.toStdString().c_str()))
-                    buffer.insert(index0, paste0);
+                textBuffer.append("\n");
 
-                // Remove old file
 
+            } while (!line.isNull());
+
+
+            if(!textBuffer.isEmpty() && line0Finded)
+            {
                 oldFile.close();
-                oldFile.remove();
+                oldFile.rename(cryEngineFolder + codeFolder + "/gamedllsdk.waf_files.bak");
 
                 QFile newFile(cryEngineFolder + codeFolder + "/gamedllsdk.waf_files");
                 if(newFile.open(QIODevice::Append))
                 {
-                    newFile.write(buffer);
+                    newFile.write(textBuffer);
+                    newFile.close();
+                    qInfo() << "gamedllsdk.waf_files updated!";
+                    return true;
                 }
-                newFile.close();
-
-                qInfo() << "gamedllsdk.waf_files update!";
-                return true;
+                else
+                {
+                    qCritical() << "Can't save gamedllsdk.waf_files !!!";
+                    return false;
+                }
             }
             else
             {
-                qCritical() << "Can't read gamedllsdk.waf_files !!!";
+                qCritical() << "Can't update gamedllsdk.waf_files !!!";
                 oldFile.close();
                 return false;
             }
@@ -67,7 +92,7 @@ bool UpdateUberFileList(QString cryEngineFolder)
     }
     else
     {
-        qCritical() << "Can't find gamedllsdk.waf_files !!!";
+        qCritical() << "Can't find gamedllsdk.waf_files or gamedllsdk.waf_files alredy updated (Try remove gamedllsdk.waf_files.bak)!!!";
         return false;
     }
 }
@@ -75,53 +100,86 @@ bool UpdateUberFileList(QString cryEngineFolder)
 bool UpdateGameCpp(QString cryEngineFolder)
 {
     qInfo() << "Updating Game.cpp ...";
+
     QFile oldFile(cryEngineFolder + codeFolder + "/Game.cpp");
-    if(oldFile.exists())
+    bool line0Finded = false;
+    bool line1Finded = false;
+    bool line2Finded = false;
+
+    if(oldFile.exists() && !QFile::exists(cryEngineFolder + codeFolder + "/Game.cpp.bak"))
     {
         qInfo() << "Game.cpp finded";
         if(oldFile.open(QIODevice::ReadOnly))
         {
             qInfo() << "Game.cpp opened";
+
             QTextStream in (&oldFile);
-            QByteArray buffer = in.readAll().toStdString().c_str();
+            in.setCodec(QTextCodec::codecForName("UTF-8"));
 
-            if( !buffer.isEmpty())
+            QByteArray textBuffer;
+            int lineNumber = 0;
+
+            QString paste0 = "// Plugin loader\n"
+                             "#include \"PluginLoader/PluginLoader.h\"\n";
+
+            QString paste1 = "\t// Plugin loader\n"
+                             "\tpPluginLoader->LoadPlugin();\n";
+
+            QString paste2 = "\t\t\t// Plugin loader\n"
+                             "\t\t\tpPluginLoader->pRegisterFlowNodes();\n";
+
+            QString line;
+            do
             {
-                QString paste0 = "// Plugin loader\n"
-                                 "#include \"PluginLoader/PluginLoader.h\"\n";
-                QString paste1 = "\n\t// Plugin loader\n"
-                                 "\tpPluginLoader->LoadPlugin();\n\n";
-                QString paste2 = "\n\t\t\t// Plugin loader\n"
-                                 "\t\t\tpPluginLoader->pRegisterFlowNodes();";
+                line = in.readLine();
+                textBuffer.append(line + "\n");
+                lineNumber++;
 
-                int index0 = buffer.indexOf("//#define GAME_DEBUG_MEM  // debug memory usage");
-                int index1 = buffer.indexOf("m_pConsole = gEnv->pConsole;");
-                int index2 = buffer.indexOf("pFactory->m_pNext;");
+                if(line.contains("#include <CrySystem/Profilers/FrameProfiler/FrameProfiler.h>"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    textBuffer.append(paste0);
+                    line0Finded = true;
+                }
 
-                if(!buffer.contains(paste0.toStdString().c_str()))
-                    buffer.insert(index0, paste0);
-                if(!buffer.contains(paste1.toStdString().c_str()))
-                    buffer.insert(index1, paste1);
-                if(!buffer.contains(paste2.toStdString().c_str()))
-                    buffer.insert(index2 + 18, paste2);
+                if(line.contains("InlineInitializationProcessing(\"CGame::Init\");"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    textBuffer.append(paste1);
+                    line1Finded = true;
 
-                // Remove old file
+                }
+
+                if(line.contains("pFactory = pFactory->m_pNext;"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    textBuffer.append(paste2);
+                    line2Finded = true;
+                }
+            } while (!line.isNull());
+
+            if(!textBuffer.isEmpty() && line0Finded && line1Finded && line2Finded)
+            {
                 oldFile.close();
-                oldFile.remove();
+                oldFile.rename(cryEngineFolder + codeFolder + "/Game.cpp.bak");
 
                 QFile newFile(cryEngineFolder + codeFolder + "/Game.cpp");
                 if(newFile.open(QIODevice::Append))
                 {
-                    newFile.write(buffer);
+                    newFile.write(textBuffer);
+                    newFile.close();
+                    qInfo() << "Game.cpp updated!";
+                    return true;
                 }
-                newFile.close();
-
-                qInfo() << "Game.cpp updated!";
-                return true;
+                else
+                {
+                    qCritical() << "Can't save Game.cpp !!!";
+                    return false;
+                }
             }
             else
             {
-                qCritical() << "Can't read Game.cpp !!!";
+                qCritical() << "Can't update Game.cpp !!!";
                 oldFile.close();
                 return false;
             }
@@ -134,7 +192,7 @@ bool UpdateGameCpp(QString cryEngineFolder)
     }
     else
     {
-        qCritical() << "Can't find Game.cpp !!!";
+        qCritical() << "Can't find Game.cpp or Game.cpp alredy updated (Try remove Game.cpp.bak)!!!";
         return false;
     }
 }
@@ -151,6 +209,9 @@ bool CopyCryEngineFix(QString cryEngineFolder)
     QFile file5 (cryEngineFolder + "/bin/win_x64/Qt5Widgets.dll");
     QFile file6 (cryEngineFolder + "/bin/win_x64/ssleay32.dll");
 
+    QFile file7 (cryEngineFolder + "/bin/win_x64/platforms/qminimal.dll");
+    QFile file8 (cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll");
+
     qInfo() << "Removing old libraries...";
 
     file0.remove();
@@ -161,6 +222,9 @@ bool CopyCryEngineFix(QString cryEngineFolder)
     file5.remove();
     file6.remove();
 
+    file7.remove();
+    file8.remove();
+
     qInfo() << "Copying new libraries...";
 
     if(QFile::copy("CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64/libeay32.dll") &&
@@ -169,7 +233,9 @@ bool CopyCryEngineFix(QString cryEngineFolder)
             QFile::copy("CryEngineFix/Qt5Network.dll", cryEngineFolder + "/bin/win_x64/Qt5Network.dll") &&
             QFile::copy("CryEngineFix/Qt5OpenGL.dll", cryEngineFolder + "/bin/win_x64/Qt5OpenGL.dll") &&
             QFile::copy("CryEngineFix/Qt5Widgets.dll", cryEngineFolder + "/bin/win_x64/Qt5Widgets.dll") &&
-            QFile::copy("CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64/ssleay32.dll"))
+            QFile::copy("CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64/ssleay32.dll") &&
+            QFile::copy("CryEngineFix/platforms/qminimal.dll", cryEngineFolder + "/bin/win_x64/platforms/qminimal.dll") &&
+            QFile::copy("CryEngineFix/platforms/qwindows.dll", cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll"))
     {
         qInfo() << "Libraries copyed!";
         return true;
