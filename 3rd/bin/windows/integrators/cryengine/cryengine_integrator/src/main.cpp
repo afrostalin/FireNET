@@ -197,6 +197,89 @@ bool UpdateGameCpp(QString cryEngineFolder)
     }
 }
 
+bool UpdateGameStartupCpp(QString cryEngineFolder)
+{
+    qInfo() << "Updating GameStartup.cpp ...";
+
+    QFile oldFile(cryEngineFolder + codeFolder + "/GameStartup.cpp");
+    bool line0Finded = false;
+
+    if(oldFile.exists() && !QFile::exists(cryEngineFolder + codeFolder + "/GameStartup.cpp.bak"))
+    {
+        qInfo() << "GameStartup.cpp finded";
+        if(oldFile.open(QIODevice::ReadOnly))
+        {
+            qInfo() << "GameStartup.cpp opened";
+
+            QTextStream in (&oldFile);
+            in.setCodec(QTextCodec::codecForName("UTF-8"));
+
+            QByteArray textBuffer;
+            int lineNumber = 0;
+
+            QString paste0 = "#if defined(DEDICATED_SERVER)\n"
+                    "\tgEnv->pConsole->ExecuteString(\"exec server.cfg\");\n"
+                    "#else\n"
+                    "\tgEnv->pConsole->ExecuteString(\"exec client.cfg\");\n"
+                    "#endif\n";
+
+            QString line;
+            do
+            {
+                line = in.readLine();
+                lineNumber++;
+
+                if(line.contains("gEnv->pConsole->ExecuteString( \"exec autoexec.cfg\" );"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    line.clear();
+                    line = paste0;
+                    line0Finded = true;
+                }
+
+                textBuffer.append(line + "\n");
+
+            } while (!line.isNull());
+
+            if(!textBuffer.isEmpty() && line0Finded)
+            {
+                oldFile.close();
+                oldFile.rename(cryEngineFolder + codeFolder + "/GameStartup.cpp.bak");
+
+                QFile newFile(cryEngineFolder + codeFolder + "/GameStartup.cpp");
+                if(newFile.open(QIODevice::Append))
+                {
+                    newFile.write(textBuffer);
+                    newFile.close();
+                    qInfo() << "GameStartup.cpp updated!";
+                    return true;
+                }
+                else
+                {
+                    qCritical() << "Can't save GameStartup.cpp !!!";
+                    return false;
+                }
+            }
+            else
+            {
+                qCritical() << "Can't update GameStartup.cpp !!!";
+                oldFile.close();
+                return false;
+            }
+        }
+        else
+        {
+            qCritical() << "Can't open GameStartup.cpp !!!";
+            return false;
+        }
+    }
+    else
+    {
+        qCritical() << "Can't find GameStartup.cpp or GameStartup.cpp alredy updated (Try remove GameStartup.cpp.bak)!!!";
+        return false;
+    }
+}
+
 bool CopyCryEngineFix(QString cryEngineFolder)
 {
     qInfo() << "Coping CryEngine fix...";
@@ -322,6 +405,12 @@ int main(int argc, char *argv[])
         if(!UpdateGameCpp(cryEngineFolder))
         {
             qCritical() << "Integration failed! Can't update Game.cpp !!!";
+            errors = true;
+        }
+
+        if(!UpdateGameStartupCpp(cryEngineFolder))
+        {
+            qCritical() << "Integration failed! Can't update GameStartup.cpp !!!";
             errors = true;
         }
 
