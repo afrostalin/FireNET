@@ -462,8 +462,5 @@ int main(int argc, char *argv[])
         else
             qInfo() << "INTEGRATION FAILED !!! SEE LOGS TO MORE INFORMATION !!!";
     }
-
-    while(1){}
-
     return a.exec();
 }

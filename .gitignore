@@ -6,6 +6,7 @@
 *.db
 *.opendb
 *.user
+*.bak
 
 # Log files
 *.log

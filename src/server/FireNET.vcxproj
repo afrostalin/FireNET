@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|x64">
@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;..\..\temp\moc\server;D:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;D:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;..\..\temp\moc\server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>..\..\temp\obj\server\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -100,7 +100,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;..\..\temp\moc\server;D:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;D:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015;..\..\temp\moc\server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>..\..\temp\obj\server\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -217,3 +217,10 @@
     </VisualStudio>
   </ProjectExtensions>
 </Project>
+
+
+
+
+
+
+
