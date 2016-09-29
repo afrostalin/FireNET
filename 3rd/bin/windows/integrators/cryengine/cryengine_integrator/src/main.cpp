@@ -125,8 +125,8 @@ bool UpdateGameCpp(QString cryEngineFolder)
             QString paste1 = "\t// Plugin loader\n"
                              "\tpPluginLoader->LoadPlugin();\n";
 
-            QString paste2 = "\t\t\t// Plugin loader\n"
-                             "\t\t\tpPluginLoader->pRegisterFlowNodes();\n";
+            QString paste2 = "\t\t// Plugin loader\n"
+                             "\t\tpPluginLoader->pRegisterFlowNodes();\n";
 
             QString line;
             do
@@ -150,7 +150,7 @@ bool UpdateGameCpp(QString cryEngineFolder)
 
                 }
 
-                if(line.contains("pFactory = pFactory->m_pNext;"))
+                if(line.contains("CAutoRegFlowNodeBase* pFactory = CAutoRegFlowNodeBase::m_pFirst;"))
                 {
                     qInfo() << "Update line " << lineNumber;
                     textBuffer.append(paste2);

@@ -126,7 +126,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Full</Optimization>
       <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\CryEngine\CryCommon;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\CryEngine\CryAction;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\SDKs\boost;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\SDKs\yasli;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\Libs\yasli;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;C:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\CryEngine\CryCommon;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\CryEngine\CryAction;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\SDKs\boost;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\SDKs\yasli;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\Libs\yasli;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;D:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -146,7 +146,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\SDKs\Brofiler;C:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\SDKs\Brofiler;D:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>ws2_32.lib;ntdll.lib;ProfilerCore64.lib;Qt5Core.lib;Qt5Network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -176,14 +176,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\CryEngine\CryCommon;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\CryEngine\CryAction;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\SDKs\boost;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\SDKs\yasli;C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\Libs\yasli;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;C:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;C:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\CryEngine\CryCommon;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\CryEngine\CryAction;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\SDKs\boost;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\SDKs\yasli;F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\Libs\yasli;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtNetwork;D:\Qt\Qt5.7.0\5.7\msvc2015_64\include\QtCore;D:\Qt\Qt5.7.0\5.7\msvc2015_64\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Crytek\CRYENGINE Launcher\Crytek\CRYENGINE_5.2\Code\SDKs\Brofiler;C:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>F:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2\Code\SDKs\Brofiler;D:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>ws2_32.lib;ntdll.lib;ProfilerCore64.lib;Qt5Core.lib;Qt5Network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
