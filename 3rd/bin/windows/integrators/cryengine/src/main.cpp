@@ -331,6 +331,33 @@ bool CopyCryEngineFix(QString cryEngineFolder)
 
 }
 
+bool CopyFireNetLibraries(QString cryEngineFolder)
+{
+    qInfo() << "Coping FireNET libraries...";
+
+    QFile file0 (cryEngineFolder + "/bin/win_x64/FireNET.dll");
+    QFile file1 (cryEngineFolder + "/bin/win_x64_dedicated/FireNET.dll");
+
+    qInfo() << "Removing old FireNET libraries...";
+
+    file0.remove();
+    file1.remove();
+
+    qInfo() << "Copying new FireNET libraries...";
+
+    if(QFile::copy("../../../../../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64/FireNET.dll") &&
+            QFile::copy("../../../../../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET.dll"))
+    {
+        qInfo() << "FireNET libraries copyed!";
+        return true;
+    }
+    else
+    {
+        qCritical() << "Failed copying FireNET libraries !!!";
+        return false;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -418,6 +445,12 @@ int main(int argc, char *argv[])
         if(!CopyCryEngineFix(cryEngineFolder))
         {
             qCritical() << "Integration failed! Can't copying CryEngine fix !!!";
+            errors = true;
+        }
+
+        if(!CopyFireNetLibraries(cryEngineFolder))
+        {
+            qCritical() << "Integration failed! Can't copying FireNET libraries !!!";
             errors = true;
         }
 
