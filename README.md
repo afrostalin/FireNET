@@ -14,29 +14,11 @@ The server is distributed under the MIT license.
 # Building
 For building project and modules you need have installed QT 5.7
 
-On Linux (QT Creator) :
+[Building on Windows (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(QT-Creator))
 
-* Open FireNET.pro
-* Configure project
-* Select Debug or Release build type
-* Build project
+[Building on Windows (VS2015)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(Visual-Studio-2015))
 
-
-On Windows (QT Creator) :
-
-* Open FireNET.pro
-* Configure project
-* Select Debug or Release build type
-* Build project
-
-On Windows (Visual Studio 2015) :
-
-* Install Qt5Package.vsix (see 3rd folder)
-* Open FireNET.sln
-* Go to Qt plugin settings and configure him
-* Set paths to QT inclusions in project settings
-* Choose type of building 
-* Build solution
+[Building on Linux (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Linux-(QT-Creator))
 
 # Using
 
@@ -48,17 +30,8 @@ On Windows :
 * Start FireNET.exe
 * Start SimpleClient.exe
 
-On Linux :
-
-* `$ cd .../3rd/bin/linux/redis/`
-* `$ make`
-* `$ src/redis-server`
-* `$ cd .../bin/linux/release`
-* `$ firenet`
-* `$ simpleclient`
-
 # WIKI
-Please see FireNET [WIKI](https://github.com/afrostalin/FireNET/wiki)
+Please see [FireNET WIKI](https://github.com/afrostalin/FireNET/wiki)
 
 # Examples
 
@@ -69,12 +42,9 @@ Please see FireNET [WIKI](https://github.com/afrostalin/FireNET/wiki)
 # TODO List
 
 * Add MongoDB
-* Add matchmaking system
 * Add game server synchronization with master-server
 * Add compression for big packets 
 
 # Plans
 
-* The database "Redis" has a huge speed because all the data is stored in ram memory, but this advantage follows its main drawback - the possibility of loss of piece of data in case of crash of the server. 
-There is a mechanism called "snapshots" in this database, which periodically asynchronously saves data to disk. 
-It is planned to use a bunch of MongoDB and Redis where Redis will serve as a "hot" cache, providing the speed and MongoDB will be the main database.
+* The database "Redis" has a huge speed because all the data is stored in ram memory, but this advantage follows its main drawback - the possibility of loss of piece of data in case of crash of the server. There is a mechanism called "snapshots" in this database, which periodically asynchronously saves data to disk. It is planned to use a bunch of MongoDB and Redis where Redis will serve as a "hot" cache, providing the speed and MongoDB will be the main database.
