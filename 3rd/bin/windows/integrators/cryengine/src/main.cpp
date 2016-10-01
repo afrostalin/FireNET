@@ -295,6 +295,12 @@ bool CopyCryEngineFix(QString cryEngineFolder)
     QFile file7 (cryEngineFolder + "/bin/win_x64/platforms/qminimal.dll");
     QFile file8 (cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll");
 
+    // Files for Dedicated Server
+    QFile file9 (cryEngineFolder + "/bin/win_x64_dedicated/Qt5Core.dll");
+    QFile file10 (cryEngineFolder + "/bin/win_x64_dedicated/Qt5Network.dll");
+    QFile file11 (cryEngineFolder + "/bin/win_x64_dedicated/libeay32.dll");
+    QFile file12 (cryEngineFolder + "/bin/win_x64_dedicated/ssleay32.dll");
+
     qInfo() << "Removing old libraries...";
 
     file0.remove();
@@ -308,6 +314,12 @@ bool CopyCryEngineFix(QString cryEngineFolder)
     file7.remove();
     file8.remove();
 
+    // Files for Dedicated Server
+    file9.remove();
+    file10.remove();
+    file11.remove();
+    file12.remove();
+
     qInfo() << "Copying new libraries...";
 
     if(QFile::copy("CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64/libeay32.dll") &&
@@ -318,7 +330,12 @@ bool CopyCryEngineFix(QString cryEngineFolder)
             QFile::copy("CryEngineFix/Qt5Widgets.dll", cryEngineFolder + "/bin/win_x64/Qt5Widgets.dll") &&
             QFile::copy("CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64/ssleay32.dll") &&
             QFile::copy("CryEngineFix/platforms/qminimal.dll", cryEngineFolder + "/bin/win_x64/platforms/qminimal.dll") &&
-            QFile::copy("CryEngineFix/platforms/qwindows.dll", cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll"))
+            QFile::copy("CryEngineFix/platforms/qwindows.dll", cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll") &&
+
+             QFile::copy("CryEngineFix/Qt5Core.dll", cryEngineFolder + "/bin/win_x64_dedicated/Qt5Core.dll") &&
+             QFile::copy("CryEngineFix/Qt5Network.dll", cryEngineFolder + "/bin/win_x64_dedicated/Qt5Network.dll") &&
+             QFile::copy("CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64_dedicated/libeay32.dll") &&
+             QFile::copy("CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64_dedicated/ssleay32.dll"))
     {
         qInfo() << "Libraries copyed!";
         return true;
