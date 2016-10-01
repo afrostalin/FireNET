@@ -7,6 +7,8 @@
 
 void CXmlWorker::ReadXmlData(const char* data)
 {
+	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Parsing message data....");
+
 	QXmlStreamReader xml(data);
 
 	xml.readNext();
@@ -19,8 +21,6 @@ void CXmlWorker::ReadXmlData(const char* data)
 		{
 			if (xml.name() == "result")
 			{
-				//gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Parsing xml data....");
-
 				QXmlStreamAttributes attributes = xml.attributes();
 				QString type = attributes.value("type").toString();
 
@@ -32,6 +32,8 @@ void CXmlWorker::ReadXmlData(const char* data)
 					onRegisterComplete(data);
 				if (type == "profile_data")
 					onProfileDataRecived(data);
+				if (type == "game_server_data")
+					onGameServerDataRecived(data);
 			}
 
 			if (xml.name() == "shop")
@@ -48,6 +50,8 @@ void CXmlWorker::ReadXmlData(const char* data)
 
 			if (xml.name() == "online_status")
 				onFriendStatusUpdated(data);
+
+			return;
 		}
 	}
 }
@@ -251,6 +255,20 @@ void CXmlWorker::onError(const char* data)
 						args.AddArgument("@serverError");
 					if (reason == "2")
 						args.AddArgument("@friendNotFound");
+
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+
+					return;
+				}
+
+				if (type == "get_game_server_failed")
+				{
+					SUIArguments args;
+
+					if (reason == "0")
+						args.AddArgument("@noAnyServerOnline");
+					if (reason == "1")
+						args.AddArgument("@serverNotFound");
 
 					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
 
@@ -643,6 +661,54 @@ void CXmlWorker::onFriendStatusUpdated(const char * data)
 				gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Failed update friend status, because some values empty!");
 				return;
 			}
+		}
+	}
+}
+
+void CXmlWorker::onGameServerDataRecived(const char * data)
+{
+	QXmlStreamReader xml(data);
+	xml.readNext();
+	while (!xml.atEnd() && !xml.hasError())
+	{
+		xml.readNext();
+
+		if (xml.name() == "data")
+		{
+			QXmlStreamAttributes attributes = xml.attributes();
+
+			QString serverName = attributes.value("name").toString();
+			QString serverIp = attributes.value("ip").toString();
+			int serverPort = attributes.value("port").toInt();
+			QString mapName = attributes.value("map").toString();
+			QString gamerules = attributes.value("gamerules").toString();
+			int online = attributes.value("online").toInt();
+			int maxPlayers = attributes.value("maxPlayers").toInt();
+
+			if (serverName.isEmpty() || serverIp.isEmpty() ||
+				serverPort == 0 || mapName.isEmpty() || gamerules.isEmpty())
+			{
+				gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Game server data wrong or empty!!!");
+				return;
+			}
+
+			gEnv->pLog->Log(TITLE ONLINE_TITLE "Recived game server data!");
+			gEnv->pLog->Log(TITLE ONLINE_TITLE "Server name = %s, ip = %s, port = %d, map = %s, gamerules = %s, online = %d, maxPlayers = %d", serverName.toStdString().c_str(), serverIp.toStdString().c_str(), serverPort, mapName.toStdString().c_str(), gamerules.toStdString().c_str(), online, maxPlayers);
+
+			ICVar* pClServerIp = gEnv->pConsole->GetCVar("cl_serveraddr");
+			ICVar* pClServerPort = gEnv->pConsole->GetCVar("cl_serverport");
+
+			if (pClServerIp && pClServerPort)
+			{
+				gEnv->pLog->Log(TITLE ONLINE_TITLE "Set cl_server.... parametres");
+
+				pClServerIp->Set(serverIp.toStdString().c_str());
+				pClServerPort->Set(serverPort);
+
+				gEnv->pLog->Log(TITLE ONLINE_TITLE "New cl_server.... parametres : address = %s , port = %d", pClServerIp->GetString(), pClServerPort->GetIVal());
+			}
+
+			return;
 		}
 	}
 }

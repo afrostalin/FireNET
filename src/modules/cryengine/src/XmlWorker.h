@@ -21,6 +21,7 @@ private:
 	void onChatMessageRecived(const char* data);
 	void onInvite(const char* data);
 	void onFriendStatusUpdated(const char* data);
+	void onGameServerDataRecived(const char* data);
 private:
 	void UpdateFriendList();
 };
