@@ -185,7 +185,8 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
-    qCritical() << "[TcpConnection] SocketError : " << error;
+    qWarning() << "[TcpConnection] SocketError : " << error;
+	close();
 }
 
 void TcpConnection::close()
