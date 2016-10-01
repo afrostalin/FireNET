@@ -990,7 +990,6 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	}
 }
 
-
 void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 {
 	QXmlStreamReader xml(bytes);
@@ -1059,6 +1058,134 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 
 			qDebug() << "[ClientQuerys] Game server [" << serverName << "] registered!";
 			qDebug() << "[TcpConnection] Connected game servers count = " << vServers.size();
+
+			return;
+		}
+	}
+}
+
+void ClientQuerys::onGetGameServer(QByteArray & bytes)
+{
+	if (clientProfile->uid <= 0)
+	{
+		qWarning() << "[ClientQuerys] Client can't get game server without authorization!!!";
+		return;
+	}
+
+	if (vServers.size() == 0)
+	{
+		qWarning() << "[ClientQuerys] Not any online servers";
+
+		// Send error to client
+		QString result = "<error type='get_game_server_failed' reason = '0'/>";
+		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+		return;
+	}
+
+	QXmlStreamReader xml(bytes);
+	xml.readNext();
+	while (!xml.atEnd() && !xml.hasError())
+	{
+		xml.readNext();
+
+		if (xml.name() == "data")
+		{
+			QXmlStreamAttributes attributes = xml.attributes();
+
+			QString map = attributes.value("map").toString();
+			QString gamerules = attributes.value("gamerules").toString();
+			QString serverName = attributes.value("name").toString();
+
+			bool byMap = false;
+			bool byGameRules = false;
+			bool byName = false;
+
+			if (!map.isEmpty())
+				byMap = true;
+
+			if (!gamerules.isEmpty() && !byMap)
+				byGameRules = true;
+
+			if (!serverName.isEmpty() && !byMap && !byGameRules)
+				byName = true;
+
+			QVector<SGameServer>::iterator it;
+			for (it = vServers.begin(); it != vServers.end(); ++it)
+			{
+				if (byMap)
+				{
+					qDebug() << "[ClientQuerys] Searching server by map " << map;
+
+					if (it->map == "Multiplayer/" + map)
+					{
+						qDebug() << "[ClientQuerys] Server found";
+
+						QString result = "<result type='game_server_data'><data name = '" + it->name +
+							"' ip = '" + it->ip +
+							"' port = '" + QString::number(it->port) +
+							"' map = '" + it->map +
+							"' gamerules = '" + it->gamerules +
+							"' online = '" + QString::number(it->online) +
+							"' maxPlayers = '" + QString::number(it->maxPlayers) + "'/></result>"; 
+
+						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+						return;
+					}
+				}
+
+				if (byGameRules)
+				{
+					qDebug() << "[ClientQuerys] Searching server by gamerules " << gamerules;
+
+					if (it->gamerules == gamerules)
+					{
+						qDebug() << "[ClientQuerys] Server found";
+
+						QString result = "<result type='game_server_data'><data name = '" + it->name +
+							"' ip = '" + it->ip +
+							"' port = '" + QString::number(it->port) +
+							"' map = '" + it->map +
+							"' gamerules = '" + it->gamerules +
+							"' online = '" + QString::number(it->online) +
+							"' maxPlayers = '" + QString::number(it->maxPlayers) + "'/></result>";
+
+						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+						return;
+					}
+				}
+
+				if (byName)
+				{
+					qDebug() << "[ClientQuerys] Searching server by server name " << serverName;
+
+					if (it->name == serverName)
+					{
+						qDebug() << "[ClientQuerys] Server found";
+
+						QString result = "<result type='game_server_data'><data name = '" + it->name +
+							"' ip = '" + it->ip +
+							"' port = '" + QString::number(it->port) +
+							"' map = '" + it->map +
+							"' gamerules = '" + it->gamerules +
+							"' online = '" + QString::number(it->online) +
+							"' maxPlayers = '" + QString::number(it->maxPlayers) + "'/></result>";
+
+						pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+						return;
+					}
+				}
+			}
+
+
+			qDebug() << "[ClientQuerys] Server not found!";
+
+			// Send error to client
+			QString result = "<error type='get_game_server_failed' reason = '1'/>";
+			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
 			return;
 		}

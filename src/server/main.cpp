@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	QFile::remove(logFileName);
 	m_logFile.reset(new QFile(logFileName));
 	m_logFile.data()->open(QFile::Append | QFile::Text);
-	qInstallMessageHandler(messageHandler);
+//	qInstallMessageHandler(messageHandler);
 
 
 	// Reading server config
@@ -96,7 +96,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 	}
 	case QtDebugMsg:
 	{
-		if (logLevel == 2)
+		if (logLevel >= 2)
 		{
 			completeMsg = dataTime + "[DEBAG] " + msg;
 		}

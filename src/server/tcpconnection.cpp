@@ -133,6 +133,11 @@ void TcpConnection::readyRead()
 				// Game servers
 				if (type == "register_game_server")
 					pQuery->onGameServerRegister(bytes);
+				if (type == "get_game_server")
+					pQuery->onGetGameServer(bytes);
+
+
+				return;
 
             }
 
