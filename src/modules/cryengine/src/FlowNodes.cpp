@@ -1467,14 +1467,24 @@ namespace FireNET
 									pEntity->Hide(true);
 							}
 
-							pEntity->LoadCharacter(0, GetPortString(pActInfo, EIP_Model), 0);
+							if (pEntity->LoadCharacter(0, GetPortString(pActInfo, EIP_Model), 0) != -1)
+								gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Player model loaded");
+							else
+								gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Failed load player model !!!");
 						}
 					}
 
 					if (pEntity == NULL)
+					{
 						ActivateOutput(pActInfo, EOP_Failed, true);
+						gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Failed spawn player model !!!");
+					}
 					else
+					{
 						ActivateOutput(pActInfo, EOP_Succeeded, pEntity->GetId());
+						gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Player model spawned on %.f, %.f, %.f", pos.x, pos.y, pos.z);
+					}
+
 					ActivateOutput(pActInfo, EOP_Done, true);
 				}
 			}

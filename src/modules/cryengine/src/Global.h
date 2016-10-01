@@ -10,7 +10,7 @@
 #include "XmlWorker.h"
 #include "Network.h"
 
-#define TITLE "[FireNET plugin] "
+#define TITLE "[FireNET] "
 #define ONLINE_TITLE "[ONLINE] "
 
 struct SFriend

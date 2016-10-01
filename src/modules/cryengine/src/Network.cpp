@@ -101,3 +101,8 @@ void CNetwork::onDisconnected()
 	args.AddArgument("@connectionLost");
 	gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
 }
+
+void CNetwork::CloseConnection()
+{
+	m_socket->close();
+}

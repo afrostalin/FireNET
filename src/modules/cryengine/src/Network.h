@@ -22,6 +22,7 @@ private:
 	QSslSocket* m_socket;
 public:
 	void ConnectToServer();
+	void CloseConnection();
 	void SendQuery(QByteArray data);
 };
 
