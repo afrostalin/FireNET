@@ -15,6 +15,7 @@
 #include <QLoggingCategory>
 
 QScopedPointer<QFile> m_logFile;
+QByteArray logBuffer;
 int logLevel;
 
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
@@ -39,6 +40,7 @@ int main(int argc, char *argv[])
 	m_logFile.reset(new QFile(logFileName));
 	m_logFile.data()->open(QFile::Append | QFile::Text);
 	qInstallMessageHandler(messageHandler);
+
 
 	// Reading server config
 	qInfo() << "[Main] Reading server configuration...";
@@ -80,27 +82,23 @@ int main(int argc, char *argv[])
 
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
-	QTextStream out(m_logFile.data());
 	QTextStream consoleOut(stdout);
+	QTextStream out(m_logFile.data());
+	QString dataTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
+	QString completeMsg;
 
 	switch (type)
 	{
 	case QtInfoMsg:
 	{
-		out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-		out << "[INFO] ";
-		out << ": " << msg << endl;
-		consoleOut << "[INFO] " << msg << endl;
+		completeMsg = dataTime + "[INFO] " + msg;
 		break;
 	}
 	case QtDebugMsg:
 	{
 		if (logLevel == 2)
 		{
-			out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-			out << "[DEBAG] ";
-			out << ": " << msg << endl;
-			consoleOut << "[DEBAG] " << msg << endl;
+			completeMsg = dataTime + "[DEBAG] " + msg;
 		}
 
 		break;
@@ -109,31 +107,36 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 	{
 		if (logLevel > 0)
 		{
-			out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-			out << "[WARNING] ";
-			out << ": " << msg << endl;
-			consoleOut << "[WARNING] " << msg << endl;
+			completeMsg = dataTime + "[WARNING] " + msg;
 		}
 		break;
 	}
 	case QtCriticalMsg:
 	{
-		out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-		out << "[CRITICAL] ";
-		out << ": " << msg << endl;
-		consoleOut << "[CRITICAL] " << msg << endl;
+		completeMsg = dataTime + "[CRITICAL] " + msg;
 		break;
 	}
 	case QtFatalMsg:
 	{
-		out << QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz ");
-		out << "[FATAL] ";
-		out << ": " << msg << endl;
-		consoleOut << "[FATAL] " << msg << endl;
+		completeMsg = dataTime + "[FATAL] " + msg;
 		break;
 	}
+	}
 
-	out.flush();
-	consoleOut.flush();
+	if (!completeMsg.isEmpty())
+	{
+		consoleOut << completeMsg << endl;
+		logBuffer += completeMsg + "\n";
+
+		// We need some timeout to log buffer to file
+		if (logBuffer.size() > 200)
+		{
+			out << logBuffer;
+
+			logBuffer.clear();
+			out.flush();
+		}
+
+		consoleOut.flush();
 	}
 }
