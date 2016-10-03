@@ -1,4 +1,4 @@
-// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright ï¿½ 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
 #include "tcpserver.h"
@@ -24,15 +24,11 @@ int main(int argc, char *argv[])
 {
 	QCoreApplication *a = new QCoreApplication(argc, argv);
 
+	QString buildVersion = "2.0.1";
+	int buildNumber = 1;
+
 	QCoreApplication::setApplicationName("FireNET");
-	QCoreApplication::setApplicationVersion("2.0");
-
-	qInfo() << "*******************************************************************************";
-	qInfo() << "*                                FireNET 2.0                                  *";
-	qInfo() << "*                         Created by Ilya Chernetsov                          *";
-	qInfo() << "*                      Copyright (c) All rights reserved                      *";
-	qInfo() << "*******************************************************************************";
-
+	QCoreApplication::setApplicationVersion(buildVersion);
 
 	// Init logging
 	QString logFileName = "FireNET.log";
@@ -41,6 +37,9 @@ int main(int argc, char *argv[])
 	m_logFile.data()->open(QFile::Append | QFile::Text);
 //	qInstallMessageHandler(messageHandler);
 
+	qInfo() << "[Server info] FireNET" << buildVersion << " Build" << buildNumber;
+	qInfo() << "[Server info] Created by Ilya Chernetsov";
+	qInfo() << "[Server info] Copyright (c) All rights reserved";
 
 	// Reading server config
 	qInfo() << "[Main] Reading server configuration...";
@@ -140,3 +139,10 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 		consoleOut.flush();
 	}
 }
+
+
+
+
+
+
+

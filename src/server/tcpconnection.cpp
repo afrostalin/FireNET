@@ -45,7 +45,7 @@ void TcpConnection::disconnected()
 			vClients.erase(it);
 
 			// If it is game server - delete him from servers list
-			if (it->isGameServer == true)
+			if (it->isGameServer)
 			{
 				QVector<SGameServer>::iterator gsIt;
 				for (gsIt = vServers.begin(); gsIt != vServers.end(); ++gsIt)

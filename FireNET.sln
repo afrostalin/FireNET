@@ -19,4 +19,14 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(AutomaticVersions) = postSolution
+		AssemblyInfoFilePath.Debug|x64 = F:\_Development\FireNET\bin\WIN64\debug
+		PrimaryVersionType.Debug|x64 = AssemblyFileVersionAttribute
+		UpdateAssemblyVersion.Debug|x64 = True
+		UpdateAssemblyFileVersion.Debug|x64 = True
+		UpdateAssemblyInfoVersion.Debug|x64 = True
+		AssemblyVersionSettings.Debug|x64 = Increment.Increment.Increment.None
+		AssemblyFileVersionSettings.Debug|x64 = Increment.Increment.Increment.None
+		AssemblyInfoVersionSettings.Debug|x64 = Increment.Increment.Increment.None
+	EndGlobalSection
 EndGlobal
