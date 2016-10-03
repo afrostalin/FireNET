@@ -30,6 +30,7 @@ public:
 		eUIGE_OnGameInviteRecived,
 		eUIGE_OnClanInviteRecived,
 		eUIGE_OnFriendUpdateStatus,
+		eUIGE_OnMatchmakingSuccess,
 	};
 	void SendEvent(EUIGameEvents event, const SUIArguments& args);
 	void SendEmptyEvent(EUIGameEvents);
