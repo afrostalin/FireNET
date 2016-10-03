@@ -11,20 +11,36 @@ void _NetworkThread()
 	gCryModule->pNetwork = new CNetwork;
 
 	if (gCryModule->pNetwork != nullptr)
-		gCryModule->pNetwork->ConnectToServer();
+		gCryModule->pNetwork->Init();
 	else
 		return;
 }
 
 void ConnectToFireNET(IConsoleCmdArgs* pArgs)
 {
-	if (!gCryModule->bConnected)
+	if (gCryModule->pNetwork != nullptr)
 	{
-		gEnv->pLog->LogWarning(TITLE "Connecting to FireNET...");
-
-		std::thread nerworkThread(_NetworkThread);
-		nerworkThread.detach();
+		if (gCryModule->pNetwork->isInit())
+			gCryModule->pNetwork->ConnectToServer();
+		else
+			gEnv->pLog->LogError(TITLE "Can't connect to server, because network thread not init!");
 	}
+	else
+	{
+		// First init network thread
+		std::thread networkThread(_NetworkThread);
+		networkThread.detach();
+	}
+}
+
+void DisconnectFromFireNET(IConsoleCmdArgs* pArgs)
+{
+	if (gCryModule->pNetwork != nullptr && gCryModule->bConnected)
+	{
+		gCryModule->pNetwork->CloseConnection();
+	}
+	else
+		gEnv->pLog->LogError(TITLE "Can't diconnect to server, because you not connected!");
 }
 
 void RegisterGameServer(IConsoleCmdArgs* pArgs)
@@ -84,6 +100,7 @@ bool CModuleCVars::RegisterCComands()
 	if(gEnv->pConsole)
 	{
 		gEnv->pConsole->AddCommand("firenet_connect", ConnectToFireNET, VF_NULL, "Connect to FireNET");
+		gEnv->pConsole->AddCommand("firenet_disconnect",DisconnectFromFireNET, VF_NULL, "Disconnect from FireNET");
 		gEnv->pConsole->AddCommand("firenet_reg_gs", RegisterGameServer, VF_NULL, "Register game server in FireNET");
 		return true;
 	}
