@@ -21,9 +21,13 @@ public slots:
 private:
 	QSslSocket* m_socket;
 public:
+	void Init();
 	void ConnectToServer();
 	void CloseConnection();
 	void SendQuery(QByteArray data);
+	bool isInit() { return bInit; }
+private:
+	bool bInit; 
 };
 
 #endif

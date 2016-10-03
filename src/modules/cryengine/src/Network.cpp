@@ -8,20 +8,16 @@
 CNetwork::CNetwork(QObject *parent) : QObject(parent)
 {
 	m_socket = nullptr;
+	bInit = false;
 }
 
-void CNetwork::ConnectToServer()
+void CNetwork::Init()
 {
-	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Starting network service...");
+	gEnv->pLog->LogAlways(TITLE  "Init network...");
 
 	int argc = 0;
 	char* argv[1] = {};
 	QCoreApplication networker(argc, argv);
-
-	QString adrress = gEnv->pConsole->GetCVar("firenet_ip")->GetString();
-	int port = gEnv->pConsole->GetCVar("firenet_port")->GetIVal();
-
-	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Connecting to FireNET...");
 
 	QByteArray certificate = "-----BEGIN CERTIFICATE-----\n"
 		"MIIDCDCCAnGgAwIBAgIJAPSN9sMotF78MA0GCSqGSIb3DQEBCwUAMIGcMQswCQYD\n"
@@ -42,19 +38,52 @@ void CNetwork::ConnectToServer()
 		"lw8HKEzR62YmM2xmNJwi3nNTBMaXh9bJMzwQfyIO1HIUno9S6Wn1WHpfGc/zU5pJ\n"
 		"Y5e33lAhe2n21Uul\n"
 		"-----END CERTIFICATE-----\n";
-	QSslCertificate cert;
-	QList<QSslCertificate> SslCertificate = cert.fromData(certificate);
+
+	QSslCertificate cert(certificate);
 
 	m_socket = new QSslSocket(this);
-	m_socket->addCaCertificates(SslCertificate);
-	m_socket->connectToHostEncrypted(adrress, port);
+	m_socket->addCaCertificate(cert);
 
 	connect(m_socket, &QSslSocket::encrypted, this, &CNetwork::onConnectedToServer);
 	connect(m_socket, &QSslSocket::readyRead, this, &CNetwork::onReadyRead);
 	connect(m_socket, &QSslSocket::disconnected, this, &CNetwork::onDisconnected);
 	connect(m_socket, &QSslSocket::bytesWritten, this, &CNetwork::onBytesWritten);
 
+	bInit = true;
+
+	gEnv->pLog->LogAlways(TITLE  "Init complete. Start connecting...");
+	ConnectToServer();
+
 	networker.exec();
+}
+
+void CNetwork::ConnectToServer()
+{
+	if (gCryModule->bConnected)
+	{
+		gEnv->pLog->LogError(TITLE  "Can't connect to FireNET because you alredy connected!");
+		return;
+	}
+
+	if (bInit)
+	{
+		QString adrress = gEnv->pConsole->GetCVar("firenet_ip")->GetString();
+		int port = gEnv->pConsole->GetCVar("firenet_port")->GetIVal();
+
+		if (!adrress.isEmpty() && port != 0)
+		{
+			gEnv->pLog->LogAlways(TITLE  "Connecting to FireNET...");
+
+			m_socket->connectToHostEncrypted(adrress, port);
+		}
+		else
+		{
+			gEnv->pLog->LogError(TITLE  "Can't connect to FireNET because network settings is wrong!");
+			return;
+		}
+	}
+	else
+		gEnv->pLog->LogError(TITLE  "Can't connect to FireNET because network not init!");
 }
 
 void CNetwork::SendQuery(QByteArray data)
@@ -62,12 +91,12 @@ void CNetwork::SendQuery(QByteArray data)
 	if (m_socket != nullptr)
 		m_socket->write(data);
 	else
-		gEnv->pLog->LogError(TITLE ONLINE_TITLE "Can't send query to FireNET because you not conneted!!!");
+		gEnv->pLog->LogWarning(TITLE  "Can't send query to FireNET because you not conneted!!!");
 }
 
 void CNetwork::onConnectedToServer()
 {
-	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Connection with FireNET establishment");
+	gEnv->pLog->LogAlways(TITLE  "Connection with FireNET establishment");
 	gCryModule->bConnected = true;
 	gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnConnectionEstablishment);
 }
@@ -77,7 +106,7 @@ void CNetwork::onReadyRead()
 	if (!m_socket)
 		return;
 
-	gEnv->pLog->Log(TITLE ONLINE_TITLE "Recived new message from FireNET");
+	gEnv->pLog->Log(TITLE  "Recived new message from FireNET");
 
 	QByteArray rawmessage;
 	rawmessage = m_socket->readAll();
@@ -89,12 +118,12 @@ void CNetwork::onBytesWritten(qint64 bytes)
 	if (!m_socket)
 		return;
 
-	gEnv->pLog->Log(TITLE ONLINE_TITLE "Message to FireNET sended");
+	gEnv->pLog->Log(TITLE  "Message to FireNET sended");
 }
 
 void CNetwork::onDisconnected()
 {
-	gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Connection with FireNET lost!!!");
+	gEnv->pLog->LogWarning(TITLE  "Connection with FireNET lost!!!");
 	gCryModule->bConnected = false;
 
 	SUIArguments args;

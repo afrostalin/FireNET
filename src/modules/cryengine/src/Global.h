@@ -11,7 +11,6 @@
 #include "Network.h"
 
 #define TITLE "[FireNET] "
-#define ONLINE_TITLE "[ONLINE] "
 
 struct SFriend
 {

@@ -16,7 +16,7 @@ void NetworkThread()
 	gCryModule->pNetwork = new CNetwork;
 
 	if (gCryModule->pNetwork != nullptr)
-		gCryModule->pNetwork->ConnectToServer();
+		gCryModule->pNetwork->Init();
 	else
 		return;
 }
@@ -80,8 +80,19 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Connect))
 				{
-					std::thread nerworkThread(NetworkThread);
-					nerworkThread.detach();
+					if (gCryModule->pNetwork != nullptr)
+					{
+						if (gCryModule->pNetwork->isInit())
+							gCryModule->pNetwork->ConnectToServer();
+						else
+							gEnv->pLog->LogError(TITLE "Can't connect to server, because network thread not init!");
+					}
+					else
+					{
+						// First init network thread
+						std::thread networkThread(NetworkThread);
+						networkThread.detach();
+					}
 				}
 			}
 			break;
@@ -1123,7 +1134,7 @@ namespace FireNET
 
 						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendRecived, args);
 
-						gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Add friend from friend list");
+						gEnv->pLog->LogAlways(TITLE  "Add friend from friend list");
 					}
 				}
 			}
@@ -1468,21 +1479,21 @@ namespace FireNET
 							}
 
 							if (pEntity->LoadCharacter(0, GetPortString(pActInfo, EIP_Model), 0) != -1)
-								gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Player model loaded");
+								gEnv->pLog->LogAlways(TITLE  "Player model loaded");
 							else
-								gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Failed load player model !!!");
+								gEnv->pLog->LogAlways(TITLE  "Failed load player model !!!");
 						}
 					}
 
 					if (pEntity == NULL)
 					{
 						ActivateOutput(pActInfo, EOP_Failed, true);
-						gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Failed spawn player model !!!");
+						gEnv->pLog->LogAlways(TITLE  "Failed spawn player model !!!");
 					}
 					else
 					{
 						ActivateOutput(pActInfo, EOP_Succeeded, pEntity->GetId());
-						gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Player model spawned on %.f, %.f, %.f", pos.x, pos.y, pos.z);
+						gEnv->pLog->LogAlways(TITLE  "Player model spawned on %.f, %.f, %.f", pos.x, pos.y, pos.z);
 					}
 
 					ActivateOutput(pActInfo, EOP_Done, true);

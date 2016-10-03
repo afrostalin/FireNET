@@ -15,7 +15,13 @@
 
 GamePlay_API void RegisterFlowNodes()
 {
-	gEnv->pLog->Log(TITLE "Register flownodes");
+	gEnv->pLog->Log(TITLE "Register flow nodes...");
+
+	/*if ()
+	{
+		gEnv->pLog->LogWarning(TITLE "It's dedicated server, not need register flow graph!");
+	return;
+	}*/
 
 	if (IFlowSystem* pFlow= gEnv->pGame->GetIGameFramework()->GetIFlowSystem())
 	{
@@ -25,12 +31,12 @@ GamePlay_API void RegisterFlowNodes()
 
 			if ( nTypeId != InvalidFlowNodeTypeId )
 			{
-				gEnv->pLog->Log( TITLE "Flownode class(%s) registered!", SAFESTR( pFactory->m_sClassName ));
+				gEnv->pLog->Log( TITLE "Flow node class(%s) registered!", SAFESTR( pFactory->m_sClassName ));
 			}
 
 			else
 			{
-				gEnv->pLog->LogError( TITLE "Flownode class(%s) couldn't register!", SAFESTR( pFactory->m_sClassName ) );
+				gEnv->pLog->LogError( TITLE "Flow node class(%s) couldn't register!", SAFESTR( pFactory->m_sClassName ) );
 			}
 		}
 	}
@@ -51,6 +57,7 @@ GamePlay_API void InitModule(SSystemGlobalEnvironment& gCryEnv)
 		// Register CVars, commands
 		gCryModule->pCVars->RegisterCVars();
 		gCryModule->pCVars->RegisterCComands();
+
 		gCryModule->pUIEvents->RegisterUIEvents();
 	}
 	else
