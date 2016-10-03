@@ -7,7 +7,7 @@
 
 void CXmlWorker::ReadXmlData(const char* data)
 {
-	gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Parsing message data....");
+	gEnv->pLog->LogAlways(TITLE  "Parsing message data....");
 
 	QXmlStreamReader xml(data);
 
@@ -24,7 +24,7 @@ void CXmlWorker::ReadXmlData(const char* data)
 				QXmlStreamAttributes attributes = xml.attributes();
 				QString type = attributes.value("type").toString();
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Result type = %s", type.toStdString().c_str());
+				gEnv->pLog->LogAlways(TITLE  "Result type = %s", type.toStdString().c_str());
 
 				if (type == "auth_complete")
 					onAuthComplete(data);
@@ -94,7 +94,7 @@ void CXmlWorker::onError(const char* data)
 			QString type = attributes.value("type").toString();
 			QString reason = attributes.value("reason").toString();
 
-			gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Error type = '%s' reason = '%s'", type.toStdString().c_str(), reason.toStdString().c_str());
+			gEnv->pLog->LogAlways(TITLE  "Error type = '%s' reason = '%s'", type.toStdString().c_str(), reason.toStdString().c_str());
 
 			if (!type.isEmpty() && !reason.isEmpty())
 			{
@@ -297,12 +297,12 @@ void CXmlWorker::onRegisterComplete(const char* data)
 			if (!uid.isEmpty())
 			{
 				gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnRegComplete);
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Register complete!");
+				gEnv->pLog->LogAlways(TITLE  "Register complete!");
 				return;
 			}
 			else
 			{
-				gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Register failed!");
+				gEnv->pLog->LogWarning(TITLE  "Register failed!");
 				return;
 			}
 		}
@@ -325,12 +325,12 @@ void CXmlWorker::onAuthComplete(const char* data)
 			if (!uid.isEmpty())
 			{
 				gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnLoginComplete);
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Authorization complete!");
+				gEnv->pLog->LogAlways(TITLE  "Authorization complete!");
 				return;
 			}
 			else
 			{
-				gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Authorization failed!");
+				gEnv->pLog->LogWarning(TITLE  "Authorization failed!");
 				return;
 			}
 		}
@@ -387,7 +387,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnProfileDataRecived, args);
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived profile data. Nickname = %s, Model = %s, Lvl = %d, XP = %d, Money = %d", nickname.toStdString().c_str(), model.toStdString().c_str(), lvl, xp, money);
+				gEnv->pLog->LogAlways(TITLE  "Recived profile data. Nickname = %s, Model = %s, Lvl = %d, XP = %d, Money = %d", nickname.toStdString().c_str(), model.toStdString().c_str(), lvl, xp, money);
 			}
 		}
 
@@ -417,7 +417,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnInventoryItemRecived, args);
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived inventory item. Name = %s, Icon = %s, Decription = %s", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str());
+				gEnv->pLog->LogAlways(TITLE  "Recived inventory item. Name = %s, Icon = %s, Decription = %s", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str());
 			}
 		}
 
@@ -441,7 +441,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 				m_profile->friends = m_profile->friends + "<friend name='" + friendName + "' uid='" + friendUid + "' status='" + friendStatus + "'/>";
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived friend. Name = %s, uid = %d, status = %d", friendName.toStdString().c_str(), friendUid.toInt(), friendStatus.toInt());
+				gEnv->pLog->LogAlways(TITLE  "Recived friend. Name = %s, uid = %d, status = %d", friendName.toStdString().c_str(), friendUid.toInt(), friendStatus.toInt());
 			}
 		}
 
@@ -463,7 +463,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnStatsRecived, args);
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived character statistic. Kills = %d, Deaths = %d, KD = %s", kills, deaths, kd.toStdString().c_str());
+				gEnv->pLog->LogAlways(TITLE  "Recived character statistic. Kills = %d, Deaths = %d, KD = %s", kills, deaths, kd.toStdString().c_str());
 			}
 		}
 
@@ -477,7 +477,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 				QString icon = attributes.value("icon").toString();
 				QString description = attributes.value("description").toString();
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived achievement . Name = %s, Icon = %s, Decription = %s", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str());
+				gEnv->pLog->LogAlways(TITLE  "Recived achievement . Name = %s, Icon = %s, Decription = %s", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str());
 
 			}
 		}
@@ -485,7 +485,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 	if (m_ItemsBuffer.size() != oldItemsCount)
 	{
-		gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Items list need update!");
+		gEnv->pLog->LogAlways(TITLE  "Items list need update!");
 
 		gCryModule->m_items.clear();
 		gCryModule->m_items = m_ItemsBuffer;
@@ -493,7 +493,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 	if (m_FriendsBuffer.size() != oldFriendCount)
 	{
-		gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Friend list need update!");
+		gEnv->pLog->LogAlways(TITLE  "Friend list need update!");
 		gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnFriendListNeedUpdate);
 
 		gCryModule->m_friends.clear();
@@ -530,7 +530,7 @@ void CXmlWorker::onShopItemsRecived(const char* data)
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnShopItemRecived, args);
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived shop item. Name = %s, Icon = %s, Description = %s, Cost = %d, MinLvl = %d", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str(), cost, minLvl);
+				gEnv->pLog->LogAlways(TITLE  "Recived shop item. Name = %s, Icon = %s, Description = %s, Cost = %d, MinLvl = %d", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str(), cost, minLvl);
 				return;
 			}
 		}
@@ -561,7 +561,7 @@ void CXmlWorker::onChatMessageRecived(const char * data)
 					args.AddArgument(from.toStdString().c_str());
 					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnGlobalChatMessageRecived, args);
 
-					gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived global chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());*/
+					gEnv->pLog->LogAlways(TITLE  "Recived global chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());*/
 					return;
 				}
 
@@ -574,7 +574,7 @@ void CXmlWorker::onChatMessageRecived(const char * data)
 					args.AddArgument(from.toStdString().c_str());
 					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnPrivateChatMessageRecived, args);
 
-					gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived private chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
+					gEnv->pLog->LogAlways(TITLE  "Recived private chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
 					return;
 				}
 				
@@ -597,7 +597,7 @@ void CXmlWorker::onInvite(const char * data)
 			QString type = attributes.value("type").toString();
 			QString from = attributes.value("from").toString();
 
-			gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Invite type = '%s' From = '%s'", type.toStdString().c_str(), from.toStdString().c_str());
+			gEnv->pLog->LogAlways(TITLE  "Invite type = '%s' From = '%s'", type.toStdString().c_str(), from.toStdString().c_str());
 
 			if (!type.isEmpty() && !from.isEmpty())
 			{
@@ -607,7 +607,7 @@ void CXmlWorker::onInvite(const char * data)
 					args.AddArgument(from.toStdString().c_str());
 					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendInviteRecived, args);
 
-					gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "Recived friend invite from (%s)", from.toStdString().c_str());
+					gEnv->pLog->LogAlways(TITLE  "Recived friend invite from (%s)", from.toStdString().c_str());
 
 					return;
 				}
@@ -653,12 +653,12 @@ void CXmlWorker::onFriendStatusUpdated(const char * data)
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendUpdateStatus, args);
 
-				gEnv->pLog->LogAlways(TITLE ONLINE_TITLE "<%s> change online status to <%d>", from.toStdString().c_str(), status);
+				gEnv->pLog->LogAlways(TITLE  "<%s> change online status to <%d>", from.toStdString().c_str(), status);
 				return;
 			}
 			else
 			{
-				gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Failed update friend status, because some values empty!");
+				gEnv->pLog->LogWarning(TITLE  "Failed update friend status, because some values empty!");
 				return;
 			}
 		}
@@ -688,24 +688,28 @@ void CXmlWorker::onGameServerDataRecived(const char * data)
 			if (serverName.isEmpty() || serverIp.isEmpty() ||
 				serverPort == 0 || mapName.isEmpty() || gamerules.isEmpty())
 			{
-				gEnv->pLog->LogWarning(TITLE ONLINE_TITLE "Game server data wrong or empty!!!");
+				gEnv->pLog->LogWarning(TITLE  "Game server data wrong or empty!!!");
 				return;
 			}
 
-			gEnv->pLog->Log(TITLE ONLINE_TITLE "Recived game server data!");
-			gEnv->pLog->Log(TITLE ONLINE_TITLE "Server name = %s, ip = %s, port = %d, map = %s, gamerules = %s, online = %d, maxPlayers = %d", serverName.toStdString().c_str(), serverIp.toStdString().c_str(), serverPort, mapName.toStdString().c_str(), gamerules.toStdString().c_str(), online, maxPlayers);
+			gEnv->pLog->Log(TITLE  "Recived game server data!");
+			gEnv->pLog->Log(TITLE  "Server name = %s, ip = %s, port = %d, map = %s, gamerules = %s, online = %d, maxPlayers = %d", serverName.toStdString().c_str(), serverIp.toStdString().c_str(), serverPort, mapName.toStdString().c_str(), gamerules.toStdString().c_str(), online, maxPlayers);
 
 			ICVar* pClServerIp = gEnv->pConsole->GetCVar("cl_serveraddr");
 			ICVar* pClServerPort = gEnv->pConsole->GetCVar("cl_serverport");
+			ICVar* pClNickname = gEnv->pConsole->GetCVar("cl_nickname");
 
 			if (pClServerIp && pClServerPort)
 			{
-				gEnv->pLog->Log(TITLE ONLINE_TITLE "Set cl_server.... parametres");
+				gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnMatchmakingSuccess);
+
+				gEnv->pLog->Log(TITLE  "Set cl_server.... parametres");
 
 				pClServerIp->Set(serverIp.toStdString().c_str());
 				pClServerPort->Set(serverPort);
+				pClNickname->Set(gCryModule->m_profile->nickname.toStdString().c_str());
 
-				gEnv->pLog->Log(TITLE ONLINE_TITLE "New cl_server.... parametres : address = %s , port = %d", pClServerIp->GetString(), pClServerPort->GetIVal());
+				gEnv->pLog->Log(TITLE  "New client parametres : address = %s , port = %d, nickname = %s", pClServerIp->GetString(), pClServerPort->GetIVal(), pClNickname->GetString());
 			}
 
 			return;
