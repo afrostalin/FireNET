@@ -9,7 +9,7 @@
 #include <QTextCodec>
 
 QString codeFolder = "/Code/GameSDK/GameDll";
-QString pluginIncludesFolder = "PluginLoader";
+QString pluginIncludesFolder = "cryengine_integrator_src/PluginLoader";
 
 bool UpdateUberFileList(QString cryEngineFolder)
 {
@@ -322,20 +322,20 @@ bool CopyCryEngineFix(QString cryEngineFolder)
 
     qInfo() << "Copying new libraries...";
 
-    if(QFile::copy("CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64/libeay32.dll") &&
-            QFile::copy("CryEngineFix/Qt5Core.dll", cryEngineFolder + "/bin/win_x64/Qt5Core.dll") &&
-            QFile::copy("CryEngineFix/Qt5Gui.dll", cryEngineFolder + "/bin/win_x64/Qt5Gui.dll") &&
-            QFile::copy("CryEngineFix/Qt5Network.dll", cryEngineFolder + "/bin/win_x64/Qt5Network.dll") &&
-            QFile::copy("CryEngineFix/Qt5OpenGL.dll", cryEngineFolder + "/bin/win_x64/Qt5OpenGL.dll") &&
-            QFile::copy("CryEngineFix/Qt5Widgets.dll", cryEngineFolder + "/bin/win_x64/Qt5Widgets.dll") &&
-            QFile::copy("CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64/ssleay32.dll") &&
-            QFile::copy("CryEngineFix/platforms/qminimal.dll", cryEngineFolder + "/bin/win_x64/platforms/qminimal.dll") &&
-            QFile::copy("CryEngineFix/platforms/qwindows.dll", cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll") &&
+    if(QFile::copy("cryengine_integrator_src/CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64/libeay32.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5Core.dll", cryEngineFolder + "/bin/win_x64/Qt5Core.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5Gui.dll", cryEngineFolder + "/bin/win_x64/Qt5Gui.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5Network.dll", cryEngineFolder + "/bin/win_x64/Qt5Network.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5OpenGL.dll", cryEngineFolder + "/bin/win_x64/Qt5OpenGL.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5Widgets.dll", cryEngineFolder + "/bin/win_x64/Qt5Widgets.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64/ssleay32.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/platforms/qminimal.dll", cryEngineFolder + "/bin/win_x64/platforms/qminimal.dll") &&
+            QFile::copy("cryengine_integrator_src/CryEngineFix/platforms/qwindows.dll", cryEngineFolder + "/bin/win_x64/platforms/qwindows.dll") &&
 
-             QFile::copy("CryEngineFix/Qt5Core.dll", cryEngineFolder + "/bin/win_x64_dedicated/Qt5Core.dll") &&
-             QFile::copy("CryEngineFix/Qt5Network.dll", cryEngineFolder + "/bin/win_x64_dedicated/Qt5Network.dll") &&
-             QFile::copy("CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64_dedicated/libeay32.dll") &&
-             QFile::copy("CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64_dedicated/ssleay32.dll"))
+             QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5Core.dll", cryEngineFolder + "/bin/win_x64_dedicated/Qt5Core.dll") &&
+             QFile::copy("cryengine_integrator_src/CryEngineFix/Qt5Network.dll", cryEngineFolder + "/bin/win_x64_dedicated/Qt5Network.dll") &&
+             QFile::copy("cryengine_integrator_src/CryEngineFix/libeay32.dll", cryEngineFolder + "/bin/win_x64_dedicated/libeay32.dll") &&
+             QFile::copy("cryengine_integrator_src/CryEngineFix/ssleay32.dll", cryEngineFolder + "/bin/win_x64_dedicated/ssleay32.dll"))
     {
         qInfo() << "Libraries copyed!";
         return true;
@@ -362,8 +362,8 @@ bool CopyFireNetLibraries(QString cryEngineFolder)
 
     qInfo() << "Copying new FireNET libraries...";
 
-    if(QFile::copy("../../../../../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64/FireNET.dll") &&
-            QFile::copy("../../../../../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET.dll"))
+    if(QFile::copy("../../../../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64/FireNET.dll") &&
+            QFile::copy("../../../../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET.dll"))
     {
         qInfo() << "FireNET libraries copyed!";
         return true;
