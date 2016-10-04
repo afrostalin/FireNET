@@ -16,25 +16,25 @@ void RedisConnector::run()
 {
 	if (Connect())
 	{
-		qInfo() << "[RedysConnector] Redis connected!";
+		qInfo() << "Redis connected!";
 
 		m_thread = QThread::currentThread();
 
-		qInfo() << "[RedysConnector] Redis work on " << m_thread;
+		qInfo() << "Redis work on " << m_thread;
 	}
 	else
 	{
-        qCritical() << "[RedysConnector] Failed connect to Redis! Database functions not be work!";
+        qCritical() << "Failed connect to Redis! Database functions not be work!";
 		return;
 	}
 }
 
 bool RedisConnector::Connect()
 {
-	qInfo()<< "[RedysConnector] Init qredisclient...";
+	qInfo()<< "Init qredisclient...";
     initRedisClient();
 
-	qInfo()<< "[RedysConnector] Create connection to local redis...";
+	qInfo()<< "Create connection to local redis...";
     RedisClient::ConnectionConfig config("127.0.0.1");
     connection = new RedisClient::Connection(config);
     connection->connect(false);
@@ -70,7 +70,7 @@ QString RedisConnector::SendSyncQuery(QString command, QString key, QString valu
 		}
 	}
     else
-        qCritical() << "[RedysConnector] RedisConnector::SendSyncQuery - Error!";
+        qCritical() << "RedisConnector::SendSyncQuery - Error!";
 
     return QString();
 }

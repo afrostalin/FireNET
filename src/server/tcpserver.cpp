@@ -18,7 +18,7 @@ void TcpServer::setMaxThreads(int maximum)
 {
     if(isListening())
     {
-        qWarning() << "[TcpServer] WARNING Max threads not changed, call setMaxThreads() before listen()";
+        qWarning() << "WARNING Max threads not changed, call setMaxThreads() before listen()";
         return;
     }
 
@@ -27,20 +27,20 @@ void TcpServer::setMaxThreads(int maximum)
 
 bool TcpServer::listen(const QHostAddress &address, quint16 port)
 {
-	qInfo() << "[TcpServer] Start listening on port " << port;
+	qInfo() << "Start listening on port " << port;
     startThreads();
     return QTcpServer::listen(address,port);
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    qDebug() << "[TcpServer] Incomming connection...";
+    qDebug() << "Incomming connection...";
 
     TcpThread *pThread = freeThread();
 
     if(!pThread)
     {
-        qCritical() << "[TcpServer] No free thread!";
+        qCritical() << "No free thread!";
         return;
     }
 
@@ -49,7 +49,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 void TcpServer::close()
 {
-	qInfo() << "[TcpServer] Closing server...";
+	qInfo() << "Closing server...";
     emit stop();
 
     m_threads.clear();
@@ -60,14 +60,14 @@ void TcpServer::close()
 
 void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray data)
 {
-	qDebug() << "[TcpServer] Send message to client. Original size = " << data.size();
+	qDebug() << "Send message to client. Original size = " << data.size();
 	socket->write(data);
 	socket->waitForBytesWritten(3);
 }
 
 void TcpServer::sendGlobalMessage(QByteArray data)
 {
-	qDebug() << "[TcpServer] Send message to all clients. Original size = " << data.size();
+	qDebug() << "Send message to all clients. Original size = " << data.size();
 
 	QVector<SClient>::iterator it;
 	for (it = vClients.begin(); it != vClients.end(); ++it)
@@ -79,7 +79,7 @@ void TcpServer::sendGlobalMessage(QByteArray data)
 
 void TcpServer::startThreads()
 {
-	qInfo() << "[TcpServer] Starting threads :" << m_pool->maxThreadCount();
+	qInfo() << "Starting threads :" << m_pool->maxThreadCount();
 
     for(int i = 0; i < m_pool->maxThreadCount(); i++)
     {
@@ -100,7 +100,7 @@ TcpThread *TcpServer::freeThread()
 {
     if(m_threads.count() < 1)
     {
-        qCritical() << "[TcpServer] No threads to run connection on!";
+        qCritical() << "No threads to run connection on!";
         return nullptr;
     }
 

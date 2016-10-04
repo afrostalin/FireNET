@@ -34,9 +34,9 @@ public:
     void onRegister(QByteArray &bytes);
     // Profile querys
     void onCreateProfile(QByteArray &bytes);
-    void onGetProfile(QByteArray &bytes);
+    void onGetProfile();
     // Shop querys
-    void onGetShopItems(QByteArray &bytes);
+    void onGetShopItems();
     void onBuyItem(QByteArray &bytes);
 	void onRemoveItem(QByteArray &bytes);
     // Friend system

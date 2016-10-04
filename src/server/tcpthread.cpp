@@ -18,7 +18,7 @@ TcpThread::~TcpThread()
 
 void TcpThread::run()
 {
-	qInfo() << "[TcpThread] Starting thread...";
+	qInfo() << "Starting thread...";
 	m_thread = QThread::currentThread();
 
 	m_loop = new QEventLoop();
@@ -27,7 +27,7 @@ void TcpThread::run()
 
 void TcpThread::accept(qint64 socketDescriptor, QThread *owner)
 {
-	qDebug() << "[TcpThread] Accepting new connection in " << m_thread;
+	qDebug() << "Accepting new connection in " << m_thread;
 
 	TcpConnection *connection = new TcpConnection();
 
@@ -59,14 +59,14 @@ void TcpThread::finished()
 {
 	if (!QObject::sender())
 	{
-		qCritical() << "[TcpThread] Sender is not a QObject*";
+		qCritical() << "Sender is not a QObject*";
 		return;
 	}
 
 	TcpConnection *connection = qobject_cast<TcpConnection*>(QObject::sender());
 	if (!connection)
 	{
-		qCritical() << "[TcpThread] Sender is not a TcpConnection*";
+		qCritical() << "Sender is not a TcpConnection*";
 		return;
 	}
 

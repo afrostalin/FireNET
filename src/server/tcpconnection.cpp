@@ -18,7 +18,8 @@ TcpConnection::~TcpConnection()
 
 void TcpConnection::connected()
 {
-    if(!m_socket) return;
+    if(!m_socket) 
+		return;
 
 	SClient client;
 	client.socket = m_socket;
@@ -30,12 +31,13 @@ void TcpConnection::connected()
 
 	pQuery->SetSocket(m_socket);
 	
-	qInfo() << "[TcpConnection] Connected clients count = " << vClients.size();
+	qInfo() << "Connected clients count = " << vClients.size();
 }
 
 void TcpConnection::disconnected()
 {
-	if (!m_socket) return;
+	if (!m_socket) 
+		return;
 
 	QVector<SClient>::iterator it;
 	for (it = vClients.begin(); it != vClients.end(); ++it)
@@ -53,13 +55,13 @@ void TcpConnection::disconnected()
 					if (gsIt->socket == m_socket)
 					{
 						vServers.erase(gsIt);
-						qInfo() << "[TcpConnection] Connected game servers count = " << vServers.size();
+						qInfo() << "Connected game servers count = " << vServers.size();
 						break;
 					}
 				}
 			}
 
-			qInfo() << "[TcpConnection] Connected clients count = " << vClients.size();
+			qInfo() << "Connected clients count = " << vClients.size();
 			break;
 		}
 	}
@@ -74,12 +76,12 @@ void TcpConnection::readyRead()
 
 	if (!pRedis->connectStatus)
 	{
-        qCritical() << "[ClientQuerys] Client can't use database functions without connection to Redis!!!";
+        qCritical() << "Client can't use database functions without connection to Redis!!!";
 		return;
 	}
 	QByteArray bytes;
 
-    qDebug() << "[TcpConnection] Read message from client...";
+    qDebug() << "Read message from client...";
 
 	bytes = m_socket->readAll();
 
@@ -98,7 +100,8 @@ void TcpConnection::readyRead()
                 QXmlStreamAttributes attributes = xml.attributes();
                 QString type = attributes.value("type").toString();
 
-                qDebug() << "[TcpConnection] Query type = " << type;
+                qDebug() << "Query type = " << type;
+				qDebug() << "Query data = " << bytes;
 
 				// Authorization
                 if(type == "auth")
@@ -109,10 +112,11 @@ void TcpConnection::readyRead()
                 if(type == "create_profile")
                     pQuery->onCreateProfile(bytes);
                 if(type == "get_profile")
-                    pQuery->onGetProfile(bytes);
-				// Items
+                    pQuery->onGetProfile();
+				// Shop
                 if(type == "get_shop_items")
-                    pQuery->onGetShopItems(bytes);
+                    pQuery->onGetShopItems();
+				// Items
                 if(type == "buy_item")
                     pQuery->onBuyItem(bytes);
 				if (type == "remove_item")
@@ -147,14 +151,16 @@ void TcpConnection::readyRead()
 
 void TcpConnection::bytesWritten(qint64 bytes)
 {
-    if(!m_socket) return;
-    //qDebug() << "[TcpConnection] Send message to client";
+    if(!m_socket) 
+		return;
+    qDebug() << "Message to client sended! Size = " << sizeof(bytes);
 }
 
 void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
 {
-    if(!m_socket) return;
-    //qDebug() << "[TcpConnection] Socket state changed";
+    if(!m_socket) 
+		return;
+    qDebug() << "Socket state changed to " << socketState;
 }
 
 void TcpConnection::accept(qint64 socketDescriptor)
@@ -163,7 +169,7 @@ void TcpConnection::accept(qint64 socketDescriptor)
 
 	if (!m_socket->setSocketDescriptor(socketDescriptor))
 	{
-		qCritical() << "[TcpConnection] Can't accept socket!";
+		qCritical() << "Can't accept socket!";
 		return;
 	}
 
@@ -182,7 +188,7 @@ void TcpConnection::accept(qint64 socketDescriptor)
 
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
 {
-	qCritical() << "[TcpConnection] Soket ssl error";
+	qCritical() << "Soket ssl error";
 	foreach(QSslError item, list) {
 		qDebug() << item.errorString();
 	}
@@ -190,7 +196,7 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
-    qWarning() << "[TcpConnection] SocketError : " << error;
+    qWarning() << "SocketError : " << error;
 	close();
 }
 
