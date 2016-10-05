@@ -153,7 +153,7 @@ void TcpConnection::bytesWritten(qint64 bytes)
 {
     if(!m_socket) 
 		return;
-    qDebug() << "Message to client sended! Size = " << sizeof(bytes);
+    qDebug() << "Message to client sended! Size = " << bytes;
 }
 
 void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)

@@ -25,7 +25,7 @@ ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
 	clientProfile->xp = 0;
 }
 
-QXmlStreamAttributes ClientQuerys::GetAttributesFromString(QString data)
+QXmlStreamAttributes ClientQuerys::GetAttributesFromString(QString &data)
 {
     QXmlStreamReader xml(data);
     QXmlStreamAttributes attributes;
@@ -42,6 +42,25 @@ QXmlStreamAttributes ClientQuerys::GetAttributesFromString(QString data)
     }
 
     return attributes;
+}
+
+QXmlStreamAttributes ClientQuerys::GetAttributesFromArray(QByteArray &bytes)
+{
+	QXmlStreamReader xml(bytes);
+	QXmlStreamAttributes attributes;
+
+	xml.readNext();
+	while (!xml.atEnd() && !xml.hasError())
+	{
+		xml.readNext();
+
+		if (xml.name() == "data")
+		{
+			return xml.attributes();
+		}
+	}
+
+	return attributes;
 }
 
 int ClientQuerys::GetUidBySocket(QSslSocket* socket)

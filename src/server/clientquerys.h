@@ -52,19 +52,23 @@ public:
 	void onGetGameServer(QByteArray &bytes);
 
 private:
-    bool UpdateProfile(QSslSocket* socket, SProfile* profile);
-	QXmlStreamAttributes GetAttributesFromString(QString data);	
-	int GetUidBySocket(QSslSocket* socket);
-	int GetUidByName(QString name);
-	SProfile* GetProfileByUid(int uid);
-	QSslSocket* GetSocketByUid(int uid);
-	SShopItem GetShopItemByName(QString name);
-	bool CheckAttributeInRow(QString source, QString tag, QString attribute, QString checkAttribute);
-	QString RemoveElementFromRow(QString source, QString element);
-	QString ProfileToString(SProfile* profile);
+	QXmlStreamAttributes GetAttributesFromString(QString &data);
+	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
 
+    bool UpdateProfile(QSslSocket* socket, SProfile* profile);
+	QString ProfileToString(SProfile* profile);
+	SProfile* GetProfileByUid(int uid);
 	void AcceptProfileToGlobalList(QSslSocket* socket, SProfile* profile, int status);
 
+	QSslSocket* GetSocketByUid(int uid);
+	int GetUidBySocket(QSslSocket* socket);
+
+	int GetUidByName(QString name);
+	
+	SShopItem GetShopItemByName(QString name);
+
+	bool CheckAttributeInRow(QString source, QString tag, QString attribute, QString checkAttribute);
+	QString RemoveElementFromRow(QString source, QString element);	
 private:
 	QSslSocket* m_socket;
 	SProfile* clientProfile;
