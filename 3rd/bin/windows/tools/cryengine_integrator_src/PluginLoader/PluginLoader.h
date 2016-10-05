@@ -26,6 +26,7 @@ public:
 	void ReloadPlugins();
 	void FreePlugins();
 	void(*pRegisterFlowNodes)(void);
+	void(*pSendRequest)(const char*);
 
 	HINSTANCE hndl;
 

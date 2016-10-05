@@ -12,6 +12,7 @@ CPLuginLoader::CPLuginLoader()
 	hndl = nullptr;
 	pInitModule = nullptr;
 	pRegisterFlowNodes = nullptr;
+	pSendRequest = nullptr;
 }
 
 CPLuginLoader::~CPLuginLoader()
@@ -29,8 +30,9 @@ void CPLuginLoader::LoadPlugin()
 	{
 		pInitModule = (void(*)(SSystemGlobalEnvironment&)) CryGetProcAddress(hndl, "InitModule");
 		pRegisterFlowNodes = (void(*)(void)) CryGetProcAddress(hndl, "RegisterFlowNodes");
+		pSendRequest = (void(*)(const char*)) CryGetProcAddress(hndl, "SendRequestToServer");
 
-		if (pInitModule != nullptr && pRegisterFlowNodes != nullptr)
+		if (pInitModule != nullptr && pRegisterFlowNodes != nullptr && pSendRequest != nullptr)
 		{
 			pInitModule(*gEnv);
 			CryLogAlways(PLUGIN_LOADED);

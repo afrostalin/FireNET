@@ -1,9 +1,9 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#ifndef _GamePlay_Module_H_
-#define _GamePlay_Module_H_
-#define GamePlay_API extern "C" __declspec(dllexport)
+#ifndef _FireNET_Module_H_
+#define _FireNET_Module_H_
+#define FireNET_API extern "C" __declspec(dllexport)
 #ifndef SAFESTR
 #define SAFESTR(x) (((const char*)x)?((const char*)x):"")
 #endif
@@ -13,7 +13,7 @@
 
 #include "Global.h"
 
-GamePlay_API void RegisterFlowNodes()
+FireNET_API void RegisterFlowNodes()
 {
 	gEnv->pLog->Log(TITLE "Register flow nodes...");
 
@@ -46,7 +46,7 @@ GamePlay_API void RegisterFlowNodes()
 	}
 }
 
-GamePlay_API void InitModule(SSystemGlobalEnvironment& gCryEnv)
+FireNET_API void InitModule(SSystemGlobalEnvironment& gCryEnv)
 {
 	gEnv = &gCryEnv;
 
@@ -62,6 +62,12 @@ GamePlay_API void InitModule(SSystemGlobalEnvironment& gCryEnv)
 	}
 	else
 		gEnv->pLog->LogError(TITLE "Failed init module!");
+}
+
+FireNET_API void SendRequestToServer(const char* message)
+{
+	if (gCryModule->pNetwork != nullptr)
+		gCryModule->pNetwork->SendQuery(message);
 }
 
 #endif
