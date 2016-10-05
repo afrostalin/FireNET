@@ -24,7 +24,7 @@ bool UpdateFireNetSolution(QString qtFolder)
             QByteArray textBuffer;
             int lineNumber = 0;
 
-            QString paste0 = "      <AdditionalIncludeDirectories>.;..\\..\\3rd\\includes;..\\..\\3rd\\includes\\libssh2;" +
+            QString paste0 = "      <AdditionalIncludeDirectories>.;..\\..\\3rd\\includes;..\\..\\3rd\\includes\\cutelogger\\includes;..\\..\\3rd\\includes\\libssh2;" +
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include;" +
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include\\QtNetwork;" +
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include\\QtCore;"  +
