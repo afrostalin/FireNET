@@ -48,29 +48,25 @@ QString RedisConnector::SendSyncQuery(QString command, QString key, QString valu
 {
 	RedisClient::Response r;
 
-    if(connectStatus && connection != nullptr)
-    {
+	if (connectStatus && connection != nullptr)
+	{
 		if (command == "SET")
 		{
 			r = connection->commandSync(command, key, value);
 			return r.getValue().toString();
 		}
-		else
-		{
-			if (command == "GET")
-			{
-				r = connection->commandSync(command, key);
-				return r.getValue().toString();
-			}
-			else
-			{
-				r = connection->commandSync(command);
-				return r.getValue().toString();
-			}
-		}
-	}
-    else
-        qCritical() << "RedisConnector::SendSyncQuery - Error!";
 
-    return QString();
+		if (command == "GET" || command == "keys")
+		{
+			r = connection->commandSync(command, key);
+			return r.getValue().toString();
+		}
+
+		r = connection->commandSync(command);
+		return r.getValue().toString();
+	}
+	else
+		qCritical() << "RedisConnector::SendSyncQuery - Error!";
+
+	return QString();
 }

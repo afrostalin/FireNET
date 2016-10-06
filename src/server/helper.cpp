@@ -5,6 +5,7 @@
 #include <qdatastream.h>
 #include "global.h"
 #include "tcpserver.h"
+#include "dbworker.h"
 
 ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
 {
@@ -23,25 +24,6 @@ ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
 	clientProfile->nickname = "";
 	clientProfile->stats = "";
 	clientProfile->xp = 0;
-}
-
-QXmlStreamAttributes ClientQuerys::GetAttributesFromString(QString &data)
-{
-    QXmlStreamReader xml(data);
-    QXmlStreamAttributes attributes;
-
-    xml.readNext();
-    while (!xml.atEnd() && !xml.hasError())
-    {
-        xml.readNext();
-
-        if (xml.name() == "data")
-        {
-            return xml.attributes();
-        }
-    }
-
-    return attributes;
 }
 
 QXmlStreamAttributes ClientQuerys::GetAttributesFromArray(QByteArray &bytes)
@@ -82,22 +64,9 @@ int ClientQuerys::GetUidBySocket(QSslSocket* socket)
     return uid;
 }
 
-int ClientQuerys::GetUidByName(QString name)
-{
-	QString key = "nicknames:" + name;
-	QString uid = pRedis->SendSyncQuery("GET", key, "");
-
-	if (!uid.isEmpty())
-	{
-		return uid.toInt();
-	}
-
-	return 0;
-}
-
 bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
 {
-	if (!pRedis->connectStatus)
+	if (!gEnv->pRedis->connectStatus)
     {
         qCritical() << "Can't update profile, because Redis not connected!";
         return false;
@@ -116,17 +85,12 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
         "<stats>" + profile->stats + "</stats>"
         "</data>";
 
-    // Check profile is there in database
-    QString key = "profiles:" + QString::number(profile->uid);
-    QString buff = pRedis->SendSyncQuery("GET", key, "");
 
-    if (!buff.isEmpty())
+	DBWorker* pDataBase = gEnv->pDataBase;
+
+    if (pDataBase->ProfileExists(profile->nickname))
     {
-        buff.clear();
-
-        buff = pRedis->SendSyncQuery("SET", key, dbProfile);
-
-        if (buff == "OK")
+		if (pDataBase->UpdateProfile(dbProfile, *profile))
         {
 			AcceptProfileToGlobalList(socket, profile, clientStatus);
 			return true;
@@ -140,20 +104,13 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
     return false;
 }
 
-SProfile* ClientQuerys::GetProfileByUid(int uid)
+SProfile* ClientQuerys::GetProfileFromString(QString &stringProfile)
 {
-	if (!pRedis->connectStatus)
-		return false;
-
     SProfile* profile = new SProfile;
 
-    // Check profile is there in database
-    QString key = "profiles:" + QString::number(uid);
-    QString buff = pRedis->SendSyncQuery("GET", key, "");
-
-    if (!buff.isEmpty())
+    if (!stringProfile.isEmpty())
     {
-        QXmlStreamReader xml(buff);
+        QXmlStreamReader xml(stringProfile);
         xml.readNext();
         while (!xml.atEnd() && !xml.hasError())
         {
@@ -236,8 +193,10 @@ SProfile* ClientQuerys::GetProfileByUid(int uid)
 
 		return profile;
     }
-
-
+	else
+	{
+		qWarning() << "Can't get profile from string, because string profile empty!";
+	}
     return nullptr;
 }
 

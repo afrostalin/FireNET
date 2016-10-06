@@ -8,6 +8,7 @@ class ClientQuerys;
 class RedisConnector;
 class TcpConnection;
 class TcpServer;
+class DBWorker;
 #include <qsslsocket.h>
 #include <qmutex.h>
 
@@ -45,8 +46,42 @@ struct SGameServer
 	int maxPlayers;
 };
 
-extern TcpServer* pServer;
-extern RedisConnector* pRedis;
+struct SGlobalEnvironment
+{
+	TcpServer* pServer;
+	RedisConnector* pRedis;
+	DBWorker* pDataBase;
+
+	bool bUseMySql;
+	QString serverIP;
+	int serverPort;
+	QString serverRootUser;
+	QString serverRootPassword;
+	int logLevel;
+	int maxPlayers;
+	int maxServers;
+	int maxThreads;
+
+	inline void Init()
+	{
+		bUseMySql = false;
+		serverIP = "127.0.0.1";
+		serverPort = 3322;
+		serverRootUser = "admin";
+		serverRootPassword = "qwerty";
+		logLevel = 1;
+		maxPlayers = 1000;
+		maxServers = 100;
+		maxThreads = 1;
+
+		pServer = nullptr;
+		pRedis = nullptr;
+		pDataBase = nullptr;
+	}
+
+};
+
+extern SGlobalEnvironment* gEnv;
 extern QVector <SClient> vClients;
 extern QVector <SGameServer> vServers;
 

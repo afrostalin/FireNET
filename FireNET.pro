@@ -20,7 +20,8 @@ SOURCES += src/server/clientquerys.cpp \
     src/server/tcpthread.cpp \
     src/server/redisconnector.cpp \
     src/server/global.cpp \
-    src/server/helper.cpp
+    src/server/helper.cpp \
+    src/server/dbworker.cpp
 
 HEADERS += \
     src/server/clientquerys.h \
@@ -28,7 +29,8 @@ HEADERS += \
     src/server/tcpserver.h \
     src/server/tcpthread.h \
     src/server/redisconnector.h \
-    src/server/global.h
+    src/server/global.h \
+    src/server/dbworker.h
 
 INCLUDEPATH += $$PWD/3rd/includes
 INCLUDEPATH += $$PWD/3rd/includes/libssh2

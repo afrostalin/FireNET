@@ -66,6 +66,12 @@
     <ClCompile Include="helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dbworker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="clientquerys.h">
@@ -84,6 +90,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="tcpthread.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="dbworker.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

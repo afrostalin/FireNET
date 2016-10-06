@@ -74,7 +74,7 @@ void TcpConnection::readyRead()
     if(!m_socket) 
 		return;
 
-	if (!pRedis->connectStatus)
+	if (!gEnv->pRedis->connectStatus)
 	{
         qCritical() << "Client can't use database functions without connection to Redis!!!";
 		return;
