@@ -11,23 +11,32 @@ public:
     explicit DBWorker(QObject *parent = 0);
 public:
 	// Check if login is there in database
-	bool UserExists(QString &login);
+	bool UserExists(QString login);
 	// Check if profile is there in database
-	bool ProfileExists(QString &nickname);
+	bool ProfileExists(int uid);
+	// Check if nickname is there in database
+	bool NicknameExists(QString nickname);
+
+public:
 	// Get unique id for new user
 	int GetFreeUID();
 	// Get user data
-	QString GetUserData(QString &login);
+	SUser* GetUserData(QString login);
 	// Get user profile
-	QString GetUserProfile(int uid);
-	// Get uid by nickname
-	int GetUIDbyNickname(QString nickname);
+	SProfile* GetUserProfile(int uid);
+
+public:
 	// Create new user
-	bool CreateUser(int uid, QString &login, QString &password);
+	bool CreateUser(int uid, QString login, QString password);
 	// Create new profile
-	bool CreateProfile(QString &stringProfile, SProfile &profile);
+	bool CreateProfile(SProfile *profile);
+
+public:
 	// Update profile
-	bool UpdateProfile(QString &stringProfile, SProfile &profile);
+	bool UpdateProfile(SProfile *profile);
+
+private:
+	QString GetValueFromRawString(const char* valuename, QString rawString);
 };
 
 #endif // DBWORKER_H

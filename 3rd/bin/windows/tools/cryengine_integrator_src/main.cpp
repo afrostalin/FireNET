@@ -51,8 +51,8 @@ bool UpdateUberFileList(QString cryEngineFolder)
                     textBuffer.append(paste0);
                     line0Finded = true;
                 }
-
-                textBuffer.append("\n");
+                if(!line.isNull())
+                    textBuffer.append("\n");
 
 
             } while (!line.isNull());
@@ -132,7 +132,8 @@ bool UpdateGameCpp(QString cryEngineFolder)
             do
             {
                 line = in.readLine();
-                textBuffer.append(line + "\n");
+                if(!line.isNull())
+                    textBuffer.append(line + "\n");
                 lineNumber++;
 
                 if(line.contains("#include <CrySystem/Profilers/FrameProfiler/FrameProfiler.h>"))
@@ -237,7 +238,8 @@ bool UpdateGameStartupCpp(QString cryEngineFolder)
                     line0Finded = true;
                 }
 
-                textBuffer.append(line + "\n");
+                if(!line.isNull())
+                    textBuffer.append(line + "\n");
 
             } while (!line.isNull());
 

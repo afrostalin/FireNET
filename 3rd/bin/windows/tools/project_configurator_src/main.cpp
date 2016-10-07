@@ -45,7 +45,8 @@ bool UpdateFireNetSolution(QString qtFolder)
                     line0Finded = true;
                 }
 
-                textBuffer.append(line + "\n");
+                if(!line.isNull())
+                    textBuffer.append(line + "\n");
 
             } while (!line.isNull());
 
@@ -150,7 +151,8 @@ bool UpdateCryModuleSolution(QString cryEngineFolder, QString qtFolder)
                     line1Finded = true;
                 }
 
-                textBuffer.append(line + "\n");
+                if(!line.isNull())
+                    textBuffer.append(line + "\n");
 
             } while (!line.isNull());
 

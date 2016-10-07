@@ -18,7 +18,10 @@ public:
     explicit RedisConnector(QObject *parent = 0);
 public:
 	void run();
+	QString SendSyncQuery(QString command);
+	QString SendSyncQuery(QString command, QString key);
     QString SendSyncQuery(QString command, QString key, QString value);
+	QString SendSyncQuery(QList<QByteArray> &rawCmd);
 private:
 	bool Connect();
 public:

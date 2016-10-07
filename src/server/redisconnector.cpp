@@ -44,29 +44,67 @@ bool RedisConnector::Connect()
     return connection->isConnected();
 }
 
+QString RedisConnector::SendSyncQuery(QString command)
+{
+	RedisClient::Response r;
+
+	if (connectStatus && connection != nullptr)
+	{
+		r = connection->commandSync(command);
+		return r.getValue().toString();
+	}
+	else
+		qCritical() << "Error send sync query to Redis DB";
+
+	return QString();
+}
+
+QString RedisConnector::SendSyncQuery(QString command, QString key)
+{
+	RedisClient::Response r;
+
+	if (connectStatus && connection != nullptr)
+	{
+		r = connection->commandSync(command, key);
+		return r.getValue().toString();
+	}
+	else
+		qCritical() << "Error send sync query to Redis DB";
+
+	return QString();
+}
+
 QString RedisConnector::SendSyncQuery(QString command, QString key, QString value)
 {
 	RedisClient::Response r;
 
 	if (connectStatus && connection != nullptr)
 	{
-		if (command == "SET")
-		{
-			r = connection->commandSync(command, key, value);
-			return r.getValue().toString();
-		}
-
-		if (command == "GET" || command == "keys")
-		{
-			r = connection->commandSync(command, key);
-			return r.getValue().toString();
-		}
-
-		r = connection->commandSync(command);
+		r = connection->commandSync(command, key, value);
 		return r.getValue().toString();
 	}
 	else
-		qCritical() << "RedisConnector::SendSyncQuery - Error!";
+		qCritical() << "Error send sync query to Redis DB";
 
 	return QString();
 }
+
+QString RedisConnector::SendSyncQuery(QList<QByteArray>& rawCmd)
+{
+	RedisClient::Response r;
+
+	if (connectStatus && connection != nullptr)
+	{
+		r = connection->commandSync(rawCmd);
+
+		if (r.isArray())
+			return r.toRawString();
+
+		return r.getValue().toString();
+	}
+	else
+		qCritical() << "Error send sync query to Redis DB";
+
+	return QString();
+}
+

@@ -53,12 +53,12 @@ void start_logging(QString logName, int level)
 	{
 	case 1:
 	{
-		logLevel = Logger::Debug;
+		logLevel = Logger::Info;
 		break;
 	}
 	case 2:
 	{
-		logLevel = Logger::Info;
+		logLevel = Logger::Debug;
 	}
 	default:
 	{
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.1";
-	int buildNumber = 72;
+	int buildNumber = 151;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 		gEnv->serverPort = settings.value("sv_port", "3322").toInt();
 		gEnv->serverRootUser = settings.value("sv_admin", "admin").toString();
 		gEnv->serverRootPassword = settings.value("sv_adminPassword", "qwerty").toString();
-		gEnv->logLevel = settings.value("sv_loglevel", "1").toInt();
+		gEnv->logLevel = settings.value("sv_loglevel", "2").toInt();
 		gEnv->maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
 		gEnv->maxServers = settings.value("sv_maxservers", "100").toInt();
 		gEnv->maxThreads = settings.value("sv_maxthreads", "4").toInt();
@@ -140,14 +140,4 @@ int main(int argc, char *argv[])
 	}
 
 	return a->exec();
-}
-
-
-
-
-
-
-
-
-
-
+}//

@@ -2,27 +2,29 @@
 #include "global.h"
 #include "redisconnector.h"
 #include "clientquerys.h"
+#include <QRegExp>
 
 DBWorker::DBWorker(QObject *parent) : QObject(parent)
 {
 
 }
 
-bool DBWorker::UserExists(QString &login)
+bool DBWorker::UserExists(QString login)
 {
 	bool result = false;
 	// Redis
 	QString key = "users:" + login;
-	QString buff = gEnv->pRedis->SendSyncQuery("GET", key, "");
+	QList<QByteArray> rawCmd = { "HEXISTS", key.toUtf8(), "password"};
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
 
-	if (!buff.isEmpty())
+	if (buff.toInt() > 0)
 	{
-		qDebug() << "Login " << login << "finded in Redis DB";
+		qDebug() << "Login" << login << "finded in Redis DB";
 		result = true;
 	}
 	else
 	{
-		qDebug() << "Login " << login << "not found in Redis DB";
+		qDebug() << "Login" << login << "not found in Redis DB";
 	}
 
 	// MySql
@@ -35,21 +37,51 @@ bool DBWorker::UserExists(QString &login)
 	return result;
 }
 
-bool DBWorker::ProfileExists(QString &nickname)
+bool DBWorker::ProfileExists(int uid)
 {
 	bool result = false;
-	// Redis
-	QString key = "profiles:*:" + nickname;
-	QString buff = gEnv->pRedis->SendSyncQuery("keys", key, "");
 
-	if (!buff.isEmpty())
+	// Redis
+	QString key = "profiles:" + QString::number(uid);
+	QList<QByteArray> rawCmd = { "HEXISTS", key.toUtf8(), "nickname" };
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+
+	if (buff.toInt() > 0)
 	{		
-		qDebug() << "Profile " << nickname << "finded in Redis DB";
+		qDebug() << "Profile" << uid << "finded in Redis DB";
 		result = true;	
 	}
 	else
 	{
-		qDebug() << "Profile " << nickname << "not found in Redis DB";
+		qDebug() << "Profile" << uid << "not found in Redis DB";
+	}
+
+	// MySql
+	if (gEnv->bUseMySql && result)
+	{
+		// do smth
+		//result = false;
+	}
+
+	return result;
+}
+
+bool DBWorker::NicknameExists(QString nickname)
+{
+	bool result = false;
+
+	// Redis
+	QString key = "nicknames:" + nickname;
+	QString buff = gEnv->pRedis->SendSyncQuery("GET", key);
+
+	if (!buff.isEmpty())
+	{
+		qDebug() << "Nickname" << nickname << "finded in Redis DB";
+		result = true;
+	}
+	else
+	{
+		qDebug() << "Nickname" << nickname << "not found in Redis DB";
 	}
 
 	// MySql
@@ -68,7 +100,7 @@ int DBWorker::GetFreeUID()
 	int uid = -1;
 
 	// Get uids row and create new uid if uids row are empty
-	QString buff = pRedis->SendSyncQuery("GET", "uids", "");
+	QString buff = pRedis->SendSyncQuery("GET", "uids");
 
 	if (buff.isEmpty())
 	{
@@ -99,7 +131,7 @@ int DBWorker::GetFreeUID()
 		if (buff == "OK")
 		{
 			uid = tmp;
-			qDebug() << "New uid created = " << uid;
+			qDebug() << "New uid created =" << uid;
 			return uid;
 		}
 		else
@@ -110,159 +142,221 @@ int DBWorker::GetFreeUID()
 	}
 }
 
-QString DBWorker::GetUserData(QString &login)
+SUser* DBWorker::GetUserData(QString login)
 {
+	SUser *dbUser = new SUser;
 	// Redis
 	QString key = "users:" + login;
-	QString buff = gEnv->pRedis->SendSyncQuery("GET", key, "");
+	QList<QByteArray> rawCmd = { "HGETALL", key.toUtf8()};
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
 
-	if (!buff.isEmpty())
+	int dbUid = GetValueFromRawString("uid", buff).toInt();
+	QString dbLogin = GetValueFromRawString("login", buff);
+	QString dbPassword = GetValueFromRawString("password", buff);
+	int dbBanStatus = GetValueFromRawString("ban", buff).toInt();
+	
+	if (dbUid > 0 && !dbLogin.isEmpty() && !dbPassword.isEmpty())
 	{
-		qDebug() << "User data for "<< login << "is found in Redis DB";
-		return buff;
-	}
-	else
-	{
-		qDebug() << "User data for " << login << "not found in Redis DB";
-	}
+		qDebug() << "User data for"<< login << "is found in Redis DB";
 
-	return QString();
-}
+		dbUser->uid = dbUid;
+		dbUser->login = dbLogin;
+		dbUser->password = dbPassword;
 
-QString DBWorker::GetUserProfile(int uid)
-{
-	// Redis
-	QString keys = "profiles:" + QString::number(uid) + ":*";
-	QString key = gEnv->pRedis->SendSyncQuery("keys", keys, "");
-
-	if (!key.isEmpty())
-	{
-		QString buff = gEnv->pRedis->SendSyncQuery("GET", key, "");
-
-		if (!buff.isEmpty())
-		{
-			qDebug() << "Profile " << uid << "is found in Redis DB";
-			return buff;
-		}
+		if (dbBanStatus > 0)
+			dbUser->bBanStatus = true;
 		else
+			dbUser->bBanStatus = false;
+
+		return dbUser;
+	}
+	else
+	{
+		qDebug() << "User data for" << login << "not found in Redis DB";
+	}
+
+	return nullptr;
+}
+
+SProfile* DBWorker::GetUserProfile(int uid)
+{
+	SProfile *dbProfile = new SProfile;
+	// Redis
+	QString key = "profiles:" + QString::number(uid);
+
+	QList<QByteArray> rawCmd = { "HGETALL", key.toUtf8() };
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+
+	int dbUid = GetValueFromRawString("uid", buff).toInt();
+	QString dbNickname = GetValueFromRawString("nickname", buff);
+	QString dbModel = GetValueFromRawString("model", buff);
+	int dbLvl = GetValueFromRawString("lvl", buff).toInt();
+	int dbXp = GetValueFromRawString("xp", buff).toInt();
+	int dbMoney = GetValueFromRawString("money", buff).toInt();
+	QString dbItems = GetValueFromRawString("items", buff);
+	QString dbFriends = GetValueFromRawString("friends", buff);
+	QString dbAchievements = GetValueFromRawString("achievements", buff);
+	QString dbStats = GetValueFromRawString("stats", buff);
+
+	if (dbUid > 0 && !dbNickname.isEmpty() && !dbModel.isEmpty())
+	{
+		qDebug() << "Profile" << uid << "is found in Redis DB";
+
+		dbProfile->uid = dbUid;
+		dbProfile->nickname = dbNickname;
+		dbProfile->model = dbModel;
+		dbProfile->lvl = dbLvl;
+		dbProfile->xp = dbXp;
+		dbProfile->money = dbMoney;
+		dbProfile->items = dbItems;
+		dbProfile->friends = dbFriends;
+		dbProfile->achievements = dbAchievements;
+		dbProfile->stats = dbStats;
+
+		return dbProfile;
+	}
+	else
+	{
+		qDebug() << "Profile" << uid << "not found in Redis DB";
+	}
+
+	return nullptr;
+}
+
+bool DBWorker::CreateUser(int uid, QString login, QString password)
+{
+	bool result = false;
+
+	QString key = "users:" + login;
+	QList<QByteArray> rawCmd = {"HMSET", key.toUtf8(), "uid", QString::number(uid).toUtf8(), "login", login.toUtf8(), "password", password.toUtf8()};
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+
+	if (buff == "OK")
+	{
+		qDebug() << "User" << login << "created in Redis DB";
+		result = true;
+	}
+	else
+	{
+		qDebug() << "Failed create new user in Redis DB";
+		return false;
+	}
+	
+
+	// MySql
+	if (gEnv->bUseMySql && result)
+	{
+		// do smth
+		//result = false;
+	}
+
+	return result;
+}
+
+bool DBWorker::CreateProfile(SProfile *profile)
+{
+	bool result = false;
+
+	// Redis
+	QString key = "profiles:" + QString::number(profile->uid);
+
+	QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(), 
+	"uid", QString::number(profile->uid).toUtf8(),
+	"nickname", profile->nickname.toUtf8(),
+	"model", profile->model.toUtf8(),
+	"lvl", QString::number(profile->lvl).toUtf8(),
+	"xp", QString::number(profile->xp).toUtf8(),
+	"money", QString::number(profile->money).toUtf8(),
+	"items", profile->items.toUtf8(),
+	"friends", profile->friends.toUtf8(),
+	"achievements", profile->achievements.toUtf8(),
+	"stats", profile->stats.toUtf8()};
+
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+	QString buff2 = gEnv->pRedis->SendSyncQuery("SET", "nicknames:" + profile->nickname, QString::number(profile->uid));
+
+	if (buff == "OK" && buff2 == "OK")
+	{
+		qDebug() << "Profile" << profile->nickname << "created in Redis DB";
+		result = true;
+	}
+	else
+	{
+		qDebug() << "Failed create"<< profile->nickname <<" profile in Redis DB";
+		return false;
+	}
+
+	// MySql
+	if (gEnv->bUseMySql && result)
+	{
+		// do smth
+		//result = false;
+	}
+
+	return result;
+}
+
+bool DBWorker::UpdateProfile(SProfile *profile)
+{
+	bool result = false;
+
+	// Redis
+	QString key = "profiles:" + QString::number(profile->uid);
+
+	QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(),
+		"uid", QString::number(profile->uid).toUtf8(),
+		"nickname", profile->nickname.toUtf8(),
+		"model", profile->model.toUtf8(),
+		"lvl", QString::number(profile->lvl).toUtf8(),
+		"xp", QString::number(profile->xp).toUtf8(),
+		"money", QString::number(profile->money).toUtf8(),
+		"items", profile->items.toUtf8(),
+		"friends", profile->friends.toUtf8(),
+		"achievements", profile->achievements.toUtf8(),
+		"stats", profile->stats.toUtf8() };
+
+	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+
+	if (buff == "OK")
+	{
+		qDebug() << "Profile" << profile->nickname << "updated in Redis DB";
+		result = true;
+	}
+	else
+	{
+		qDebug() << "Failed update profile" << profile->nickname << " in Redis DB";
+		return false;
+	}
+
+	// MySql
+	if (gEnv->bUseMySql && result)
+	{
+		// do smth
+		//result = false;
+	}
+
+	return result;
+}
+
+QString DBWorker::GetValueFromRawString(const char * valuename, QString rawString)
+{
+	if (rawString.isEmpty())
+		return QString();
+
+	QRegExp RN("\r\n");
+	QStringList strList;
+	strList = rawString.split(RN);
+
+	for (int i = 0; i < strList.size(); ++i)
+	{
+		QString value =  strList[i];
+
+		if (value == valuename)
 		{
-			qDebug() << "Profile" << uid << "not found in Redis DB";
+			QString result = strList[i + 2];
+			return result;
 		}
 	}
 
 	return QString();
-}
-
-int DBWorker::GetUIDbyNickname(QString nickname)
-{
-	// Redis
-	QString key = "profiles:*:" + nickname;
-	QString buff = gEnv->pRedis->SendSyncQuery("keys", key, "");
-
-	if (!buff.isEmpty())
-	{
-		qDebug() << "Profile " << nickname << "finded in Redis DB";
-		qDebug() << buff;
-		buff.remove("profiles:");
-		buff.remove(":" + nickname);
-
-		int uid = buff.toInt();
-		qDebug() << uid;
-		
-		return uid;
-	}
-	else
-	{
-		qDebug() << "Profile " << nickname << "not found in Redis DB";
-	}
-
-	return -1;
-}
-
-bool DBWorker::CreateUser(int uid, QString &login, QString &password)
-{
-	bool result = false;
-
-	// Redis
-	QString key = "users:" + login;
-	QString value = "<data uid = '" + QString::number(uid) + "' login='" + login + "' password = '" + password + "' ban='0'/>";
-	QString buff = gEnv->pRedis->SendSyncQuery("SET", key, value);
-
-	if (buff == "OK")
-	{
-		qDebug() << "User " << login << "created in Redis DB";
-		result = true;
-	}
-	else
-	{
-		qDebug() << "Failed create new user in Redis DB";
-		return false;
-	}
-
-	// MySql
-	if (gEnv->bUseMySql && result)
-	{
-		// do smth
-		//result = false;
-	}
-
-	return result;
-}
-
-bool DBWorker::CreateProfile(QString &stringProfile, SProfile &profile)
-{
-	bool result = false;
-
-	// Redis
-	QString key = "profiles:" + QString::number(profile.uid) + ":" + profile.nickname;
-	QString buff = gEnv->pRedis->SendSyncQuery("SET", key, stringProfile);
-
-	if (buff == "OK")
-	{
-		qDebug() << "User " << profile.nickname << "created in Redis DB";
-		result = true;
-	}
-	else
-	{
-		qDebug() << "Failed create new user in Redis DB";
-		return false;
-	}
-
-	// MySql
-	if (gEnv->bUseMySql && result)
-	{
-		// do smth
-		//result = false;
-	}
-
-	return result;
-}
-
-bool DBWorker::UpdateProfile(QString & stringProfile, SProfile & profile)
-{
-	bool result = false;
-
-	// Redis
-	QString key = "profiles:" + QString::number(profile.uid) + ":" + profile.nickname;
-	QString buff = gEnv->pRedis->SendSyncQuery("SET", key, stringProfile);
-
-	if (buff == "OK")
-	{
-		qDebug() << "User " << profile.nickname << "updated in Redis DB";
-		result = true;
-	}
-	else
-	{
-		qDebug() << "Failed update " << profile.nickname << " in Redis DB";
-		return false;
-	}
-
-	// MySql
-	if (gEnv->bUseMySql && result)
-	{
-		// do smth
-		//result = false;
-	}
-
-	return result;
 }

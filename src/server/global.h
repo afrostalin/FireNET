@@ -12,6 +12,14 @@ class DBWorker;
 #include <qsslsocket.h>
 #include <qmutex.h>
 
+struct SUser
+{
+	int uid;
+	QString login;
+	QString password;
+	bool bBanStatus;
+};
+
 struct SProfile
 {
 	int uid;

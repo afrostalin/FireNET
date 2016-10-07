@@ -72,25 +72,11 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
         return false;
     }
 
-	QString dbProfile = "<data>"
-        "<profile id='" + QString::number(profile->uid) +
-        "' nickname='" + profile->nickname +
-        "' model='" + profile->model +
-        "' money='" + QString::number(profile->money) +
-        "' xp='" + QString::number(profile->xp) +
-        "' lvl='" + QString::number(profile->lvl) + "'/>"
-        "<items>" + profile->items + "</items>"
-        "<friends>" + profile->friends + "</friends>"
-        "<achievements>" + profile->achievements + "</achievements>"
-        "<stats>" + profile->stats + "</stats>"
-        "</data>";
-
-
 	DBWorker* pDataBase = gEnv->pDataBase;
 
-    if (pDataBase->ProfileExists(profile->nickname))
+    if (pDataBase->ProfileExists(profile->uid))
     {
-		if (pDataBase->UpdateProfile(dbProfile, *profile))
+		if (pDataBase->UpdateProfile(profile))
         {
 			AcceptProfileToGlobalList(socket, profile, clientStatus);
 			return true;
@@ -99,7 +85,7 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
             qCritical() << "Profile can't be updated! Database return error!!!";
     }
     else
-        qCritical() << "Profile can't be updated, because profile not finded!!!";
+        qCritical() << "Profile can't be updated, because profile not found!!!";
 
     return false;
 }

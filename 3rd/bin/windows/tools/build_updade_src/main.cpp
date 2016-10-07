@@ -47,7 +47,8 @@ int main(int argc, char *argv[])
                     line0Finded = true;
                 }
 
-                textBuffer.append(line + "\n");
+                if(!line.isNull())
+                    textBuffer.append(line + "\n");
 
             } while (!line.isNull());
 
