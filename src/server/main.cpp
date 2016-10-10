@@ -14,6 +14,7 @@
 #include "global.h"
 #include "tcpserver.h"
 #include "dbworker.h"
+#include "mysqlconnector.h"
 
 bool init()
 {
@@ -83,7 +84,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.1";
-	int buildNumber = 155;
+	int buildNumber = 170;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -102,6 +103,9 @@ int main(int argc, char *argv[])
 		gEnv->maxServers = settings.value("sv_maxservers", "100").toInt();
 		gEnv->maxThreads = settings.value("sv_maxthreads", "4").toInt();
 
+		// Redis settings
+		gEnv->redisHost = settings.value("redis_host", "127.0.0.1").toString();
+
 		// MySql settings
 		gEnv->bUseMySql = settings.value("db_use_mysql", "0").toBool();
 		gEnv->mySqlHost = settings.value("db_mysql_host", "127.0.0.1").toString();
@@ -109,7 +113,6 @@ int main(int argc, char *argv[])
 		gEnv->mySqlDbName = settings.value("db_mysql_database", "FireNET").toString();
 		gEnv->mySqlUsername = settings.value("db_mysql_username", "admin").toString();
 		gEnv->mySqlPassword = settings.value("db_mysql_password", "qwerty").toString();
-		//
 
 		start_logging("FireNET.log", gEnv->logLevel);
 
@@ -139,7 +142,13 @@ int main(int argc, char *argv[])
 			if (gEnv->bUseMySql)
 			{
 				qInfo() << "Start MySql...";
-				// TO DO
+
+				QThread* mysqlThread = new QThread;
+				gEnv->pMySql = new MySqlConnector;
+				gEnv->pMySql->moveToThread(mysqlThread);
+				QObject::connect(mysqlThread, &QThread::started, gEnv->pMySql, &MySqlConnector::run);
+				QObject::connect(mysqlThread, &QThread::finished, gEnv->pMySql, &MySqlConnector::deleteLater);
+				mysqlThread->start();
 			}
 		}
 		else

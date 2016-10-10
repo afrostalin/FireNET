@@ -6,6 +6,7 @@
 
 class ClientQuerys;
 class RedisConnector;
+class MySqlConnector;
 class TcpConnection;
 class TcpServer;
 class DBWorker;
@@ -58,7 +59,10 @@ struct SGlobalEnvironment
 {
 	TcpServer* pServer;
 	RedisConnector* pRedis;
+	MySqlConnector* pMySql;
 	DBWorker* pDataBase;
+
+	QString redisHost;
 
 	bool bUseMySql;
 	QString mySqlHost;
@@ -79,6 +83,8 @@ struct SGlobalEnvironment
 
 	inline void Init()
 	{
+		redisHost = "127.0.0.1";
+
 		bUseMySql = false;
 		mySqlHost = "127.0.0.1";
 		mySqlDbName = "FireNET";
@@ -97,6 +103,7 @@ struct SGlobalEnvironment
 
 		pServer = nullptr;
 		pRedis = nullptr;
+		pMySql = nullptr;
 		pDataBase = nullptr;
 	}
 

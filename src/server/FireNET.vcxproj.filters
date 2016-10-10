@@ -72,6 +72,12 @@
     <ClCompile Include="dbworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mysqlconnector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="clientquerys.h">
@@ -93,6 +99,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="dbworker.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mysqlconnector.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>

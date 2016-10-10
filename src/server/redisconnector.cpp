@@ -3,13 +3,13 @@
 
 #include "redisconnector.h"
 #include "global.h"
+#include <QDebug>
 
 RedisConnector::RedisConnector(QObject *parent)
 {
 	connection = 0; 
     connectStatus = false;
 	m_thread = 0;
-	m_loop = 0;
 }
 
 void RedisConnector::run()
@@ -34,8 +34,8 @@ bool RedisConnector::Connect()
 	qInfo()<< "Init qredisclient...";
     initRedisClient();
 
-	qInfo()<< "Create connection to local redis...";
-    RedisClient::ConnectionConfig config("127.0.0.1");
+	qInfo()<< "Create connection to Redis... ("<< gEnv->redisHost <<")";
+    RedisClient::ConnectionConfig config(gEnv->redisHost);
     connection = new RedisClient::Connection(config);
     connection->connect(false);
 

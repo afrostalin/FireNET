@@ -6,9 +6,6 @@
 
 #include <QObject>
 #include <QThread>
-#include <QEventLoop>
-#include <QDebug>
-#include <QMutex>
 #include "qredisclient/redisclient.h"
 
 class RedisConnector : public QObject
@@ -27,7 +24,6 @@ private:
 public:
 	bool connectStatus;
 private:
-	QEventLoop *m_loop;
 	QThread *m_thread;
 	RedisClient::Connection* connection;
 };
