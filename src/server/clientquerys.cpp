@@ -622,14 +622,11 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 	int friendUID = pDataBase->GetUIDbyNick(friendName);
 
-	if (!pDataBase->ProfileExists(friendUID))
+	if (pDataBase->ProfileExists(friendUID))
 	{
 		SProfile *friendProfile = pDataBase->GetUserProfile(friendUID);
 
-		if (friendProfile == nullptr)
-			return;
-
-		if (!clientProfile->nickname.isEmpty() && friendProfile->uid < 0)
+		if (!clientProfile->nickname.isEmpty() && friendProfile != nullptr)
 		{
 			// Check friend is there in friends list
 			if (CheckAttributeInRow(clientProfile->friends, "friend", "name", friendProfile->nickname))
@@ -730,14 +727,11 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 	int friendUID = pDataBase->GetUIDbyNick(friendName);
 
-	if (!pDataBase->ProfileExists(friendUID))
+	if (pDataBase->ProfileExists(friendUID))
 	{
 		SProfile *friendProfile = pDataBase->GetUserProfile(friendUID);
 
-		if (friendProfile == nullptr)
-			return;
-
-		if (!clientProfile->nickname.isEmpty() && friendProfile->uid > 0)
+		if (!clientProfile->nickname.isEmpty() && friendProfile != nullptr)
 		{
 			// Check friend is there in friends list
 			if (!CheckAttributeInRow(clientProfile->friends, "friend", "name", friendProfile->nickname))
