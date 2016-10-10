@@ -957,6 +957,8 @@ namespace FireNET
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
 						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+
+						gEnv->pLog->LogError(TITLE "Can't add friend because friend name short!");
 					}
 					else
 					{
@@ -1040,6 +1042,8 @@ namespace FireNET
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
 						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+
+						gEnv->pLog->LogError(TITLE "Can't add friend because friend name short!");
 					}
 					else
 					{

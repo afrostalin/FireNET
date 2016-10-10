@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.1";
-	int buildNumber = 151;
+	int buildNumber = 154;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -101,7 +101,15 @@ int main(int argc, char *argv[])
 		gEnv->maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
 		gEnv->maxServers = settings.value("sv_maxservers", "100").toInt();
 		gEnv->maxThreads = settings.value("sv_maxthreads", "4").toInt();
+
+		// MySql settings
 		gEnv->bUseMySql = settings.value("db_use_mysql", "0").toBool();
+		gEnv->mySqlHost = settings.value("db_mysql_host", "127.0.0.1").toString();
+		gEnv->mySqlPort = settings.value("db_mysql_port", "3306").toInt();
+		gEnv->mySqlDbName = settings.value("db_mysql_database", "FireNET").toString();
+		gEnv->mySqlUsername = settings.value("db_mysql_username", "admin").toString();
+		gEnv->mySqlPassword = settings.value("db_mysql_password", "qwerty").toString();
+		//
 
 		start_logging("FireNET.log", gEnv->logLevel);
 
@@ -120,6 +128,7 @@ int main(int argc, char *argv[])
 
 			qInfo() << "Server started!";
 			qInfo() << "Start Redis...";
+
 			QThread* redisThread = new QThread;
 			gEnv->pRedis = new RedisConnector;
 			gEnv->pRedis->moveToThread(redisThread);
@@ -140,4 +149,4 @@ int main(int argc, char *argv[])
 	}
 
 	return a->exec();
-}//
+}

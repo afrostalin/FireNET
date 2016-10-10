@@ -61,6 +61,12 @@ struct SGlobalEnvironment
 	DBWorker* pDataBase;
 
 	bool bUseMySql;
+	QString mySqlHost;
+	int mySqlPort;
+	QString mySqlDbName;
+	QString mySqlUsername;
+	QString mySqlPassword;
+
 	QString serverIP;
 	int serverPort;
 	QString serverRootUser;
@@ -70,9 +76,16 @@ struct SGlobalEnvironment
 	int maxServers;
 	int maxThreads;
 
+
 	inline void Init()
 	{
 		bUseMySql = false;
+		mySqlHost = "127.0.0.1";
+		mySqlDbName = "FireNET";
+		mySqlPort = 3306;
+		mySqlUsername = "admin";
+		mySqlPassword = "qwerty";
+
 		serverIP = "127.0.0.1";
 		serverPort = 3322;
 		serverRootUser = "admin";

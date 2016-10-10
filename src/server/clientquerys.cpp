@@ -262,7 +262,6 @@ void ClientQuerys::onGetProfile()
 	}
 }
 
-// Need move to main.cpp
 void ClientQuerys::onGetShopItems()
 {
 	QFile file("shop.xml");
@@ -492,12 +491,12 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 	QString uid = QString::number(clientProfile->uid);
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString inviteType = attributes.value("invite_type").toString();
-	int reciverUID = attributes.value("to").toInt();
+	QString reciver = attributes.value("to").toString();
 
-	if (clientProfile->nickname.isEmpty() || reciverUID <= 0 || inviteType.isEmpty())
+	if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Invite type  = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciverUID;
+		qDebug() << "Invite type  = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
 		return;
 	}
 
@@ -507,7 +506,9 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 	// Friend invite
 	if (inviteType == "friend_invite")
 	{
-		if (!pDataBase->ProfileExists(reciverUID))
+		int friendUID = pDataBase->GetUIDbyNick(reciver);
+
+		if (!pDataBase->ProfileExists(friendUID))
 		{
 			qDebug() << "------------------------User not found------------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
@@ -517,7 +518,7 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			return;
 		}
 
-		QSslSocket* reciverSocket = GetSocketByUid(reciverUID);
+		QSslSocket* reciverSocket = GetSocketByUid(friendUID);
 
 		if (reciverSocket != nullptr)
 		{
@@ -560,26 +561,28 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 
 	QString uid = QString::number(clientProfile->uid);
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	int reciverUID = attributes.value("to").toInt();
+	QString reciver = attributes.value("to").toString();
 
-	if (clientProfile->nickname.isEmpty() || reciverUID <= 0)
+	if (clientProfile->nickname.isEmpty() || reciver.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Client = " << clientProfile->nickname << "Reciver = " << reciverUID;
+		qDebug() << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
 		return;
 	}
 
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDataBase;
 
-	if (!pDataBase->ProfileExists(reciverUID))
+	int friendUID = pDataBase->GetUIDbyNick(reciver);
+
+	if (!pDataBase->ProfileExists(friendUID))
 	{
 		qDebug() << "------------------------User not found-------------------------";
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
 		return;
 	}
 
-	QSslSocket* reciverSocket = GetSocketByUid(reciverUID);
+	QSslSocket* reciverSocket = GetSocketByUid(friendUID);
 
 	if (reciverSocket != nullptr)
 	{
@@ -605,17 +608,19 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 	}
 
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	int friendUID = attributes.value("uid").toInt();
+	QString friendName = attributes.value("name").toString();
 
-	if (friendUID <= 0)
+	if (friendName.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Friend = " << friendUID;
+		qDebug() << "Friend = " << friendName;
 		return;
 	}
 
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDataBase;
+
+	int friendUID = pDataBase->GetUIDbyNick(friendName);
 
 	if (!pDataBase->ProfileExists(friendUID))
 	{
@@ -711,17 +716,19 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 	}
 
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	int friendUID = attributes.value("uid").toInt();
+	QString friendName = attributes.value("name").toString();
 
-	if (friendUID <= 0)
+	if (friendName.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Friend = " << friendUID;
+		qDebug() << "Friend = " << friendName;
 		return;
 	}
 
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDataBase;
+
+	int friendUID = pDataBase->GetUIDbyNick(friendName);
 
 	if (!pDataBase->ProfileExists(friendUID))
 	{
@@ -833,9 +840,7 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	}
 	else
 	{
-		// FIX ME
-		//		int reciverUID = pDataBase->GetUIDbyNickname(reciver);
-		int reciverUID = 0;
+		int reciverUID = pDataBase->GetUIDbyNick(reciver);
 
 		QSslSocket* reciverSocket = GetSocketByUid(reciverUID);
 
@@ -871,8 +876,6 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
 		return;
 	}
-
-	TcpServer* pServer = gEnv->pServer;
 
 	QVector<SGameServer>::iterator it;
 	for (it = vServers.begin(); it != vServers.end(); ++it)

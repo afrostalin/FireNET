@@ -142,6 +142,29 @@ int DBWorker::GetFreeUID()
 	}
 }
 
+int DBWorker::GetUIDbyNick(QString nickname)
+{
+	RedisConnector* pRedis = gEnv->pRedis;
+	int uid = -1;
+
+	// Get uids row and create new uid if uids row are empty
+	QString buff = pRedis->SendSyncQuery("GET", "nicknames:" + nickname);
+
+	if (!buff.isEmpty())
+	{
+		qDebug() << "UID for" << nickname << "found in Redis DB";
+
+		uid = buff.toInt();
+		return uid;
+	}
+	else
+	{	
+		qDebug() << "UID for" << nickname << "not found in Redis DB";
+	}
+
+	return uid;
+}
+
 SUser* DBWorker::GetUserData(QString login)
 {
 	SUser *dbUser = new SUser;

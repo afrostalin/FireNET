@@ -20,6 +20,8 @@ public:
 public:
 	// Get unique id for new user
 	int GetFreeUID();
+	// Get user uid by nickname
+	int GetUIDbyNick(QString nickname);
 	// Get user data
 	SUser* GetUserData(QString login);
 	// Get user profile
