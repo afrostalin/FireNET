@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.1";
-	int buildNumber = 178;
+	int buildNumber = 183;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -144,7 +144,6 @@ int main(int argc, char *argv[])
 			{
 				qInfo() << "Start MySql...";
 
-				// If you use MySql you need save all data in Redis first.
 				gEnv->bRedisBackgroundSave = true;
 
 				QThread* mysqlThread = new QThread;

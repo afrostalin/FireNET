@@ -259,26 +259,7 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	if (buff == "OK")
 	{
 		qDebug() << "User" << login << "created in Redis DB";
-
-		// Redis background saving
-		if (gEnv->bRedisBackgroundSave)
-		{
-			QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
-			if (!save_buff.isEmpty())
-			{
-				qDebug() << "Redis background saving complete";
-				result = true;
-			}
-			else
-			{
-				qDebug() << "Redis background saving failed";
-				result = false;
-			}
-		}
-		else
-		{
-			result = true;
-		}
+		result = true;
 	}
 	else
 	{
@@ -317,6 +298,22 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 		}
 	}
 
+	// Redis background saving
+	if (gEnv->bRedisBackgroundSave && result)
+	{
+		QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+		if (!save_buff.isEmpty())
+		{
+			qDebug() << "Redis background saving complete";
+			result = true;
+		}
+		else
+		{
+			qDebug() << "Redis background saving failed";
+			result = false;
+		}
+	}
+
 	return result;
 }
 
@@ -345,26 +342,7 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	if (buff == "OK" && buff2 == "OK")
 	{
 		qDebug() << "Profile" << profile->nickname << "created in Redis DB";
-
-		// Redis background saving
-		if (gEnv->bRedisBackgroundSave)
-		{
-			QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
-			if (!save_buff.isEmpty())
-			{
-				qDebug() << "Redis background saving complete";
-				result = true;
-			}
-			else
-			{
-				qDebug() << "Redis background saving failed";
-				result = false;
-			}
-		}
-		else
-		{
-			result = true;
-		}	
+		result = true;
 	}
 	else
 	{
@@ -410,6 +388,22 @@ bool DBWorker::CreateProfile(SProfile *profile)
 		}
 	}
 
+	// Redis background saving
+	if (gEnv->bRedisBackgroundSave && result)
+	{
+		QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+		if (!save_buff.isEmpty())
+		{
+			qDebug() << "Redis background saving complete";
+			result = true;
+		}
+		else
+		{
+			qDebug() << "Redis background saving failed";
+			result = false;
+		}
+	}
+
 	return result;
 }
 
@@ -437,26 +431,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	if (buff == "OK")
 	{
 		qDebug() << "Profile" << profile->nickname << "updated in Redis DB";
-
-		// Redis background saving
-		if (gEnv->bRedisBackgroundSave)
-		{
-			QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
-			if (!save_buff.isEmpty())
-			{
-				qDebug() << "Redis background saving complete";
-				result = true;
-			}
-			else
-			{
-				qDebug() << "Redis background saving failed";
-				result = false;
-			}
-		}
-		else
-		{
-			result = true;
-		}
+		result = true;
 	}
 	else
 	{
@@ -469,6 +444,22 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	{
 		// do smth
 		//result = false;
+	}
+
+	// Redis background saving
+	if (gEnv->bRedisBackgroundSave && result)
+	{
+		QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+		if (!save_buff.isEmpty())
+		{
+			qDebug() << "Redis background saving complete";
+			result = true;
+		}
+		else
+		{
+			qDebug() << "Redis background saving failed";
+			result = false;
+		}
 	}
 
 	return result;

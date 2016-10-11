@@ -9,6 +9,8 @@ bool UpdateFireNetSolution(QString qtFolder)
     QFile fireNet ("../../../../src/server/FireNET.vcxproj");
 
     bool line0Finded = false;
+    bool line1Finded = false;
+    bool line2Finded = false;
 
     if(fireNet.exists())
     {
@@ -28,8 +30,15 @@ bool UpdateFireNetSolution(QString qtFolder)
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include;" +
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include\\QtNetwork;" +
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include\\QtCore;"  +
+                             qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\include\\QtSql;"  +
                              qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\mkspecs\\win32-msvc2015;"
                              "..\\..\\temp\\moc\\server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>";
+
+            QString paste1 = "<AdditionalLibraryDirectories>" + qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\lib;" +
+                    "..\\..\\3rd\\libs\\windows\\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>";
+
+            QString paste2 = "<AdditionalLibraryDirectories>" + qtFolder + "\\Qt5.7.0\\5.7\\msvc2015_64\\lib;" +
+                    "..\\..\\3rd\\libs\\windows\\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>";
 
             QString line;
             do
@@ -45,12 +54,29 @@ bool UpdateFireNetSolution(QString qtFolder)
                     line0Finded = true;
                 }
 
+                if(line.contains("..\\..\\3rd\\libs\\windows\\Release;"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    line.clear();
+                    line = paste1;
+                    line1Finded = true;
+                }
+
+                if(line.contains("..\\..\\3rd\\libs\\windows\\Debug;"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    line.clear();
+                    line = paste2;
+                    line2Finded = true;
+                }
+
+
                 if(!line.isNull())
                     textBuffer.append(line + "\n");
 
             } while (!line.isNull());
 
-            if(!textBuffer.isEmpty() && line0Finded)
+            if(!textBuffer.isEmpty() && line0Finded && line1Finded && line2Finded)
             {
                 QFile::remove("../../../../src/server/FireNET.vcxproj.bak");
 

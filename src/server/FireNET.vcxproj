@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|x64">
@@ -76,8 +76,8 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qredisclient.lib;Logger.lib;libssh2.lib;libeay32.lib;ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;$(QTDIR)\lib\Qt5Network.lib;$(QTDIR)\lib\Qt5Core.lib;$(QTDIR)\lib\Qt5Sql.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;..\..\3rd\libs\windows\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>qredisclient.lib;Logger.lib;libssh2.lib;libeay32.lib;ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;Qt5Network.lib;Qt5Core.lib;Qt5Sql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+<AdditionalLibraryDirectories>D:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;..\..\3rd\libs\windows\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>false</GenerateDebugInformation>
@@ -122,8 +122,8 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>qredisclient.lib;Logger.lib;libssh2.lib;libeay32.lib;ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;$(QTDIR)\lib\Qt5Networkd.lib;$(QTDIR)\lib\Qt5Cored.lib;$(QTDIR)\lib\Qt5Sqld.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(QTDIR)\lib;..\..\3rd\libs\windows\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>qredisclient.lib;Logger.lib;libssh2.lib;libeay32.lib;ssleay32.lib;gdi32.lib;ws2_32.lib;kernel32.lib;user32.lib;shell32.lib;uuid.lib;ole32.lib;advapi32.lib;Qt5Networkd.lib;Qt5Cored.lib;Qt5Sqld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+<AdditionalLibraryDirectories>D:\Qt\Qt5.7.0\5.7\msvc2015_64\lib;..\..\3rd\libs\windows\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' publicKeyToken='6595b64144ccf1df' language='*' processorArchitecture='*'" %(AdditionalOptions)</AdditionalOptions>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <GenerateDebugInformation>true</GenerateDebugInformation>

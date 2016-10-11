@@ -90,6 +90,7 @@ bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
     return false;
 }
 
+// Deprecated funtion
 SProfile* ClientQuerys::GetProfileFromString(QString &stringProfile)
 {
     SProfile* profile = new SProfile;
