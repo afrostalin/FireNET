@@ -253,7 +253,7 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	bool result = false;
 
 	QString key = "users:" + login;
-	QList<QByteArray> rawCmd = {"HMSET", key.toUtf8(), "uid", QString::number(uid).toUtf8(), "login", login.toUtf8(), "password", password.toUtf8()};
+	QList<QByteArray> rawCmd = {"HMSET", key.toUtf8(), "uid", QString::number(uid).toUtf8(), "login", login.toUtf8(), "password", password.toUtf8(), "ban", "0"};
 	QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
 
 	if (buff == "OK")
@@ -274,11 +274,17 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 		if (gEnv->pMySql->connectStatus)
 		{
 			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
-			query->prepare("INSERT INTO users (uid, login, password) "
-				"VALUES (:uid, :login, :password)");
-			query->bindValue(":uid", uid);
-			query->bindValue(":login", login);
-			query->bindValue(":password", password);
+
+			// We need get something like "INSERT INTO users (uid, login, password, ban) VALUES (:uid, :login, :password, :ban)"
+			QString queryLine = "INSERT INTO " 
+				+ gEnv->mySqlUsersTableName + " (" + gEnv->mySqlUsersUidName + ", " + gEnv->mySqlUsersLoginName + ", " + gEnv->mySqlUsersPasswordName + ", " + gEnv->mySqlUsersBanName +")" + 
+				" VALUES (:" + gEnv->mySqlUsersUidName + ", :" + gEnv->mySqlUsersLoginName +", :" + gEnv->mySqlUsersPasswordName + ", :" + gEnv->mySqlUsersBanName + ")";
+
+			query->prepare(queryLine);
+			query->bindValue(":" + gEnv->mySqlUsersUidName, uid);
+			query->bindValue(":" + gEnv->mySqlUsersLoginName, login);
+			query->bindValue(":" + gEnv->mySqlUsersPasswordName, password);
+			query->bindValue(":" + gEnv->mySqlUsersBanName, 0);
 
 			if (query->exec())
 			{

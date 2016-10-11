@@ -62,9 +62,11 @@ struct SGlobalEnvironment
 	MySqlConnector* pMySql;
 	DBWorker* pDataBase;
 
+	// Redis settings
 	QString redisHost;
 	bool bRedisBackgroundSave;
 
+	// MySql settings
 	bool bUseMySql;
 	QString mySqlHost;
 	int mySqlPort;
@@ -72,6 +74,14 @@ struct SGlobalEnvironment
 	QString mySqlUsername;
 	QString mySqlPassword;
 
+	// MySql "users" table settings (can use old table without creating new table)
+	QString mySqlUsersTableName;
+	QString mySqlUsersUidName;
+	QString mySqlUsersLoginName;
+	QString mySqlUsersPasswordName;
+	QString mySqlUsersBanName;
+
+	// Server settings
 	QString serverIP;
 	int serverPort;
 	QString serverRootUser;
@@ -84,9 +94,11 @@ struct SGlobalEnvironment
 
 	inline void Init()
 	{
+		// Redis settings
 		redisHost = "127.0.0.1";
 		bRedisBackgroundSave = false;
 
+		// MySql settings
 		bUseMySql = false;
 		mySqlHost = "127.0.0.1";
 		mySqlDbName = "FireNET";
@@ -94,6 +106,13 @@ struct SGlobalEnvironment
 		mySqlUsername = "admin";
 		mySqlPassword = "qwerty";
 
+		mySqlUsersTableName = "users";
+		mySqlUsersUidName = "uid";
+		mySqlUsersLoginName = "login";
+		mySqlUsersPasswordName = "password";
+		mySqlUsersBanName = "ban";
+
+		// Server settings
 		serverIP = "127.0.0.1";
 		serverPort = 3322;
 		serverRootUser = "admin";

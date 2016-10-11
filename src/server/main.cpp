@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.1";
-	int buildNumber = 183;
+	int buildNumber = 188;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -114,6 +114,12 @@ int main(int argc, char *argv[])
 		gEnv->mySqlDbName = settings.value("db_mysql_database", "FireNET").toString();
 		gEnv->mySqlUsername = settings.value("db_mysql_username", "admin").toString();
 		gEnv->mySqlPassword = settings.value("db_mysql_password", "qwerty").toString();
+
+		gEnv->mySqlUsersTableName = settings.value("db_mysql_auth_table_name", "users").toString();
+		gEnv->mySqlUsersUidName = settings.value("db_mysql_auth_uid_element_name", "uid").toString();
+		gEnv->mySqlUsersLoginName = settings.value("db_mysql_auth_login_element_name", "login").toString();
+		gEnv->mySqlUsersPasswordName = settings.value("db_mysql_auth_password_element_name", "password").toString();
+		gEnv->mySqlUsersBanName = settings.value("db_mysql_auth_ban_status_element_name", "ban").toString();
 
 		start_logging("FireNET.log", gEnv->logLevel);
 
