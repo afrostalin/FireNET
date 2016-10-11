@@ -63,6 +63,7 @@ struct SGlobalEnvironment
 	DBWorker* pDataBase;
 
 	QString redisHost;
+	bool bRedisBackgroundSave;
 
 	bool bUseMySql;
 	QString mySqlHost;
@@ -84,6 +85,7 @@ struct SGlobalEnvironment
 	inline void Init()
 	{
 		redisHost = "127.0.0.1";
+		bRedisBackgroundSave = false;
 
 		bUseMySql = false;
 		mySqlHost = "127.0.0.1";

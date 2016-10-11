@@ -7,9 +7,9 @@
 
 RedisConnector::RedisConnector(QObject *parent)
 {
-	connection = 0; 
+	connection = nullptr;
     connectStatus = false;
-	m_thread = 0;
+	m_thread = nullptr;
 }
 
 void RedisConnector::run()

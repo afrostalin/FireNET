@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.1";
-	int buildNumber = 170;
+	int buildNumber = 178;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -104,7 +104,8 @@ int main(int argc, char *argv[])
 		gEnv->maxThreads = settings.value("sv_maxthreads", "4").toInt();
 
 		// Redis settings
-		gEnv->redisHost = settings.value("redis_host", "127.0.0.1").toString();
+		gEnv->redisHost = settings.value("db_redis_host", "127.0.0.1").toString();
+		gEnv->bRedisBackgroundSave = settings.value("db_redis_background_saving", "0").toBool();
 
 		// MySql settings
 		gEnv->bUseMySql = settings.value("db_use_mysql", "0").toBool();
@@ -142,6 +143,9 @@ int main(int argc, char *argv[])
 			if (gEnv->bUseMySql)
 			{
 				qInfo() << "Start MySql...";
+
+				// If you use MySql you need save all data in Redis first.
+				gEnv->bRedisBackgroundSave = true;
 
 				QThread* mysqlThread = new QThread;
 				gEnv->pMySql = new MySqlConnector;

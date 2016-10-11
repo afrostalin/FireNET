@@ -1,8 +1,10 @@
 #include "dbworker.h"
 #include "global.h"
 #include "redisconnector.h"
+#include "mysqlconnector.h"
 #include "clientquerys.h"
 #include <QRegExp>
+#include <QSqlQuery>
 
 DBWorker::DBWorker(QObject *parent) : QObject(parent)
 {
@@ -257,20 +259,62 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	if (buff == "OK")
 	{
 		qDebug() << "User" << login << "created in Redis DB";
-		result = true;
+
+		// Redis background saving
+		if (gEnv->bRedisBackgroundSave)
+		{
+			QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+			if (!save_buff.isEmpty())
+			{
+				qDebug() << "Redis background saving complete";
+				result = true;
+			}
+			else
+			{
+				qDebug() << "Redis background saving failed";
+				result = false;
+			}
+		}
+		else
+		{
+			result = true;
+		}
 	}
 	else
 	{
-		qDebug() << "Failed create new user in Redis DB";
+		qDebug() << "Failed create user" << login << " in Redis DB";
 		return false;
 	}
 	
 
 	// MySql
-	if (gEnv->bUseMySql && result)
+	if (gEnv->bUseMySql && result && gEnv->pMySql != nullptr)
 	{
-		// do smth
-		//result = false;
+		if (gEnv->pMySql->connectStatus)
+		{
+			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			query->prepare("INSERT INTO users (uid, login, password) "
+				"VALUES (:uid, :login, :password)");
+			query->bindValue(":uid", uid);
+			query->bindValue(":login", login);
+			query->bindValue(":password", password);
+
+			if (query->exec())
+			{
+				qDebug() << "User" << login << "created in MySql DB";
+				result = true;
+			}
+			else
+			{
+				qDebug() << "Failed create user" << login << "in MySql DB";
+				result = false;
+			}
+		}
+		else
+		{
+			qDebug() << "Failed create user" << login << "in MySql DB because MySql DB not opened!";
+			result = false;
+		}
 	}
 
 	return result;
@@ -301,7 +345,26 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	if (buff == "OK" && buff2 == "OK")
 	{
 		qDebug() << "Profile" << profile->nickname << "created in Redis DB";
-		result = true;
+
+		// Redis background saving
+		if (gEnv->bRedisBackgroundSave)
+		{
+			QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+			if (!save_buff.isEmpty())
+			{
+				qDebug() << "Redis background saving complete";
+				result = true;
+			}
+			else
+			{
+				qDebug() << "Redis background saving failed";
+				result = false;
+			}
+		}
+		else
+		{
+			result = true;
+		}	
 	}
 	else
 	{
@@ -310,10 +373,41 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && result)
+	if (gEnv->bUseMySql && result && gEnv->pMySql != nullptr)
 	{
-		// do smth
-		//result = false;
+		if (gEnv->pMySql->connectStatus)
+		{
+			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			query->prepare("INSERT INTO profiles (uid, nickname, model, lvl, xp, money, items, friends, achievements, stats) "
+				"VALUES (:uid, :nickname, :model, :lvl, :xp, :money, :items, :friends, :achievements, :stats)");
+			query->bindValue(":uid", profile->uid);
+			query->bindValue(":nickname", profile->nickname);
+			query->bindValue(":model", profile->model);
+			query->bindValue(":lvl", profile->lvl);
+			query->bindValue(":xp", profile->xp);
+			query->bindValue(":money", profile->money);
+			query->bindValue(":items", profile->items);
+			query->bindValue(":friends", profile->friends);
+			query->bindValue(":achievements", profile->achievements);
+			query->bindValue(":stats", profile->stats);
+
+
+			if (query->exec())
+			{
+				qDebug() << "Profile" << profile->nickname << "created in MySql DB";
+				result = true;
+			}
+			else
+			{
+				qDebug() << "Failed create profile" << profile->nickname << "in MySql DB";
+				result = false;
+			}
+		}
+		else
+		{
+			qDebug() << "Failed create profile" << profile->nickname << "in MySql DB because MySql DB not opened!";
+			result = false;
+		}
 	}
 
 	return result;
@@ -343,7 +437,26 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	if (buff == "OK")
 	{
 		qDebug() << "Profile" << profile->nickname << "updated in Redis DB";
-		result = true;
+
+		// Redis background saving
+		if (gEnv->bRedisBackgroundSave)
+		{
+			QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+			if (!save_buff.isEmpty())
+			{
+				qDebug() << "Redis background saving complete";
+				result = true;
+			}
+			else
+			{
+				qDebug() << "Redis background saving failed";
+				result = false;
+			}
+		}
+		else
+		{
+			result = true;
+		}
 	}
 	else
 	{
