@@ -6,10 +6,10 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    qDebug() << "Set folder to server : ";
+    qInfo() << "Project lines counter v.1.0";
+    qInfo() << "Copyright (c) 2016 Ilya Chernetsov. All rights reserved";
 
-    QTextStream stream(stdin);
-    QString serverFolder = stream.readLine();
+    QString serverFolder = "..\\..\\..\\..\\src\\server";
 
     QStringList fileList;
     fileList.push_back(serverFolder + "\\clientquerys.cpp");
@@ -26,6 +26,9 @@ int main(int argc, char *argv[])
 
     fileList.push_back(serverFolder + "\\redisconnector.cpp");
     fileList.push_back(serverFolder + "\\redisconnector.h");
+
+    fileList.push_back(serverFolder + "\\mysqlconnector.cpp");
+    fileList.push_back(serverFolder + "\\mysqlconnector.h");
 
     fileList.push_back(serverFolder + "\\tcpconnection.cpp");
     fileList.push_back(serverFolder + "\\tcpconnection.h");
