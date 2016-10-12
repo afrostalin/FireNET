@@ -448,6 +448,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	// MySql
 	if (gEnv->bUseMySql && result)
 	{
+		// TODO
 		// do smth
 		//result = false;
 	}
