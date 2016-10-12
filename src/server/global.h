@@ -91,6 +91,9 @@ struct SGlobalEnvironment
 	int maxServers;
 	int maxThreads;
 
+	// Network settings
+	bool bGlobalChatEnable;
+
 
 	inline void Init()
 	{
@@ -121,6 +124,9 @@ struct SGlobalEnvironment
 		maxPlayers = 1000;
 		maxServers = 100;
 		maxThreads = 1;
+
+		// Network settings
+		bGlobalChatEnable = false;
 
 		pServer = nullptr;
 		pRedis = nullptr;

@@ -826,10 +826,16 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 	if (!clientProfile->nickname.isEmpty() && reciver == "all")
 	{
-		// If you need use global chat - uncommented this lines
-		/*QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
+		if (gEnv->bGlobalChatEnable)
+		{
+			QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
+			pServer->sendGlobalMessage(chat.toStdString().c_str());
+		}
+		else
+		{
+			qWarning() << "Client send message to global chat, but global chat now disabled, see server.cfg";
+		}
 
-		pServer->sendGlobalMessage(chat.toStdString().c_str());*/
 		return;
 	}
 	else
