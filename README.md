@@ -31,20 +31,11 @@ On Windows :
 * Start SimpleClient.exe
 
 # WIKI
+
 Please see [FireNET WIKI](https://github.com/afrostalin/FireNET/wiki)
-
-# Examples
-
-* CryEngine simple shooter
-* UnrealEngine simple shooter
-* Unity3D simple shooter 
 
 # TODO List
 
 * Add MongoDB
 * Add game server synchronization with master-server
 * Add compression for big packets 
-
-# Plans
-
-* The database "Redis" has a huge speed because all the data is stored in ram memory, but this advantage follows its main drawback - the possibility of loss of piece of data in case of crash of the server. There is a mechanism called "snapshots" in this database, which periodically asynchronously saves data to disk. It is planned to use a bunch of MongoDB and Redis where Redis will serve as a "hot" cache, providing the speed and MongoDB will be the main database.
