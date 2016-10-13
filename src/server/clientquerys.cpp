@@ -725,73 +725,69 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDataBase;
 
-	int friendUID = pDataBase->GetUIDbyNick(friendName);
-
-	if (pDataBase->ProfileExists(friendUID))
+	if (!clientProfile->nickname.isEmpty())
 	{
+		int friendUID = pDataBase->GetUIDbyNick(friendName);
 		SProfile *friendProfile = pDataBase->GetUserProfile(friendUID);
 
-		if (!clientProfile->nickname.isEmpty() && friendProfile != nullptr)
+		// Check friend is there in friends list
+		if (!CheckAttributeInRow(clientProfile->friends, "friend", "name", friendName) || friendProfile == nullptr)
 		{
-			// Check friend is there in friends list
-			if (!CheckAttributeInRow(clientProfile->friends, "friend", "name", friendProfile->nickname))
-			{
-				qDebug() << "--------------------------Friend not found-------------------------";
-				qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
+			qDebug() << "--------------------------Friend not found-------------------------";
+			qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
 
-				QString result = "<error type='remove_friend_failed' reason = '2'/>";
+			QString result = "<error type='remove_friend_failed' reason = '2'/>";
+			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			return;
+		}
+		else
+		{
+			// Delete friend from client's profile
+			QString removeFriend = "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
+			clientProfile->friends = RemoveElementFromRow(clientProfile->friends, removeFriend);
+			// Delete client from friend's profile
+			removeFriend.clear();
+			removeFriend = "<friend name='" + clientProfile->nickname + "' uid='" + QString::number(clientProfile->uid) + "' status='0'/>";
+			friendProfile->friends = RemoveElementFromRow(friendProfile->friends, removeFriend);
+
+			QSslSocket* friendSocket = GetSocketByUid(friendUID);
+
+			if (UpdateProfile(m_socket, clientProfile) && UpdateProfile(friendSocket, friendProfile))
+			{
+				qDebug() << "------------------------Profile updated-------------------------";
+				qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
+
+				QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+				//Send new info to friend here
+				if (friendSocket != nullptr)
+				{
+					QString friendResult = "<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>";
+					pServer->sendMessageToClient(friendSocket, friendResult.toStdString().c_str());
+				}
+				//
 				return;
 			}
 			else
 			{
-				// Delete friend from client's profile
-				QString removeFriend = "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
-				clientProfile->friends = RemoveElementFromRow(clientProfile->friends, removeFriend);
-				// Delete client from friend's profile
-				removeFriend.clear();
-				removeFriend = "<friend name='" + clientProfile->nickname + "' uid='" + QString::number(clientProfile->uid) + "' status='0'/>";
-				friendProfile->friends = RemoveElementFromRow(friendProfile->friends, removeFriend);
+				qDebug() << "---------------------Can't update profile---------------------";
+				qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-				QSslSocket* friendSocket = GetSocketByUid(friendUID);
-
-				if (UpdateProfile(m_socket, clientProfile) && UpdateProfile(friendSocket, friendProfile))
-				{
-					qDebug() << "------------------------Profile updated-------------------------";
-					qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
-
-					QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
-					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
-
-					//Send new info to friend here
-					if (friendSocket != nullptr)
-					{
-						QString friendResult = "<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>";
-						pServer->sendMessageToClient(friendSocket, friendResult.toStdString().c_str());
-					}
-					//
-					return;
-				}
-				else
-				{
-					qDebug() << "---------------------Can't update profile---------------------";
-					qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
-
-					QString result = "<error type='remove_friend_failed' reason = '1'/>";
-					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
-					return;
-				}
+				QString result = "<error type='remove_friend_failed' reason = '1'/>";
+				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				return;
 			}
 		}
-		else
-		{
-			qDebug() << "----------------------Error get profile-----------------------";
-			qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
+	}
+	else
+	{
+		qDebug() << "----------------------Error get profile-----------------------";
+		qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-			QString result = "<error type='remove_friend_failed' reason = '0'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
-			return;
-		}
+		QString result = "<error type='remove_friend_failed' reason = '0'/>";
+		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		return;
 	}
 }
 

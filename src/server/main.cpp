@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.2";
-	int buildNumber = 34;
+	int buildNumber = 35;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
