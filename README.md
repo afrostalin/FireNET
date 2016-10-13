@@ -12,11 +12,10 @@ The server is based on the QT 5.7 framework, uses the NoSql Redis database, also
 The server is distributed under the MIT license.
 
 # Building
-For building project and modules you need have installed QT 5.7
-
-[Building on Windows (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(QT-Creator))
 
 [Building on Windows (VS2015)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(Visual-Studio-2015))
+
+[Building on Windows (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(QT-Creator))
 
 [Building on Linux (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Linux-(QT-Creator))
 

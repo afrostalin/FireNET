@@ -66,9 +66,9 @@ int ClientQuerys::GetUidBySocket(QSslSocket* socket)
 
 bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
 {
-	if (!gEnv->pRedis->connectStatus)
-    {
-        qCritical() << "Can't update profile, because Redis not connected!";
+	if (!gEnv->pRedis && !gEnv->pMySql)
+	{
+        qCritical() << "Can't update profile, because no connected database";
         return false;
     }
 

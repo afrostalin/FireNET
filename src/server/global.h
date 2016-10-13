@@ -62,12 +62,15 @@ struct SGlobalEnvironment
 	MySqlConnector* pMySql;
 	DBWorker* pDataBase;
 
+	// Databases settings
+	bool bUseRedis;
+	bool bUseMySql;
+
 	// Redis settings
 	QString redisHost;
 	bool bRedisBackgroundSave;
 
 	// MySql settings
-	bool bUseMySql;
 	QString mySqlHost;
 	int mySqlPort;
 	QString mySqlDbName;
@@ -97,12 +100,15 @@ struct SGlobalEnvironment
 
 	inline void Init()
 	{
+		// Databases settings
+		bUseRedis = true;
+		bUseMySql = false;
+
 		// Redis settings
 		redisHost = "127.0.0.1";
 		bRedisBackgroundSave = false;
 
 		// MySql settings
-		bUseMySql = false;
 		mySqlHost = "127.0.0.1";
 		mySqlDbName = "FireNET";
 		mySqlPort = 3306;

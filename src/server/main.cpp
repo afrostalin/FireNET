@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.2";
-	int buildNumber = 11;
+	int buildNumber = 34;
 
 	QCoreApplication::setApplicationName("FireNET");
 	QCoreApplication::setApplicationVersion(buildVersion);
@@ -103,12 +103,30 @@ int main(int argc, char *argv[])
 		gEnv->maxServers = settings.value("sv_maxservers", "100").toInt();
 		gEnv->maxThreads = settings.value("sv_maxthreads", "4").toInt();
 
+		// Database mode (Redis, MySql, Redis+MySql)
+		QString db_mode = settings.value("db_mode", "Redis").toString();
+
+		if (db_mode == "Redis")
+		{
+			gEnv->bUseRedis = true;
+			gEnv->bUseMySql = false;
+		}
+		if (db_mode == "MySql")
+		{
+			gEnv->bUseMySql = true;
+			gEnv->bUseRedis = false;
+		}
+		if (db_mode == "Redis+MySql")
+		{
+			gEnv->bUseMySql = true;
+			gEnv->bUseRedis = true;
+		}
+
 		// Redis settings
 		gEnv->redisHost = settings.value("db_redis_host", "127.0.0.1").toString();
 		gEnv->bRedisBackgroundSave = settings.value("db_redis_background_saving", "0").toBool();
 
 		// MySql settings
-		gEnv->bUseMySql = settings.value("db_use_mysql", "0").toBool();
 		gEnv->mySqlHost = settings.value("db_mysql_host", "127.0.0.1").toString();
 		gEnv->mySqlPort = settings.value("db_mysql_port", "3306").toInt();
 		gEnv->mySqlDbName = settings.value("db_mysql_database", "FireNET").toString();
@@ -140,21 +158,22 @@ int main(int argc, char *argv[])
 			gEnv->pDataBase = new DBWorker;
 
 			qInfo() << "Server started!";
-			qInfo() << "Start Redis...";
 
-			QThread* redisThread = new QThread;
-			gEnv->pRedis = new RedisConnector;
-			gEnv->pRedis->moveToThread(redisThread);
-			QObject::connect(redisThread, &QThread::started, gEnv->pRedis, &RedisConnector::run);
-			QObject::connect(redisThread, &QThread::finished, gEnv->pRedis, &RedisConnector::deleteLater);
-			redisThread->start();
+			if (gEnv->bUseRedis)
+			{
+				qInfo() << "Start Redis...";
+				QThread* redisThread = new QThread;
+				gEnv->pRedis = new RedisConnector;
+				gEnv->pRedis->moveToThread(redisThread);
+				QObject::connect(redisThread, &QThread::started, gEnv->pRedis, &RedisConnector::run);
+				QObject::connect(redisThread, &QThread::finished, gEnv->pRedis, &RedisConnector::deleteLater);
+				redisThread->start();
+			}
 
 			if (gEnv->bUseMySql)
 			{
 				qInfo() << "Start MySql...";
-
 				gEnv->bRedisBackgroundSave = true;
-
 				QThread* mysqlThread = new QThread;
 				gEnv->pMySql = new MySqlConnector;
 				gEnv->pMySql->moveToThread(mysqlThread);

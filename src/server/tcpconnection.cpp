@@ -5,6 +5,7 @@
 #include <QXmlStreamReader>
 #include "global.h"
 #include "clientquerys.h"
+#include "mysqlconnector.h"
 
 TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 {
@@ -74,9 +75,9 @@ void TcpConnection::readyRead()
     if(!m_socket) 
 		return;
 
-	if (!gEnv->pRedis->connectStatus)
+	if (!gEnv->pRedis && !gEnv->pMySql)
 	{
-        qCritical() << "Client can't use database functions without connection to Redis!!!";
+        qCritical() << "Client can't use database functions without connection to database!!!";
 		return;
 	}
 	QByteArray bytes;
