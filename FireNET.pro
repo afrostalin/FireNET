@@ -1,7 +1,7 @@
-QT += core
-QT += sql
-QT += network
 QT -= gui
+QT += core
+QT += network
+QT += sql
 
 CONFIG += c++11
 
