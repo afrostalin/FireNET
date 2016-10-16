@@ -855,69 +855,6 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	}
 }
 
-void ClientQuerys::onGameServerRegister(QByteArray & bytes)
-{
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString serverName = attributes.value("name").toString();
-	QString serverIp = attributes.value("ip").toString();
-	int serverPort = attributes.value("port").toInt();
-	QString mapName = attributes.value("map").toString();
-	QString gamerules = attributes.value("gamerules").toString();
-	int online = attributes.value("online").toInt();
-	int maxPlayers = attributes.value("maxPlayers").toInt();
-
-	if (serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
-	{
-		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
-		return;
-	}
-
-	QVector<SGameServer>::iterator it;
-	for (it = vServers.begin(); it != vServers.end(); ++it)
-	{
-		if (it->name == serverName)
-		{
-			qDebug() << "---------------Server with this name alredy registered---------------";
-			qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
-			return;
-		}
-		if (it->ip == serverIp && it->port == serverPort)
-		{
-			qDebug() << "-------------Server with this address alredy registered--------------";
-			qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
-			return;
-		}
-	}
-
-	// Register new game server here
-	SGameServer gameServer;
-	gameServer.socket = m_socket;
-	gameServer.name = serverName;
-	gameServer.ip = serverIp;
-	gameServer.port = serverPort;
-	gameServer.map = mapName;
-	gameServer.gamerules = gamerules;
-	gameServer.online = online;
-	gameServer.maxPlayers = maxPlayers;
-
-	vServers.push_back(gameServer);
-
-	// Update client info
-	QVector<SClient>::iterator clientIt;
-	for (clientIt = vClients.begin(); clientIt != vClients.end(); ++it)
-	{
-		if (clientIt->socket == m_socket)
-		{
-			clientIt->isGameServer = true;
-			break;
-		}
-	}
-
-	qDebug() << "Game server [" << serverName << "] registered!";
-	qDebug() << "Connected game servers count = " << vServers.size();
-}
-
 void ClientQuerys::onGetGameServer(QByteArray & bytes)
 {
 	if (clientProfile->uid <= 0)
@@ -1033,4 +970,80 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 	// Send error to client
 	QString result = "<error type='get_game_server_failed' reason = '1'/>";
 	pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+}
+
+// Game server functionality
+void ClientQuerys::onGameServerRegister(QByteArray & bytes)
+{
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	QString serverName = attributes.value("name").toString();
+	QString serverIp = attributes.value("ip").toString();
+	int serverPort = attributes.value("port").toInt();
+	QString mapName = attributes.value("map").toString();
+	QString gamerules = attributes.value("gamerules").toString();
+	int online = attributes.value("online").toInt();
+	int maxPlayers = attributes.value("maxPlayers").toInt();
+
+	if (serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
+	{
+		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+		return;
+	}
+
+	QVector<SGameServer>::iterator it;
+	for (it = vServers.begin(); it != vServers.end(); ++it)
+	{
+		if (it->name == serverName)
+		{
+			qDebug() << "---------------Server with this name alredy registered---------------";
+			qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
+			return;
+		}
+		if (it->ip == serverIp && it->port == serverPort)
+		{
+			qDebug() << "-------------Server with this address alredy registered--------------";
+			qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
+			return;
+		}
+	}
+
+	// Register new game server here
+	SGameServer gameServer;
+	gameServer.socket = m_socket;
+	gameServer.name = serverName;
+	gameServer.ip = serverIp;
+	gameServer.port = serverPort;
+	gameServer.map = mapName;
+	gameServer.gamerules = gamerules;
+	gameServer.online = online;
+	gameServer.maxPlayers = maxPlayers;
+
+	vServers.push_back(gameServer);
+
+	// Update client info
+	QVector<SClient>::iterator clientIt;
+	for (clientIt = vClients.begin(); clientIt != vClients.end(); ++it)
+	{
+		if (clientIt->socket == m_socket)
+		{
+			clientIt->isGameServer = true;
+			break;
+		}
+	}
+
+	qDebug() << "Game server [" << serverName << "] registered!";
+	qDebug() << "Connected game servers count = " << vServers.size();
+}
+
+void ClientQuerys::onGameServerUpdateInfo(QByteArray & bytes)
+{
+}
+
+void ClientQuerys::onGameServerGetOnlineProfile(QByteArray & bytes)
+{
+}
+
+void ClientQuerys::onGameServerUpdateOnlineProfile(QByteArray & bytes)
+{
 }

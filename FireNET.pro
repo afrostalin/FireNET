@@ -50,9 +50,9 @@ CONFIG(release, debug|release) {
 
 unix {
 CONFIG(debug, debug|release) {
-    LIBS += -L$$PWD/3rd/libs/linux/Debug -lqredisclient -lLogger -lz -lssh2
+    LIBS += -L$$PWD/3rd/libs/linux/Debug -lqredisclient -lLogger -lz -lssh2 -lssl
 }
 CONFIG(release, debug|release) {
-    LIBS += -L$$PWD/3rd/libs/linux/Release -lqredisclient -lLogger -lz -lssh2
+    LIBS += -L$$PWD/3rd/libs/linux/Release -lqredisclient -lLogger -lz -lssh2 -lssl
 }
 }

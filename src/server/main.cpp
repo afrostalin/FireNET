@@ -77,7 +77,7 @@ void start_logging(QString logName, int level)
 
 int main(int argc, char *argv[])
 {
-	QCoreApplication *a = new QCoreApplication(argc, argv);
+    QCoreApplication *a = new QCoreApplication(argc, argv);
 
 	// Init global environment
 	gEnv->Init();
@@ -86,8 +86,9 @@ int main(int argc, char *argv[])
 	QString buildVersion = "2.0.2";
 	int buildNumber = 35;
 
-	QCoreApplication::setApplicationName("FireNET");
-	QCoreApplication::setApplicationVersion(buildVersion);
+    a->addLibraryPath("plugins");
+    a->setApplicationName("FireNET");
+    a->setApplicationVersion(buildVersion);
 
 	if (init())
 	{
