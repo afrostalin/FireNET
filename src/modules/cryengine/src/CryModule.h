@@ -17,12 +17,6 @@ FireNET_API void RegisterFlowNodes()
 {
 	gEnv->pLog->Log(TITLE "Register flow nodes...");
 
-	/*if ()
-	{
-		gEnv->pLog->LogWarning(TITLE "It's dedicated server, not need register flow graph!");
-	return;
-	}*/
-
 	if (IFlowSystem* pFlow= gEnv->pGame->GetIGameFramework()->GetIFlowSystem())
 	{
 		for (CAutoRegFlowNodeBase* pFactory = CAutoRegFlowNodeBase::m_pFirst; pFactory; pFactory = pFactory->m_pNext )
@@ -57,8 +51,9 @@ FireNET_API void InitModule(SSystemGlobalEnvironment& gCryEnv)
 		// Register CVars, commands
 		gCryModule->pCVars->RegisterCVars();
 		gCryModule->pCVars->RegisterCComands();
-
+#ifdef CLIENT
 		gCryModule->pUIEvents->RegisterUIEvents();
+#endif
 	}
 	else
 		gEnv->pLog->LogError(TITLE "Failed init module!");
@@ -69,5 +64,24 @@ FireNET_API void SendRequestToServer(const char* message)
 	if (gCryModule->pNetwork != nullptr)
 		gCryModule->pNetwork->SendQuery(message);
 }
+
+#ifdef DEDICATED
+
+FireNET_API void GameServerUpdateInfo()
+{
+
+}
+
+FireNET_API SProfile* GameServerGetOnlineProfile(int uid)
+{
+	return nullptr;
+}
+
+FireNET_API void GameServerUpdateOnlineProfile(SProfile* profile)
+{
+
+}
+
+#endif
 
 #endif
