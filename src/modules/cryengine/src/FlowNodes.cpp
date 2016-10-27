@@ -1328,8 +1328,8 @@ namespace FireNET
 		SActivationInfo m_actInfo;
 	};
 
-	// Spawn player AI model
-	class CFlowNode_SpawnArchetypeEntity2 : public CFlowBaseNode<eNCT_Singleton>
+	// Spawn player model
+	class CFlowNode_SpawnPlayerModel : public CFlowBaseNode<eNCT_Singleton>
 	{
 		enum EInputPorts
 		{
@@ -1351,13 +1351,13 @@ namespace FireNET
 
 	public:
 		////////////////////////////////////////////////////
-		CFlowNode_SpawnArchetypeEntity2(SActivationInfo* pActInfo)
+		CFlowNode_SpawnPlayerModel(SActivationInfo* pActInfo)
 		{
 
 		}
 
 		////////////////////////////////////////////////////
-		virtual ~CFlowNode_SpawnArchetypeEntity2(void)
+		virtual ~CFlowNode_SpawnPlayerModel(void)
 		{
 
 		}
@@ -1373,21 +1373,21 @@ namespace FireNET
 		{
 			static const SInputPortConfig inputs[] =
 			{
-				InputPortConfig_Void("Spawn",        _HELP("Spawn an entity using the values below")),
-				InputPortConfig<string>("Archetype", "",                                              _HELP("Entity archetype name"),0,  _UICONFIG("enum_global:entity_archetypes")),
-				InputPortConfig<string>("Name",      "",                                              _HELP("Entity's name"),  0,  0),
-				InputPortConfig<Vec3>("Pos",         _HELP("Initial position")),
-				InputPortConfig<Vec3>("Rot",         _HELP("Initial rotation")),
-				InputPortConfig<Vec3>("Scale",       Vec3(1,                                          1,                       1), _HELP("Initial scale")),
-				InputPortConfig<string>("Model","",_HELP("Model name"),  0,  0),
+				InputPortConfig_Void("Spawn", _HELP("Spawn an entity using the values below")),
+				InputPortConfig<string>("Archetype", "", _HELP("Entity archetype name"), 0, _UICONFIG("enum_global:entity_archetypes")),
+				InputPortConfig<string>("Name",      "", _HELP("Entity's name"),  0,  0),
+				InputPortConfig<Vec3>("Pos", _HELP("Initial position")),
+				InputPortConfig<Vec3>("Rot", _HELP("Initial rotation")),
+				InputPortConfig<Vec3>("Scale", Vec3(1,1,1), _HELP("Initial scale")),
+				InputPortConfig<string>("Model","",_HELP("Model name"), 0, 0),
 				{ 0 }
 			};
 
 			static const SOutputPortConfig outputs[] =
 			{
-				OutputPortConfig_Void("Done",           _HELP("Called when job is done")),
+				OutputPortConfig_Void("Done", _HELP("Called when job is done")),
 				OutputPortConfig<EntityId>("Succeeded", _HELP("Called when entity is spawned")),
-				OutputPortConfig_Void("Failed",         _HELP("Called when entity fails to spawn")),
+				OutputPortConfig_Void("Failed", _HELP("Called when entity fails to spawn")),
 				{ 0 }
 			};
 
@@ -1457,6 +1457,8 @@ namespace FireNET
 						}
 
 						pEntity = gEnv->pEntitySystem->SpawnEntity(params);
+						pEntity->EnablePhysics(false);
+
 						if (pEntity)
 						{
 							IEntityRenderProxy* pRenderProx = (IEntityRenderProxy*)pEntity->GetProxy(ENTITY_PROXY_RENDER);
@@ -1501,6 +1503,100 @@ namespace FireNET
 					}
 
 					ActivateOutput(pActInfo, EOP_Done, true);
+				}
+			}
+			break;
+			}
+		}
+
+		////////////////////////////////////////////////////
+		virtual void GetMemoryUsage(ICrySizer* s) const
+		{
+			s->Add(*this);
+		}
+	};
+
+	// Remove entity
+	class CFlowNode_RemoveEntity : public CFlowBaseNode<eNCT_Singleton>
+	{
+		enum EInputPorts
+		{
+			EIP_Remove,
+			EIP_EntityID,
+		};
+
+		enum EOutputPorts
+		{
+			EOP_Done,
+			EOP_Failed,
+		};
+
+	public:
+		////////////////////////////////////////////////////
+		CFlowNode_RemoveEntity(SActivationInfo* pActInfo)
+		{
+
+		}
+
+		////////////////////////////////////////////////////
+		virtual ~CFlowNode_RemoveEntity(void)
+		{
+
+		}
+
+		////////////////////////////////////////////////////
+		virtual void Serialize(SActivationInfo* pActInfo, TSerialize ser)
+		{
+
+		}
+
+		////////////////////////////////////////////////////
+		virtual void GetConfiguration(SFlowNodeConfig& config)
+		{
+			static const SInputPortConfig inputs[] =
+			{
+				InputPortConfig_Void("Remove", _HELP("Remove entity")),
+				InputPortConfig<EntityId>("EntityID", _HELP("Entity id")),
+				{ 0 }
+			};
+
+			static const SOutputPortConfig outputs[] =
+			{
+				OutputPortConfig_Void("Done", _HELP("Called when entity removed")),
+				OutputPortConfig_Void("Failed",_HELP("Called when entity fails to remove")),
+				{ 0 }
+			};
+
+			config.pInputPorts = inputs;
+			config.pOutputPorts = outputs;
+			config.sDescription = _HELP("Remove enity by EntityID");
+			config.SetCategory(EFLN_ADVANCED);
+		}
+
+		////////////////////////////////////////////////////
+		virtual void ProcessEvent(EFlowEvent event, SActivationInfo* pActInfo)
+		{
+			switch (event)
+			{
+			case eFE_Activate:
+			{
+				if (IsPortActive(pActInfo, EIP_Remove))
+				{
+					EntityId entityID  = GetPortEntityId(pActInfo, EIP_EntityID);
+
+					IEntity* pEntity = gEnv->pEntitySystem->GetEntity(entityID);
+
+					if (pEntity)
+					{
+						gEnv->pEntitySystem->RemoveEntity(entityID, true);
+						ActivateOutput(pActInfo, EOP_Done, true);
+					}
+					else
+					{
+						ActivateOutput(pActInfo, EOP_Failed, true);
+						gEnv->pLog->LogAlways(TITLE  "Failed remove entity, because entity not found!");
+					}
+					
 				}
 			}
 			break;
@@ -1613,12 +1709,13 @@ REGISTER_FLOW_NODE_EX("FireNET:Friends:AddFriend", FireNET::CFlowNode_AddFriend,
 REGISTER_FLOW_NODE_EX("FireNET:Friends:RemoveFriend", FireNET::CFlowNode_RemoveFriend, CFlowNode_RemoveFriend);
 REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET::CFlowNode_GetFriends, CFlowNode_GetFriends);
 
-// If you need use global chat - uncommented this line
-//REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", Online::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
+REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", FireNET::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
 REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
 
 // This need only for creating 3D menu with character selection
-REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnArchetypeEntity2, CFlowNode_SpawnArchetypeEntity2);
+REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnPlayerModel, CFlowNode_SpawnPlayerModel);
+REGISTER_FLOW_NODE_EX("FireNET:Other:RemoveEntity", FireNET::CFlowNode_RemoveEntity, CFlowNode_RemoveEntity);
+
 
 REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET::CFlowNode_SendInvite, CFlowNode_SendInvite);
 REGISTER_FLOW_NODE_EX("FireNET:Invites:DeclineInvite", FireNET::CFlowNode_DeclineInvite, CFlowNode_DeclineInvite);
