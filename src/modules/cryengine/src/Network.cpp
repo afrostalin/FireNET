@@ -69,12 +69,35 @@ void CNetwork::ConnectToServer()
 	{
 		QString adrress = gEnv->pConsole->GetCVar("firenet_ip")->GetString();
 		int port = gEnv->pConsole->GetCVar("firenet_port")->GetIVal();
+		float timeout = gEnv->pConsole->GetCVar("firenet_timeout")->GetFVal();
 
 		if (!adrress.isEmpty() && port != 0)
 		{
 			gEnv->pLog->LogAlways(TITLE  "Connecting to FireNET...");
 
 			m_socket->connectToHostEncrypted(adrress, port);
+
+			float start_time = gEnv->pTimer->GetCurrTime();
+			float end_time = start_time + timeout; 
+
+			gEnv->pLog->LogAlways(TITLE  "Start time = %f, end time = %f", start_time, end_time);
+
+			while (gEnv->pTimer->GetCurrTime() <= end_time)
+			{
+				if (gCryModule->bConnected)
+				{
+					return;
+				}
+
+				CrySleep(33);
+			}
+
+			// If server not connecting after timeout
+			gEnv->pLog->LogError(TITLE  "Can't connect to FireNET. Connection timeout!");
+
+			SUIArguments args;
+			args.AddArgument("@connectionTimeout");
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
 		}
 		else
 		{

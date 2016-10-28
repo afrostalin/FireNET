@@ -85,6 +85,7 @@ bool CModuleCVars::RegisterCVars()
 	{
 		gEnv->pConsole->RegisterString("firenet_ip", gCryModule->online_ms_address, VF_NULL, "FireNET ip address");
 		gEnv->pConsole->RegisterInt("firenet_port", gCryModule->online_ms_port, VF_NULL, "FireNET port");
+		gEnv->pConsole->RegisterFloat("firenet_timeout", gCryModule->online_ms_timeout, VF_NULL, "FireNET timeout in seconds");
 		return true;
 	}
 

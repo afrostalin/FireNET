@@ -63,7 +63,8 @@ struct SGlobalCryModule
 
 	string online_ms_address;
 	int online_ms_port;
-	float timeout;
+	float online_ms_timeout;
+
 	bool bConnected;
 
 	inline void Init()
@@ -74,7 +75,7 @@ struct SGlobalCryModule
 		// Ints
 		online_ms_port = 3322;
 		// Floats
-		timeout = 3.0f;
+		online_ms_timeout = 3.0f;
 		// Booleans
 		bConnected = false;
 		// Pointers
