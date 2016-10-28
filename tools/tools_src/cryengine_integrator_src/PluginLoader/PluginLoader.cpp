@@ -10,9 +10,15 @@ CPLuginLoader* pPluginLoader = new CPLuginLoader;
 CPLuginLoader::CPLuginLoader()
 {
 	hndl = nullptr;
-	pInitModule = nullptr;
-	pRegisterFlowNodes = nullptr;
-	pSendRequest = nullptr;
+	InitModule = nullptr;
+	SendRequest = nullptr;
+	RegisterFlowNodes = nullptr;
+
+#if defined(DEDICATED_SERVER)
+	GameServerUpdateInfo = nullptr;
+	GameServerGetOnlineProfile = nullptr;
+	GameServerUpdateOnlineProfile = nullptr;
+#endif	
 }
 
 CPLuginLoader::~CPLuginLoader()
@@ -28,13 +34,20 @@ void CPLuginLoader::LoadPlugin()
 
 	if (hndl != nullptr)
 	{
-		pInitModule = (void(*)(SSystemGlobalEnvironment&)) CryGetProcAddress(hndl, "InitModule");
-		pRegisterFlowNodes = (void(*)(void)) CryGetProcAddress(hndl, "RegisterFlowNodes");
-		pSendRequest = (void(*)(const char*)) CryGetProcAddress(hndl, "SendRequestToServer");
 
-		if (pInitModule != nullptr && pRegisterFlowNodes != nullptr && pSendRequest != nullptr)
+		InitModule = (void(*)(SSystemGlobalEnvironment&)) CryGetProcAddress(hndl, "InitModule");
+		SendRequest = (void(*)(const char*)) CryGetProcAddress(hndl, "SendRequestToServer");
+		RegisterFlowNodes = (void(*)(void)) CryGetProcAddress(hndl, "RegisterFlowNodes");
+
+#if defined(DEDICATED_SERVER)
+		GameServerUpdateInfo = (void(*)(void)) CryGetProcAddress(hndl, "GameServerUpdateInfo");
+		GameServerGetOnlineProfile = (SProfile*(*)(int)) CryGetProcAddress(hndl, "GameServerGetOnlineProfile");
+		GameServerUpdateOnlineProfile = (void(*)(SProfile*)) CryGetProcAddress(hndl, "GameServerUpdateOnlineProfile");
+
+		if (InitModule != nullptr && SendRequest != nullptr  && RegisterFlowNodes != nullptr &&
+			GameServerUpdateInfo != nullptr && GameServerGetOnlineProfile != nullptr && GameServerUpdateOnlineProfile != nullptr)
 		{
-			pInitModule(*gEnv);
+			InitModule(*gEnv);
 			CryLogAlways(PLUGIN_LOADED);
 		}
 		else
@@ -42,6 +55,18 @@ void CPLuginLoader::LoadPlugin()
 			hndl = nullptr;
 			CryLogAlways(PLUGIN_ERROR " - POINTERS ERROR");
 		}
+#else
+		if (InitModule != nullptr && RegisterFlowNodes != nullptr && SendRequest != nullptr)
+		{
+			InitModule(*gEnv);
+			CryLogAlways(PLUGIN_LOADED);
+		}
+		else
+		{
+			hndl = nullptr;
+			CryLogAlways(PLUGIN_ERROR " - POINTERS ERROR");
+		}
+#endif	
 	}
 	else
 	{

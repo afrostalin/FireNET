@@ -126,7 +126,8 @@ bool UpdateGameCpp(QString cryEngineFolder)
                              "\tpPluginLoader->LoadPlugin();\n";
 
             QString paste2 = "\t\t// Plugin loader\n"
-                             "\t\tpPluginLoader->pRegisterFlowNodes();\n";
+                             "\t\tif (pPluginLoader->hndl != nullptr)\n"
+                             "\t\t\tpPluginLoader->RegisterFlowNodes();\n";
 
             QString line;
             do
@@ -157,6 +158,8 @@ bool UpdateGameCpp(QString cryEngineFolder)
                     textBuffer.append(paste2);
                     line2Finded = true;
                 }
+
+
             } while (!line.isNull());
 
             if(!textBuffer.isEmpty() && line0Finded && line1Finded && line2Finded)
@@ -355,7 +358,7 @@ bool CopyFireNetLibraries(QString cryEngineFolder)
     qInfo() << "Coping FireNET libraries...";
 
     QFile file0 (cryEngineFolder + "/bin/win_x64/FireNET.dll");
-    QFile file1 (cryEngineFolder + "/bin/win_x64_dedicated/FireNET.dll");
+    QFile file1 (cryEngineFolder + "/bin/win_x64_dedicated/FireNET_Dedicated.dll");
 
     qInfo() << "Removing old FireNET libraries...";
 
@@ -365,7 +368,7 @@ bool CopyFireNetLibraries(QString cryEngineFolder)
     qInfo() << "Copying new FireNET libraries...";
 
     if(QFile::copy("../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64/FireNET.dll") &&
-            QFile::copy("../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET.dll"))
+            QFile::copy("../bin/WIN64/_modules/cryengine/debug/FireNET_Dedicated.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET_Dedicated.dll"))
     {
         qInfo() << "FireNET libraries copyed!";
         return true;
