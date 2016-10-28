@@ -1,0 +1,144 @@
+<UIElements name="FireNetUI">
+
+	<UIElement name="FireNetUI:AuthenticationPage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="AuthenticationPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetServerResultText" funcname="SetServerResultText" desc="Set server result">
+				<param name="Result" desc="Result text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+			
+			<function name="ShowLoginPage" funcname="ShowLoginPage" desc="Need to show login page after rigistration complete"/>
+			
+		</functions>
+
+		<events>
+		
+			<event name="OnLogin" fscommand="onLogin" desc="Start when login button pressed">
+				<param name="Email" desc="Email" type="string"/>
+				<param name="Password" desc="Password" type="string"/>
+			</event>
+			
+			<event name="OnRegister" fscommand="onRegister" desc="Start when register button pressed">
+				<param name="Email" desc="Email" type="string"/>
+				<param name="Password" desc="Password" type="string"/>
+			</event>
+
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+		</events>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:CreateProfilePage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="CreateProfilePage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetServerResultText" funcname="SetServerResultText" desc="Set server result">
+				<param name="Result" desc="Result text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+			
+			<function name="AddCharacter" funcname="AddCharacter" desc="Add character to UI character list">
+				<param name="Race" desc="Character race" type="string"/>
+				<param name="Gender" desc="Character gender" type="string"/>
+				<param name="Color" desc="Character color" type="string"/>
+				<param name="Model" desc="Character model" type="string"/>
+			</function>
+			
+			<function name="InitTable" funcname="Init" desc="Need to init characters table"/>
+			
+		</functions>
+
+		<events>
+		
+			<event name="OnCreateProfile" fscommand="onCreateProfile" desc="Start when create profile button pressed">
+				<param name="Race" desc="Character race" type="string"/>
+				<param name="Gender" desc="Character gender" type="string"/>
+				<param name="Color" desc="Character color" type="string"/>
+				<param name="Model" desc="Character model" type="string"/>
+				<param name="Nickname" desc="Profile nickname" type="string"/>
+			</event>
+
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
+			<event name="OnChangeCharacter" fscommand="onChangeCharacter" desc="Start when need update character model">
+				<param name="Race" desc="Character race" type="string"/>
+				<param name="Gender" desc="Character gender" type="string"/>
+				<param name="Color" desc="Character color" type="string"/>
+				<param name="Model" desc="Character model" type="string"/>
+			</event>
+			
+		</events>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:LoadingPage" mouseevents="0" keyevents="0" cursor="0">
+
+		<GFx file="LoadingPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetLoadingStatus" funcname="SetLoadingStatus" desc="Set loading text">
+				<param name="Status" desc="Status text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+
+		</functions>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:ErrorPage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="ErrorPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetErrorText" funcname="SetErrorText" desc="Set error text">
+				<param name="Error" desc="Error text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+
+		</functions>
+		
+		<events>
+		
+			<event name="OnAccept" fscommand="onAccept" desc="Start when accept button pressed"/>
+			
+		</events>
+
+	</UIElement>
+	
+</UIElements>
