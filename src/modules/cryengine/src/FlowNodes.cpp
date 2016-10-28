@@ -168,7 +168,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortEmail");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -176,7 +176,7 @@ namespace FireNET
 						{
 							SUIArguments args;
 							args.AddArgument("@shortPassword");
-							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 						}
 						else
 						{
@@ -264,7 +264,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortEmail");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -273,7 +273,7 @@ namespace FireNET
 						{
 							SUIArguments args;
 							args.AddArgument("@shortPassword");
-							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 						}
 						else
 						{
@@ -359,7 +359,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortNickname");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -583,7 +583,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortItemName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -666,7 +666,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortItemName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -759,7 +759,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@youCannotSendInviteYourself");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 						break;
 					}
 
@@ -767,7 +767,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortUserName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -781,7 +781,7 @@ namespace FireNET
 							{
 								SUIArguments args;
 								args.AddArgument("@thisUserAlredyAddedToYouFriends");
-								gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+								gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 								userAdded = true;
 								break;
 							}
@@ -874,7 +874,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortUserName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -956,7 +956,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 						gEnv->pLog->LogError(TITLE "Can't add friend because friend name short!");
 					}
@@ -1041,7 +1041,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 						gEnv->pLog->LogError(TITLE "Can't add friend because friend name short!");
 					}
@@ -1212,7 +1212,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortMessage");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -1297,7 +1297,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortMessage");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{

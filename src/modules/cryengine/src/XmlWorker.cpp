@@ -110,7 +110,7 @@ void CXmlWorker::onError(const char* data)
 						args.AddArgument("@incorrectPassword");
 
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -124,7 +124,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "1")
 						args.AddArgument("@serverError");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -140,7 +140,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "2")
 						args.AddArgument("@profileAlredyCreated");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -186,7 +186,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "5")
 						args.AddArgument("@lowProfileLevel");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -204,7 +204,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "3")
 						args.AddArgument("@itemNotFound");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -220,7 +220,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "2")
 						args.AddArgument("@userDeclineInvite");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -240,7 +240,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "4")
 						args.AddArgument("@friendAlredyAdded");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -256,7 +256,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "2")
 						args.AddArgument("@friendNotFound");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}
@@ -270,7 +270,7 @@ void CXmlWorker::onError(const char* data)
 					if (reason == "1")
 						args.AddArgument("@serverNotFound");
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
 					return;
 				}

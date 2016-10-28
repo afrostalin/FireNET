@@ -31,6 +31,8 @@ public:
 		eUIGE_OnClanInviteRecived,
 		eUIGE_OnFriendUpdateStatus,
 		eUIGE_OnMatchmakingSuccess,
+		eUIGE_OnServerResultRecived,
+		eUIGE_OnServerMessageRecive,
 	};
 	void SendEvent(EUIGameEvents event, const SUIArguments& args);
 	void SendEmptyEvent(EUIGameEvents);

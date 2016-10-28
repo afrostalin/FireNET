@@ -113,6 +113,16 @@ bool CModuleUIEvents::RegisterUIEvents()
 		SUIEventDesc OnMatchmakingSuccess("Matchmaking:OnMatchmakingSuccess", "Matchmaking:OnMatchmakingSuccess", "Event when client start work with game server");
 		m_EventMap[eUIGE_OnMatchmakingSuccess] = m_pGameEvents->RegisterEvent(OnMatchmakingSuccess);
 
+		// On server result recived
+		SUIEventDesc OnServerResultRecived("System:OnServerResultRecived", "System:OnServerResultRecived", "Event when client give some result from online server");
+		OnServerResultRecived.AddParam<SUIParameterDesc::eUIPT_String>("Result", "Result string");
+		m_EventMap[eUIGE_OnServerResultRecived] = m_pGameEvents->RegisterEvent(OnServerResultRecived);
+
+		// On server message recived
+		SUIEventDesc OnServerMessageRecived("System:OnServerMessageRecived", "System:OnServerMessageRecived", "Event when client give some message from online server");
+		OnServerMessageRecived.AddParam<SUIParameterDesc::eUIPT_String>("Message", "Message string");
+		m_EventMap[eUIGE_OnServerMessageRecive] = m_pGameEvents->RegisterEvent(OnServerMessageRecived);
+
 		return true;
 	}
 
