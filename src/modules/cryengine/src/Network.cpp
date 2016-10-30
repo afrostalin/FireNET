@@ -160,7 +160,7 @@ void CNetwork::onBytesWritten(qint64 bytes)
 
 void CNetwork::onDisconnected()
 {
-	gEnv->pLog->LogWarning(TITLE  "Connection with FireNET lost!!!");
+	gEnv->pLog->LogError(TITLE  "Connection with FireNET lost!!!");
 	gCryModule->bConnected = false;
 
 	SUIArguments args;
