@@ -84,6 +84,11 @@ struct SGlobalEnvironment
 	QString mySqlUsersPasswordName;
 	QString mySqlUsersBanName;
 
+	// HTTP settings
+	bool bUseAuthByHTTP;
+	QString http_authPage;
+	QString http_regPage;
+
 	// Server settings
 	QString serverIP;
 	int serverPort;
@@ -96,7 +101,6 @@ struct SGlobalEnvironment
 
 	// Network settings
 	bool bGlobalChatEnable;
-
 
 	inline void Init()
 	{
@@ -121,6 +125,11 @@ struct SGlobalEnvironment
 		mySqlUsersPasswordName = "password";
 		mySqlUsersBanName = "ban";
 
+		// HTTP settings
+		bUseAuthByHTTP = false;
+		http_authPage = "http://127.0.0.1/auth.php";
+		http_regPage = "http://127.0.0.1/reg.php";
+
 		// Server settings
 		serverIP = "127.0.0.1";
 		serverPort = 3322;
@@ -133,7 +142,8 @@ struct SGlobalEnvironment
 
 		// Network settings
 		bGlobalChatEnable = false;
-
+	
+		// Pointers
 		pServer = nullptr;
 		pRedis = nullptr;
 		pMySql = nullptr;

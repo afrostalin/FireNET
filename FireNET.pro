@@ -23,7 +23,8 @@ SOURCES += src/server/clientquerys.cpp \
     src/server/global.cpp \
     src/server/helper.cpp \
     src/server/dbworker.cpp \
-    src/server/mysqlconnector.cpp
+    src/server/mysqlconnector.cpp \
+    src/server/httpworker.cpp
 
 HEADERS += \
     src/server/clientquerys.h \
@@ -33,7 +34,8 @@ HEADERS += \
     src/server/redisconnector.h \
     src/server/global.h \
     src/server/dbworker.h \
-    src/server/mysqlconnector.h
+    src/server/mysqlconnector.h \
+    src/server/httpworker.h
 
 INCLUDEPATH += $$PWD/3rd/includes
 INCLUDEPATH += $$PWD/3rd/includes/libssh2

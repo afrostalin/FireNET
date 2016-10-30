@@ -15,6 +15,7 @@
 #include "tcpserver.h"
 #include "dbworker.h"
 #include "mysqlconnector.h"
+#include "httpworker.h"
 
 bool init()
 {
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.2";
-	int buildNumber = 36;
+	int buildNumber = 87;
 
     a->addLibraryPath("plugins");
     a->setApplicationName("FireNET");
@@ -123,6 +124,15 @@ int main(int argc, char *argv[])
 			gEnv->bUseRedis = true;
 		}
 
+		// Authorization mode (Default, HTTP)
+		QString auth_mode = settings.value("auth_mode", "Default").toString();
+
+		if (auth_mode == "HTTP")
+			gEnv->bUseAuthByHTTP = true;
+		else
+			gEnv->bUseAuthByHTTP = false;
+		
+
 		// Redis settings
 		gEnv->redisHost = settings.value("db_redis_host", "127.0.0.1").toString();
 		gEnv->bRedisBackgroundSave = settings.value("db_redis_background_saving", "0").toBool();
@@ -139,6 +149,10 @@ int main(int argc, char *argv[])
 		gEnv->mySqlUsersLoginName = settings.value("db_mysql_auth_login_element_name", "login").toString();
 		gEnv->mySqlUsersPasswordName = settings.value("db_mysql_auth_password_element_name", "password").toString();
 		gEnv->mySqlUsersBanName = settings.value("db_mysql_auth_ban_status_element_name", "ban").toString();
+
+		// HTTP settings
+		gEnv->http_authPage = settings.value("http_auth_page", "http://127.0.0.1/auth.php").toString();
+		gEnv->http_regPage = settings.value("http_reg_page", "http://127.0.0.1/reg.php").toString();
 
 		// Network settings
 		gEnv->bGlobalChatEnable = settings.value("net_global_chat_enable", "0").toBool();
@@ -162,7 +176,7 @@ int main(int argc, char *argv[])
 
 			if (gEnv->bUseRedis)
 			{
-				qInfo() << "Start Redis...";
+				qInfo() << "Start Redis service...";
 				QThread* redisThread = new QThread;
 				gEnv->pRedis = new RedisConnector;
 				gEnv->pRedis->moveToThread(redisThread);
@@ -173,7 +187,7 @@ int main(int argc, char *argv[])
 
 			if (gEnv->bUseMySql)
 			{
-				qInfo() << "Start MySql...";
+				qInfo() << "Start MySql service...";
 				gEnv->bRedisBackgroundSave = true;
 				QThread* mysqlThread = new QThread;
 				gEnv->pMySql = new MySqlConnector;
@@ -181,6 +195,11 @@ int main(int argc, char *argv[])
 				QObject::connect(mysqlThread, &QThread::started, gEnv->pMySql, &MySqlConnector::run);
 				QObject::connect(mysqlThread, &QThread::finished, gEnv->pMySql, &MySqlConnector::deleteLater);
 				mysqlThread->start();
+			}
+
+			if (gEnv->bUseAuthByHTTP)
+			{
+				qWarning() << "Authorization mode set to HTTP, this can slows server";
 			}
 		}
 		else

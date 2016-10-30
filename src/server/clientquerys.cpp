@@ -5,6 +5,7 @@
 #include <QRegExp>
 #include "tcpserver.h"
 #include "dbworker.h"
+#include "httpworker.h"
 
 #if !defined (QT_CREATOR_FIX_COMPILE)
 #include "helper.cpp"
@@ -27,6 +28,60 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDataBase;
 
+	// Log in by HTTP
+	if (gEnv->bUseAuthByHTTP)
+	{
+		HttpWorker* pHttp = new HttpWorker;
+
+		if (pHttp->Login(login, password))
+		{
+			int uid = pHttp->GetUID();
+
+			SProfile *dbProfile = pDataBase->GetUserProfile(uid);
+
+			if (dbProfile != nullptr)
+			{
+				clientProfile = dbProfile;
+				clientStatus = 1;
+				AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+
+				qDebug() << "-------------------------Profile found--------------------------";
+				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
+
+				QString result = "<result type='auth_complete'><data uid='" + QString::number(clientProfile->uid) + "'/></result>";
+				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				result.clear();
+				result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				return;
+			}
+			else
+			{
+				qDebug() << "-----------------------Profile not found------------------------";
+				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
+
+				QString result = "<result type='auth_complete'><data uid='" + QString::number(uid) + "'/></result>";
+				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+
+				clientProfile->uid = uid;
+				clientStatus = 0;
+				AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+
+				return;
+			}
+		}
+		else
+		{
+			int errorType = pHttp->GetError();
+
+			QString result = "<error type='auth_failed' reason = '" + QString::number(errorType) + "'/>";
+			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			return;
+		}
+	}
+
+	// Default log in mode
 	if (!(pDataBase->UserExists(login)))
 	{
 		qDebug() << "-----------------------Login not found------------------------";
@@ -119,6 +174,31 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDataBase;
 
+	// Login by HTTP
+	if (gEnv->bUseAuthByHTTP)
+	{
+		HttpWorker* pHttp = new HttpWorker;
+
+		if (pHttp->Register(login, password))
+		{
+			qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
+
+			int uid = pHttp->GetUID();
+
+			QString result = "<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>";
+			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			return;
+		}
+		else
+		{
+			int errorType = pHttp->GetError();
+			QString result = "<error type='reg_failed' reason = '" + QString::number(errorType) + "'/>";
+			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			return;
+		}
+	}
+
+	// Default register
 	if (!(pDataBase->UserExists(login)))
 	{
 		int uid = gEnv->pDataBase->GetFreeUID();

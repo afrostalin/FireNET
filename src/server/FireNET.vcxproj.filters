@@ -69,6 +69,9 @@
     <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_httpworker.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="dbworker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -77,6 +80,9 @@
     </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
       <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="httpworker.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +108,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="mysqlconnector.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="httpworker.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
