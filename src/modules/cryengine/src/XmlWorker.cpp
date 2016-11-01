@@ -556,12 +556,14 @@ void CXmlWorker::onChatMessageRecived(const char * data)
 
 				if (type == "global")
 				{
-					/*SUIArguments args;
-					args.AddArgument(message.toStdString().c_str());
+					QString complete = message.replace("#comma#", ",");
+
+					SUIArguments args;
+					args.AddArgument(complete.toStdString().c_str());
 					args.AddArgument(from.toStdString().c_str());
 					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnGlobalChatMessageRecived, args);
 
-					gEnv->pLog->LogAlways(TITLE  "Recived global chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());*/
+					gEnv->pLog->LogAlways(TITLE  "Recived global chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
 					return;
 				}
 

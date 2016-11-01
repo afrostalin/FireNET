@@ -84,8 +84,8 @@ int main(int argc, char *argv[])
 	gEnv->Init();
 
 	// Build version and number
-	QString buildVersion = "2.0.2";
-	int buildNumber = 87;
+	QString buildVersion = "2.0.3";
+	int buildNumber = 1;
 
     a->addLibraryPath("plugins");
     a->setApplicationName("FireNET");
