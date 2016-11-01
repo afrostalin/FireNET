@@ -6,6 +6,8 @@
 #include "Global.h"
 #include <thread>
 
+#include "Shellapi.h"
+
 CAutoRegFlowNodeBase* CAutoRegFlowNodeBase::m_pFirst = 0;
 CAutoRegFlowNodeBase* CAutoRegFlowNodeBase::m_pLast = 0;
 
@@ -1689,6 +1691,84 @@ namespace FireNET
 	protected:
 		SActivationInfo m_actInfo;
 	};
+
+	// Open url in browser
+	class CFlowNode_OpenURL : public CFlowBaseNode<eNCT_Singleton>
+	{
+		enum EInputPorts
+		{
+			EIP_Open,
+			EIP_Url,
+		};
+
+		enum EOutputPorts
+		{
+		};
+
+	public:
+		////////////////////////////////////////////////////
+		CFlowNode_OpenURL(SActivationInfo* pActInfo)
+		{
+
+		}
+
+		////////////////////////////////////////////////////
+		virtual ~CFlowNode_OpenURL(void)
+		{
+
+		}
+
+		////////////////////////////////////////////////////
+		virtual void Serialize(SActivationInfo* pActInfo, TSerialize ser)
+		{
+
+		}
+
+		////////////////////////////////////////////////////
+		virtual void GetConfiguration(SFlowNodeConfig& config)
+		{
+			static const SInputPortConfig inputs[] =
+			{
+				InputPortConfig_Void("Open", _HELP("Open url in browser")),
+				InputPortConfig<string>("URL", _HELP("URL for open")),
+				{ 0 }
+			};
+
+			static const SOutputPortConfig outputs[] =
+			{
+				{ 0 }
+			};
+
+			config.pInputPorts = inputs;
+			config.pOutputPorts = outputs;
+			config.sDescription = _HELP("Open url in browser");
+			config.SetCategory(EFLN_ADVANCED);
+		}
+
+		////////////////////////////////////////////////////
+		virtual void ProcessEvent(EFlowEvent event, SActivationInfo* pActInfo)
+		{
+			switch (event)
+			{
+			case eFE_Activate:
+			{
+				if (IsPortActive(pActInfo, EIP_Open))
+				{		
+					string url = GetPortString(pActInfo, EIP_Url);
+					gEnv->pLog->LogAlways(TITLE "Open url = %s", url);
+					ShellExecute(0, "OPEN", url.c_str() , NULL, NULL, SW_SHOW);
+				}
+			}
+			break;
+			}
+		}
+
+		////////////////////////////////////////////////////
+		virtual void GetMemoryUsage(ICrySizer* s) const
+		{
+			s->Add(*this);
+		}
+	};
 }
 
 
@@ -1709,12 +1789,14 @@ REGISTER_FLOW_NODE_EX("FireNET:Friends:AddFriend", FireNET::CFlowNode_AddFriend,
 REGISTER_FLOW_NODE_EX("FireNET:Friends:RemoveFriend", FireNET::CFlowNode_RemoveFriend, CFlowNode_RemoveFriend);
 REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET::CFlowNode_GetFriends, CFlowNode_GetFriends);
 
-REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", FireNET::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
 REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
+REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", FireNET::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
 
 // This need only for creating 3D menu with character selection
 REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnPlayerModel, CFlowNode_SpawnPlayerModel);
 REGISTER_FLOW_NODE_EX("FireNET:Other:RemoveEntity", FireNET::CFlowNode_RemoveEntity, CFlowNode_RemoveEntity);
+
+REGISTER_FLOW_NODE_EX("FireNET:Other:OpenURL", FireNET::CFlowNode_OpenURL, CFlowNode_OpenURL);
 
 
 REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET::CFlowNode_SendInvite, CFlowNode_SendInvite);
