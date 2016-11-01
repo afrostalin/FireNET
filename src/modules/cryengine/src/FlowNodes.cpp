@@ -139,7 +139,7 @@ namespace FireNET
 			static const SInputPortConfig in_ports[] =
 			{
 				InputPortConfig_Void("Send", _HELP("Send login request")),
-				InputPortConfig<string>("Email", _HELP("Email")),
+				InputPortConfig<string>("Login", _HELP("Email")),
 				InputPortConfig<string>("Password", _HELP("Password")),
 				{0}
 			};
@@ -166,15 +166,15 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Send))
 				{
-					if (GetPortString(pActInfo, 1).size() < 5)
+					if (GetPortString(pActInfo, EIP_Login).size() < 5)
 					{
 						SUIArguments args;
-						args.AddArgument("@shortEmail");
+						args.AddArgument("@shortLogin");
 						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
-						if (GetPortString(pActInfo, 2).size() < 6)
+						if (GetPortString(pActInfo, EIP_Password).size() < 6)
 						{
 							SUIArguments args;
 							args.AddArgument("@shortPassword");
@@ -182,8 +182,8 @@ namespace FireNET
 						}
 						else
 						{
-							string login = GetPortString(pActInfo, 1);
-							string password = GetPortString(pActInfo, 2);
+							string login = GetPortString(pActInfo, EIP_Login);
+							string password = GetPortString(pActInfo, EIP_Password);
 							string query = "<query type='auth'><data login='" + login + "' password='" + password + "'/></query>";
 
 							if (gCryModule->pNetwork != nullptr)
@@ -206,7 +206,7 @@ namespace FireNET
 		enum INPUTS
 		{
 			EIP_Send = 0,
-			EIP_Email,
+			EIP_Login,
 			EIP_Password,
 		};
 
@@ -234,7 +234,7 @@ namespace FireNET
 			static const SInputPortConfig in_ports[] =
 			{
 				InputPortConfig_Void("Send", _HELP("Send register request")),
-				InputPortConfig<string>("Email", _HELP("Email")),
+				InputPortConfig<string>("Login", _HELP("Login")),
 				InputPortConfig<string>("Password", _HELP("Password")),
 				{0}
 			};
@@ -262,16 +262,16 @@ namespace FireNET
 				if (IsPortActive(pActInfo, EIP_Send))
 				{
 
-					if (GetPortString(pActInfo, 1).size() < 5)
+					if (GetPortString(pActInfo, EIP_Login).size() < 5)
 					{
 						SUIArguments args;
-						args.AddArgument("@shortEmail");
+						args.AddArgument("@shortLogin");
 						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
 
-						if (GetPortString(pActInfo, 2).size() < 6)
+						if (GetPortString(pActInfo, EIP_Password).size() < 6)
 						{
 							SUIArguments args;
 							args.AddArgument("@shortPassword");
@@ -357,7 +357,7 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Send))
 				{
-					if (GetPortString(pActInfo, 1).size() < 4)
+					if (GetPortString(pActInfo, EIP_Nickname).size() < 4)
 					{
 						SUIArguments args;
 						args.AddArgument("@shortNickname");
@@ -366,8 +366,8 @@ namespace FireNET
 					else
 					{
 
-						string nickname = GetPortString(pActInfo, 1);
-						string model = GetPortString(pActInfo, 2);
+						string nickname = GetPortString(pActInfo, EIP_Nickname);
+						string model = GetPortString(pActInfo, EIP_Model);
 						string query = "<query type='create_profile'><data nickname='" + nickname + "' model='" + model + "'/></query>";
 
 						if (gCryModule->pNetwork != nullptr)
@@ -581,7 +581,7 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Send))
 				{
-					if (GetPortString(pActInfo, 1).size() < 3)
+					if (GetPortString(pActInfo, EIP_Item).size() < 3)
 					{
 						SUIArguments args;
 						args.AddArgument("@shortItemName");
@@ -590,7 +590,7 @@ namespace FireNET
 					else
 					{
 
-						string itemName = GetPortString(pActInfo, 1);
+						string itemName = GetPortString(pActInfo, EIP_Item);
 						string query = "<query type='buy_item'><data item = '" + itemName + "'/></query>";
 
 						if (gCryModule->pNetwork != nullptr)
@@ -664,7 +664,7 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Remove))
 				{
-					if (GetPortString(pActInfo, 1).size() < 3)
+					if (GetPortString(pActInfo, EIP_Item).size() < 3)
 					{
 						SUIArguments args;
 						args.AddArgument("@shortItemName");
@@ -673,7 +673,7 @@ namespace FireNET
 					else
 					{
 
-						string itemName = GetPortString(pActInfo, 1);
+						string itemName = GetPortString(pActInfo, EIP_Item);
 						string query = "<query type='remove_item'><data name = '" + itemName + "'/></query>";
 
 						if (gCryModule->pNetwork != nullptr)
@@ -895,7 +895,7 @@ namespace FireNET
 		SActivationInfo m_actInfo;
 	};
 
-	// Add friend
+	// Add friend (Need execute after accept invite)
 	class CFlowNode_AddFriend : public CFlowBaseNode<eNCT_Instanced>
 	{
 		enum INPUTS
@@ -954,7 +954,7 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Add))
 				{
-					if (GetPortString(pActInfo, 1).size() < 4)
+					if (GetPortString(pActInfo, EIP_Friend).size() < 4)
 					{
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
@@ -965,7 +965,7 @@ namespace FireNET
 					else
 					{
 
-						string friendName = GetPortString(pActInfo, 1);
+						string friendName = GetPortString(pActInfo, EIP_Friend);
 						string query = "<query type='add_friend'><data name = '" + friendName + "'/></query>";
 
 						if (gCryModule->pNetwork != nullptr)
@@ -1790,12 +1790,12 @@ REGISTER_FLOW_NODE_EX("FireNET:Friends:RemoveFriend", FireNET::CFlowNode_RemoveF
 REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET::CFlowNode_GetFriends, CFlowNode_GetFriends);
 
 REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
-REGISTER_FLOW_NODE_EX("Online:Chat:SendMessageToGlobalChat", FireNET::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
+REGISTER_FLOW_NODE_EX("FireNET:Chat:SendMessageToGlobalChat", FireNET::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
 
 // This need only for creating 3D menu with character selection
 REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnPlayerModel, CFlowNode_SpawnPlayerModel);
 REGISTER_FLOW_NODE_EX("FireNET:Other:RemoveEntity", FireNET::CFlowNode_RemoveEntity, CFlowNode_RemoveEntity);
-
+// ************************************************************
 REGISTER_FLOW_NODE_EX("FireNET:Other:OpenURL", FireNET::CFlowNode_OpenURL, CFlowNode_OpenURL);
 
 
