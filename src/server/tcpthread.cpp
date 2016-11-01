@@ -13,13 +13,12 @@ TcpThread::TcpThread(QObject *parent) : QObject(parent)
 
 TcpThread::~TcpThread()
 {
-
 }
 
 void TcpThread::run()
 {
-	qInfo() << "Starting thread...";
 	m_thread = QThread::currentThread();
+	qDebug() << "Starting" << m_thread;
 
 	m_loop = new QEventLoop();
 	m_loop->exec();

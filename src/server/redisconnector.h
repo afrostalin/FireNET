@@ -13,6 +13,7 @@ class RedisConnector : public QObject
     Q_OBJECT
 public:
     explicit RedisConnector(QObject *parent = 0);
+	~RedisConnector();
 public:
 	void run();
 	QString SendSyncQuery(QString command);

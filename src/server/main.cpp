@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QSettings>
 #include <QFile>
+#include <QObject>
 // Logging tool
 #include <Logger.h>
 #include <FileAppender.h>
@@ -16,6 +17,14 @@
 #include "dbworker.h"
 #include "mysqlconnector.h"
 #include "httpworker.h"
+
+#include <signal.h>
+
+static void ClearManager(int sig)
+{
+	gEnv->pServer->close();
+	qApp->quit();
+}
 
 bool init()
 {
@@ -85,7 +94,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.3";
-	int buildNumber = 1;
+	int buildNumber = 102;
 
     a->addLibraryPath("plugins");
     a->setApplicationName("FireNET");
@@ -164,6 +173,8 @@ int main(int argc, char *argv[])
 		qInfo() << "Copyright (c) All rights reserved";
 		qInfo() << "Start server on" << gEnv->serverIP;
 
+		qDebug() << "Main thread " << QThread::currentThread();
+
 		gEnv->pServer = new TcpServer;
 		gEnv->pServer->setMaxThreads(gEnv->maxThreads);
 
@@ -208,5 +219,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	signal(SIGBREAK, ClearManager);
 	return a->exec();
 }

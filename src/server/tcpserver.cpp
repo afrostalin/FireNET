@@ -50,12 +50,10 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 void TcpServer::close()
 {
 	qInfo() << "Closing server...";
-    emit stop();
+	emit stop();
 
     m_threads.clear();
     m_pool->clear();
-
-    QTcpServer::close();
 }
 
 void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray data)
@@ -90,7 +88,7 @@ void TcpServer::startThreads()
 
 void TcpServer::startThread(TcpThread *cThread)
 {
-    connect(this,&TcpServer::stop, cThread, &TcpThread::stop);
+	connect(this,&TcpServer::stop, cThread, &TcpThread::stop);
     m_threads.append(cThread);
     cThread->setAutoDelete(true);
     m_pool->start(cThread);

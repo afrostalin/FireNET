@@ -15,6 +15,7 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 
 TcpConnection::~TcpConnection()
 {
+	qDebug() << "~" << QThread::currentThread();
 }
 
 void TcpConnection::connected()
@@ -190,7 +191,8 @@ void TcpConnection::accept(qint64 socketDescriptor)
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
 {
 	qCritical() << "Soket ssl error";
-	foreach(QSslError item, list) {
+	foreach(QSslError item, list) 
+	{
 		qDebug() << item.errorString();
 	}
 }
@@ -203,7 +205,9 @@ void TcpConnection::socketError(QAbstractSocket::SocketError error)
 
 void TcpConnection::close()
 {
-    if(!m_socket) return;
+    if(!m_socket) 
+		return;
+
     m_socket->close();
 }
 

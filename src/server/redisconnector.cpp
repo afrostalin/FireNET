@@ -12,6 +12,10 @@ RedisConnector::RedisConnector(QObject *parent)
 	m_thread = nullptr;
 }
 
+RedisConnector::~RedisConnector()
+{
+}
+
 void RedisConnector::run()
 {
 	if (Connect())

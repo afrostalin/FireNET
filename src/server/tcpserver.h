@@ -25,7 +25,7 @@ public:
 	void sendGlobalMessage(QByteArray data);
     virtual void setMaxThreads(int maximum);
     virtual bool listen(const QHostAddress &address, quint16 port);
-    virtual void close();
+	virtual void close();
 
 protected:
     QList<TcpThread*> m_threads;

@@ -8,7 +8,6 @@
 
 DBWorker::DBWorker(QObject *parent) : QObject(parent)
 {
-
 }
 
 bool DBWorker::UserExists(QString login)
