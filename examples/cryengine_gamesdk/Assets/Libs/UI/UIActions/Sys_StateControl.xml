@@ -6,10 +6,10 @@
   <Node Id="13" Class="Mission:LoadNextLevel" pos="230,-230,0" flags="0">
    <Inputs NextLevel="menu_online"/>
   </Node>
-  <Node Id="16" Name="Connect_to_online_server" Class="_commentbox" pos="-530,-664.50385,0" flags="0">
+  <Node Id="16" Name="Connect_to_online_server" Class="_commentbox" pos="-530,-609.43573,0" flags="0">
    <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
    <ResizeBorder X="0" Y="0" Width="1380" Height="440"/>
-   <NodeSize Width="1380" Height="532.14484"/>
+   <NodeSize Width="1380" Height="477.07687"/>
   </Node>
   <Node Id="59" Class="FireNET:Server:ConnectToOnlineServer" pos="-120,-330,0" flags="0">
    <Inputs />
@@ -50,10 +50,10 @@
   <Node Id="100" Class="Logic:Any" pos="-160,140,0" flags="0" InHideMask="1023" OutHideMask="1">
    <Inputs />
   </Node>
-  <Node Id="101" Name="Show_loading_page" Class="_commentbox" pos="-520,-98.367065,0" flags="0">
+  <Node Id="101" Name="Show_loading_page" Class="_commentbox" pos="-520,-43.299191,0" flags="0">
    <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
    <ResizeBorder X="0" Y="0" Width="924" Height="511"/>
-   <NodeSize Width="924" Height="603.14484"/>
+   <NodeSize Width="924" Height="548.07684"/>
   </Node>
   <Node Id="102" Class="UI:Events:FireNET:System:OnError" pos="-470,920,0" flags="0">
    <Inputs Port="-1" Idx=""/>
@@ -67,10 +67,10 @@
   <Node Id="105" Class="Logic:Any" pos="-160,910,0" flags="0" InHideMask="1023" OutHideMask="1">
    <Inputs />
   </Node>
-  <Node Id="109" Name="Show_error_and_unload_all_UI_elements" Class="_commentbox" pos="-520,623.15948,0" flags="0">
+  <Node Id="109" Name="Show_error_and_unload_all_UI_elements" Class="_commentbox" pos="-520,678.22723,0" flags="0">
    <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
-   <ResizeBorder X="0" Y="0" Width="1070" Height="1060"/>
-   <NodeSize Width="1194.1844" Height="1152.1448"/>
+   <ResizeBorder X="0" Y="0" Width="1070" Height="1280"/>
+   <NodeSize Width="1070" Height="1317.0769"/>
   </Node>
   <Node Id="110" Class="UI:Display:Display" pos="50,1110,0" flags="0">
    <Inputs uiElements_Element="FireNetUI:LoadingPage" instanceID="-1"/>
@@ -99,27 +99,27 @@
   <Node Id="118" Class="Debug:ExecuteString" pos="-180,1120,0" flags="0">
    <Inputs String="quit" NextFrame="0"/>
   </Node>
-  <Node Id="120" Class="UI:Events:System:OnGameplayStarted" pos="-520,260,0" flags="0">
-   <Inputs Port="-1" Idx=""/>
-  </Node>
   <Node Id="122" Class="UI:Events:System:OnGameplayEnded" pos="-520,320,0" flags="0">
    <Inputs Port="-1" Idx=""/>
   </Node>
-  <Node Id="123" Class="Game:Start" pos="-460.89386,421.74023,0" flags="0">
+  <Node Id="123" Class="Game:Start" pos="-420,260,0" flags="0">
    <Inputs InGame="1" InEditor="0"/>
   </Node>
-  <Node Id="124" Class="UI:Functions:LobbyMP:SetMultiplayer" pos="-110,-270,0" flags="0">
+  <Node Id="124" Class="UI:Functions:LobbyMP:SetMultiplayer" pos="-110,-270,0" flags="1">
    <Inputs isMultiplayer="1"/>
   </Node>
   <Node Id="125" Class="UI:Functions:LobbyMP:LockController" pos="-110,-210,0" flags="0">
    <Inputs LockController="1"/>
   </Node>
+  <Node Id="126" Class="UI:Display:Display" pos="50,1720,0" flags="0">
+   <Inputs uiElements_Element="FireNetUI:MainMenuPage" instanceID="-1"/>
+  </Node>
  </Nodes>
  <Edges>
   <Edge nodeIn="59" nodeOut="1" portIn="Connect" portOut="onEvent" enabled="1"/>
   <Edge nodeIn="87" nodeOut="1" portIn="show" portOut="onEvent" enabled="1"/>
+  <Edge nodeIn="13" nodeOut="86" portIn="Trigger" portOut="onEvent" enabled="1"/>
   <Edge nodeIn="87" nodeOut="86" portIn="hide" portOut="onEvent" enabled="1"/>
-  <Edge nodeIn="124" nodeOut="86" portIn="send" portOut="onEvent" enabled="1"/>
   <Edge nodeIn="88" nodeOut="87" portIn="Call" portOut="onShow" enabled="1"/>
   <Edge nodeIn="89" nodeOut="87" portIn="Call" portOut="onShow" enabled="1"/>
   <Edge nodeIn="94" nodeOut="90" portIn="Status" portOut="Level" enabled="1"/>
@@ -140,13 +140,13 @@
   <Edge nodeIn="112" nodeOut="105" portIn="unload" portOut="out" enabled="1"/>
   <Edge nodeIn="114" nodeOut="105" portIn="Call" portOut="out" enabled="1"/>
   <Edge nodeIn="115" nodeOut="105" portIn="Call" portOut="out" enabled="1"/>
+  <Edge nodeIn="126" nodeOut="105" portIn="unload" portOut="out" enabled="1"/>
   <Edge nodeIn="116" nodeOut="113" portIn="in2" portOut="Out" enabled="1"/>
   <Edge nodeIn="115" nodeOut="116" portIn="Error" portOut="out" enabled="1"/>
   <Edge nodeIn="118" nodeOut="117" portIn="Set" portOut="onEvent" enabled="1"/>
   <Edge nodeIn="100" nodeOut="122" portIn="in2" portOut="onEvent" enabled="1"/>
   <Edge nodeIn="100" nodeOut="123" portIn="in1" portOut="output" enabled="1"/>
   <Edge nodeIn="125" nodeOut="124" portIn="send" portOut="OnEvent" enabled="1"/>
-  <Edge nodeIn="13" nodeOut="125" portIn="Trigger" portOut="OnEvent" enabled="1"/>
  </Edges>
  <GraphTokens />
 </Graph>

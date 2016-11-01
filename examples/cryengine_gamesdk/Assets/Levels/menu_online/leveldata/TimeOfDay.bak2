@@ -1,0 +1,5 @@
+<TimeOfDay Time="5.3238335" TimeStart="5.3166666" TimeEnd="12" TimeAnimSpeed="0">
+ <Presets>
+  <Preset Name="libs/environmentpresets/menu_online.xml" Default="1"/>
+ </Presets>
+</TimeOfDay>

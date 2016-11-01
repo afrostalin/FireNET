@@ -25,16 +25,17 @@
 		<events>
 		
 			<event name="OnLogin" fscommand="onLogin" desc="Start when login button pressed">
-				<param name="Email" desc="Email" type="string"/>
+				<param name="Login" desc="Login" type="string"/>
 				<param name="Password" desc="Password" type="string"/>
 			</event>
 			
 			<event name="OnRegister" fscommand="onRegister" desc="Start when register button pressed">
-				<param name="Email" desc="Email" type="string"/>
+				<param name="Login" desc="Login" type="string"/>
 				<param name="Password" desc="Password" type="string"/>
 			</event>
 
 			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
 		</events>
 
 	</UIElement>
@@ -113,7 +114,12 @@
 				<param name="Line" desc="New line" type="string"/>
 			</function>
 			
-			<function name="AddChatMessage" funcname="AddChatMessage" desc="Add message in chat block">
+			<function name="AddGlobalChatMessage" funcname="AddGlobalChatMessage" desc="Add message in global chat block">
+			    <param name="Sender" desc="Message sender" type="string"/>
+				<param name="Message" desc="Message" type="string"/>		
+			</function>
+			
+			<function name="AddPrivateChatMessage" funcname="AddPrivateChatMessage" desc="Add message in private chat block">
 			    <param name="Sender" desc="Message sender" type="string"/>
 				<param name="Message" desc="Message" type="string"/>		
 			</function>
@@ -128,8 +134,12 @@
 			<event name="OnSettingsOpen" fscommand="onSettingsOpen" desc="Start when settings button pressed"/>
 			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
 			
-			<event name="OnChatMessageSended" fscommand="onChatMessageSended" desc="Start when local user send new message">
+			<event name="OnGlobalChatMessageSended" fscommand="onGlobalChatMessageSended" desc="Start when local user send new message to global chat">
 				<param name="Message" desc="Message" type="string"/>
+			</event>
+			<event name="OnPrivateChatMessageSended" fscommand="onPrivateChatMessageSended" desc="Start when local user send new message to some player">
+				<param name="Message" desc="Message" type="string"/>
+				<param name="Reciver" desc="Reciver" type="string"/>
 			</event>
 			
 		</events>

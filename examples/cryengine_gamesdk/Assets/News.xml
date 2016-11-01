@@ -1,0 +1,15 @@
+<News Title = "Example news in FireNET">
+
+<Text>
+
+<Line Text = "You have modify this news very easy"/>
+<Line Text = "********************"/>
+<Line Text = "* Open 'Game' folder"/>
+<Line Text = "* Open 'News.xml'"/>
+<Line Text = "* Change it!"/>
+<Line Text = "********************"/>
+<Line Text = "Easy, right? :)"/>
+
+</Text>
+
+</News>
