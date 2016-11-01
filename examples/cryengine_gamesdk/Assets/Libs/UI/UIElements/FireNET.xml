@@ -91,6 +91,51 @@
 
 	</UIElement>
 	
+	<UIElement name="FireNetUI:MainMenuPage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="MainMenuPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetPlayerName" funcname="SetPlayerName" desc="Set player name">
+				<param name="Name" desc="Player name" type="string"/>
+			</function>
+			
+			<function name="SetNewsTitle" funcname="SetNewsTitle" desc="Set news title">
+				<param name="Title" desc="News title" type="string"/>
+			</function>
+			
+			<function name="AddNewsLine" funcname="AddNewsLine" desc="Add new line in news block">
+				<param name="Line" desc="New line" type="string"/>
+			</function>
+			
+			<function name="AddChatMessage" funcname="AddChatMessage" desc="Add message in chat block">
+			    <param name="Sender" desc="Message sender" type="string"/>
+				<param name="Message" desc="Message" type="string"/>		
+			</function>
+			
+		</functions>
+		
+		<events>
+		
+			<event name="OnStorageOpen" fscommand="onStorageOpen" desc="Start when storage button pressed"/>
+			<event name="OnShopOpen" fscommand="onShopOpen" desc="Start when shop button pressed"/>
+			<event name="OnWantToPlay" fscommand="onWantToPlay" desc="Start when play button pressed"/>
+			<event name="OnSettingsOpen" fscommand="onSettingsOpen" desc="Start when settings button pressed"/>
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
+			<event name="OnChatMessageSended" fscommand="onChatMessageSended" desc="Start when local user send new message">
+				<param name="Message" desc="Message" type="string"/>
+			</event>
+			
+		</events>
+
+	</UIElement>
+	
 	<UIElement name="FireNetUI:LoadingPage" mouseevents="0" keyevents="0" cursor="0">
 
 		<GFx file="LoadingPage.gfx" layer="1">
@@ -140,5 +185,5 @@
 		</events>
 
 	</UIElement>
-	
+		
 </UIElements>
