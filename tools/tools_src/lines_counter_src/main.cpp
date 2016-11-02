@@ -24,11 +24,17 @@ int main(int argc, char *argv[])
     fileList.push_back(serverFolder + "\\helper.cpp");
     fileList.push_back(serverFolder + "\\main.cpp");
 
+    fileList.push_back(serverFolder + "\\httpconnector.cpp");
+    fileList.push_back(serverFolder + "\\httpconnector.h");
+
     fileList.push_back(serverFolder + "\\redisconnector.cpp");
     fileList.push_back(serverFolder + "\\redisconnector.h");
 
     fileList.push_back(serverFolder + "\\mysqlconnector.cpp");
     fileList.push_back(serverFolder + "\\mysqlconnector.h");
+
+    fileList.push_back(serverFolder + "\\serverqueue.cpp");
+    fileList.push_back(serverFolder + "\\serverqueue.h");
 
     fileList.push_back(serverFolder + "\\tcpconnection.cpp");
     fileList.push_back(serverFolder + "\\tcpconnection.h");
