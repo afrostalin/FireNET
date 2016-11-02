@@ -4,12 +4,11 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-class ClientQuerys;
-class RedisConnector;
-class MySqlConnector;
-class TcpConnection;
 class TcpServer;
 class DBWorker;
+class ServerQueue;
+class QTimer;
+
 #include <qsslsocket.h>
 #include <qmutex.h>
 
@@ -58,98 +57,9 @@ struct SGameServer
 struct SGlobalEnvironment
 {
 	TcpServer* pServer;
-	RedisConnector* pRedis;
-	MySqlConnector* pMySql;
-	DBWorker* pDataBase;
-
-	// Databases settings
-	bool bUseRedis;
-	bool bUseMySql;
-
-	// Redis settings
-	QString redisHost;
-	bool bRedisBackgroundSave;
-
-	// MySql settings
-	QString mySqlHost;
-	int mySqlPort;
-	QString mySqlDbName;
-	QString mySqlUsername;
-	QString mySqlPassword;
-
-	// MySql "users" table settings (can use old table without creating new table)
-	QString mySqlUsersTableName;
-	QString mySqlUsersUidName;
-	QString mySqlUsersLoginName;
-	QString mySqlUsersPasswordName;
-	QString mySqlUsersBanName;
-
-	// HTTP settings
-	bool bUseAuthByHTTP;
-	QString http_authPage;
-	QString http_regPage;
-
-	// Server settings
-	QString serverIP;
-	int serverPort;
-	QString serverRootUser;
-	QString serverRootPassword;
-	int logLevel;
-	int maxPlayers;
-	int maxServers;
-	int maxThreads;
-
-	// Network settings
-	bool bGlobalChatEnable;
-
-	inline void Init()
-	{
-		// Databases settings
-		bUseRedis = true;
-		bUseMySql = false;
-
-		// Redis settings
-		redisHost = "127.0.0.1";
-		bRedisBackgroundSave = false;
-
-		// MySql settings
-		mySqlHost = "127.0.0.1";
-		mySqlDbName = "FireNET";
-		mySqlPort = 3306;
-		mySqlUsername = "admin";
-		mySqlPassword = "qwerty";
-
-		mySqlUsersTableName = "users";
-		mySqlUsersUidName = "uid";
-		mySqlUsersLoginName = "login";
-		mySqlUsersPasswordName = "password";
-		mySqlUsersBanName = "ban";
-
-		// HTTP settings
-		bUseAuthByHTTP = false;
-		http_authPage = "http://127.0.0.1/auth.php";
-		http_regPage = "http://127.0.0.1/reg.php";
-
-		// Server settings
-		serverIP = "127.0.0.1";
-		serverPort = 3322;
-		serverRootUser = "admin";
-		serverRootPassword = "qwerty";
-		logLevel = 1;
-		maxPlayers = 1000;
-		maxServers = 100;
-		maxThreads = 1;
-
-		// Network settings
-		bGlobalChatEnable = false;
-	
-		// Pointers
-		pServer = nullptr;
-		pRedis = nullptr;
-		pMySql = nullptr;
-		pDataBase = nullptr;
-	}
-
+	DBWorker* pDataBases;
+	ServerQueue* pQueue;
+	QTimer* pTimer;
 };
 
 extern SGlobalEnvironment* gEnv;

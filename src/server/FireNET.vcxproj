@@ -155,10 +155,11 @@
     <ClCompile Include="dbworker.cpp" />
     <ClCompile Include="global.cpp" />
     <ClCompile Include="helper.cpp" />
-    <ClCompile Include="httpworker.cpp" />
+    <ClCompile Include="httpconnector.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mysqlconnector.cpp" />
     <ClCompile Include="redisconnector.cpp" />
+    <ClCompile Include="serverqueue.cpp" />
     <ClCompile Include="tcpconnection.cpp" />
     <ClCompile Include="tcpserver.cpp" />
     <ClCompile Include="tcpthread.cpp" />
@@ -235,11 +236,21 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\tools\moc.exe;%(FullPath)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\tools\moc.exe;%(FullPath)</AdditionalInputs>
     </CustomBuild>
-	<CustomBuild Include="httpworker.h">
+    <CustomBuild Include="httpconnector.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"..\..\tools\moc.exe"  "%(FullPath)" -o ".\..\..\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SQL_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\..\..\3rd\includes" "-I.\..\..\3rd\includes\cutelogger\includes" "-I.\..\..\3rd\includes\libssh2" "-I.\..\..\3rd\includes\qt" "-I.\..\..\3rd\includes\qt\QtNetwork" "-I.\..\..\3rd\includes\qt\QtCore" "-I.\..\..\3rd\includes\qt\QtSql" "-I.\..\..\3rd\includes\qt\mkspecs\win32-msvc2015" "-I.\..\..\temp\moc\server"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing httpworker.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing httpconnector.h...</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"..\..\tools\moc.exe"  "%(FullPath)" -o ".\..\..\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SQL_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\..\..\3rd\includes" "-I.\..\..\3rd\includes\cutelogger\includes" "-I.\..\..\3rd\includes\libssh2" "-I.\..\..\3rd\includes\qt" "-I.\..\..\3rd\includes\qt\QtNetwork" "-I.\..\..\3rd\includes\qt\QtCore" "-I.\..\..\3rd\includes\qt\QtSql" "-I.\..\..\3rd\includes\qt\mkspecs\win32-msvc2015" "-I.\..\..\temp\moc\server"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing httpworker.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing httpconnector.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\temp\moc\server\moc_%(Filename).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\temp\moc\server\moc_%(Filename).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\tools\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\tools\moc.exe;%(FullPath)</AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="serverqueue.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"..\..\tools\moc.exe"  "%(FullPath)" -o ".\..\..\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NO_DEBUG -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SQL_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\..\..\3rd\includes" "-I.\..\..\3rd\includes\cutelogger\includes" "-I.\..\..\3rd\includes\libssh2" "-I.\..\..\3rd\includes\qt" "-I.\..\..\3rd\includes\qt\QtNetwork" "-I.\..\..\3rd\includes\qt\QtCore" "-I.\..\..\3rd\includes\qt\QtSql" "-I.\..\..\3rd\includes\qt\mkspecs\win32-msvc2015" "-I.\..\..\temp\moc\server"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Moc%27ing serverqueue.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"..\..\tools\moc.exe"  "%(FullPath)" -o ".\..\..\temp\moc\server\moc_%(Filename).cpp"  -DWIN64 -DQT_NETWORK_LIB -DQT_CORE_LIB -DQT_SQL_LIB -DQT_CREATOR_FIX_COMPILE  "-I." "-I.\..\..\3rd\includes" "-I.\..\..\3rd\includes\cutelogger\includes" "-I.\..\..\3rd\includes\libssh2" "-I.\..\..\3rd\includes\qt" "-I.\..\..\3rd\includes\qt\QtNetwork" "-I.\..\..\3rd\includes\qt\QtCore" "-I.\..\..\3rd\includes\qt\QtSql" "-I.\..\..\3rd\includes\qt\mkspecs\win32-msvc2015" "-I.\..\..\temp\moc\server"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Moc%27ing serverqueue.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\temp\moc\server\moc_%(Filename).cpp</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\tools\moc.exe;%(FullPath)</AdditionalInputs>
@@ -248,13 +259,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp" />
-	<ClCompile Include="..\..\temp\moc\server\moc_httpworker.cpp" />
+    <ClCompile Include="..\..\temp\moc\server\moc_httpconnector.cpp" />
     <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp" />
     <ClCompile Include="..\..\temp\moc\server\moc_clientquerys.cpp" />
     <ClCompile Include="..\..\temp\moc\server\moc_redisconnector.cpp" />
     <ClCompile Include="..\..\temp\moc\server\moc_tcpconnection.cpp" />
     <ClCompile Include="..\..\temp\moc\server\moc_tcpserver.cpp" />
-	<ClCompile Include="..\..\temp\moc\server\moc_tcpthread.cpp" />
+    <ClCompile Include="..\..\temp\moc\server\moc_tcpthread.cpp" />
+    <ClCompile Include="..\..\temp\moc\server\moc_serverqueue.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

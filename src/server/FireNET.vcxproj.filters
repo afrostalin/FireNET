@@ -9,44 +9,26 @@
       <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Source Files">
+    <Filter Include="FireNET">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="FireNET\Databases">
+      <UniqueIdentifier>{6509001c-d701-4293-9e29-6056443685ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Server">
+      <UniqueIdentifier>{16df10ce-e37b-40eb-a960-eaaba98f95f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Messages">
+      <UniqueIdentifier>{a24d0560-0d73-4c9a-be2c-0cbeced8b25d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="clientquerys.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="global.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>FireNET</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="redisconnector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tcpconnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tcpserver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tcpthread.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>FireNET</Filter>
     </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_clientquerys.cpp">
       <Filter>Generated Files</Filter>
@@ -63,55 +45,83 @@
     <ClCompile Include="..\..\temp\moc\server\moc_tcpthread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_httpworker.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="dbworker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mysqlconnector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="httpworker.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\temp\moc\server\moc_serverqueue.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dbworker.cpp">
+      <Filter>FireNET\Databases</Filter>
+    </ClCompile>
+    <ClCompile Include="mysqlconnector.cpp">
+      <Filter>FireNET\Databases</Filter>
+    </ClCompile>
+    <ClCompile Include="redisconnector.cpp">
+      <Filter>FireNET\Databases</Filter>
+    </ClCompile>
+    <ClCompile Include="tcpconnection.cpp">
+      <Filter>FireNET\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="tcpserver.cpp">
+      <Filter>FireNET\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="tcpthread.cpp">
+      <Filter>FireNET\Server</Filter>
+    </ClCompile>
+    <ClCompile Include="clientquerys.cpp">
+      <Filter>FireNET\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="helper.cpp">
+      <Filter>FireNET\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="serverqueue.cpp">
+      <Filter>FireNET\Messages</Filter>
+    </ClCompile>
+    <ClCompile Include="httpconnector.cpp">
+      <Filter>FireNET\Databases</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="clientquerys.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <ClInclude Include="global.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <CustomBuild Include="redisconnector.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="tcpconnection.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="tcpserver.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="tcpthread.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="dbworker.h">
-      <Filter>Header Files</Filter>
+      <Filter>FireNET\Databases</Filter>
     </CustomBuild>
     <CustomBuild Include="mysqlconnector.h">
-      <Filter>Header Files</Filter>
+      <Filter>FireNET\Databases</Filter>
     </CustomBuild>
-    <CustomBuild Include="httpworker.h">
-      <Filter>Header Files</Filter>
+    <CustomBuild Include="redisconnector.h">
+      <Filter>FireNET\Databases</Filter>
     </CustomBuild>
+    <CustomBuild Include="tcpconnection.h">
+      <Filter>FireNET\Server</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcpserver.h">
+      <Filter>FireNET\Server</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tcpthread.h">
+      <Filter>FireNET\Server</Filter>
+    </CustomBuild>
+    <CustomBuild Include="serverqueue.h">
+      <Filter>FireNET\Messages</Filter>
+    </CustomBuild>
+    <CustomBuild Include="httpconnector.h">
+      <Filter>FireNET\Databases</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="clientquerys.h">
+      <Filter>FireNET\Messages</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="global.h">
+      <Filter>FireNET</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

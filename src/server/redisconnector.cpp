@@ -2,6 +2,7 @@
 // License: http://opensource.org/licenses/MIT
 
 #include "redisconnector.h"
+#include "dbworker.h"
 #include "global.h"
 #include <QDebug>
 
@@ -38,8 +39,8 @@ bool RedisConnector::Connect()
 	qInfo()<< "Init qredisclient...";
     initRedisClient();
 
-	qInfo()<< "Create connection to Redis... ("<< gEnv->redisHost <<")";
-    RedisClient::ConnectionConfig config(gEnv->redisHost);
+	qInfo()<< "Create connection to Redis... ("<< gEnv->pDataBases->redisHost <<")";
+    RedisClient::ConnectionConfig config(gEnv->pDataBases->redisHost);
     connection = new RedisClient::Connection(config);
     connection->connect(false);
 

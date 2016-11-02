@@ -1,8 +1,8 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#ifndef HTTPWORKER_H
-#define HTTPWORKER_H
+#ifndef HTTPCONNECTOR_H
+#define HTTPCONNECTOR_H
 
 #include <QObject>
 
@@ -10,11 +10,11 @@ class QNetworkReply;
 class QUrl;
 class QTimer;
 
-class HttpWorker : public QObject
+class HttpConnector : public QObject
 {
     Q_OBJECT
 public:
-    explicit HttpWorker(QObject *parent = 0);
+    explicit HttpConnector(QObject *parent = 0);
 public:
 	bool Login(QString login, QString password);
 	bool Register(QString login, QString password);
@@ -35,4 +35,4 @@ private:
 	bool bSuccessReg;
 };
 
-#endif // HTTPWORKER_H
+#endif // HTTPCONNECTOR_H

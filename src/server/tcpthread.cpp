@@ -15,6 +15,11 @@ TcpThread::~TcpThread()
 {
 }
 
+void TcpThread::Update()
+{
+	//qDebug() << "Update from" << m_thread;
+}
+
 void TcpThread::run()
 {
 	m_thread = QThread::currentThread();

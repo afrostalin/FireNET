@@ -36,5 +36,16 @@ protected:
 	virtual TcpThread *freeThread();
 signals:
     void stop();
+public:
+	QString serverIP;
+	int serverPort;
+	QString serverRootUser;
+	QString serverRootPassword;
+	int logLevel;
+	int maxPlayers;
+	int maxServers;
+	int maxThreads;
+	int tickRate;
+	bool bGlobalChatEnable;
 };
 #endif // TCPSERVER_H

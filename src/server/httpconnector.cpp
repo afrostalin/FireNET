@@ -1,7 +1,8 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "httpworker.h"
+#include "httpconnector.h"
+#include "dbworker.h"
 #include "global.h"
 #include <QUrl>
 #include <QNetworkRequest>
@@ -11,7 +12,7 @@
 #include <QTimer>
 #include <QEventLoop>
 
-HttpWorker::HttpWorker(QObject *parent) : QObject(parent)
+HttpConnector::HttpConnector(QObject *parent) : QObject(parent)
 {
 	bHaveResult = false;
 	bSuccessAuth = false;
@@ -21,7 +22,7 @@ HttpWorker::HttpWorker(QObject *parent) : QObject(parent)
 	m_uid = 0;
 }
 
-void HttpWorker::SendPostRequest(QUrl url, QByteArray requestData)
+void HttpConnector::SendPostRequest(QUrl url, QByteArray requestData)
 {
 	qDebug() << "Send POST http request to " << url.toString();
 	qDebug() << "Request data = " << requestData;
@@ -43,57 +44,62 @@ void HttpWorker::SendPostRequest(QUrl url, QByteArray requestData)
 	manager->post(request, requestData);
 }
 
-void HttpWorker::replyFinished(QNetworkReply* reply)
+void HttpConnector::replyFinished(QNetworkReply* reply)
 {
-	QString rawReply = reply->readAll();
-
-	qDebug() << "Reply data = " << rawReply;
-
-	if (rawReply.isEmpty())
+	if (reply->error() == QNetworkReply::NoError)
 	{
-		qWarning() << "HTTP reply empty!";
+		QString rawReply = reply->readAll();
 
-		bHaveResult = true;
-		m_lastError = 4;
-		reply->deleteLater();
-		return;
+		qDebug() << "Reply data = " << rawReply;
+
+		if (rawReply.isEmpty())
+		{
+			qWarning() << "HTTP reply empty!";
+
+			bHaveResult = true;
+			m_lastError = 4;
+			reply->deleteLater();
+			return;
+		}
+
+		if (rawReply == "loginNotFound" || rawReply == "loginAlredyRegistered")
+			m_lastError = 0;
+		if (rawReply == "userBanned")
+			m_lastError = 1;
+		if (rawReply == "wrongPassword")
+			m_lastError = 2;
+		if (rawReply == "mySqlError" || rawReply == "registerFailed")
+			m_lastError = 3;
+
+
+		// Check success auth
+		if (rawReply.contains("uid="))
+		{
+			QString rawUID = rawReply.remove("uid=");
+
+			m_uid = rawUID.toInt();
+			bSuccessAuth = true;
+
+			qDebug() << "Success authorization by HTTP. UID = " << m_uid;
+		}
+
+		// Check success register
+		if (rawReply == "registerComplete")
+		{
+			bSuccessReg = true;
+			qDebug() << "Success registration by HTTP";
+		}
 	}
-
-	if (rawReply == "loginNotFound" || rawReply == "loginAlredyRegistered")
-		m_lastError = 0;
-	if (rawReply == "userBanned")
-		m_lastError = 1;
-	if (rawReply == "wrongPassword")
-		m_lastError = 2;
-	if (rawReply == "mySqlError" || rawReply == "registerFailed")
-		m_lastError = 3;
-
-
-	// Check success auth
-	if (rawReply.contains("uid="))
-	{
-		QString rawUID = rawReply.remove("uid=");
-
-		m_uid = rawUID.toInt();
-		bSuccessAuth = true;
-
-		qDebug() << "Success authorization by HTTP. UID = " << m_uid;
-	}
-
-	// Check success register
-	if (rawReply == "registerComplete")
-	{
-		bSuccessReg = true;
-		qDebug() << "Success registration by HTTP";
-	}
+	else
+		qWarning() << reply->errorString();
 
 	bHaveResult = true;
 	reply->deleteLater();
 }
 
-bool HttpWorker::Login(QString login, QString password)
+bool HttpConnector::Login(QString login, QString password)
 {
-	QUrl loginUrl = gEnv->http_authPage;
+	QUrl loginUrl = gEnv->pDataBases->http_authPage;
 	QByteArray data;
 	data.append("login=" + login);
 	data.append("&password=" + password);
@@ -115,9 +121,9 @@ bool HttpWorker::Login(QString login, QString password)
 	return false;
 }
 
-bool HttpWorker::Register(QString login, QString password)
+bool HttpConnector::Register(QString login, QString password)
 {
-	QUrl registerUrl = gEnv->http_regPage;
+	QUrl registerUrl = gEnv->pDataBases->http_regPage;
 	QByteArray data;
 	data.append("login=" + login);
 	data.append("&password=" + password);
@@ -139,12 +145,12 @@ bool HttpWorker::Register(QString login, QString password)
 	return false;
 }
 
-int HttpWorker::GetUID()
+int HttpConnector::GetUID()
 {
 	return m_uid;
 }
 
-int HttpWorker::GetError()
+int HttpConnector::GetError()
 {
 	return m_lastError;
 }

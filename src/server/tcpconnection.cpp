@@ -6,6 +6,7 @@
 #include "global.h"
 #include "clientquerys.h"
 #include "mysqlconnector.h"
+#include "dbworker.h"
 
 TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 {
@@ -15,7 +16,6 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 
 TcpConnection::~TcpConnection()
 {
-	qDebug() << "~" << QThread::currentThread();
 }
 
 void TcpConnection::connected()
@@ -76,7 +76,7 @@ void TcpConnection::readyRead()
     if(!m_socket) 
 		return;
 
-	if (!gEnv->pRedis && !gEnv->pMySql)
+	if (!gEnv->pDataBases->pRedis && !gEnv->pDataBases->pMySql)
 	{
         qCritical() << "Client can't use database functions without connection to database!!!";
 		return;

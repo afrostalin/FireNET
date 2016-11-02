@@ -1,13 +1,42 @@
 #include "dbworker.h"
 #include "global.h"
+
 #include "redisconnector.h"
 #include "mysqlconnector.h"
+#include "httpconnector.h"
+
 #include "clientquerys.h"
 #include <QRegExp>
 #include <QSqlQuery>
 
 DBWorker::DBWorker(QObject *parent) : QObject(parent)
 {
+	bUseRedis = false;
+	bUseMySql = false;
+	bUseAuthByHTTP = false;
+
+	pRedis = nullptr;
+	pMySql = nullptr;
+	pHTTP = nullptr;
+
+	// Redis
+	redisHost = "";
+	bRedisBackgroundSave = false;
+	// MySQL
+	mySqlHost = "";
+	mySqlDbName = "";
+	mySqlPort = 0;
+	mySqlUsername = "";
+	mySqlPassword = "";
+
+	mySqlUsersTableName = "";
+	mySqlUsersUidName = "";
+	mySqlUsersLoginName = "";
+	mySqlUsersPasswordName = "";
+	mySqlUsersBanName = "";
+	// HTTP
+	http_authPage = "";
+	http_regPage = "";
 }
 
 bool DBWorker::UserExists(QString login)
@@ -15,11 +44,11 @@ bool DBWorker::UserExists(QString login)
 	bool result = false;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "users:" + login;
 		QList<QByteArray> rawCmd = { "HEXISTS", key.toUtf8(), "password" };
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+		QString buff = pRedis->SendSyncQuery(rawCmd);
 
 		if (buff.toInt() > 0)
 		{
@@ -34,16 +63,16 @@ bool DBWorker::UserExists(QString login)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 
 			// We need get something like "SELECT * FROM users WHERE login=:login"
-			QString queryLine = "SELECT * FROM " + gEnv->mySqlUsersTableName + " WHERE " + gEnv->mySqlUsersLoginName + "=:" + gEnv->mySqlUsersLoginName;
+			QString queryLine = "SELECT * FROM " + mySqlUsersTableName + " WHERE " + mySqlUsersLoginName + "=:" + mySqlUsersLoginName;
 			query->prepare(queryLine);
-			query->bindValue(":" + gEnv->mySqlUsersLoginName, login);
+			query->bindValue(":" + mySqlUsersLoginName, login);
 
 			if (query->exec())
 			{
@@ -79,11 +108,11 @@ bool DBWorker::ProfileExists(int uid)
 	bool result = false;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "profiles:" + QString::number(uid);
 		QList<QByteArray> rawCmd = { "HEXISTS", key.toUtf8(), "nickname" };
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+		QString buff = pRedis->SendSyncQuery(rawCmd);
 
 		if (buff.toInt() > 0)
 		{
@@ -98,11 +127,11 @@ bool DBWorker::ProfileExists(int uid)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE uid=:uid");
 			query->bindValue(":uid", uid);
 
@@ -140,10 +169,10 @@ bool DBWorker::NicknameExists(QString nickname)
 	bool result = false;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "nicknames:" + nickname;
-		QString buff = gEnv->pRedis->SendSyncQuery("GET", key);
+		QString buff = pRedis->SendSyncQuery("GET", key);
 
 		if (!buff.isEmpty())
 		{
@@ -158,11 +187,11 @@ bool DBWorker::NicknameExists(QString nickname)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE nickname=:nickname");
 			query->bindValue(":nickname", nickname);
 
@@ -199,9 +228,8 @@ int DBWorker::GetFreeUID()
 {
 	int uid = -1;
 
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
-		RedisConnector* pRedis = gEnv->pRedis;
 		// Get uids row and create new uid if uids row are empty
 		QString buff = pRedis->SendSyncQuery("GET", "uids");
 
@@ -246,13 +274,13 @@ int DBWorker::GetFreeUID()
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			// We need get something like "SELECT * FROM users WHERE uid=(SELECT MAX(uid) FROM users)"
-			QString queryLine = "SELECT * FROM " + gEnv->mySqlUsersTableName + " WHERE " + gEnv->mySqlUsersUidName + "=(SELECT MAX(" + gEnv->mySqlUsersUidName + ") FROM " + gEnv->mySqlUsersTableName + ")";
+			QString queryLine = "SELECT * FROM " + mySqlUsersTableName + " WHERE " + mySqlUsersUidName + "=(SELECT MAX(" + mySqlUsersUidName + ") FROM " + mySqlUsersTableName + ")";
 			query->prepare(queryLine);
 
 			if (query->exec())
@@ -292,9 +320,8 @@ int DBWorker::GetUIDbyNick(QString nickname)
 {
 	int uid = -1;
 
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
-		RedisConnector* pRedis = gEnv->pRedis;
 		// Get uids row and create new uid if uids row are empty
 		QString buff = pRedis->SendSyncQuery("GET", "nicknames:" + nickname);
 
@@ -313,11 +340,11 @@ int DBWorker::GetUIDbyNick(QString nickname)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE nickname=:nickname");
 			query->bindValue(":nickname", nickname);
 
@@ -356,11 +383,11 @@ SUser* DBWorker::GetUserData(QString login)
 	SUser *dbUser = new SUser;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "users:" + login;
 		QList<QByteArray> rawCmd = { "HGETALL", key.toUtf8() };
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+		QString buff = pRedis->SendSyncQuery(rawCmd);
 
 		int dbUid = GetValueFromRawString("uid", buff).toInt();
 		QString dbLogin = GetValueFromRawString("login", buff);
@@ -390,25 +417,25 @@ SUser* DBWorker::GetUserData(QString login)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			// We need get something like "SELECT * FROM users WHERE login=:login"
-			QString queryLine = "SELECT * FROM " + gEnv->mySqlUsersTableName + " WHERE " + gEnv->mySqlUsersLoginName + "=:" + gEnv->mySqlUsersLoginName;
+			QString queryLine = "SELECT * FROM " + mySqlUsersTableName + " WHERE " + mySqlUsersLoginName + "=:" + mySqlUsersLoginName;
 			query->prepare(queryLine);
-			query->bindValue(":" + gEnv->mySqlUsersLoginName, login);
+			query->bindValue(":" + mySqlUsersLoginName, login);
 
 			if (query->exec())
 			{
 				if (query->next())
 				{
 					qDebug() << "User data for" << login << "is found in MySql DB";
-					dbUser->uid = query->value(gEnv->mySqlUsersUidName).toInt(); // uid
-					dbUser->login =  query->value(gEnv->mySqlUsersLoginName).toString(); // login
-					dbUser->password =  query->value(gEnv->mySqlUsersPasswordName).toString(); // password
-					int dbBanStatus = query->value(gEnv->mySqlUsersBanName).toInt(); // ban status
+					dbUser->uid = query->value(mySqlUsersUidName).toInt(); // uid
+					dbUser->login =  query->value(mySqlUsersLoginName).toString(); // login
+					dbUser->password =  query->value(mySqlUsersPasswordName).toString(); // password
+					int dbBanStatus = query->value(mySqlUsersBanName).toInt(); // ban status
 
 					if (dbBanStatus > 0)
 						dbUser->bBanStatus = true;
@@ -443,11 +470,11 @@ SProfile* DBWorker::GetUserProfile(int uid)
 {
 	SProfile *dbProfile = new SProfile;
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "profiles:" + QString::number(uid);
 		QList<QByteArray> rawCmd = { "HGETALL", key.toUtf8() };
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+		QString buff = pRedis->SendSyncQuery(rawCmd);
 
 		int dbUid = GetValueFromRawString("uid", buff).toInt();
 		QString dbNickname = GetValueFromRawString("nickname", buff);
@@ -485,11 +512,11 @@ SProfile* DBWorker::GetUserProfile(int uid)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE uid=:uid");
 			query->bindValue(":uid", uid);
 
@@ -539,11 +566,11 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	bool result = false;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "users:" + login;
 		QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(), "uid", QString::number(uid).toUtf8(), "login", login.toUtf8(), "password", password.toUtf8(), "ban", "0" };
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+		QString buff = pRedis->SendSyncQuery(rawCmd);
 
 		if (buff == "OK")
 		{
@@ -559,22 +586,22 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 
 			// We need get something like "INSERT INTO users (uid, login, password, ban) VALUES (:uid, :login, :password, :ban)"
 			QString queryLine = "INSERT INTO " 
-				+ gEnv->mySqlUsersTableName + " (" + gEnv->mySqlUsersUidName + ", " + gEnv->mySqlUsersLoginName + ", " + gEnv->mySqlUsersPasswordName + ", " + gEnv->mySqlUsersBanName +")" + 
-				" VALUES (:" + gEnv->mySqlUsersUidName + ", :" + gEnv->mySqlUsersLoginName +", :" + gEnv->mySqlUsersPasswordName + ", :" + gEnv->mySqlUsersBanName + ")";
+				+ mySqlUsersTableName + " (" + mySqlUsersUidName + ", " + mySqlUsersLoginName + ", " + mySqlUsersPasswordName + ", " + mySqlUsersBanName +")" +
+				" VALUES (:" + mySqlUsersUidName + ", :" + mySqlUsersLoginName +", :" + mySqlUsersPasswordName + ", :" + mySqlUsersBanName + ")";
 
 			query->prepare(queryLine);
-			query->bindValue(":" + gEnv->mySqlUsersUidName, uid);
-			query->bindValue(":" + gEnv->mySqlUsersLoginName, login);
-			query->bindValue(":" + gEnv->mySqlUsersPasswordName, password);
-			query->bindValue(":" + gEnv->mySqlUsersBanName, 0);
+			query->bindValue(":" + mySqlUsersUidName, uid);
+			query->bindValue(":" + mySqlUsersLoginName, login);
+			query->bindValue(":" + mySqlUsersPasswordName, password);
+			query->bindValue(":" + mySqlUsersBanName, 0);
 
 			if (query->exec())
 			{
@@ -595,9 +622,9 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	}
 
 	// Redis background saving
-	if (gEnv->bUseRedis && gEnv->bRedisBackgroundSave && result && gEnv->pRedis != nullptr)
+	if (bUseRedis && bRedisBackgroundSave && result && pRedis != nullptr)
 	{
-		QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
 		if (!save_buff.isEmpty())
 		{
 			qDebug() << "Redis background saving complete";
@@ -618,7 +645,7 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	bool result = false;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "profiles:" + QString::number(profile->uid);
 
@@ -634,8 +661,8 @@ bool DBWorker::CreateProfile(SProfile *profile)
 		"achievements", profile->achievements.toUtf8(),
 		"stats", profile->stats.toUtf8() };
 
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
-		QString buff2 = gEnv->pRedis->SendSyncQuery("SET", "nicknames:" + profile->nickname, QString::number(profile->uid));
+		QString buff = pRedis->SendSyncQuery(rawCmd);
+		QString buff2 = pRedis->SendSyncQuery("SET", "nicknames:" + profile->nickname, QString::number(profile->uid));
 
 		if (buff == "OK" && buff2 == "OK")
 		{
@@ -650,11 +677,11 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("INSERT INTO profiles (uid, nickname, model, lvl, xp, money, items, friends, achievements, stats) "
 				"VALUES (:uid, :nickname, :model, :lvl, :xp, :money, :items, :friends, :achievements, :stats)");
 			query->bindValue(":uid", profile->uid);
@@ -688,9 +715,9 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	}
 
 	// Redis background saving
-	if (gEnv->bUseRedis && gEnv->bRedisBackgroundSave && result && gEnv->pRedis != nullptr)
+	if (bUseRedis && bRedisBackgroundSave && result && pRedis != nullptr)
 	{
-		QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
 		if (!save_buff.isEmpty())
 		{
 			qDebug() << "Redis background saving complete";
@@ -711,7 +738,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	bool result = false;
 
 	// Redis
-	if (gEnv->bUseRedis && gEnv->pRedis != nullptr)
+	if (bUseRedis && pRedis != nullptr)
 	{
 		QString key = "profiles:" + QString::number(profile->uid);
 
@@ -727,7 +754,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 			"achievements", profile->achievements.toUtf8(),
 			"stats", profile->stats.toUtf8() };
 
-		QString buff = gEnv->pRedis->SendSyncQuery(rawCmd);
+		QString buff = pRedis->SendSyncQuery(rawCmd);
 
 		if (buff == "OK")
 		{
@@ -743,11 +770,11 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	}
 
 	// MySql
-	if (gEnv->bUseMySql && gEnv->pMySql != nullptr)
+	if (bUseMySql && pMySql != nullptr)
 	{
-		if (gEnv->pMySql->connectStatus)
+		if (pMySql->connectStatus)
 		{
-			QSqlQuery *query = new QSqlQuery(gEnv->pMySql->GetDatabase());
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("UPDATE profiles SET nickname=:nickname, model=:model, lvl=:lvl, xp=:xp, money=:money, items=:items, friends=:friends, achievements=:achievements, stats=:stats WHERE uid=:uid");
 			query->bindValue(":uid", profile->uid);
 			query->bindValue(":nickname", profile->nickname);
@@ -780,9 +807,9 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	}
 
 	// Redis background saving
-	if (gEnv->bUseRedis && gEnv->bRedisBackgroundSave && result && gEnv->pRedis != nullptr)
+	if (bUseRedis && bRedisBackgroundSave && result && pRedis != nullptr)
 	{
-		QString save_buff = gEnv->pRedis->SendSyncQuery("BGSAVE");
+		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
 		if (!save_buff.isEmpty())
 		{
 			qDebug() << "Redis background saving complete";

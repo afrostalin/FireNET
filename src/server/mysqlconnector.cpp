@@ -1,4 +1,5 @@
 #include "mysqlconnector.h"
+#include "dbworker.h"
 #include "global.h"
 #include <QDebug>
 
@@ -30,14 +31,14 @@ void MySqlConnector::run()
 
 bool MySqlConnector::Connect()
 {
-	qDebug() << "Connecting to MySql host...(" << gEnv->mySqlHost << ":" << gEnv->mySqlPort << ")";
+	qDebug() << "Connecting to MySql host...(" << gEnv->pDataBases->mySqlHost << ":" << gEnv->pDataBases->mySqlPort << ")";
 
 	m_db = QSqlDatabase::addDatabase("QMYSQL", "mySqlDatabase");
-	m_db.setHostName(gEnv->mySqlHost);
-	m_db.setPort(gEnv->mySqlPort);
-	m_db.setDatabaseName(gEnv->mySqlDbName);
-	m_db.setUserName(gEnv->mySqlUsername);
-	m_db.setPassword(gEnv->mySqlPassword);
+	m_db.setHostName(gEnv->pDataBases->mySqlHost);
+	m_db.setPort(gEnv->pDataBases->mySqlPort);
+	m_db.setDatabaseName(gEnv->pDataBases->mySqlDbName);
+	m_db.setUserName(gEnv->pDataBases->mySqlUsername);
+	m_db.setPassword(gEnv->pDataBases->mySqlPassword);
 
 	return m_db.open();
 }

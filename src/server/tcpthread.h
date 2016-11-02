@@ -36,6 +36,8 @@ signals:
     void close();
 
 public slots:
+    // Executed by server tick rate count
+    virtual void Update();
     virtual void stop();
     virtual void finished();
 };

@@ -66,13 +66,13 @@ int ClientQuerys::GetUidBySocket(QSslSocket* socket)
 
 bool ClientQuerys::UpdateProfile(QSslSocket* socket, SProfile* profile)
 {
-	if (!gEnv->pRedis && !gEnv->pMySql)
+	if (!gEnv->pDataBases->pRedis && !gEnv->pDataBases->pMySql)
 	{
         qCritical() << "Can't update profile, because no connected database";
         return false;
     }
 
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
     if (pDataBase->ProfileExists(profile->uid))
     {
@@ -190,7 +190,7 @@ SProfile* ClientQuerys::GetProfileFromString(QString &stringProfile)
 SShopItem ClientQuerys::GetShopItemByName(QString name)
 {
     SShopItem item;
-    QFile file("shop.xml");
+    QFile file("scripts/shop.xml");
     QByteArray shop;
 
     if (!file.open(QIODevice::ReadOnly))

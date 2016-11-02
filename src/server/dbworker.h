@@ -4,6 +4,10 @@
 #include <QObject>
 #include "global.h"
 
+class RedisConnector;
+class MySqlConnector;
+class HttpConnector;
+
 class DBWorker : public QObject
 {
     Q_OBJECT
@@ -39,6 +43,33 @@ public:
 
 private:
 	QString GetValueFromRawString(const char* valuename, QString rawString);
+public:
+	bool bUseRedis;
+	bool bUseMySql;
+	bool bUseAuthByHTTP;
+
+	RedisConnector* pRedis;
+	MySqlConnector* pMySql;
+	HttpConnector* pHTTP;
+public:
+	QString redisHost;
+	bool bRedisBackgroundSave;
+public:
+	QString mySqlHost;
+	int mySqlPort;
+	QString mySqlDbName;
+	QString mySqlUsername;
+	QString mySqlPassword;
+
+	// MySql "users" table settings (can use old table without creating new table)
+	QString mySqlUsersTableName;
+	QString mySqlUsersUidName;
+	QString mySqlUsersLoginName;
+	QString mySqlUsersPasswordName;
+	QString mySqlUsersBanName;
+public:
+	QString http_authPage;
+	QString http_regPage;
 };
 
 #endif // DBWORKER_H

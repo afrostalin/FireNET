@@ -7,6 +7,18 @@ TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
     m_pool = QThreadPool::globalInstance();
     setMaxThreads(m_pool->maxThreadCount());
+
+	// Settings
+	serverIP = "";
+	serverPort = 0;
+	serverRootUser = "";
+	serverRootPassword = "";
+	logLevel = 0;
+	maxPlayers = 0;
+	maxServers = 0;
+	maxThreads = 0;
+	tickRate = 0;
+	bGlobalChatEnable = false;
 }
 
 TcpServer::~TcpServer()
@@ -86,12 +98,13 @@ void TcpServer::startThreads()
     }
 }
 
-void TcpServer::startThread(TcpThread *cThread)
+void TcpServer::startThread(TcpThread *pThread)
 {
-	connect(this,&TcpServer::stop, cThread, &TcpThread::stop);
-    m_threads.append(cThread);
-    cThread->setAutoDelete(true);
-    m_pool->start(cThread);
+	connect(gEnv->pTimer, SIGNAL(timeout()), pThread, SLOT(Update()));
+	connect(this,&TcpServer::stop, pThread, &TcpThread::stop);
+    m_threads.append(pThread);
+    pThread->setAutoDelete(true);
+    m_pool->start(pThread);
 }
 
 TcpThread *TcpServer::freeThread()

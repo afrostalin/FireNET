@@ -6,7 +6,7 @@
 #include <QThread>
 #include <QSettings>
 #include <QFile>
-#include <QObject>
+#include <QTimer>
 // Logging tool
 #include <Logger.h>
 #include <FileAppender.h>
@@ -16,7 +16,8 @@
 #include "tcpserver.h"
 #include "dbworker.h"
 #include "mysqlconnector.h"
-#include "httpworker.h"
+#include "httpconnector.h"
+#include "serverqueue.h"
 
 #include <signal.h>
 
@@ -39,7 +40,7 @@ bool init()
 		qWarning() << "Not found server.cfg! Using default settings...";
 	}
 
-	if (!QFile::exists("shop.xml"))
+	if (!QFile::exists("scripts/shop.xml"))
 	{
 		qWarning() << "Not found shop.xml! Shop system not be work!";
 	}
@@ -90,11 +91,15 @@ int main(int argc, char *argv[])
     QCoreApplication *a = new QCoreApplication(argc, argv);
 
 	// Init global environment
-	gEnv->Init();
+	gEnv->pServer = new TcpServer;
+	gEnv->pDataBases = new DBWorker;
+	gEnv->pQueue = new ServerQueue;
+	gEnv->pTimer = new QTimer;	
+	//QObject::connect(gEnv->pTimer, SIGNAL(timeout()), gEnv->pQueue, SLOT(Update()));
 
 	// Build version and number
-	QString buildVersion = "2.0.3";
-	int buildNumber = 102;
+	QString buildVersion = "2.0.4";
+	int buildNumber = 1;
 
     a->addLibraryPath("plugins");
     a->setApplicationName("FireNET");
@@ -105,112 +110,113 @@ int main(int argc, char *argv[])
 		// Reading server config
 		QSettings settings(QString("server.cfg"), QSettings::IniFormat);
 
-		gEnv->serverIP = settings.value("sv_ip", "127.0.0.1").toString();
-		gEnv->serverPort = settings.value("sv_port", "3322").toInt();
-		gEnv->serverRootUser = settings.value("sv_admin", "admin").toString();
-		gEnv->serverRootPassword = settings.value("sv_adminPassword", "qwerty").toString();
-		gEnv->logLevel = settings.value("sv_loglevel", "2").toInt();
-		gEnv->maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
-		gEnv->maxServers = settings.value("sv_maxservers", "100").toInt();
-		gEnv->maxThreads = settings.value("sv_maxthreads", "4").toInt();
+		gEnv->pServer->serverIP = settings.value("sv_ip", "127.0.0.1").toString();
+		gEnv->pServer->serverPort = settings.value("sv_port", "3322").toInt();
+		gEnv->pServer->serverRootUser = settings.value("sv_admin", "admin").toString();
+		gEnv->pServer->serverRootPassword = settings.value("sv_adminPassword", "qwerty").toString();
+		gEnv->pServer->logLevel = settings.value("sv_loglevel", "2").toInt();
+		gEnv->pServer->maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
+		gEnv->pServer->maxServers = settings.value("sv_maxservers", "100").toInt();
+		gEnv->pServer->maxThreads = settings.value("sv_maxthreads", "4").toInt();
+		gEnv->pServer->tickRate = settings.value("sv_tickrate", "30").toInt();
 
 		// Database mode (Redis, MySql, Redis+MySql)
 		QString db_mode = settings.value("db_mode", "Redis").toString();
 
 		if (db_mode == "Redis")
 		{
-			gEnv->bUseRedis = true;
-			gEnv->bUseMySql = false;
+			gEnv->pDataBases->bUseRedis = true;
+			gEnv->pDataBases->bUseMySql = false;
 		}
 		if (db_mode == "MySql")
 		{
-			gEnv->bUseMySql = true;
-			gEnv->bUseRedis = false;
+			gEnv->pDataBases->bUseMySql = true;
+			gEnv->pDataBases->bUseRedis = false;
 		}
 		if (db_mode == "Redis+MySql")
 		{
-			gEnv->bUseMySql = true;
-			gEnv->bUseRedis = true;
+			gEnv->pDataBases->bUseMySql = true;
+			gEnv->pDataBases->bUseRedis = true;
 		}
 
 		// Authorization mode (Default, HTTP)
 		QString auth_mode = settings.value("auth_mode", "Default").toString();
 
 		if (auth_mode == "HTTP")
-			gEnv->bUseAuthByHTTP = true;
+			gEnv->pDataBases->bUseAuthByHTTP = true;
 		else
-			gEnv->bUseAuthByHTTP = false;
+			gEnv->pDataBases->bUseAuthByHTTP = false;
 		
 
 		// Redis settings
-		gEnv->redisHost = settings.value("db_redis_host", "127.0.0.1").toString();
-		gEnv->bRedisBackgroundSave = settings.value("db_redis_background_saving", "0").toBool();
+		gEnv->pDataBases->redisHost = settings.value("db_redis_host", "127.0.0.1").toString();
+		gEnv->pDataBases->bRedisBackgroundSave = settings.value("db_redis_background_saving", "0").toBool();
 
 		// MySql settings
-		gEnv->mySqlHost = settings.value("db_mysql_host", "127.0.0.1").toString();
-		gEnv->mySqlPort = settings.value("db_mysql_port", "3306").toInt();
-		gEnv->mySqlDbName = settings.value("db_mysql_database", "FireNET").toString();
-		gEnv->mySqlUsername = settings.value("db_mysql_username", "admin").toString();
-		gEnv->mySqlPassword = settings.value("db_mysql_password", "qwerty").toString();
+		gEnv->pDataBases->mySqlHost = settings.value("db_mysql_host", "127.0.0.1").toString();
+		gEnv->pDataBases->mySqlPort = settings.value("db_mysql_port", "3306").toInt();
+		gEnv->pDataBases->mySqlDbName = settings.value("db_mysql_database", "FireNET").toString();
+		gEnv->pDataBases->mySqlUsername = settings.value("db_mysql_username", "admin").toString();
+		gEnv->pDataBases->mySqlPassword = settings.value("db_mysql_password", "qwerty").toString();
 
-		gEnv->mySqlUsersTableName = settings.value("db_mysql_auth_table_name", "users").toString();
-		gEnv->mySqlUsersUidName = settings.value("db_mysql_auth_uid_element_name", "uid").toString();
-		gEnv->mySqlUsersLoginName = settings.value("db_mysql_auth_login_element_name", "login").toString();
-		gEnv->mySqlUsersPasswordName = settings.value("db_mysql_auth_password_element_name", "password").toString();
-		gEnv->mySqlUsersBanName = settings.value("db_mysql_auth_ban_status_element_name", "ban").toString();
+		gEnv->pDataBases->mySqlUsersTableName = settings.value("db_mysql_auth_table_name", "users").toString();
+		gEnv->pDataBases->mySqlUsersUidName = settings.value("db_mysql_auth_uid_element_name", "uid").toString();
+		gEnv->pDataBases->mySqlUsersLoginName = settings.value("db_mysql_auth_login_element_name", "login").toString();
+		gEnv->pDataBases->mySqlUsersPasswordName = settings.value("db_mysql_auth_password_element_name", "password").toString();
+		gEnv->pDataBases->mySqlUsersBanName = settings.value("db_mysql_auth_ban_status_element_name", "ban").toString();
 
 		// HTTP settings
-		gEnv->http_authPage = settings.value("http_auth_page", "http://127.0.0.1/auth.php").toString();
-		gEnv->http_regPage = settings.value("http_reg_page", "http://127.0.0.1/reg.php").toString();
+		gEnv->pDataBases->http_authPage = settings.value("http_auth_page", "http://127.0.0.1/auth.php").toString();
+		gEnv->pDataBases->http_regPage = settings.value("http_reg_page", "http://127.0.0.1/reg.php").toString();
 
 		// Network settings
-		gEnv->bGlobalChatEnable = settings.value("net_global_chat_enable", "0").toBool();
+		gEnv->pServer->bGlobalChatEnable = settings.value("net_global_chat_enable", "0").toBool();
 
-		start_logging("FireNET.log", gEnv->logLevel);
+		start_logging("FireNET.log", gEnv->pServer->logLevel);
 
 		qInfo() << "FireNET" << buildVersion << " Build" << buildNumber;
 		qInfo() << "Created by Ilya Chernetsov";
 		qInfo() << "Copyright (c) All rights reserved";
-		qInfo() << "Start server on" << gEnv->serverIP;
+		qInfo() << "Start server on" << gEnv->pServer->serverIP;
 
 		qDebug() << "Main thread " << QThread::currentThread();
 
-		gEnv->pServer = new TcpServer;
-		gEnv->pServer->setMaxThreads(gEnv->maxThreads);
+		gEnv->pServer->setMaxThreads(gEnv->pServer->maxThreads);
 
-		if (gEnv->pServer->listen(QHostAddress(gEnv->serverIP), gEnv->serverPort))
+		if (gEnv->pServer->listen(QHostAddress(gEnv->pServer->serverIP), gEnv->pServer->serverPort))
 		{
-			// Create database worker
-			gEnv->pDataBase = new DBWorker;
-
 			qInfo() << "Server started!";
 
-			if (gEnv->bUseRedis)
+			// Create thread with Redis connection
+			if (gEnv->pDataBases->bUseRedis)
 			{
 				qInfo() << "Start Redis service...";
 				QThread* redisThread = new QThread;
-				gEnv->pRedis = new RedisConnector;
-				gEnv->pRedis->moveToThread(redisThread);
-				QObject::connect(redisThread, &QThread::started, gEnv->pRedis, &RedisConnector::run);
-				QObject::connect(redisThread, &QThread::finished, gEnv->pRedis, &RedisConnector::deleteLater);
+				gEnv->pDataBases->pRedis = new RedisConnector;
+				gEnv->pDataBases->pRedis->moveToThread(redisThread);
+				QObject::connect(redisThread, &QThread::started, gEnv->pDataBases->pRedis, &RedisConnector::run);
+				QObject::connect(redisThread, &QThread::finished, gEnv->pDataBases->pRedis, &RedisConnector::deleteLater);
 				redisThread->start();
 			}
 
-			if (gEnv->bUseMySql)
+			// Create thread with MySQL connection
+			if (gEnv->pDataBases->bUseMySql)
 			{
 				qInfo() << "Start MySql service...";
-				gEnv->bRedisBackgroundSave = true;
+				gEnv->pDataBases->bRedisBackgroundSave = true;
 				QThread* mysqlThread = new QThread;
-				gEnv->pMySql = new MySqlConnector;
-				gEnv->pMySql->moveToThread(mysqlThread);
-				QObject::connect(mysqlThread, &QThread::started, gEnv->pMySql, &MySqlConnector::run);
-				QObject::connect(mysqlThread, &QThread::finished, gEnv->pMySql, &MySqlConnector::deleteLater);
+				gEnv->pDataBases->pMySql = new MySqlConnector;
+				gEnv->pDataBases->pMySql->moveToThread(mysqlThread);
+				QObject::connect(mysqlThread, &QThread::started, gEnv->pDataBases->pMySql, &MySqlConnector::run);
+				QObject::connect(mysqlThread, &QThread::finished, gEnv->pDataBases->pMySql, &MySqlConnector::deleteLater);
 				mysqlThread->start();
 			}
 
-			if (gEnv->bUseAuthByHTTP)
+			// Create HTTP connector
+			if (gEnv->pDataBases->bUseAuthByHTTP)
 			{
 				qWarning() << "Authorization mode set to HTTP, this can slows server";
+				gEnv->pDataBases->pHTTP = new HttpConnector;
 			}
 		}
 		else
@@ -220,5 +226,10 @@ int main(int argc, char *argv[])
 	}
 
 	signal(SIGBREAK, ClearManager);
+
+	// Calculate and set server tick rate
+	int tick = 1000 / gEnv->pServer->tickRate;
+	gEnv->pTimer->start(tick);
+
 	return a->exec();
 }

@@ -5,7 +5,7 @@
 #include <QRegExp>
 #include "tcpserver.h"
 #include "dbworker.h"
-#include "httpworker.h"
+#include "httpconnector.h"
 
 #if !defined (QT_CREATOR_FIX_COMPILE)
 #include "helper.cpp"
@@ -26,16 +26,14 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	// Log in by HTTP
-	if (gEnv->bUseAuthByHTTP)
+	if (pDataBase->bUseAuthByHTTP)
 	{
-		HttpWorker* pHttp = new HttpWorker;
-
-		if (pHttp->Login(login, password))
+		if (pDataBase->pHTTP->Login(login, password))
 		{
-			int uid = pHttp->GetUID();
+			int uid = pDataBase->pHTTP->GetUID();
 
 			SProfile *dbProfile = pDataBase->GetUserProfile(uid);
 
@@ -73,7 +71,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 		}
 		else
 		{
-			int errorType = pHttp->GetError();
+			int errorType = pDataBase->pHTTP->GetError();
 
 			QString result = "<error type='auth_failed' reason = '" + QString::number(errorType) + "'/>";
 			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -172,18 +170,16 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	// Login by HTTP
-	if (gEnv->bUseAuthByHTTP)
+	if (pDataBase->bUseAuthByHTTP)
 	{
-		HttpWorker* pHttp = new HttpWorker;
-
-		if (pHttp->Register(login, password))
+		if (pDataBase->pHTTP->Register(login, password))
 		{
 			qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
 
-			int uid = pHttp->GetUID();
+			int uid = pDataBase->pHTTP->GetUID();
 
 			QString result = "<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>";
 			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
@@ -191,7 +187,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 		}
 		else
 		{
-			int errorType = pHttp->GetError();
+			int errorType = pDataBase->pHTTP->GetError();
 			QString result = "<error type='reg_failed' reason = '" + QString::number(errorType) + "'/>";
 			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 			return;
@@ -201,7 +197,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	// Default register
 	if (!(pDataBase->UserExists(login)))
 	{
-		int uid = gEnv->pDataBase->GetFreeUID();
+		int uid = pDataBase->GetFreeUID();
 
 		if (uid > 0)
 		{
@@ -254,7 +250,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	if (!(clientProfile->nickname.isEmpty()))
 	{
@@ -344,7 +340,7 @@ void ClientQuerys::onGetProfile()
 
 void ClientQuerys::onGetShopItems()
 {
-	QFile file("shop.xml");
+	QFile file("scripts/shop.xml");
 	QString cleanShop;
 	QRegExp reg("\r\n");
 
@@ -581,7 +577,7 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	// Friend invite
 	if (inviteType == "friend_invite")
@@ -651,7 +647,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	int friendUID = pDataBase->GetUIDbyNick(reciver);
 
@@ -698,7 +694,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	int friendUID = pDataBase->GetUIDbyNick(friendName);
 
@@ -803,7 +799,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	if (!clientProfile->nickname.isEmpty())
 	{
@@ -891,7 +887,7 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBase;
+	DBWorker* pDataBase = gEnv->pDataBases;
 
 	if (reciver == clientProfile->nickname)
 	{
@@ -902,7 +898,7 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 	if (!clientProfile->nickname.isEmpty() && reciver == "all")
 	{
-		if (gEnv->bGlobalChatEnable)
+		if (pServer->bGlobalChatEnable)
 		{
 			QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
 			pServer->sendGlobalMessage(chat.toStdString().c_str());
