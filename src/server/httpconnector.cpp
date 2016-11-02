@@ -57,7 +57,7 @@ void HttpConnector::replyFinished(QNetworkReply* reply)
 			qWarning() << "HTTP reply empty!";
 
 			bHaveResult = true;
-			m_lastError = 4;
+			m_lastError = 3;
 			reply->deleteLater();
 			return;
 		}
@@ -94,6 +94,7 @@ void HttpConnector::replyFinished(QNetworkReply* reply)
 		qWarning() << reply->errorString();
 
 	bHaveResult = true;
+	m_lastError = 3;
 	reply->deleteLater();
 }
 
