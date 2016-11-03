@@ -91,10 +91,12 @@ void HttpConnector::replyFinished(QNetworkReply* reply)
 		}
 	}
 	else
+	{
 		qWarning() << reply->errorString();
+		m_lastError = 4;
+	}
 
 	bHaveResult = true;
-	m_lastError = 3;
 	reply->deleteLater();
 }
 
