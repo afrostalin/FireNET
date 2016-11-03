@@ -51,6 +51,9 @@ int main(int argc, char *argv[])
     fileList.push_back(serverFolder + "\\remoteconnection.cpp");
     fileList.push_back(serverFolder + "\\remoteconnection.h");
 
+    fileList.push_back(serverFolder + "\\settings.cpp");
+    fileList.push_back(serverFolder + "\\settings.h");
+
 
     int linesCounter = 0;
 
