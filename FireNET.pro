@@ -27,7 +27,8 @@ SOURCES += src/server/clientquerys.cpp \
     src/server/httpconnector.cpp \
     src/server/remoteclientquerys.cpp \
     src/server/remoteserver.cpp \
-    src/server/remoteconnection.cpp
+    src/server/remoteconnection.cpp \
+    src/server/settings.cpp
 
 HEADERS += \
     src/server/clientquerys.h \
@@ -41,7 +42,8 @@ HEADERS += \
     src/server/httpconnector.h \
     src/server/remoteclientquerys.h \
     src/server/remoteserver.h \
-    src/server/remoteconnection.h
+    src/server/remoteconnection.h \
+    src/server/settings.h
 
 INCLUDEPATH += $$PWD/3rd/includes
 INCLUDEPATH += $$PWD/3rd/includes/libssh2

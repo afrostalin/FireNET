@@ -1,10 +1,11 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "remoteconnection.h"
 #include "global.h"
+#include "remoteconnection.h"
 #include "remoteserver.h"
 #include "remoteclientquerys.h"
+
 #include <QXmlStreamReader>
 
 RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)

@@ -1,12 +1,16 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include <QDebug>
+#include "global.h"
 #include "remoteclientquerys.h"
 #include "clientquerys.h"
-#include "global.h"
 #include "tcpserver.h"
 #include "remoteserver.h"
+#include "dbworker.h"
+#include "settings.h"
+
+#include <QDebug>
+#include <QCoreApplication>
 
 RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent)
 {
@@ -58,9 +62,9 @@ void RemoteClientQuerys::onAdminLogining(QByteArray & bytes)
 				return;
 			}
 
-			if (login == gEnv->pServer->serverRootUser)
+			if (login == gEnv->pSettings->GetVariable("sv_root_user").toString())
 			{
-				if (password == gEnv->pServer->serverRootPassword)
+				if (password == gEnv->pSettings->GetVariable("sv_root_password").toString())
 				{
 					qWarning() << "Client (" << m_socket << ") success login in administator mode!";
 					isAdmin = true;
@@ -129,8 +133,21 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 			{
 				QByteArray msg;
 				msg.append("***Server status***\n");
-				msg.append("server ip = " + gEnv->pServer->serverIP + "\n");
-				msg.append("server port = " + QString::number(gEnv->pServer->serverPort) + "\n");
+				msg.append("Server version = " + qApp->applicationVersion() + "\n");
+				msg.append("Server ip = " + gEnv->pSettings->GetVariable("sv_ip").toString() + "\n");
+				msg.append("Server port = " + gEnv->pSettings->GetVariable("sv_port").toString() + "\n");
+				msg.append("Server tickrate = " + gEnv->pSettings->GetVariable("sv_tickrate").toString() + " per/sec.\n" );
+				//msg.append("Active thread count = ");
+				//msg.append("Database mode = ");
+				//msg.append("Authrorization type = ");
+				//msg.append("Players ammount = . Maximum players count = ");
+				//msg.append("Game servers ammount = . Maximum game servers count = ");
+				//msg.append("Average time for reading = ");
+				//msg.append("Average time for sending = ");
+				//msg.append("Server start time = ");
+				//msg.append("Errors count = ");
+				//msg.append("Warnings count = ");
+				//msg.append("Server work");
 				msg.append("*******************");
 
 				gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);

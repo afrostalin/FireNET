@@ -40,6 +40,9 @@
     <Filter Include="FireNET\MessageProcessing\RemoteClient">
       <UniqueIdentifier>{ac14d683-8041-47bb-bbb0-d1760857ad86}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FireNET\Tools">
+      <UniqueIdentifier>{a96cc6b6-c65c-4792-bfd6-9565833b12fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="global.cpp">
@@ -67,9 +70,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_serverqueue.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="dbworker.cpp">
@@ -117,6 +117,15 @@
     <ClCompile Include="remoteclientquerys.cpp">
       <Filter>FireNET\MessageProcessing\RemoteClient</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_remoteclientquerys.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>FireNET\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_settings.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="dbworker.h">
@@ -151,6 +160,9 @@
     </CustomBuild>
     <CustomBuild Include="remoteclientquerys.h">
       <Filter>FireNET\MessageProcessing\RemoteClient</Filter>
+    </CustomBuild>
+    <CustomBuild Include="settings.h">
+      <Filter>FireNET\Tools</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

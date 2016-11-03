@@ -1,11 +1,14 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "clientquerys.h"
-#include <qdatastream.h>
 #include "global.h"
-#include "tcpserver.h"
+#include "clientquerys.h"
 #include "dbworker.h"
+#include "tcpserver.h"
+#include "settings.h"
+
+#include <qdatastream.h>
+
 
 ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
 {

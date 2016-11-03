@@ -1,6 +1,11 @@
+// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: http://opensource.org/licenses/MIT
+
+#include "global.h"
 #include "mysqlconnector.h"
 #include "dbworker.h"
-#include "global.h"
+#include "settings.h"
+
 #include <QDebug>
 
 MySqlConnector::MySqlConnector(QObject *parent)
@@ -31,14 +36,14 @@ void MySqlConnector::run()
 
 bool MySqlConnector::Connect()
 {
-	qDebug() << "Connecting to MySql host...(" << gEnv->pDataBases->mySqlHost << ":" << gEnv->pDataBases->mySqlPort << ")";
+	qDebug() << "Connecting to MySql host...(" << gEnv->pSettings->GetVariable("mysql_host").toString() << ":" << gEnv->pSettings->GetVariable("mysql_port").toInt() << ")";
 
 	m_db = QSqlDatabase::addDatabase("QMYSQL", "mySqlDatabase");
-	m_db.setHostName(gEnv->pDataBases->mySqlHost);
-	m_db.setPort(gEnv->pDataBases->mySqlPort);
-	m_db.setDatabaseName(gEnv->pDataBases->mySqlDbName);
-	m_db.setUserName(gEnv->pDataBases->mySqlUsername);
-	m_db.setPassword(gEnv->pDataBases->mySqlPassword);
+	m_db.setHostName(gEnv->pSettings->GetVariable("mysql_host").toString());
+	m_db.setPort(gEnv->pSettings->GetVariable("mysql_port").toInt());
+	m_db.setDatabaseName(gEnv->pSettings->GetVariable("mysql_db_name").toString());
+	m_db.setUserName(gEnv->pSettings->GetVariable("mysql_username").toString());
+	m_db.setPassword(gEnv->pSettings->GetVariable("mysql_password").toString());
 
 	return m_db.open();
 }

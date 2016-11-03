@@ -8,6 +8,7 @@ class TcpServer;
 class DBWorker;
 class QTimer;
 class RemoteServer;
+class SettingsManager;
 
 #include <qsslsocket.h>
 #include <qmutex.h>
@@ -67,6 +68,7 @@ struct SGlobalEnvironment
 	DBWorker* pDataBases;
 	QTimer* pTimer;
 	RemoteServer* pRemoteServer;
+	SettingsManager* pSettings;
 };
 
 extern SGlobalEnvironment* gEnv;

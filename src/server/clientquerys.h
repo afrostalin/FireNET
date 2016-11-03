@@ -7,9 +7,10 @@
 #include <QObject>
 #include <QDebug>
 #include <QSslSocket>
-#include "redisconnector.h"
 #include <QXmlStreamReader>
 #include <QFile>
+
+#include "redisconnector.h"
 #include "global.h"
 
 struct SShopItem

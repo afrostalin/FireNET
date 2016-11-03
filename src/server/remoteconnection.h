@@ -6,6 +6,7 @@
 
 #include <QObject>
 #include <QSslSocket>
+
 #include "remoteclientquerys.h"
 
 class RemoteConnection : public QObject

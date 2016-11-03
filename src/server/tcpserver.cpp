@@ -1,24 +1,14 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
+#include "global.h"
 #include "tcpserver.h"
+#include "settings.h"
 
 TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
     m_pool = QThreadPool::globalInstance();
     setMaxThreads(m_pool->maxThreadCount());
-
-	// Settings
-	serverIP = "";
-	serverPort = 0;
-	serverRootUser = "";
-	serverRootPassword = "";
-	logLevel = 0;
-	maxPlayers = 0;
-	maxServers = 0;
-	maxThreads = 0;
-	tickRate = 0;
-	bGlobalChatEnable = false;
 }
 
 TcpServer::~TcpServer()
@@ -30,7 +20,7 @@ void TcpServer::setMaxThreads(int maximum)
 {
     if(isListening())
     {
-        qWarning() << "WARNING Max threads not changed, call setMaxThreads() before listen()";
+        qWarning() << "Max threads not changed, call setMaxThreads() before listen()";
         return;
     }
 
@@ -56,11 +46,11 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 		return;
 	}
 
-	if (vClients.size() != maxPlayers)
+	if (vClients.size() != gEnv->pSettings->GetVariable("sv_max_players").toInt())
 		pThread->accept(socketDescriptor, pThread->runnableThread());
 	else
 	{
-		qWarning() << "Connection limit exceeded! Max players = " << maxPlayers;
+		qWarning() << "Connection limit exceeded! Max players = " << gEnv->pSettings->GetVariable("sv_max_players").toInt();
 	}
 }
 
@@ -98,8 +88,8 @@ void TcpServer::startThreads()
 
     for(int i = 0; i < m_pool->maxThreadCount(); i++)
     {
-        TcpThread *cThread = new TcpThread(this);
-        startThread(cThread);
+        TcpThread *pThread = new TcpThread(this);
+        startThread(pThread);
     }
 }
 

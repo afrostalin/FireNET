@@ -1,11 +1,14 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
+#include "global.h"
 #include "clientquerys.h"
-#include <QRegExp>
 #include "tcpserver.h"
 #include "dbworker.h"
 #include "httpconnector.h"
+#include "settings.h"
+
+#include <QRegExp>
 
 #if !defined (QT_CREATOR_FIX_COMPILE)
 #include "helper.cpp"
@@ -29,7 +32,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 	DBWorker* pDataBase = gEnv->pDataBases;
 
 	// Log in by HTTP
-	if (pDataBase->bUseAuthByHTTP)
+	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
 	{
 		if (pDataBase->pHTTP->Login(login, password))
 		{
@@ -173,7 +176,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	DBWorker* pDataBase = gEnv->pDataBases;
 
 	// Login by HTTP
-	if (pDataBase->bUseAuthByHTTP)
+	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
 	{
 		if (pDataBase->pHTTP->Register(login, password))
 		{
@@ -898,7 +901,7 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 	if (!clientProfile->nickname.isEmpty() && reciver == "all")
 	{
-		if (pServer->bGlobalChatEnable)
+		if (gEnv->pSettings->GetVariable("bUseGlobalChat").toBool())
 		{
 			QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
 			pServer->sendGlobalMessage(chat.toStdString().c_str());

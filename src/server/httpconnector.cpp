@@ -1,9 +1,11 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
+#include "global.h"
 #include "httpconnector.h"
 #include "dbworker.h"
-#include "global.h"
+#include "settings.h"
+
 #include <QUrl>
 #include <QNetworkRequest>
 #include <QThread>
@@ -102,7 +104,7 @@ void HttpConnector::replyFinished(QNetworkReply* reply)
 
 bool HttpConnector::Login(QString login, QString password)
 {
-	QUrl loginUrl = gEnv->pDataBases->http_authPage;
+	QUrl loginUrl = gEnv->pSettings->GetVariable("http_login_page").toString();
 	QByteArray data;
 	data.append("login=" + login);
 	data.append("&password=" + password);
@@ -126,7 +128,7 @@ bool HttpConnector::Login(QString login, QString password)
 
 bool HttpConnector::Register(QString login, QString password)
 {
-	QUrl registerUrl = gEnv->pDataBases->http_regPage;
+	QUrl registerUrl = gEnv->pSettings->GetVariable("http_register_page").toString();
 	QByteArray data;
 	data.append("login=" + login);
 	data.append("&password=" + password);

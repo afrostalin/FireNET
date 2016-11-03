@@ -24,8 +24,6 @@ public:
     virtual void incomingConnection(qintptr socketDescriptor);
 	void sendMessageToRemoteClient(QSslSocket* socket, QByteArray data);
 public:
-	QString serverIp;
-	int serverPort;
 	int clientCount;
 	bool bHaveAdmin;
 private:

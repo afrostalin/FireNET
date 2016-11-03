@@ -1,3 +1,6 @@
+// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: http://opensource.org/licenses/MIT
+
 #ifndef MYSQLCONNECTOR_H
 #define MYSQLCONNECTOR_H
 

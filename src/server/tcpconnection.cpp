@@ -10,12 +10,36 @@
 
 TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 {
-	pQuery = new ClientQuerys();
+	pQuery = nullptr;
 	m_socket = nullptr;
 }
 
 TcpConnection::~TcpConnection()
 {
+}
+
+void TcpConnection::accept(qint64 socketDescriptor)
+{
+	m_socket = new QSslSocket(this);
+	pQuery = new ClientQuerys(this);
+
+	if (!m_socket->setSocketDescriptor(socketDescriptor))
+	{
+		qCritical() << "Can't accept socket!";
+		return;
+	}
+
+	m_socket->setLocalCertificate("key.pem");
+	m_socket->setPrivateKey("key.key");
+	m_socket->startServerEncryption();
+
+	connect(m_socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
+	connect(m_socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
+	connect(m_socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
+	connect(m_socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
+
+	connect(m_socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
+	connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
 }
 
 void TcpConnection::connected()
@@ -165,29 +189,6 @@ void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
     qDebug() << "Socket state changed to " << socketState;
 }
 
-void TcpConnection::accept(qint64 socketDescriptor)
-{
-	m_socket = new QSslSocket(this);
-
-	if (!m_socket->setSocketDescriptor(socketDescriptor))
-	{
-		qCritical() << "Can't accept socket!";
-		return;
-	}
-
-	m_socket->setLocalCertificate("key.pem");
-	m_socket->setPrivateKey("key.key");
-	m_socket->startServerEncryption();
-
-	connect(m_socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
-	connect(m_socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
-	connect(m_socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
-	connect(m_socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
-
-	connect(m_socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
-	connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
-}
-
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
 {
 	qCritical() << "Soket ssl error";
@@ -199,8 +200,13 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
-    qWarning() << "SocketError : " << error;
-	close();
+	if (error == QAbstractSocket::SocketError::RemoteHostClosedError)
+		close();
+	else
+	{
+		qWarning() << "SocketError : " << error;
+		close();
+	}
 }
 
 void TcpConnection::close()

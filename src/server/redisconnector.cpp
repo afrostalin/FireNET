@@ -1,9 +1,11 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
+#include "global.h"
 #include "redisconnector.h"
 #include "dbworker.h"
-#include "global.h"
+#include "settings.h"
+
 #include <QDebug>
 
 RedisConnector::RedisConnector(QObject *parent)
@@ -39,8 +41,8 @@ bool RedisConnector::Connect()
 	qInfo()<< "Init qredisclient...";
     initRedisClient();
 
-	qInfo()<< "Create connection to Redis... ("<< gEnv->pDataBases->redisHost <<")";
-    RedisClient::ConnectionConfig config(gEnv->pDataBases->redisHost);
+	qInfo()<< "Create connection to Redis... ("<< gEnv->pSettings->GetVariable("redis_ip").toString() <<")";
+    RedisClient::ConnectionConfig config(gEnv->pSettings->GetVariable("redis_ip").toString());
     connection = new RedisClient::Connection(config);
     connection->connect(false);
 
