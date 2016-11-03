@@ -23,3 +23,4 @@
 
 /3rd/bin/windows/redis/server_log.txt
 /bin/WIN64/Makefile
+/bin/WIN64/ui_mainwindow.h
