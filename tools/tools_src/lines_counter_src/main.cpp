@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     fileList.push_back(serverFolder + "\\mysqlconnector.cpp");
     fileList.push_back(serverFolder + "\\mysqlconnector.h");
 
-    fileList.push_back(serverFolder + "\\serverqueue.cpp");
-    fileList.push_back(serverFolder + "\\serverqueue.h");
+    fileList.push_back(serverFolder + "\\remoteclientquerys.cpp");
+    fileList.push_back(serverFolder + "\\remoteclientquerys.h");
 
     fileList.push_back(serverFolder + "\\tcpconnection.cpp");
     fileList.push_back(serverFolder + "\\tcpconnection.h");
@@ -44,6 +44,12 @@ int main(int argc, char *argv[])
 
     fileList.push_back(serverFolder + "\\tcpthread.cpp");
     fileList.push_back(serverFolder + "\\tcpthread.cpp");
+
+    fileList.push_back(serverFolder + "\\remoteserver.cpp");
+    fileList.push_back(serverFolder + "\\remoteserver.h");
+
+    fileList.push_back(serverFolder + "\\remoteconnection.cpp");
+    fileList.push_back(serverFolder + "\\remoteconnection.h");
 
 
     int linesCounter = 0;
