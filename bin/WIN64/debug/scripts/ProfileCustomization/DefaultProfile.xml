@@ -1,0 +1,7 @@
+<Profile parametersCount = '3'>
+
+    <Parameter name = 'uid' type = 'int' mySqlName = 'uid' redisName = 'uid'/>
+	<Parameter name = 'nickname' type = 'string' mySqlName = 'uid' redisName = 'uid'/>
+	<Parameter name = 'fileModel' type = 'string' mySqlName = 'uid' redisName = 'uid/>
+	
+</Profile>
