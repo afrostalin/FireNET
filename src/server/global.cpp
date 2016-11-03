@@ -4,5 +4,7 @@
 #include "global.h"
 
 SGlobalEnvironment* gEnv = new SGlobalEnvironment;
+
 QVector <SClient> vClients;
+QVector<SRemoteClient> vRemoteClients;
 QVector <SGameServer> vServers;

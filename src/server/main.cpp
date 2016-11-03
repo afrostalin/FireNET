@@ -17,7 +17,7 @@
 #include "dbworker.h"
 #include "mysqlconnector.h"
 #include "httpconnector.h"
-#include "serverqueue.h"
+#include "remoteserver.h"
 
 #include <signal.h>
 
@@ -92,14 +92,13 @@ int main(int argc, char *argv[])
 
 	// Init global environment
 	gEnv->pServer = new TcpServer;
+	gEnv->pRemoteServer = new RemoteServer;
 	gEnv->pDataBases = new DBWorker;
-	gEnv->pQueue = new ServerQueue;
 	gEnv->pTimer = new QTimer;	
-	//QObject::connect(gEnv->pTimer, SIGNAL(timeout()), gEnv->pQueue, SLOT(Update()));
 
 	// Build version and number
 	QString buildVersion = "2.0.4";
-	int buildNumber = 1;
+	int buildNumber = 42;
 
     a->addLibraryPath("plugins");
     a->setApplicationName("FireNET");
@@ -115,9 +114,9 @@ int main(int argc, char *argv[])
 		gEnv->pServer->serverRootUser = settings.value("sv_admin", "admin").toString();
 		gEnv->pServer->serverRootPassword = settings.value("sv_adminPassword", "qwerty").toString();
 		gEnv->pServer->logLevel = settings.value("sv_loglevel", "2").toInt();
-		gEnv->pServer->maxPlayers = settings.value("sv_maxplayers", "1000").toInt();
-		gEnv->pServer->maxServers = settings.value("sv_maxservers", "100").toInt();
-		gEnv->pServer->maxThreads = settings.value("sv_maxthreads", "4").toInt();
+		gEnv->pServer->maxPlayers = settings.value("sv_maxplayers", "1").toInt();
+		gEnv->pServer->maxServers = settings.value("sv_maxservers", "1").toInt();
+		gEnv->pServer->maxThreads = settings.value("sv_maxthreads", "1").toInt();
 		gEnv->pServer->tickRate = settings.value("sv_tickrate", "30").toInt();
 
 		// Database mode (Redis, MySql, Redis+MySql)
@@ -172,6 +171,10 @@ int main(int argc, char *argv[])
 		// Network settings
 		gEnv->pServer->bGlobalChatEnable = settings.value("net_global_chat_enable", "0").toBool();
 
+		// Remote server settings
+		gEnv->pRemoteServer->serverIp = settings.value("rs_ip", "127.0.0.1").toString();
+		gEnv->pRemoteServer->serverPort = settings.value("rs_port", "64000").toInt();
+
 		start_logging("FireNET.log", gEnv->pServer->logLevel);
 
 		qInfo() << "FireNET" << buildVersion << " Build" << buildNumber;
@@ -225,11 +228,18 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	signal(SIGBREAK, ClearManager);
+	// Start remote server for remote administration and game server connection
+	qInfo() << "Start remote server...";
+	QThread* remoteThread = new QThread;
+	gEnv->pRemoteServer->moveToThread(remoteThread);
+	QObject::connect(remoteThread, &QThread::started, gEnv->pRemoteServer, &RemoteServer::run);
+	QObject::connect(remoteThread, &QThread::finished, gEnv->pRemoteServer, &RemoteServer::deleteLater);
+	remoteThread->start();
 
 	// Calculate and set server tick rate
 	int tick = 1000 / gEnv->pServer->tickRate;
 	gEnv->pTimer->start(tick);
 
+	signal(SIGBREAK, ClearManager);
 	return a->exec();
 }

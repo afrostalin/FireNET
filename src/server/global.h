@@ -6,8 +6,8 @@
 
 class TcpServer;
 class DBWorker;
-class ServerQueue;
 class QTimer;
+class RemoteServer;
 
 #include <qsslsocket.h>
 #include <qmutex.h>
@@ -42,6 +42,13 @@ struct SClient
 	bool isGameServer;
 };
 
+struct SRemoteClient
+{
+	QSslSocket *socket;
+	bool isAdmin;
+	bool isGameServer;
+};
+
 struct SGameServer
 {
 	QSslSocket* socket;
@@ -58,12 +65,13 @@ struct SGlobalEnvironment
 {
 	TcpServer* pServer;
 	DBWorker* pDataBases;
-	ServerQueue* pQueue;
 	QTimer* pTimer;
+	RemoteServer* pRemoteServer;
 };
 
 extern SGlobalEnvironment* gEnv;
 extern QVector <SClient> vClients;
+extern QVector<SRemoteClient> vRemoteClients;
 extern QVector <SGameServer> vServers;
 
 #endif // GLOBAL_H

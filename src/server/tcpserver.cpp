@@ -46,17 +46,22 @@ bool TcpServer::listen(const QHostAddress &address, quint16 port)
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    qDebug() << "Incomming connection...";
+	qDebug() << "Incomming connection...";
 
-    TcpThread *pThread = freeThread();
+	TcpThread *pThread = freeThread();
 
-    if(!pThread)
-    {
-        qCritical() << "No free thread!";
-        return;
-    }
+	if (!pThread)
+	{
+		qCritical() << "No free thread!";
+		return;
+	}
 
-	pThread->accept(socketDescriptor, pThread->runnableThread());
+	if (vClients.size() != maxPlayers)
+		pThread->accept(socketDescriptor, pThread->runnableThread());
+	else
+	{
+		qWarning() << "Connection limit exceeded! Max players = " << maxPlayers;
+	}
 }
 
 void TcpServer::close()
@@ -102,6 +107,7 @@ void TcpServer::startThread(TcpThread *pThread)
 {
 	connect(gEnv->pTimer, SIGNAL(timeout()), pThread, SLOT(Update()));
 	connect(this,&TcpServer::stop, pThread, &TcpThread::stop);
+
     m_threads.append(pThread);
     pThread->setAutoDelete(true);
     m_pool->start(pThread);

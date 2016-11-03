@@ -19,8 +19,26 @@
     <Filter Include="FireNET\Server">
       <UniqueIdentifier>{16df10ce-e37b-40eb-a960-eaaba98f95f8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FireNET\Messages">
+    <Filter Include="FireNET\RemoteServer">
+      <UniqueIdentifier>{020c815c-e2c7-45c8-8eff-057f5d4708d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\MessageProcessing">
       <UniqueIdentifier>{a24d0560-0d73-4c9a-be2c-0cbeced8b25d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Databases\Redis">
+      <UniqueIdentifier>{b9117a9b-8776-49dd-b554-3e605f4357d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Databases\MySQL">
+      <UniqueIdentifier>{a489d151-65cc-41d5-900b-8d881cd64270}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Databases\HTTP">
+      <UniqueIdentifier>{38d6c441-9879-4f1a-838a-8f3d5cbed01e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\MessageProcessing\DefaultClient">
+      <UniqueIdentifier>{c92fb98c-64c2-42cc-8820-bdb7aa449a58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\MessageProcessing\RemoteClient">
+      <UniqueIdentifier>{ac14d683-8041-47bb-bbb0-d1760857ad86}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -48,9 +66,6 @@
     <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_httpworker.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
@@ -58,12 +73,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="dbworker.cpp">
-      <Filter>FireNET\Databases</Filter>
-    </ClCompile>
-    <ClCompile Include="mysqlconnector.cpp">
-      <Filter>FireNET\Databases</Filter>
-    </ClCompile>
-    <ClCompile Include="redisconnector.cpp">
       <Filter>FireNET\Databases</Filter>
     </ClCompile>
     <ClCompile Include="tcpconnection.cpp">
@@ -75,27 +84,42 @@
     <ClCompile Include="tcpthread.cpp">
       <Filter>FireNET\Server</Filter>
     </ClCompile>
-    <ClCompile Include="clientquerys.cpp">
-      <Filter>FireNET\Messages</Filter>
+    <ClCompile Include="..\..\temp\moc\server\moc_httpconnector.cpp">
+      <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="helper.cpp">
-      <Filter>FireNET\Messages</Filter>
+    <ClCompile Include="remoteserver.cpp">
+      <Filter>FireNET\RemoteServer</Filter>
     </ClCompile>
-    <ClCompile Include="serverqueue.cpp">
-      <Filter>FireNET\Messages</Filter>
+    <ClCompile Include="..\..\temp\moc\server\moc_remoteserver.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="remoteconnection.cpp">
+      <Filter>FireNET\RemoteServer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_remoteconnection.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="redisconnector.cpp">
+      <Filter>FireNET\Databases\Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="mysqlconnector.cpp">
+      <Filter>FireNET\Databases\MySQL</Filter>
     </ClCompile>
     <ClCompile Include="httpconnector.cpp">
-      <Filter>FireNET\Databases</Filter>
+      <Filter>FireNET\Databases\HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="clientquerys.cpp">
+      <Filter>FireNET\MessageProcessing\DefaultClient</Filter>
+    </ClCompile>
+    <ClCompile Include="helper.cpp">
+      <Filter>FireNET\MessageProcessing\DefaultClient</Filter>
+    </ClCompile>
+    <ClCompile Include="remoteclientquerys.cpp">
+      <Filter>FireNET\MessageProcessing\RemoteClient</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="dbworker.h">
-      <Filter>FireNET\Databases</Filter>
-    </CustomBuild>
-    <CustomBuild Include="mysqlconnector.h">
-      <Filter>FireNET\Databases</Filter>
-    </CustomBuild>
-    <CustomBuild Include="redisconnector.h">
       <Filter>FireNET\Databases</Filter>
     </CustomBuild>
     <CustomBuild Include="tcpconnection.h">
@@ -107,16 +131,26 @@
     <CustomBuild Include="tcpthread.h">
       <Filter>FireNET\Server</Filter>
     </CustomBuild>
-    <CustomBuild Include="serverqueue.h">
-      <Filter>FireNET\Messages</Filter>
+    <CustomBuild Include="remoteserver.h">
+      <Filter>FireNET\RemoteServer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="remoteconnection.h">
+      <Filter>FireNET\RemoteServer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="redisconnector.h">
+      <Filter>FireNET\Databases\Redis</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mysqlconnector.h">
+      <Filter>FireNET\Databases\MySQL</Filter>
     </CustomBuild>
     <CustomBuild Include="httpconnector.h">
-      <Filter>FireNET\Databases</Filter>
+      <Filter>FireNET\Databases\HTTP</Filter>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="clientquerys.h">
-      <Filter>FireNET\Messages</Filter>
+      <Filter>FireNET\MessageProcessing\DefaultClient</Filter>
+    </CustomBuild>
+    <CustomBuild Include="remoteclientquerys.h">
+      <Filter>FireNET\MessageProcessing\RemoteClient</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
