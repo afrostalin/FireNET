@@ -22,8 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->pushButton->setEnabled(false);
     ui->addFriendBtn->setEnabled(false);
     ui->removeFriendBtn->setEnabled(false);
-    ui->getStatsBtn->setEnabled(false);
-    ui->getAchievmentsBtn->setEnabled(false);
     ui->getServerBtn->setEnabled(false);
     ui->pushButton_2->setEnabled(false);
     ui->stopStressTest->setEnabled(false);
@@ -55,8 +53,6 @@ void MainWindow::onConnectedToServer()
     ui->pushButton->setEnabled(true);
     ui->addFriendBtn->setEnabled(true);
     ui->removeFriendBtn->setEnabled(true);
-    ui->getStatsBtn->setEnabled(true);
-    ui->getAchievmentsBtn->setEnabled(true);
     ui->getServerBtn->setEnabled(true);
     ui->pushButton_2->setEnabled(true);
     ui->stopStressTest->setEnabled(true);
@@ -97,8 +93,6 @@ void MainWindow::onDisconnected()
     ui->pushButton->setEnabled(false);
     ui->addFriendBtn->setEnabled(false);
     ui->removeFriendBtn->setEnabled(false);
-    ui->getStatsBtn->setEnabled(false);
-    ui->getAchievmentsBtn->setEnabled(false);
     ui->getServerBtn->setEnabled(false);
     ui->pushButton_2->setEnabled(false);
     ui->stopStressTest->setEnabled(false);
@@ -116,11 +110,12 @@ void MainWindow::SendMessageToServer(QByteArray data)
 void MainWindow::on_connectBtn_clicked()
 {
     // Start connect to server
+    QString ip = ui->serverIP->text();
     int port = ui->port->value();
 
     m_socket = new QSslSocket(this);
     m_socket->addCaCertificates("key.pem");
-    m_socket->connectToHostEncrypted("127.0.0.1",port);
+    m_socket->connectToHostEncrypted(ip ,port);
 
     connect(m_socket, &QSslSocket::encrypted, this, &MainWindow::onConnectedToServer);
     connect(m_socket, &QSslSocket::readyRead, this, &MainWindow::onReadyRead);
@@ -150,7 +145,7 @@ void MainWindow::on_createProfileBtn_clicked()
 {
     QString nickname = ui->nicknameTxt->text();
     QString model = ui->modelTxt->text();
-    QString query = "<query type = 'create_profile'><data nickname='" + nickname + "' model = '" + model + "'/></query>";
+    QString query = "<query type = 'create_profile'><data nickname='" + nickname + "' fileModel = '" + model + "'/></query>";
 
     SendMessageToServer(query.toStdString().c_str());
 }
@@ -193,24 +188,12 @@ void MainWindow::on_removeFriendBtn_clicked()
     SendMessageToServer(query.toStdString().c_str());
 }
 
-void MainWindow::on_getStatsBtn_clicked()
-{
-    QString query = "<query type = 'get_stats'/>";
-
-    SendMessageToServer(query.toStdString().c_str());
-}
-
-void MainWindow::on_getAchievmentsBtn_clicked()
-{
-    QString query = "<query type = 'get_achievments'/>";
-
-    SendMessageToServer(query.toStdString().c_str());
-}
-
 void MainWindow::on_getServerBtn_clicked()
 {
     QString mapName = ui->mapNameTxt->text();
-    QString query = "<query type = 'get_server'><data map = '" + mapName + "'/></query>";
+    QString gameRules = ui->gamerulesTxt->text();
+    QString serverName = ui->serverNameTxt->text();
+    QString query = "<query type = 'get_game_server'><data map = '" + mapName + "' gamerules = '" + gameRules + "' name = '" + serverName + "'/></query>";
 
     SendMessageToServer(query.toStdString().c_str());
 }

@@ -34,10 +34,6 @@ private slots:
 
     void on_removeFriendBtn_clicked();
 
-    void on_getStatsBtn_clicked();
-
-    void on_getAchievmentsBtn_clicked();
-
     void on_getServerBtn_clicked();
 
     void on_clearBtn_clicked();
