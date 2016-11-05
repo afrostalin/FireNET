@@ -15,6 +15,18 @@ RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent)
 	bHaveAdmin = false;
 }
 
+void RemoteServer::Clear()
+{
+	qDebug() << "~RemoteServer";
+
+	emit stop();
+
+	m_connections.clear();
+	m_Clients.clear();
+
+	m_Server->deleteLater();
+}
+
 void RemoteServer::Update()
 {
 }
@@ -47,6 +59,7 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 	qInfo() << "New incomining connection to remote server. Try accept...";
 	
 	RemoteConnection* m_remoteConnection = new RemoteConnection();
+	connect(this, &RemoteServer::stop, m_Server, &QTcpServer::close);
 	connect(this, &QTcpServer::close, m_remoteConnection, &RemoteConnection::close);
 	connect(m_remoteConnection, &RemoteConnection::finished, this, &RemoteServer::CloseConnection);
 

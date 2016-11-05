@@ -16,6 +16,8 @@ class DBWorker : public QObject
     Q_OBJECT
 public:
     explicit DBWorker(QObject *parent = 0);
+public:
+	void Clear();
 public slots:
 	void Update();
 public:

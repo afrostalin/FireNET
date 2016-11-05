@@ -4,6 +4,7 @@
 #include "global.h"
 #include "tcpserver.h"
 #include "settings.h"
+#include "tcpthread.h"
 
 TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
@@ -11,9 +12,10 @@ TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
     setMaxThreads(m_pool->maxThreadCount());
 }
 
-TcpServer::~TcpServer()
+void TcpServer::Clear()
 {
-    close();
+	qInfo() << "~TcpServer";
+	close();
 }
 
 void TcpServer::setMaxThreads(int maximum)
@@ -190,7 +192,7 @@ void TcpServer::startThreads()
 
 void TcpServer::startThread(TcpThread *pThread)
 {
-	connect(gEnv->pTimer, SIGNAL(timeout()), pThread, SLOT(Update()));
+	connect(gEnv->pTimer, &QTimer::timeout, pThread, &TcpThread::Update);
 	connect(this,&TcpServer::stop, pThread, &TcpThread::stop);
 
     m_threads.append(pThread);
@@ -240,7 +242,6 @@ TcpThread *TcpServer::freeThread()
 
 void TcpServer::close()
 {
-	qInfo() << "Closing server...";
 	emit stop();
 
 	m_threads.clear();

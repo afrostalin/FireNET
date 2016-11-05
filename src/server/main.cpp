@@ -27,11 +27,21 @@ ConsoleAppender *consoleAppender;
 
 static void ClearManager(int sig)
 {
-	qDebug() << "Sig number = " << sig;
-	//qApp->quit();
-	while (true)
+	if (sig == SIGBREAK || sig == SIGINT || sig == SIGTERM)
 	{
+		qInfo() << "FireNET quiting...";
 
+		gEnv->pServer->Clear();
+		gEnv->pRemoteServer->Clear();
+		gEnv->pDBWorker->Clear();
+		gEnv->pSettings->Clear();
+
+		gEnv->pServer->deleteLater();
+		gEnv->pRemoteServer->deleteLater();
+		gEnv->pDBWorker->deleteLater();
+		gEnv->pSettings->deleteLater();
+
+		qApp->quit();
 	}
 }
 
@@ -176,6 +186,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication *a = new QCoreApplication(argc, argv);
 
+	
 	// Init global environment
 	gEnv->pServer = new TcpServer;
 	gEnv->pRemoteServer = new RemoteServer;
@@ -184,18 +195,18 @@ int main(int argc, char *argv[])
 	gEnv->pSettings = new SettingsManager;
 
 	// Connect pTimer with Update functions in DBWorker and RemoteServer class
-	QObject::connect(gEnv->pTimer, SIGNAL(timeout()), gEnv->pRemoteServer, SLOT(Update()));
-	QObject::connect(gEnv->pTimer, SIGNAL(timeout()), gEnv->pDBWorker, SLOT(Update()));
-
+	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pRemoteServer, &RemoteServer::Update);
+	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
+	
 	// Build version and number
 	QString buildVersion = "2.0.5";
-	int buildNumber = 38;
+	int buildNumber = 92;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
     a->setApplicationName("FireNET");
     a->setApplicationVersion(appVersion);
-
+	
 	if (init())
 	{
 		start_logging("FireNET.log", 2);

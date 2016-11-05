@@ -12,6 +12,7 @@ TcpThread::TcpThread(QObject *parent) : QObject(parent)
 
 TcpThread::~TcpThread()
 {
+	qInfo() << "~TcpThread";
 }
 
 void TcpThread::Update()
@@ -35,6 +36,7 @@ void TcpThread::accept(qint64 socketDescriptor, QThread *owner)
 	TcpConnection *connection = new TcpConnection();
 
 	connect(this, &TcpThread::close, connection, &TcpConnection::close);
+	connect(this, &TcpThread::close, m_loop,  &QEventLoop::quit);
 	connect(connection, &TcpConnection::finished, this, &TcpThread::finished);
 
 	m_connections.append(connection);
@@ -54,7 +56,6 @@ QThread *TcpThread::runnableThread()
 void TcpThread::stop()
 {
 	emit close();
-	m_loop->quit();
 }
 
 void TcpThread::finished()

@@ -23,6 +23,27 @@ void DBWorker::Update()
 {
 }
 
+void DBWorker::Clear()
+{
+	qDebug() << "~DBWorker";
+
+	if (pRedis != nullptr)
+	{
+		pRedis->Disconnect();
+		pRedis->deleteLater();
+	}
+	if (pMySql != nullptr)
+	{
+		pMySql->Disconnect();
+		pMySql->deleteLater();
+	}
+
+	if (pHTTP != nullptr)
+	{
+		pHTTP->deleteLater();
+	}
+}
+
 bool DBWorker::UserExists(QString login)
 {
 	SettingsManager* pSettings = gEnv->pSettings;

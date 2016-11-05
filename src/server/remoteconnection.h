@@ -14,6 +14,7 @@ class RemoteConnection : public QObject
     Q_OBJECT
 public:
     explicit RemoteConnection(QObject *parent = 0);
+	~RemoteConnection();
 
 protected:
 	virtual void connected();

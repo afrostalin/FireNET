@@ -14,6 +14,11 @@ RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)
 	pQuerys = nullptr;
 }
 
+RemoteConnection::~RemoteConnection()
+{
+	qInfo() << "~RemoteConnection";
+}
+
 void RemoteConnection::accept(qint64 socketDescriptor)
 {
 	m_socket = new QSslSocket(this);

@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QVector>
 #include <QVariant>
+#include <QMutex>
 
 struct SVariable
 {
@@ -20,6 +21,8 @@ class SettingsManager : public QObject
 public:
     explicit SettingsManager(QObject *parent = 0);
 public:
+	void Clear();
+public:
 	QVariant GetVariable(QString key);
 	QStringList GetVariablesList();
 public:
@@ -28,6 +31,7 @@ public:
 	void RegisterVariable(QString key, QVariant value);
 private:
 	QVector<SVariable> m_Variables;
+	QMutex m_Mutex;
 };
 
 #endif // SETTINGS_H

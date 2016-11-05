@@ -20,8 +20,8 @@ class TcpServer : public QTcpServer
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = 0);
-    ~TcpServer();
-
+public:
+	void Clear();
 public:
 	void sendMessageToClient(QSslSocket* socket, QByteArray data);
 	void sendGlobalMessage(QByteArray data);

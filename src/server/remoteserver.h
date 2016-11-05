@@ -19,9 +19,13 @@ class RemoteServer : public QTcpServer
     Q_OBJECT
 public:
     explicit RemoteServer(QObject *parent = 0);
+public:
+	void Clear();
 public slots:
 	void Update();
 	void CloseConnection();
+signals:
+	void stop();
 public:
 	virtual void run();
 	void AddNewClient(SRemoteClient client);
