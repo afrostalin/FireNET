@@ -11,21 +11,34 @@
 RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent)
 {
 	clientCount = 0;
-	m_server = nullptr;
+	m_Server = nullptr;
+	m_Thread = nullptr;
 	bHaveAdmin = false;
+}
+
+void RemoteServer::Update()
+{
 }
 
 void RemoteServer::run()
 {
 	if (CreateServer())
+	{
+		m_Thread = QThread::currentThread();
+
 		qInfo() << "Remote server started on" << gEnv->pSettings->GetVariable("remote_server_ip").toString();
+		qInfo() << "Remote server thread " << m_Thread;
+	}
 	else
-		qCritical() << "Failed start remote server! Reason = " << m_server->errorString();
+	{
+		qCritical() << "Failed start remote server! Reason = " << m_Server->errorString();
+		return;
+	}
 }
 
 bool RemoteServer::CreateServer()
 {
-	m_server = new QTcpServer(this);
+	m_Server = new QTcpServer(this);
 	return QTcpServer::listen(QHostAddress(gEnv->pSettings->GetVariable("remote_server_ip").toString()), 
 		gEnv->pSettings->GetVariable("remote_server_port").toInt());
 }

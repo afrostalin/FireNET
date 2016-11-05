@@ -34,7 +34,8 @@ public slots:
 	void socketError(QAbstractSocket::SocketError error);
 private:
     ClientQuerys* pQuery;
-	QSslSocket* m_socket;
+	QSslSocket* m_Socket;
+	SClient m_Client;
 };
 
 #endif // TCPCONNECTION_H

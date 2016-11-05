@@ -29,7 +29,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
 	// Log in by HTTP
 	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
@@ -42,17 +42,17 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 			if (dbProfile != nullptr)
 			{
-				clientProfile = dbProfile;
-				clientStatus = 1;
-				AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+				m_Client->profile = dbProfile;
+				m_Client->status = 1;
+				pServer->UpdateClient(m_Client);
 
 				qDebug() << "-------------------------Profile found--------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QString result = "<result type='auth_complete'><data uid='" + QString::number(clientProfile->uid) + "'/></result>";
+				QString result = "<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 				result.clear();
-				result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+				result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 				return;
 			}
@@ -65,9 +65,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
 
-				clientProfile->uid = uid;
-				clientStatus = 0;
-				AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+				m_Client->profile->uid = uid;
+				m_Client->status = 0;
+				pServer->UpdateClient(m_Client);
 
 				return;
 			}
@@ -116,17 +116,17 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 			if (dbProfile != nullptr)
 			{
-				clientProfile = dbProfile;
-				clientStatus = 1;
-				AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+				m_Client->profile = dbProfile;
+				m_Client->status = 1;
+				pServer->UpdateClient(m_Client);
 
 				qDebug() << "-------------------------Profile found--------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QString result = "<result type='auth_complete'><data uid='" + QString::number(clientProfile->uid) + "'/></result>";
+				QString result = "<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 				result.clear();
-				result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+				result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 				return;
 			}
@@ -139,9 +139,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
 
-				clientProfile->uid = userData->uid;
-				clientStatus = 0;
-				AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+				m_Client->profile->uid = userData->uid;
+				m_Client->status = 0;
+				pServer->UpdateClient(m_Client);
 
 				return;
 			}
@@ -173,7 +173,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
 	// Login by HTTP
 	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
@@ -235,27 +235,27 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 
 void ClientQuerys::onCreateProfile(QByteArray &bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
-		qWarning() << "Client can't create profile without authorization!!! Uid = " << clientProfile->uid;
+		qWarning() << "Client can't create profile without authorization!!! Uid = " << m_Client->profile->uid;
 		return;
 	}
 
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString nickname = attributes.value("nickname").toString();
-	QString model = attributes.value("model").toString();
+	QString fileModel = attributes.value("fileModel").toString();
 
-	if (nickname.isEmpty() || model.isEmpty())
+	if (nickname.isEmpty() || fileModel.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Nickname = " << nickname << "Model = " << model;
+		qDebug() << "Nickname = " << nickname << "fileModel = " << fileModel;
 		return;
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
-	if (!(clientProfile->nickname.isEmpty()))
+	if (!(m_Client->profile->nickname.isEmpty()))
 	{
 		qDebug() << "------------------Client alredy have profile-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
@@ -267,28 +267,25 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 
 	if (!(pDataBase->NicknameExists(nickname)))
 	{
-		clientProfile->nickname = nickname;
-		clientProfile->model = model;
-		clientProfile->money = startMoney;
-		clientProfile->xp = 0;
-		clientProfile->lvl = 0;
-		clientProfile->items = "";
-		clientProfile->friends = "";
-		clientProfile->achievements = "";
-		clientProfile->stats = "<stats kills='0' deaths='0' kd='0'/>";
+		m_Client->profile->nickname = nickname;
+		m_Client->profile->fileModel = fileModel;
+		m_Client->profile->money = startMoney;
+		m_Client->profile->xp = 0;
+		m_Client->profile->lvl = 0;
+		m_Client->profile->items = "";
+		m_Client->profile->friends = "";
 
-		QString stringProfile = ProfileToString(clientProfile);
+		QString stringProfile = ProfileToString(m_Client->profile);
 
-		if (pDataBase->CreateProfile(clientProfile))
+		if (pDataBase->CreateProfile(m_Client->profile))
 		{
 			qDebug() << "---------------------CREATE PROFILE COMPLETE---------------------";
 
 			QString result = "<result type='profile_data'>" + stringProfile + "</result>";
 			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
-
-			clientStatus = 1;
-			AcceptProfileToGlobalList(m_socket, clientProfile, clientStatus);
+			m_Client->status = 1;
+			pServer->UpdateClient(m_Client);
 
 			return;
 		}
@@ -315,7 +312,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 
 void ClientQuerys::onGetProfile()
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't get profile without authorization!!!";
 		return;
@@ -323,12 +320,12 @@ void ClientQuerys::onGetProfile()
 
 	TcpServer* pServer = gEnv->pServer;
 
-	if (!clientProfile->nickname.isEmpty())
+	if (!m_Client->profile->nickname.isEmpty())
 	{
 		qDebug() << "-------------------------Profile found--------------------------";
 		qDebug() << "----------------------GET PROFILE COMPLETE----------------------";
 
-		QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+		QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 	}
 	else
@@ -369,7 +366,7 @@ void ClientQuerys::onGetShopItems()
 
 void ClientQuerys::onBuyItem(QByteArray &bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't buy item without authorization!!!";
 		return;
@@ -388,12 +385,12 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 	TcpServer* pServer = gEnv->pServer;
 	SShopItem item = GetShopItemByName(itemName);
 
-	if (!clientProfile->nickname.isEmpty())
+	if (!m_Client->profile->nickname.isEmpty())
 	{
 		if (!item.name.isEmpty())
 		{
 			// Check if it is there in inventory
-			if (CheckAttributeInRow(clientProfile->items, "item", "name", item.name))
+			if (CheckAttributeInRow(m_Client->profile->items, "item", "name", item.name))
 			{
 				qDebug() << "------------------This item alredy purchased------------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
@@ -404,7 +401,7 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 			}
 
 			// Check minimal player level for buy this item
-			if (clientProfile->lvl < item.minLnl)
+			if (m_Client->profile->lvl < item.minLnl)
 			{
 				qDebug() << "-----------------Profile level < minimal level----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
@@ -414,23 +411,23 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				return;
 			}
 
-			if (clientProfile->money - item.cost >= 0)
+			if (m_Client->profile->money - item.cost >= 0)
 			{
 				//qDebug() << "[ClientQuerys] Client can buy this item";
 
 				// Add item and update money
-				clientProfile->money = clientProfile->money - item.cost;
-				clientProfile->items = clientProfile->items + "<item name='" + item.name +
+				m_Client->profile->money = m_Client->profile->money - item.cost;
+				m_Client->profile->items = m_Client->profile->items + "<item name='" + item.name +
 					"' icon='" + item.icon +
 					"' description='" + item.description + "'/>";
 
 				// Update profile
-				if (UpdateProfile(m_socket, clientProfile))
+				if (UpdateProfile(m_Client->profile))
 				{
 					qDebug() << "----------------------Profile updated----------------------";
 					qDebug() << "---------------------BUI ITEM COMPLETE---------------------";
 
-					QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+					QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 					return;
 				}
@@ -478,13 +475,13 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 
 void ClientQuerys::onRemoveItem(QByteArray &bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't remove item without authorization!!!";
 		return;
 	}
 
-	QString uid = QString::number(clientProfile->uid);
+	QString uid = QString::number(m_Client->profile->uid);
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString itemName = attributes.value("name").toString();
 
@@ -497,10 +494,10 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 	TcpServer* pServer = gEnv->pServer;
 
-	if (!clientProfile->nickname.isEmpty())
+	if (!m_Client->profile->nickname.isEmpty())
 	{
 		// Check item if it is there in item list
-		if (!CheckAttributeInRow(clientProfile->items, "item", "name", itemName))
+		if (!CheckAttributeInRow(m_Client->profile->items, "item", "name", itemName))
 		{
 			qDebug() << "-------------------Item not found in inventory--------------------";
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
@@ -525,15 +522,15 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 			// Remove item
 			QString removeItem = "<item name='" + item.name + "' icon='" + item.icon + "' description='" + item.description + "'/>";
-			clientProfile->items = RemoveElementFromRow(clientProfile->items, removeItem);
+			m_Client->profile->items = RemoveElementFromRow(m_Client->profile->items, removeItem);
 
 			// Update profile
-			if (UpdateProfile(m_socket, clientProfile))
+			if (UpdateProfile(m_Client->profile))
 			{
 				qDebug() << "-----------------------Profile updated------------------------";
 				qDebug() << "---------------------REMOVE ITEM COMPLETE---------------------";
 
-				QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+				QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 				return;
 			}
@@ -561,26 +558,26 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 void ClientQuerys::onInvite(QByteArray & bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't send invite without authorization!!!";
 		return;
 	}
 
-	QString uid = QString::number(clientProfile->uid);
+	QString uid = QString::number(m_Client->profile->uid);
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString inviteType = attributes.value("invite_type").toString();
 	QString reciver = attributes.value("to").toString();
 
-	if (clientProfile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
+	if (m_Client->profile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Invite type  = " << inviteType << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
+		qDebug() << "Invite type  = " << inviteType << "Client = " << m_Client->profile->nickname << "Reciver = " << reciver;
 		return;
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
 	// Friend invite
 	if (inviteType == "friend_invite")
@@ -597,12 +594,12 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			return;
 		}
 
-		QSslSocket* reciverSocket = GetSocketByUid(friendUID);
+		QSslSocket* reciverSocket = pServer->GetSocketByUid(friendUID);
 
 		if (reciverSocket != nullptr)
 		{
 			// Send invite to client
-			QString query = "<invite type='friend_invite' from='" + clientProfile->nickname + "'/>";
+			QString query = "<invite type='friend_invite' from='" + m_Client->profile->nickname + "'/>";
 			pServer->sendMessageToClient(reciverSocket, query.toStdString().c_str());
 			return;
 		}
@@ -632,25 +629,25 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 
 void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't decline invite without authorization!!!";
 		return;
 	}
 
-	QString uid = QString::number(clientProfile->uid);
+	QString uid = QString::number(m_Client->profile->uid);
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString reciver = attributes.value("to").toString();
 
-	if (clientProfile->nickname.isEmpty() || reciver.isEmpty())
+	if (m_Client->profile->nickname.isEmpty() || reciver.isEmpty())
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Client = " << clientProfile->nickname << "Reciver = " << reciver;
+		qDebug() << "Client = " << m_Client->profile->nickname << "Reciver = " << reciver;
 		return;
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
 	int friendUID = pDataBase->GetUIDbyNick(reciver);
 
@@ -661,7 +658,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 		return;
 	}
 
-	QSslSocket* reciverSocket = GetSocketByUid(friendUID);
+	QSslSocket* reciverSocket = pServer->GetSocketByUid(friendUID);
 
 	if (reciverSocket != nullptr)
 	{
@@ -680,7 +677,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 
 void ClientQuerys::onAddFriend(QByteArray &bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't add friend without authorization!!!";
 		return;
@@ -697,7 +694,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
 	int friendUID = pDataBase->GetUIDbyNick(friendName);
 
@@ -705,10 +702,10 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 	{
 		SProfile *friendProfile = pDataBase->GetUserProfile(friendUID);
 
-		if (!clientProfile->nickname.isEmpty() && friendProfile != nullptr)
+		if (!m_Client->profile->nickname.isEmpty() && friendProfile != nullptr)
 		{
 			// Check friend is there in friends list
-			if (CheckAttributeInRow(clientProfile->friends, "friend", "name", friendProfile->nickname))
+			if (CheckAttributeInRow(m_Client->profile->friends, "friend", "name", friendProfile->nickname))
 			{
 				qDebug() << "--------------------This friend alredy added--------------------";
 				qDebug() << "------------------------ADD FRIEND FAILED-----------------------";
@@ -719,7 +716,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 			}
 
 			// Block add yourself in friends
-			if (clientProfile->uid == friendUID)
+			if (m_Client->profile->uid == friendUID)
 			{
 				qDebug() << "----------------Can't add yourself to friends--------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
@@ -729,17 +726,17 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				return;
 			}
 
-			clientProfile->friends = clientProfile->friends + "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
-			friendProfile->friends = friendProfile->friends + "<friend name='" + clientProfile->nickname + "' uid='" + QString::number(clientProfile->uid) + "' status='0'/>";
+			m_Client->profile->friends = m_Client->profile->friends + "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
+			friendProfile->friends = friendProfile->friends + "<friend name='" + m_Client->profile->nickname + "' uid='" + QString::number(m_Client->profile->uid) + "' status='0'/>";
 
-			QSslSocket* friendSocket = GetSocketByUid(friendUID);
+			QSslSocket* friendSocket = pServer->GetSocketByUid(friendUID);
 
-			if (UpdateProfile(m_socket, clientProfile) && UpdateProfile(friendSocket, friendProfile))
+			if (UpdateProfile(m_Client->profile) && UpdateProfile(friendProfile))
 			{
 				qDebug() << "-----------------------Profile updated-----------------------";
 				qDebug() << "---------------------ADD FRIEND COMPLETE---------------------";
 
-				QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+				QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
 				//Send new info to friend here
@@ -785,7 +782,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't remove friend without authorization!!!";
 		return;
@@ -802,15 +799,15 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
-	if (!clientProfile->nickname.isEmpty())
+	if (!m_Client->profile->nickname.isEmpty())
 	{
 		int friendUID = pDataBase->GetUIDbyNick(friendName);
 		SProfile *friendProfile = pDataBase->GetUserProfile(friendUID);
 
 		// Check friend is there in friends list
-		if (!CheckAttributeInRow(clientProfile->friends, "friend", "name", friendName) || friendProfile == nullptr)
+		if (!CheckAttributeInRow(m_Client->profile->friends, "friend", "name", friendName) || friendProfile == nullptr)
 		{
 			qDebug() << "--------------------------Friend not found-------------------------";
 			qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
@@ -823,20 +820,20 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 		{
 			// Delete friend from client's profile
 			QString removeFriend = "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
-			clientProfile->friends = RemoveElementFromRow(clientProfile->friends, removeFriend);
+			m_Client->profile->friends = RemoveElementFromRow(m_Client->profile->friends, removeFriend);
 			// Delete client from friend's profile
 			removeFriend.clear();
-			removeFriend = "<friend name='" + clientProfile->nickname + "' uid='" + QString::number(clientProfile->uid) + "' status='0'/>";
+			removeFriend = "<friend name='" + m_Client->profile->nickname + "' uid='" + QString::number(m_Client->profile->uid) + "' status='0'/>";
 			friendProfile->friends = RemoveElementFromRow(friendProfile->friends, removeFriend);
 
-			QSslSocket* friendSocket = GetSocketByUid(friendUID);
+			QSslSocket* friendSocket = pServer->GetSocketByUid(friendUID);
 
-			if (UpdateProfile(m_socket, clientProfile) && UpdateProfile(friendSocket, friendProfile))
+			if (UpdateProfile(m_Client->profile) && UpdateProfile(friendProfile))
 			{
 				qDebug() << "------------------------Profile updated-------------------------";
 				qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
 
-				QString result = "<result type='profile_data'>" + ProfileToString(clientProfile) + "</result>";
+				QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
 				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
 				//Send new info to friend here
@@ -872,7 +869,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 void ClientQuerys::onChatMessage(QByteArray &bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't remove friend without authorization!!!";
 		return;
@@ -890,20 +887,20 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	}
 
 	TcpServer* pServer = gEnv->pServer;
-	DBWorker* pDataBase = gEnv->pDataBases;
+	DBWorker* pDataBase = gEnv->pDBWorker;
 
-	if (reciver == clientProfile->nickname)
+	if (reciver == m_Client->profile->nickname)
 	{
 		qDebug() << "--------------Client cannot send message to himself---------------";
 		qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
 		return;
 	}
 
-	if (!clientProfile->nickname.isEmpty() && reciver == "all")
+	if (!m_Client->profile->nickname.isEmpty() && reciver == "all")
 	{
 		if (gEnv->pSettings->GetVariable("bUseGlobalChat").toBool())
 		{
-			QString chat = "<chat><message type='global' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
+			QString chat = "<chat><message type='global' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>";
 			pServer->sendGlobalMessage(chat.toStdString().c_str());
 		}
 		else
@@ -917,11 +914,11 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	{
 		int reciverUID = pDataBase->GetUIDbyNick(reciver);
 
-		QSslSocket* reciverSocket = GetSocketByUid(reciverUID);
+		QSslSocket* reciverSocket = pServer->GetSocketByUid(reciverUID);
 
 		if (reciverSocket != nullptr)
 		{
-			QString chat = "<chat><message type='private' message='" + message + "' from='" + clientProfile->nickname + "'/></chat>";
+			QString chat = "<chat><message type='private' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>";
 			pServer->sendMessageToClient(reciverSocket, chat.toStdString().c_str());
 		}
 		else
@@ -936,14 +933,14 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 void ClientQuerys::onGetGameServer(QByteArray & bytes)
 {
-	if (clientProfile->uid <= 0)
+	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't get game server without authorization!!!";
 		return;
 	}
 	TcpServer* pServer = gEnv->pServer;
 
-	if (vServers.size() == 0)
+	/*if (vServers.size() == 0)
 	{
 		qWarning() << "Not any online servers";
 
@@ -952,7 +949,7 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
 
 		return;
-	}
+	}*/
 
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 
@@ -973,7 +970,7 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 	if (!serverName.isEmpty() && !byMap && !byGameRules)
 		byName = true;
 
-	QVector<SGameServer>::iterator it;
+	/*QVector<SGameServer>::iterator it;
 	for (it = vServers.begin(); it != vServers.end(); ++it)
 	{
 		if (byMap)
@@ -1042,7 +1039,7 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 			}
 		}
 	}
-
+	*/
 
 	qDebug() << "Server not found!";
 
@@ -1054,6 +1051,8 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 // Game server functionality
 void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 {
+	return;// !!!
+
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString serverName = attributes.value("name").toString();
 	QString serverIp = attributes.value("ip").toString();
@@ -1070,7 +1069,7 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 		return;
 	}
 
-	QVector<SGameServer>::iterator it;
+	/*QVector<SGameServer>::iterator it;
 	for (it = vServers.begin(); it != vServers.end(); ++it)
 	{
 		if (it->name == serverName)
@@ -1085,7 +1084,7 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 			qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
 			return;
 		}
-	}
+	}*/
 
 	// Register new game server here
 	SGameServer gameServer;
@@ -1098,10 +1097,10 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 	gameServer.online = online;
 	gameServer.maxPlayers = maxPlayers;
 
-	vServers.push_back(gameServer);
+	//vServers.push_back(gameServer);
 
 	// Update client info
-	QVector<SClient>::iterator clientIt;
+	/*QVector<SClient>::iterator clientIt;
 	for (clientIt = vClients.begin(); clientIt != vClients.end(); ++it)
 	{
 		if (clientIt->socket == m_socket)
@@ -1109,20 +1108,23 @@ void ClientQuerys::onGameServerRegister(QByteArray & bytes)
 			clientIt->isGameServer = true;
 			break;
 		}
-	}
+	}*/
 
 	qDebug() << "Game server [" << serverName << "] registered!";
-	qDebug() << "Connected game servers count = " << vServers.size();
+	//qDebug() << "Connected game servers count = " << vServers.size();
 }
 
 void ClientQuerys::onGameServerUpdateInfo(QByteArray & bytes)
 {
+	qDebug() << "Raw bytes = " << bytes;
 }
 
 void ClientQuerys::onGameServerGetOnlineProfile(QByteArray & bytes)
 {
+	qDebug() << "Raw bytes = " << bytes;
 }
 
 void ClientQuerys::onGameServerUpdateOnlineProfile(QByteArray & bytes)
 {
+	qDebug() << "Raw bytes = " << bytes;
 }

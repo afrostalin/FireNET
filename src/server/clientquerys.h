@@ -13,15 +13,6 @@
 #include "redisconnector.h"
 #include "global.h"
 
-struct SShopItem
-{
-	QString name;
-	QString icon;
-	QString description;
-	int cost;
-	int minLnl;
-};
-
 class ClientQuerys : public QObject
 {
     Q_OBJECT
@@ -30,6 +21,7 @@ public:
 
 public:
 	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
+	void SetClient(SClient* client);
     // Auth system
     void onLogin(QByteArray &bytes);
     void onRegister(QByteArray &bytes);
@@ -59,19 +51,17 @@ public:
 private:
 	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
 
-    bool UpdateProfile(QSslSocket* socket, SProfile* profile);
+    bool UpdateProfile(SProfile* profile);
 	QString ProfileToString(SProfile* profile);
-	SProfile* GetProfileFromString(QString &stringProfile);
-	void AcceptProfileToGlobalList(QSslSocket* socket, SProfile* profile, int status);
-	QSslSocket* GetSocketByUid(int uid);
-	int GetUidBySocket(QSslSocket* socket);
+
 	SShopItem GetShopItemByName(QString name);
+
 	bool CheckAttributeInRow(QString source, QString tag, QString attribute, QString checkAttribute);
 	QString RemoveElementFromRow(QString source, QString element);	
 private:
 	QSslSocket* m_socket;
-	SProfile* clientProfile;
-	int clientStatus;
+	SClient* m_Client;
+
 	int startMoney;
 };
 

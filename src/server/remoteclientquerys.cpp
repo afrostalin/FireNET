@@ -155,6 +155,24 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 				return;
 			}
 
+			if (command == "variables")
+			{
+			
+				QStringList varList = gEnv->pSettings->GetVariablesList();
+				QByteArray msg;
+
+				msg.append("Variables count = " + QString::number(varList.size()) + "\n");
+
+				for (int i = 0; i < varList.size(); ++i)
+				{
+					msg.append(QString::number(i+1) + ") " + varList[i] + " = " + gEnv->pSettings->GetVariable(varList[i]).toString() + "\n" );
+				}
+
+				gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+
+				return;
+			}
+
 			QByteArray msg;
 			msg.append("Command = " + command + " not found!");
 			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);

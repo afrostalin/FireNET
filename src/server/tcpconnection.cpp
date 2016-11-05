@@ -1,17 +1,19 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "tcpconnection.h"
-#include <QXmlStreamReader>
 #include "global.h"
+#include "tcpconnection.h"
 #include "clientquerys.h"
 #include "mysqlconnector.h"
 #include "dbworker.h"
+#include "tcpserver.h"
+
+#include <QXmlStreamReader>
 
 TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 {
 	pQuery = nullptr;
-	m_socket = nullptr;
+	m_Socket = nullptr;
 }
 
 TcpConnection::~TcpConnection()
@@ -20,99 +22,75 @@ TcpConnection::~TcpConnection()
 
 void TcpConnection::accept(qint64 socketDescriptor)
 {
-	m_socket = new QSslSocket(this);
-	pQuery = new ClientQuerys(this);
+	m_Socket = new QSslSocket(this);
 
-	if (!m_socket->setSocketDescriptor(socketDescriptor))
+	if (!m_Socket->setSocketDescriptor(socketDescriptor))
 	{
 		qCritical() << "Can't accept socket!";
 		return;
 	}
 
-	m_socket->setLocalCertificate("key.pem");
-	m_socket->setPrivateKey("key.key");
-	m_socket->startServerEncryption();
+	m_Socket->setLocalCertificate("key.pem");
+	m_Socket->setPrivateKey("key.key");
+	m_Socket->startServerEncryption();
 
-	connect(m_socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
-	connect(m_socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
-	connect(m_socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
-	connect(m_socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
+	connect(m_Socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
+	connect(m_Socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
+	connect(m_Socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
+	connect(m_Socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
 
-	connect(m_socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
-	connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+	connect(m_Socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
+	connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
 }
 
 void TcpConnection::connected()
 {
-    if(!m_socket) 
+    if(!m_Socket)
 		return;
 
-	SClient client;
-	client.socket = m_socket;
-	client.profile = nullptr;
-	client.status = 0;
-	client.isGameServer = false;
-	
-	vClients.push_back(client);
+	m_Client.socket = m_Socket;
+	m_Client.profile = nullptr;
+	m_Client.status = 0;	
 
-	pQuery->SetSocket(m_socket);
-	
-	qInfo() << "Connected clients count = " << vClients.size();
+	// Add client to server client list
+	gEnv->pServer->AddNewClient(m_Client);
+
+	// Create client querts worker
+	pQuery = new ClientQuerys(this);
+	// Set socket for client querys worker
+	pQuery->SetSocket(m_Socket);
+	// Set client
+	pQuery->SetClient(&m_Client);
+
+	qInfo() << "Client" << m_Socket << "connected.";
+	qInfo() << "Client count " << gEnv->pServer->GetClientCount();
 }
 
 void TcpConnection::disconnected()
 {
-	if (!m_socket) 
+	if (!m_Socket)
 		return;
 
-	QVector<SClient>::iterator it;
-	for (it = vClients.begin(); it != vClients.end(); ++it)
-	{
-		if (it->socket == m_socket)
-		{
-			vClients.erase(it);
+	// Remove client from server client list
+	gEnv->pServer->RemoveClient(m_Client);
 
-			// If it is game server - delete him from servers list
-			if (it->isGameServer)
-			{
-				QVector<SGameServer>::iterator gsIt;
-				for (gsIt = vServers.begin(); gsIt != vServers.end(); ++gsIt)
-				{
-					if (gsIt->socket == m_socket)
-					{
-						vServers.erase(gsIt);
-						qInfo() << "Connected game servers count = " << vServers.size();
-						break;
-					}
-				}
-			}
-
-			qInfo() << "Connected clients count = " << vClients.size();
-			break;
-		}
-	}
+	qInfo() << "Client" << m_Socket << "disconnected.";
+	qInfo() << "Client count " << gEnv->pServer->GetClientCount();
 
 	emit finished();
 }
 
 void TcpConnection::readyRead()
 {
-    if(!m_socket) 
+    if(!m_Socket)
 		return;
 
-	if (!gEnv->pDataBases->pRedis && !gEnv->pDataBases->pMySql)
-	{
-        qCritical() << "Client can't use database functions without connection to database!!!";
-		return;
-	}
-	QByteArray bytes;
+    qDebug() << "Read message from client" << m_Socket;
 
-    qDebug() << "Read message from client...";
-
-	bytes = m_socket->readAll();
-
+	QByteArray bytes = m_Socket->readAll();
     QXmlStreamReader xml(bytes);
 
+	// Check message type
     xml.readNext();
     while (!xml.atEnd() && !xml.hasError())
     {
@@ -168,7 +146,6 @@ void TcpConnection::readyRead()
 
 
 				return;
-
             }
 
         }
@@ -177,24 +154,25 @@ void TcpConnection::readyRead()
 
 void TcpConnection::bytesWritten(qint64 bytes)
 {
-    if(!m_socket) 
+    if(!m_Socket)
 		return;
-    qDebug() << "Message to client sended!";
+
+    qDebug() << "Message to client" << m_Socket << "sended! Size =" << bytes;
 }
 
 void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
 {
-    if(!m_socket) 
+    if(!m_Socket)
 		return;
-    qDebug() << "Socket state changed to " << socketState;
+
+    qDebug() << "Client" << m_Socket << "changed socket state to " << socketState;
 }
 
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
 {
-	qCritical() << "Soket ssl error";
-	foreach(QSslError item, list) 
+	foreach(QSslError item, list)
 	{
-		qDebug() << item.errorString();
+		qCritical() << "Client" << m_Socket << "return socket error" << item.errorString();
 	}
 }
 
@@ -204,16 +182,16 @@ void TcpConnection::socketError(QAbstractSocket::SocketError error)
 		close();
 	else
 	{
-		qWarning() << "SocketError : " << error;
+		qCritical() << "Client" << m_Socket << "return socket error" << error;
 		close();
 	}
 }
 
 void TcpConnection::close()
 {
-    if(!m_socket) 
+    if(!m_Socket)
 		return;
 
-    m_socket->close();
+	m_Socket->close();
 }
 

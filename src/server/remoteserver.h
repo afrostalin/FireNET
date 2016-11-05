@@ -16,6 +16,8 @@ class RemoteServer : public QTcpServer
     Q_OBJECT
 public:
     explicit RemoteServer(QObject *parent = 0);
+public slots:
+	void Update();
 public:
 	virtual void run();
 private:
@@ -27,7 +29,8 @@ public:
 	int clientCount;
 	bool bHaveAdmin;
 private:
-	QTcpServer* m_server;
+	QThread* m_Thread;
+	QTcpServer* m_Server;
 	QVector<RemoteConnection*> m_connections;
 };
 

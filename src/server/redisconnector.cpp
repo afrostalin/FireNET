@@ -8,7 +8,7 @@
 
 #include <QDebug>
 
-RedisConnector::RedisConnector(QObject *parent)
+RedisConnector::RedisConnector(QObject *parent) : QObject(parent)
 {
 	connection = nullptr;
     connectStatus = false;

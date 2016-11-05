@@ -11,6 +11,7 @@
 #include <QThreadPool>
 #include <QEventLoop>
 #include <QDebug>
+#include <QMutex>
 
 #include "tcpthread.h"
 
@@ -27,7 +28,15 @@ public:
     virtual void setMaxThreads(int maximum);
     virtual bool listen(const QHostAddress &address, quint16 port);
 	virtual void close();
-
+public:
+	void AddNewClient(SClient client);
+	void RemoveClient(SClient client);
+	void UpdateClient(SClient* client);
+	int GetClientCount();
+	QSslSocket* GetSocketByUid(int uid);
+private:
+	QVector<SClient> m_Clients;
+	QMutex m_Mutex;
 protected:
     QList<TcpThread*> m_threads;
     QThreadPool *m_pool;

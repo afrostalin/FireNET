@@ -19,6 +19,10 @@ DBWorker::DBWorker(QObject *parent) : QObject(parent)
 	pHTTP = nullptr;
 }
 
+void DBWorker::Update()
+{
+}
+
 bool DBWorker::UserExists(QString login)
 {
 	SettingsManager* pSettings = gEnv->pSettings;
@@ -458,14 +462,12 @@ SProfile* DBWorker::GetUserProfile(int uid)
 
 		int dbUid = GetValueFromRawString("uid", buff).toInt();
 		QString dbNickname = GetValueFromRawString("nickname", buff);
-		QString dbModel = GetValueFromRawString("model", buff);
+		QString dbModel = GetValueFromRawString("fileModel", buff);
 		int dbLvl = GetValueFromRawString("lvl", buff).toInt();
 		int dbXp = GetValueFromRawString("xp", buff).toInt();
 		int dbMoney = GetValueFromRawString("money", buff).toInt();
 		QString dbItems = GetValueFromRawString("items", buff);
 		QString dbFriends = GetValueFromRawString("friends", buff);
-		QString dbAchievements = GetValueFromRawString("achievements", buff);
-		QString dbStats = GetValueFromRawString("stats", buff);
 
 		if (dbUid > 0 && !dbNickname.isEmpty() && !dbModel.isEmpty())
 		{
@@ -473,14 +475,12 @@ SProfile* DBWorker::GetUserProfile(int uid)
 
 			dbProfile->uid = dbUid;
 			dbProfile->nickname = dbNickname;
-			dbProfile->model = dbModel;
+			dbProfile->fileModel = dbModel;
 			dbProfile->lvl = dbLvl;
 			dbProfile->xp = dbXp;
 			dbProfile->money = dbMoney;
 			dbProfile->items = dbItems;
 			dbProfile->friends = dbFriends;
-			dbProfile->achievements = dbAchievements;
-			dbProfile->stats = dbStats;
 
 			return dbProfile;
 		}
@@ -508,14 +508,12 @@ SProfile* DBWorker::GetUserProfile(int uid)
 
 					dbProfile->uid = query->value("uid").toInt();
 					dbProfile->nickname = query->value("nickname").toString();
-					dbProfile->model = query->value("model").toString();
+					dbProfile->fileModel = query->value("fileModel").toString();
 					dbProfile->lvl = query->value("lvl").toInt();
 					dbProfile->xp = query->value("xp").toInt();
 					dbProfile->money = query->value("money").toInt();
 					dbProfile->items = query->value("items").toString();
 					dbProfile->friends = query->value("friends").toString();
-					dbProfile->achievements = query->value("achievements").toString();
-					dbProfile->stats = query->value("stats").toString();
 
 					return dbProfile;
 				}
@@ -628,14 +626,12 @@ bool DBWorker::CreateProfile(SProfile *profile)
 		QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(),
 		"uid", QString::number(profile->uid).toUtf8(),
 		"nickname", profile->nickname.toUtf8(),
-		"model", profile->model.toUtf8(),
+		"fileModel", profile->fileModel.toUtf8(),
 		"lvl", QString::number(profile->lvl).toUtf8(),
 		"xp", QString::number(profile->xp).toUtf8(),
 		"money", QString::number(profile->money).toUtf8(),
 		"items", profile->items.toUtf8(),
-		"friends", profile->friends.toUtf8(),
-		"achievements", profile->achievements.toUtf8(),
-		"stats", profile->stats.toUtf8() };
+		"friends", profile->friends.toUtf8()};
 
 		QString buff = pRedis->SendSyncQuery(rawCmd);
 		QString buff2 = pRedis->SendSyncQuery("SET", "nicknames:" + profile->nickname, QString::number(profile->uid));
@@ -658,18 +654,16 @@ bool DBWorker::CreateProfile(SProfile *profile)
 		if (pMySql->connectStatus)
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
-			query->prepare("INSERT INTO profiles (uid, nickname, model, lvl, xp, money, items, friends, achievements, stats) "
-				"VALUES (:uid, :nickname, :model, :lvl, :xp, :money, :items, :friends, :achievements, :stats)");
+			query->prepare("INSERT INTO profiles (uid, nickname, fileModel, lvl, xp, money, items, friends) "
+				"VALUES (:uid, :nickname, :fileModel, :lvl, :xp, :money, :items, :friends)");
 			query->bindValue(":uid", profile->uid);
 			query->bindValue(":nickname", profile->nickname);
-			query->bindValue(":model", profile->model);
+			query->bindValue(":fileModel", profile->fileModel);
 			query->bindValue(":lvl", profile->lvl);
 			query->bindValue(":xp", profile->xp);
 			query->bindValue(":money", profile->money);
 			query->bindValue(":items", profile->items);
 			query->bindValue(":friends", profile->friends);
-			query->bindValue(":achievements", profile->achievements);
-			query->bindValue(":stats", profile->stats);
 
 
 			if (query->exec())
@@ -722,14 +716,12 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 		QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(),
 			"uid", QString::number(profile->uid).toUtf8(),
 			"nickname", profile->nickname.toUtf8(),
-			"model", profile->model.toUtf8(),
+			"fileModel", profile->fileModel.toUtf8(),
 			"lvl", QString::number(profile->lvl).toUtf8(),
 			"xp", QString::number(profile->xp).toUtf8(),
 			"money", QString::number(profile->money).toUtf8(),
 			"items", profile->items.toUtf8(),
-			"friends", profile->friends.toUtf8(),
-			"achievements", profile->achievements.toUtf8(),
-			"stats", profile->stats.toUtf8() };
+			"friends", profile->friends.toUtf8()};
 
 		QString buff = pRedis->SendSyncQuery(rawCmd);
 
@@ -752,18 +744,15 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 		if (pMySql->connectStatus)
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
-			query->prepare("UPDATE profiles SET nickname=:nickname, model=:model, lvl=:lvl, xp=:xp, money=:money, items=:items, friends=:friends, achievements=:achievements, stats=:stats WHERE uid=:uid");
+			query->prepare("UPDATE profiles SET nickname=:nickname, fileModel=:fileModel, lvl=:lvl, xp=:xp, money=:money, items=:items, friends=:friends WHERE uid=:uid");
 			query->bindValue(":uid", profile->uid);
 			query->bindValue(":nickname", profile->nickname);
-			query->bindValue(":model", profile->model);
+			query->bindValue(":fileModel", profile->fileModel);
 			query->bindValue(":lvl", profile->lvl);
 			query->bindValue(":xp", profile->xp);
 			query->bindValue(":money", profile->money);
 			query->bindValue(":items", profile->items);
 			query->bindValue(":friends", profile->friends);
-			query->bindValue(":achievements", profile->achievements);
-			query->bindValue(":stats", profile->stats);
-
 
 			if (query->exec())
 			{

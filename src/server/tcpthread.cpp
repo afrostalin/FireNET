@@ -8,7 +8,6 @@ TcpThread::TcpThread(QObject *parent) : QObject(parent)
 {
 	m_thread = 0;
 	m_loop = 0;
-	m_clients = 0;
 }
 
 TcpThread::~TcpThread()
@@ -31,7 +30,7 @@ void TcpThread::run()
 
 void TcpThread::accept(qint64 socketDescriptor, QThread *owner)
 {
-	qDebug() << "Accepting new connection in " << m_thread;
+	qDebug() << "Accepting new connection in" << owner;
 
 	TcpConnection *connection = new TcpConnection();
 
@@ -39,11 +38,10 @@ void TcpThread::accept(qint64 socketDescriptor, QThread *owner)
 	connect(connection, &TcpConnection::finished, this, &TcpThread::finished);
 
 	m_connections.append(connection);
-	m_clients++;
 	connection->accept(socketDescriptor);
 }
 
-int TcpThread::count()
+int TcpThread::GetClientsCount()
 {
 	return m_connections.count();
 }
@@ -75,7 +73,5 @@ void TcpThread::finished()
 	}
 
 	m_connections.removeOne(connection);
-	m_clients--;
 	connection->deleteLater();
 }
-

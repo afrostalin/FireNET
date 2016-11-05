@@ -22,21 +22,17 @@ public:
 
     virtual void run();
     virtual void accept(qint64 socketDescriptor,QThread *owner);
-    virtual int count();
+	int GetClientsCount();
     virtual QThread *runnableThread();
 
 protected:
     QEventLoop *m_loop;
     QThread *m_thread;
     QList<TcpConnection*> m_connections;
-public:
-	int m_clients;
-
 signals:
     void close();
 
 public slots:
-    // Executed by server tick rate count
     virtual void Update();
     virtual void stop();
     virtual void finished();

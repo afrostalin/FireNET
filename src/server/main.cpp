@@ -27,6 +27,8 @@ ConsoleAppender *consoleAppender;
 
 static void ClearManager(int sig)
 {
+	qDebug() << "Sig number = " << sig;
+
 	gEnv->pServer->close();
 	qApp->quit();
 }
@@ -90,7 +92,7 @@ void start_logging(QString logName, int level)
 	logger->registerAppender((AbstractAppender*)consoleAppender);
 }
 
-void ChangeLogLevel(int lvl)
+void UpdateLogLevel(int lvl)
 {
 	Logger::LogLevel logLevel;
 
@@ -175,13 +177,17 @@ int main(int argc, char *argv[])
 	// Init global environment
 	gEnv->pServer = new TcpServer;
 	gEnv->pRemoteServer = new RemoteServer;
-	gEnv->pDataBases = new DBWorker;
+	gEnv->pDBWorker = new DBWorker;
 	gEnv->pTimer = new QTimer;	
 	gEnv->pSettings = new SettingsManager;
 
+	// Connect pTimer with Update functions in DBWorker and RemoteServer class
+	QObject::connect(gEnv->pTimer, SIGNAL(timeout()), gEnv->pRemoteServer, SLOT(Update()));
+	QObject::connect(gEnv->pTimer, SIGNAL(timeout()), gEnv->pDBWorker, SLOT(Update()));
+
 	// Build version and number
 	QString buildVersion = "2.0.5";
-	int buildNumber = 4;
+	int buildNumber = 24;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
@@ -199,7 +205,7 @@ int main(int argc, char *argv[])
 		RegisterVariables();
 		ReadServerCFG();
 
-		ChangeLogLevel(gEnv->pSettings->GetVariable("sv_log_level").toInt());
+		UpdateLogLevel(gEnv->pSettings->GetVariable("sv_log_level").toInt());
 
 		if (gEnv->pSettings->GetVariable("db_mode").toString() == "Redis")
 		{
@@ -233,10 +239,10 @@ int main(int argc, char *argv[])
 			{
 				qInfo() << "Start Redis service...";
 				QThread* redisThread = new QThread;
-				gEnv->pDataBases->pRedis = new RedisConnector;
-				gEnv->pDataBases->pRedis->moveToThread(redisThread);
-				QObject::connect(redisThread, &QThread::started, gEnv->pDataBases->pRedis, &RedisConnector::run);
-				QObject::connect(redisThread, &QThread::finished, gEnv->pDataBases->pRedis, &RedisConnector::deleteLater);
+				gEnv->pDBWorker->pRedis = new RedisConnector;
+				gEnv->pDBWorker->pRedis->moveToThread(redisThread);
+				QObject::connect(redisThread, &QThread::started, gEnv->pDBWorker->pRedis, &RedisConnector::run);
+				QObject::connect(redisThread, &QThread::finished, gEnv->pDBWorker->pRedis, &RedisConnector::deleteLater);
 				redisThread->start();
 			}
 
@@ -246,10 +252,10 @@ int main(int argc, char *argv[])
 				qInfo() << "Start MySql service...";
 				gEnv->pSettings->SetVariable("redis_bg_saving", true);
 				QThread* mysqlThread = new QThread;
-				gEnv->pDataBases->pMySql = new MySqlConnector;
-				gEnv->pDataBases->pMySql->moveToThread(mysqlThread);
-				QObject::connect(mysqlThread, &QThread::started, gEnv->pDataBases->pMySql, &MySqlConnector::run);
-				QObject::connect(mysqlThread, &QThread::finished, gEnv->pDataBases->pMySql, &MySqlConnector::deleteLater);
+				gEnv->pDBWorker->pMySql = new MySqlConnector;
+				gEnv->pDBWorker->pMySql->moveToThread(mysqlThread);
+				QObject::connect(mysqlThread, &QThread::started, gEnv->pDBWorker->pMySql, &MySqlConnector::run);
+				QObject::connect(mysqlThread, &QThread::finished, gEnv->pDBWorker->pMySql, &MySqlConnector::deleteLater);
 				mysqlThread->start();
 			}
 
@@ -257,27 +263,27 @@ int main(int argc, char *argv[])
 			if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
 			{
 				qWarning() << "Authorization mode set to HTTP, this can slows server";
-				gEnv->pDataBases->pHTTP = new HttpConnector;
+				gEnv->pDBWorker->pHTTP = new HttpConnector;
 			}
+
+			// Start remote server for remote administration and game server connection
+			qInfo() << "Start remote server...";
+			QThread* remoteThread = new QThread;
+			gEnv->pRemoteServer->moveToThread(remoteThread);
+			QObject::connect(remoteThread, &QThread::started, gEnv->pRemoteServer, &RemoteServer::run);
+			QObject::connect(remoteThread, &QThread::finished, gEnv->pRemoteServer, &RemoteServer::deleteLater);
+			remoteThread->start();
+
+			// Calculate and set server tick rate
+			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();
+			qInfo() << "Server tickrate set to" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
+			gEnv->pTimer->start(tick);
 		}
 		else
 		{
 			qCritical() << "Server can't start. Reason = " << gEnv->pServer->errorString();
 		}
 	}
-
-	// Start remote server for remote administration and game server connection
-	qInfo() << "Start remote server...";
-	QThread* remoteThread = new QThread;
-	gEnv->pRemoteServer->moveToThread(remoteThread);
-	QObject::connect(remoteThread, &QThread::started, gEnv->pRemoteServer, &RemoteServer::run);
-	QObject::connect(remoteThread, &QThread::finished, gEnv->pRemoteServer, &RemoteServer::deleteLater);
-	remoteThread->start();
-
-	// Calculate and set server tick rate
-	int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();
-	qInfo() << "Server tickrate set to" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
-	gEnv->pTimer->start(tick);
 
 	signal(SIGBREAK, ClearManager);
 	return a->exec();

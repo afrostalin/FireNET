@@ -46,7 +46,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 		return;
 	}
 
-	if (vClients.size() != gEnv->pSettings->GetVariable("sv_max_players").toInt())
+	if (m_Clients.size() != gEnv->pSettings->GetVariable("sv_max_players").toInt())
 		pThread->accept(socketDescriptor, pThread->runnableThread());
 	else
 	{
@@ -54,13 +54,106 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 	}
 }
 
-void TcpServer::close()
+void TcpServer::AddNewClient(SClient client)
 {
-	qInfo() << "Closing server...";
-	emit stop();
+	QMutexLocker locker(&m_Mutex);
 
-    m_threads.clear();
-    m_pool->clear();
+	if (client.socket == nullptr)
+	{
+		qWarning() << "Can't add client. Client socket = nullptr";
+		return;
+	}
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->socket == client.socket)
+		{
+			qWarning() << "Can't add client" << client.socket << ". Client alredy added";
+			return;
+		}
+	}
+
+	qDebug() << "Adding new client" << client.socket;
+	m_Clients.push_back(client);
+}
+
+void TcpServer::RemoveClient(SClient client)
+{
+	QMutexLocker locker(&m_Mutex);
+
+	if (client.socket == nullptr)
+	{
+		qWarning() << "Can't remove client. Client socket = nullptr";
+		return;
+	}
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->socket == client.socket)
+		{
+			qDebug() << "Removing client" << client.socket;
+			m_Clients.erase(it);
+			return;
+		}
+	}
+
+	qWarning() << "Can't remove client. Client" << client.socket << "not found";
+}
+
+void TcpServer::UpdateClient(SClient* client)
+{
+	QMutexLocker locker(&m_Mutex);
+
+	if (client->socket == nullptr)
+	{
+		qWarning() << "Can't update client. Client socket = nullptr";
+		return;
+	}
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->socket == client->socket)
+		{
+			if (client->profile != nullptr)
+			{
+				it->profile = client->profile;
+				qDebug() << "Client" << it->socket << "updated.";
+				return;
+			}
+			else
+			{
+				qWarning() << "Can't update client" << it->socket << ". Profile = nullptr";
+				return;
+			}
+		}
+	}
+
+	qWarning() << "Can't update client. Client" << client->socket << "not found";
+}
+
+int TcpServer::GetClientCount()
+{
+	QMutexLocker locker(&m_Mutex);
+	return m_Clients.size();
+}
+
+QSslSocket * TcpServer::GetSocketByUid(int uid)
+{
+	QMutexLocker locker(&m_Mutex);
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->profile != nullptr)
+		{
+			if (it->profile->uid == uid)
+			{
+				qDebug() << "Socket finded. Return";
+				return it->socket;
+			}
+		}
+	}
+
+	qDebug() << "Socket not finded.";
+	return nullptr;
 }
 
 void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray data)
@@ -75,7 +168,7 @@ void TcpServer::sendGlobalMessage(QByteArray data)
 	qDebug() << "Send message to all clients. Original size = " << data.size();
 
 	QVector<SClient>::iterator it;
-	for (it = vClients.begin(); it != vClients.end(); ++it)
+	for (it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
 		it->socket->write(data);
 		it->socket->waitForBytesWritten(3);
@@ -120,7 +213,7 @@ TcpThread *TcpServer::freeThread()
 	for (threadsCount; threadsCount != m_pool->maxThreadCount(); threadsCount++)
 	{
 		pThread = m_threads.at(threadsCount);
-		int clientsInThread = pThread->m_clients;
+		int clientsInThread = pThread->GetClientsCount();
 
 		if (clientsInThread > maxClientsInThread)
 			maxClientsInThread = clientsInThread;
@@ -132,7 +225,7 @@ TcpThread *TcpServer::freeThread()
 	for (threadsCount; threadsCount != m_pool->maxThreadCount(); threadsCount++)
 	{
 		pThread = m_threads.at(threadsCount);
-		int clientsInThread = pThread->m_clients;
+		int clientsInThread = pThread->GetClientsCount();
 		if (clientsInThread < maxClientsInThread)
 		{
 			return pThread;
@@ -141,4 +234,13 @@ TcpThread *TcpServer::freeThread()
 
 
     return pThread;
+}
+
+void TcpServer::close()
+{
+	qInfo() << "Closing server...";
+	emit stop();
+
+	m_threads.clear();
+	m_pool->clear();
 }

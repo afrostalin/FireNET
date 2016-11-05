@@ -13,6 +13,7 @@ class SettingsManager;
 #include <qsslsocket.h>
 #include <qmutex.h>
 
+// Need for authorization system
 struct SUser
 {
 	int uid;
@@ -21,28 +22,38 @@ struct SUser
 	bool bBanStatus;
 };
 
+// Default profile
 struct SProfile
 {
 	int uid;
 	QString nickname;
-	QString model;
+	QString fileModel;
 	int lvl;
 	int xp;
 	int money;
 	QString items;
 	QString friends;
-	QString achievements;
-	QString stats;
 };
 
+// Shop item structure
+struct SShopItem
+{
+	QString name;
+	QString icon;
+	QString description;
+	int cost;
+	int minLnl;
+};
+
+// Client sturcture
 struct SClient
 {
 	QSslSocket* socket;
 	SProfile* profile;
 	int status;
-	bool isGameServer;
 };
 
+// Remote client structure
 struct SRemoteClient
 {
 	QSslSocket *socket;
@@ -50,6 +61,7 @@ struct SRemoteClient
 	bool isGameServer;
 };
 
+// Game server sturcture
 struct SGameServer
 {
 	QSslSocket* socket;
@@ -62,18 +74,15 @@ struct SGameServer
 	int maxPlayers;
 };
 
+// Global environment instance
 struct SGlobalEnvironment
 {
 	TcpServer* pServer;
-	DBWorker* pDataBases;
+	DBWorker* pDBWorker;
 	QTimer* pTimer;
 	RemoteServer* pRemoteServer;
 	SettingsManager* pSettings;
 };
 
 extern SGlobalEnvironment* gEnv;
-extern QVector <SClient> vClients;
-extern QVector<SRemoteClient> vRemoteClients;
-extern QVector <SGameServer> vServers;
-
 #endif // GLOBAL_H

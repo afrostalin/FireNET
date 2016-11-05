@@ -8,7 +8,7 @@
 
 #include <QDebug>
 
-MySqlConnector::MySqlConnector(QObject *parent)
+MySqlConnector::MySqlConnector(QObject *parent) : QObject(parent)
 {
 	connectStatus = false;
 	m_thread = nullptr;
