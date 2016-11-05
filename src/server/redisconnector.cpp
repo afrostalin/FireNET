@@ -36,6 +36,16 @@ void RedisConnector::run()
 	}
 }
 
+void RedisConnector::Disconnect()
+{
+	if (connectStatus)
+	{
+		qInfo() << "Disconnecting...";
+		connection->disconnect();
+		connection->deleteLater();
+	}
+}
+
 bool RedisConnector::Connect()
 {
 	qInfo()<< "Init qredisclient...";

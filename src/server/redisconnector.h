@@ -16,6 +16,7 @@ public:
 	~RedisConnector();
 public:
 	virtual void run();
+	void Disconnect();
 	QString SendSyncQuery(QString command);
 	QString SendSyncQuery(QString command, QString key);
     QString SendSyncQuery(QString command, QString key, QString value);

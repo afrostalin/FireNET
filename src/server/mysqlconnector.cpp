@@ -34,6 +34,15 @@ void MySqlConnector::run()
 	}
 }
 
+void MySqlConnector::Disconnect()
+{
+	if (connectStatus)
+	{
+		qInfo() << "Disconnecting...";
+		m_db.close();
+	}
+}
+
 bool MySqlConnector::Connect()
 {
 	qDebug() << "Connecting to MySql host...(" << gEnv->pSettings->GetVariable("mysql_host").toString() << ":" << gEnv->pSettings->GetVariable("mysql_port").toInt() << ")";

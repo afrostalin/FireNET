@@ -15,6 +15,7 @@ public:
 	explicit MySqlConnector(QObject *parent = 0);
 public:
 	void run();
+	void Disconnect();
 private:
 	bool Connect();
 public:
