@@ -368,7 +368,7 @@ namespace FireNET
 
 						string nickname = GetPortString(pActInfo, EIP_Nickname);
 						string model = GetPortString(pActInfo, EIP_Model);
-						string query = "<query type='create_profile'><data nickname='" + nickname + "' model='" + model + "'/></query>";
+						string query = "<query type='create_profile'><data nickname='" + nickname + "' fileModel='" + model + "'/></query>";
 
 						if (gCryModule->pNetwork != nullptr)
 							gCryModule->pNetwork->SendQuery(query.c_str());

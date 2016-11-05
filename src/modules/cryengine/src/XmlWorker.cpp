@@ -365,14 +365,14 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 			{
 				int uid = attributes.value("id").toInt();
 				QString nickname = attributes.value("nickname").toString();
-				QString model = attributes.value("model").toString();
+				QString fileModel = attributes.value("fileModel").toString();
 				int money = attributes.value("money").toInt();
 				int xp = attributes.value("xp").toInt();
 				int lvl = attributes.value("lvl").toInt();
 
 				m_profile->uid = uid;
 				m_profile->nickname = nickname;
-				m_profile->model = model;
+				m_profile->fileModel = fileModel;
 				m_profile->money = money;
 				m_profile->xp = xp;
 				m_profile->lvl = lvl;
@@ -380,14 +380,14 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 				SUIArguments args;
 				args.AddArgument(nickname.toStdString().c_str());
-				args.AddArgument(model.toStdString().c_str());
+				args.AddArgument(fileModel.toStdString().c_str());
 				args.AddArgument(lvl);
 				args.AddArgument(xp);
 				args.AddArgument(money);
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnProfileDataRecived, args);
 
-				gEnv->pLog->LogAlways(TITLE  "Recived profile data. Nickname = %s, Model = %s, Lvl = %d, XP = %d, Money = %d", nickname.toStdString().c_str(), model.toStdString().c_str(), lvl, xp, money);
+				gEnv->pLog->LogAlways(TITLE  "Recived profile data. Nickname = %s, FileModel = %s, Lvl = %d, XP = %d, Money = %d", nickname.toStdString().c_str(), fileModel.toStdString().c_str(), lvl, xp, money);
 			}
 		}
 
@@ -408,7 +408,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 				//gCryModule->m_items.push_back(item);
 				m_ItemsBuffer.push_back(item);
 
-				m_profile->items = m_profile->items + "<item name='" + name + "' icon='" + icon + "' description='" + description + "'/>";	
+				m_profile->items = m_profile->items + "<item name='" + name + "' icon='" + icon + "' description='" + description + "'/>";
 
 				SUIArguments args;
 				args.AddArgument(name.toStdString().c_str());
@@ -429,56 +429,17 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 			{
 				QString friendName = attributes.value("name").toString();
 				QString friendUid = attributes.value("uid").toString();
-				QString friendStatus = attributes.value("status").toString();
 
 				SFriend m_friend;
 				m_friend.nickname = friendName;
 				m_friend.uid = friendUid.toInt();
-				m_friend.status = friendStatus.toInt();
+				m_friend.status = 0;
 
-				//gCryModule->m_friends.push_back(m_friend);
 				m_FriendsBuffer.push_back(m_friend);
 
-				m_profile->friends = m_profile->friends + "<friend name='" + friendName + "' uid='" + friendUid + "' status='" + friendStatus + "'/>";
+				m_profile->friends = m_profile->friends + "<friend name='" + friendName + "' uid='" + friendUid + "'/>";
 
-				gEnv->pLog->LogAlways(TITLE  "Recived friend. Name = %s, uid = %d, status = %d", friendName.toStdString().c_str(), friendUid.toInt(), friendStatus.toInt());
-			}
-		}
-
-		if (xml.name() == "stats")
-		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			if (!attributes.isEmpty())
-			{
-				int kills = attributes.value("kills").toInt();
-				int deaths = attributes.value("deaths").toInt();
-				QString kd = attributes.value("kd").toString();
-
-				m_profile->stats = "<stat kills='" + QString::number(kills) + "' deaths='" + QString::number(deaths) + "' kd='" + kd + "'/>";
-
-				SUIArguments args;
-				args.AddArgument(kills);
-				args.AddArgument(deaths);
-				args.AddArgument(kd.toStdString().c_str());
-
-				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnStatsRecived, args);
-
-				gEnv->pLog->LogAlways(TITLE  "Recived character statistic. Kills = %d, Deaths = %d, KD = %s", kills, deaths, kd.toStdString().c_str());
-			}
-		}
-
-		if (xml.name() == "achievement")
-		{
-
-			QXmlStreamAttributes attributes = xml.attributes();
-			if (!attributes.isEmpty())
-			{
-				QString name = attributes.value("name").toString();
-				QString icon = attributes.value("icon").toString();
-				QString description = attributes.value("description").toString();
-
-				gEnv->pLog->LogAlways(TITLE  "Recived achievement . Name = %s, Icon = %s, Decription = %s", name.toStdString().c_str(), icon.toStdString().c_str(), description.toStdString().c_str());
-
+				gEnv->pLog->LogAlways(TITLE  "Recived friend. Name = %s, uid = %d", friendName.toStdString().c_str(), friendUid.toInt());
 			}
 		}
 	}

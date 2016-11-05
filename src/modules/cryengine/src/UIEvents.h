@@ -21,7 +21,6 @@ public:
 		eUIGE_OnShopItemRecived,
 		eUIGE_OnInventoryItemRecived,
 		eUIGE_OnFriendRecived,
-		eUIGE_OnStatsRecived,
 		eUIGE_OnConnectionEstablishment,
 		eUIGE_OnGlobalChatMessageRecived,
 		eUIGE_OnPrivateChatMessageRecived,

@@ -58,13 +58,6 @@ bool CModuleUIEvents::RegisterUIEvents()
 		OnFriendRecived.AddParam<SUIParameterDesc::eUIPT_String>("Status", "Friend status (offline, online, ingame, afk)");
 		m_EventMap[eUIGE_OnFriendRecived] = m_pGameEvents->RegisterEvent(OnFriendRecived);
 
-		// On stats recived
-		SUIEventDesc OnStatsRecived("Statistic:OnStatsRecived", "Statistic:StatsRecived", "Event when client recived stats from online server");
-		OnStatsRecived.AddParam<SUIParameterDesc::eUIPT_Int>("Kills", "Kills amount");
-		OnStatsRecived.AddParam<SUIParameterDesc::eUIPT_Int>("Deaths", "Deaths amount");
-		OnStatsRecived.AddParam<SUIParameterDesc::eUIPT_String>("KD", "Kill/death amount");
-		m_EventMap[eUIGE_OnStatsRecived] = m_pGameEvents->RegisterEvent(OnStatsRecived);
-
 		// On connection with server establishment
 		SUIEventDesc OnConnectionEstablishment("System:OnConnectionEstablishment", "System:OnConnectionEstablishment", "Event when client establishment connection with online server");
 		m_EventMap[eUIGE_OnConnectionEstablishment] = m_pGameEvents->RegisterEvent(OnConnectionEstablishment);

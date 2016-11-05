@@ -39,14 +39,12 @@ struct SProfile
 {
 	int uid;
 	QString nickname;
-	QString model;
+	QString fileModel;
 	int lvl;
 	int xp;
 	int money;
 	QString items;
 	QString friends;
-	QString achievements;
-	QString stats;
 };
 
 struct SGlobalCryModule
