@@ -138,9 +138,7 @@ void TcpConnection::readyRead()
 				// Chat
 				if (type == "chat_message")
 					pQuery->onChatMessage(bytes);
-				// Game servers
-				if (type == "register_game_server")
-					pQuery->onGameServerRegister(bytes);
+				// Matchmaking
 				if (type == "get_game_server")
 					pQuery->onGetGameServer(bytes);
 

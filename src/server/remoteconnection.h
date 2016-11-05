@@ -23,9 +23,12 @@ protected:
 public slots:
 	virtual void accept(qint64 socketDescriptor);
 	virtual void close();
+signals:
+	void finished();
 private:
 	QSslSocket* m_socket;
 	RemoteClientQuerys* pQuerys;
+	SRemoteClient m_Client;
 };
 
 #endif // REMOTECONNECTION_H

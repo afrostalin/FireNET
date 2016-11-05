@@ -8,6 +8,9 @@
 #include <QThread>
 #include <QTcpServer>
 #include <QSslSocket>
+#include <QMutex>
+
+#include "global.h"
 
 class RemoteConnection;
 
@@ -18,20 +21,27 @@ public:
     explicit RemoteServer(QObject *parent = 0);
 public slots:
 	void Update();
+	void CloseConnection();
 public:
 	virtual void run();
+	void AddNewClient(SRemoteClient client);
+	void RemoveClient(SRemoteClient client);
+	void UpdateClient(SRemoteClient* client);
+	int GetClientCount();
 private:
 	bool CreateServer();
 public:
     virtual void incomingConnection(qintptr socketDescriptor);
 	void sendMessageToRemoteClient(QSslSocket* socket, QByteArray data);
 public:
-	int clientCount;
 	bool bHaveAdmin;
 private:
 	QThread* m_Thread;
 	QTcpServer* m_Server;
-	QVector<RemoteConnection*> m_connections;
+	QList<RemoteConnection*> m_connections;
+private:
+	QVector<SRemoteClient> m_Clients;
+	QMutex m_Mutex;
 };
 
 #endif // REMOTESERVER_H

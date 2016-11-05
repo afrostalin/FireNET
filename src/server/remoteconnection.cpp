@@ -17,8 +17,7 @@ RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)
 void RemoteConnection::accept(qint64 socketDescriptor)
 {
 	m_socket = new QSslSocket(this);
-	pQuerys = new RemoteClientQuerys(this);
-
+	
 	if (!m_socket->setSocketDescriptor(socketDescriptor))
 	{
 		qCritical() << "Can't accept socket!";
@@ -39,28 +38,41 @@ void RemoteConnection::connected()
 {
 	if (!m_socket)
 		return;
-	gEnv->pRemoteServer->clientCount++;
 
-	qInfo() << "New remote client connected (Socket =" << m_socket << ").";
-	qInfo() << "Remote client count = " << gEnv->pRemoteServer->clientCount;
+	m_Client.socket = m_socket;
+	m_Client.server = nullptr;
+	m_Client.isAdmin = false;
+	m_Client.isGameServer = false;
 
+	// Add client to remote server client list
+	gEnv->pRemoteServer->AddNewClient(m_Client);
+
+	pQuerys = new RemoteClientQuerys(this);
 	pQuerys->SetSocket(m_socket);
+	pQuerys->SetClient(&m_Client);
+
+	qInfo() << "Remote client" << m_socket << "connected.";
+	qInfo() << "Remote client count " << gEnv->pRemoteServer->GetClientCount();
 }
 
 void RemoteConnection::disconnected()
 {
 	if (!m_socket)
 		return;
-	gEnv->pRemoteServer->clientCount--;
 
-	if (gEnv->pRemoteServer->bHaveAdmin && pQuerys->isAdmin)
+	if (gEnv->pRemoteServer->bHaveAdmin && m_Client.isAdmin)
 	{
 		gEnv->pRemoteServer->bHaveAdmin = false;
 		qWarning() << "Remote administrator disconnected!";
 	}
 
-	qInfo() << "Remote client disconnected (Socket =" << m_socket << ").";
-	qInfo() << "Remote client count = " << gEnv->pRemoteServer->clientCount;
+	// Remove client from server client list
+	gEnv->pRemoteServer->RemoveClient(m_Client);
+
+	qInfo() << "Remote client" << m_socket << "disconnected.";
+	qInfo() << "Remote client count " << gEnv->pRemoteServer->GetClientCount();
+
+	emit finished();
 }
 
 void RemoteConnection::readyRead()
@@ -68,7 +80,7 @@ void RemoteConnection::readyRead()
 	if (!m_socket)
 		return;
 
-	qDebug() << "Read message from remote client (Socket =" << m_socket << ")";
+	qDebug() << "Read message from remote client" << m_socket;
 
 	QByteArray bytes = m_socket->readAll();
 	QXmlStreamReader xml(bytes);
@@ -92,6 +104,8 @@ void RemoteConnection::readyRead()
 					pQuerys->onAdminLogining(bytes);
 				if (type == "console_command")
 					pQuerys->onConsoleCommandRecived(bytes);
+				if (type == "register_game_server")
+					pQuerys->onGameServerRegister(bytes);
 
 				return;
 			}
@@ -101,7 +115,10 @@ void RemoteConnection::readyRead()
 
 void RemoteConnection::bytesWritten(qint64 bytes)
 {
-	qDebug() << "Message (Size =" << bytes << ") sended to remote client (Socket =" << m_socket << ")";
+	if (!m_socket)
+		return;
+
+	qDebug() << "Message to remote client" << m_socket << "sended! Size =" << bytes;
 }
 
 void RemoteConnection::close()

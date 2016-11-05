@@ -10,8 +10,7 @@ class QTimer;
 class RemoteServer;
 class SettingsManager;
 
-#include <qsslsocket.h>
-#include <qmutex.h>
+#include <QSslSocket>
 
 // Need for authorization system
 struct SUser
@@ -35,6 +34,14 @@ struct SProfile
 	QString friends;
 };
 
+// Client sturcture
+struct SClient
+{
+	QSslSocket* socket;
+	SProfile* profile;
+	int status;
+};
+
 // Shop item structure
 struct SShopItem
 {
@@ -45,26 +52,9 @@ struct SShopItem
 	int minLnl;
 };
 
-// Client sturcture
-struct SClient
-{
-	QSslSocket* socket;
-	SProfile* profile;
-	int status;
-};
-
-// Remote client structure
-struct SRemoteClient
-{
-	QSslSocket *socket;
-	bool isAdmin;
-	bool isGameServer;
-};
-
 // Game server sturcture
 struct SGameServer
 {
-	QSslSocket* socket;
 	QString name;
 	QString ip;
 	int port;
@@ -72,6 +62,15 @@ struct SGameServer
 	QString gamerules;
 	int online;
 	int maxPlayers;
+};
+
+struct SRemoteClient
+{
+	QSslSocket* socket;
+	SGameServer* server;
+
+	bool isAdmin;
+	bool isGameServer;
 };
 
 // Global environment instance

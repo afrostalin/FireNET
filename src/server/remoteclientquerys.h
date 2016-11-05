@@ -6,6 +6,9 @@
 
 #include <QObject>
 #include <QSslSocket>
+#include <QXmlStreamReader>
+
+#include "global.h"
 
 class RemoteClientQuerys : public QObject
 {
@@ -14,14 +17,21 @@ public:
     explicit RemoteClientQuerys(QObject *parent = 0);
 	~RemoteClientQuerys();
 	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
+	void SetClient(SRemoteClient* client);
 public:
+	// Administration functional
 	void onAdminLogining(QByteArray &bytes);
 	void onConsoleCommandRecived(QByteArray &bytes);
+	// Game server functionality
+	void onGameServerRegister(QByteArray &bytes);
+	void onGameServerUpdateInfo(QByteArray &bytes);
+	void onGameServerGetOnlineProfile(QByteArray &bytes);
+	void onGameServerUpdateOnlineProfile(QByteArray &bytes);
+private:
+	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
 private:
 	QSslSocket* m_socket;
-public:
-	bool isAdmin;
-	bool isGameServer;
+	SRemoteClient* m_client;
 };
 
 #endif // REMOTECLIENTQUERYS_H

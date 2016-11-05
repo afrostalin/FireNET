@@ -42,12 +42,6 @@ public:
 	void onDeclineInvite(QByteArray &bytes);
 	// Matchmaking system
 	void onGetGameServer(QByteArray &bytes);
-	// Game server functionality
-	void onGameServerRegister(QByteArray &bytes);
-	void onGameServerUpdateInfo(QByteArray &bytes);
-	void onGameServerGetOnlineProfile(QByteArray &bytes);
-	void onGameServerUpdateOnlineProfile(QByteArray &bytes);
-
 private:
 	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
 

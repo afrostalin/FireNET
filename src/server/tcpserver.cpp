@@ -117,6 +117,8 @@ void TcpServer::UpdateClient(SClient* client)
 			if (client->profile != nullptr)
 			{
 				it->profile = client->profile;
+				it->status = client->status;
+
 				qDebug() << "Client" << it->socket << "updated.";
 				return;
 			}

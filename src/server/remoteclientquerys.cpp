@@ -15,12 +15,24 @@
 RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent)
 {
 	m_socket = nullptr;
-	isAdmin = false;
-	isGameServer = false;
 }
 
 RemoteClientQuerys::~RemoteClientQuerys()
 {
+}
+
+void RemoteClientQuerys::SetClient(SRemoteClient * client)
+{
+	m_client = client;
+	m_client->server = new SGameServer;
+
+	m_client->server->name = "";
+	m_client->server->ip = "";
+	m_client->server->port = 0;
+	m_client->server->map = "";
+	m_client->server->gamerules = "";
+	m_client->server->online = 0;
+	m_client->server->maxPlayers = 0;
 }
 
 void RemoteClientQuerys::onAdminLogining(QByteArray & bytes)
@@ -37,76 +49,65 @@ void RemoteClientQuerys::onAdminLogining(QByteArray & bytes)
 		return;
 	}
 
-	QXmlStreamReader xml(bytes);
-	
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	QString login = attributes.value("login").toString();
+	QString password = attributes.value("password").toString();
+
+	if (login.isEmpty() || password.isEmpty())
 	{
-		xml.readNext();
+		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Login = " << login << "Password = " << password;
 
-		if (xml.name() == "data")
+		QByteArray msg;
+		msg.append("Wrong packet data! Some values empty!");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+
+		return;
+	}
+
+	if (login == gEnv->pSettings->GetVariable("sv_root_user").toString())
+	{
+		if (password == gEnv->pSettings->GetVariable("sv_root_password").toString())
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString login = attributes.value("login").toString();
-			QString password = attributes.value("password").toString();
+			qWarning() << "Client (" << m_socket << ") success login in administator mode!";
+			gEnv->pRemoteServer->bHaveAdmin = true;
 
-			if (login.isEmpty() || password.isEmpty())
-			{
-				qWarning() << "Wrong packet data! Some values empty!";
-				qDebug() << "Login = " << login << "Password = " << password;
+			m_client->isAdmin = true;
+			gEnv->pRemoteServer->UpdateClient(m_client);
 
-				QByteArray msg;
-				msg.append("Wrong packet data! Some values empty!");
-				gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-				return;
-			}
-
-			if (login == gEnv->pSettings->GetVariable("sv_root_user").toString())
-			{
-				if (password == gEnv->pSettings->GetVariable("sv_root_password").toString())
-				{
-					qWarning() << "Client (" << m_socket << ") success login in administator mode!";
-					isAdmin = true;
-					gEnv->pRemoteServer->bHaveAdmin = true;
-
-					QByteArray msg;
-					msg.append("You success login in administator mode!");
-					gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-					return;
-				}
-				else
-				{
-					qCritical() << "Error authorization in administator mode! Reason = Wrong password. Password = " << password;
-
-					QByteArray msg;
-					msg.append("Error authorization in administator mode! Reason = Wrong password.");
-					gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-					return;
-				}
-
-			}
-			else
-			{
-				qCritical() << "Error authorization in administator mode! Reason = Wrong login. Login = " << login;
-
-				QByteArray msg;
-				msg.append("Error authorization in administator mode! Reason = Wrong login.");
-				gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-				return;
-			}
+			QByteArray msg;
+			msg.append("You success login in administator mode!");
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
 
 			return;
 		}
+		else
+		{
+			qCritical() << "Error authorization in administator mode! Reason = Wrong password. Password = " << password;
+
+			QByteArray msg;
+			msg.append("Error authorization in administator mode! Reason = Wrong password.");
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+
+			return;
+		}
+
+	}
+	else
+	{
+		qCritical() << "Error authorization in administator mode! Reason = Wrong login. Login = " << login;
+
+		QByteArray msg;
+		msg.append("Error authorization in administator mode! Reason = Wrong login.");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+
+		return;
 	}
 }
 
 void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 {
-	if (!isAdmin)
+	if (!m_client->isAdmin)
 	{
 		qCritical() << "Only administrator can use console commands!";
 
@@ -117,7 +118,136 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 		return;
 	}
 
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	QString command = attributes.value("command").toString();
+
+	if (command == "status")
+	{
+		QByteArray msg;
+		msg.append("***Server status***\n");
+		msg.append("Server version = " + qApp->applicationVersion() + "\n");
+		msg.append("Server ip = " + gEnv->pSettings->GetVariable("sv_ip").toString() + "\n");
+		msg.append("Server port = " + gEnv->pSettings->GetVariable("sv_port").toString() + "\n");
+		msg.append("Server tickrate = " + gEnv->pSettings->GetVariable("sv_tickrate").toString() + " per/sec.\n");
+		//msg.append("Active thread count = ");
+		//msg.append("Database mode = ");
+		//msg.append("Authrorization type = ");
+		//msg.append("Players ammount = . Maximum players count = ");
+		//msg.append("Game servers ammount = . Maximum game servers count = ");
+		//msg.append("Average time for reading = ");
+		//msg.append("Average time for sending = ");
+		//msg.append("Server start time = ");
+		//msg.append("Errors count = ");
+		//msg.append("Warnings count = ");
+		//msg.append("Server work");
+		msg.append("*******************");
+
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+
+		return;
+	}
+
+	if (command == "variables")
+	{
+
+		QStringList varList = gEnv->pSettings->GetVariablesList();
+		QByteArray msg;
+
+		msg.append("Variables count = " + QString::number(varList.size()) + "\n");
+
+		for (int i = 0; i < varList.size(); ++i)
+		{
+			msg.append(QString::number(i + 1) + ") " + varList[i] + " = " + gEnv->pSettings->GetVariable(varList[i]).toString() + "\n");
+		}
+
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+
+		return;
+	}
+
+	QByteArray msg;
+	msg.append("Command <" + command + "> not found!");
+	gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+}
+
+void RemoteClientQuerys::onGameServerRegister(QByteArray & bytes)
+{
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	QString serverName = attributes.value("name").toString();
+	QString serverIp = attributes.value("ip").toString();
+	int serverPort = attributes.value("port").toInt();
+	QString mapName = attributes.value("map").toString();
+	QString gamerules = attributes.value("gamerules").toString();
+	int online = attributes.value("online").toInt();
+	int maxPlayers = attributes.value("maxPlayers").toInt();
+
+	if (serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
+	{
+		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+		return;
+	}
+
+	/*QVector<SGameServer>::iterator it;
+	for (it = vServers.begin(); it != vServers.end(); ++it)
+	{
+	if (it->name == serverName)
+	{
+	qDebug() << "---------------Server with this name alredy registered---------------";
+	qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
+	return;
+	}
+	if (it->ip == serverIp && it->port == serverPort)
+	{
+	qDebug() << "-------------Server with this address alredy registered--------------";
+	qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
+	return;
+	}
+	}*/
+
+	// Register new game server here
+	SGameServer gameServer;
+	gameServer.name = serverName;
+	gameServer.ip = serverIp;
+	gameServer.port = serverPort;
+	gameServer.map = mapName;
+	gameServer.gamerules = gamerules;
+	gameServer.online = online;
+	gameServer.maxPlayers = maxPlayers;
+
+	//vServers.push_back(gameServer);
+
+	// Update client info
+	/*QVector<SClient>::iterator clientIt;
+	for (clientIt = vClients.begin(); clientIt != vClients.end(); ++it)
+	{
+	if (clientIt->socket == m_socket)
+	{
+	clientIt->isGameServer = true;
+	break;
+	}
+	}*/
+
+	qDebug() << "Game server [" << serverName << "] registered!";
+	//qDebug() << "Connected game servers count = " << vServers.size();
+}
+
+void RemoteClientQuerys::onGameServerUpdateInfo(QByteArray & bytes)
+{
+}
+
+void RemoteClientQuerys::onGameServerGetOnlineProfile(QByteArray & bytes)
+{
+}
+
+void RemoteClientQuerys::onGameServerUpdateOnlineProfile(QByteArray & bytes)
+{
+}
+
+QXmlStreamAttributes RemoteClientQuerys::GetAttributesFromArray(QByteArray & bytes)
+{
 	QXmlStreamReader xml(bytes);
+	QXmlStreamAttributes attributes;
 
 	xml.readNext();
 	while (!xml.atEnd() && !xml.hasError())
@@ -126,58 +256,9 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 
 		if (xml.name() == "data")
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString command = attributes.value("command").toString();
-
-			if (command == "status")
-			{
-				QByteArray msg;
-				msg.append("***Server status***\n");
-				msg.append("Server version = " + qApp->applicationVersion() + "\n");
-				msg.append("Server ip = " + gEnv->pSettings->GetVariable("sv_ip").toString() + "\n");
-				msg.append("Server port = " + gEnv->pSettings->GetVariable("sv_port").toString() + "\n");
-				msg.append("Server tickrate = " + gEnv->pSettings->GetVariable("sv_tickrate").toString() + " per/sec.\n" );
-				//msg.append("Active thread count = ");
-				//msg.append("Database mode = ");
-				//msg.append("Authrorization type = ");
-				//msg.append("Players ammount = . Maximum players count = ");
-				//msg.append("Game servers ammount = . Maximum game servers count = ");
-				//msg.append("Average time for reading = ");
-				//msg.append("Average time for sending = ");
-				//msg.append("Server start time = ");
-				//msg.append("Errors count = ");
-				//msg.append("Warnings count = ");
-				//msg.append("Server work");
-				msg.append("*******************");
-
-				gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-				return;
-			}
-
-			if (command == "variables")
-			{
-			
-				QStringList varList = gEnv->pSettings->GetVariablesList();
-				QByteArray msg;
-
-				msg.append("Variables count = " + QString::number(varList.size()) + "\n");
-
-				for (int i = 0; i < varList.size(); ++i)
-				{
-					msg.append(QString::number(i+1) + ") " + varList[i] + " = " + gEnv->pSettings->GetVariable(varList[i]).toString() + "\n" );
-				}
-
-				gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-				return;
-			}
-
-			QByteArray msg;
-			msg.append("Command = " + command + " not found!");
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
-			return;
+			return xml.attributes();
 		}
 	}
+
+	return attributes;
 }

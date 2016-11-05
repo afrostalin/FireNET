@@ -28,9 +28,11 @@ ConsoleAppender *consoleAppender;
 static void ClearManager(int sig)
 {
 	qDebug() << "Sig number = " << sig;
+	//qApp->quit();
+	while (true)
+	{
 
-	gEnv->pServer->close();
-	qApp->quit();
+	}
 }
 
 bool init()
@@ -187,7 +189,7 @@ int main(int argc, char *argv[])
 
 	// Build version and number
 	QString buildVersion = "2.0.5";
-	int buildNumber = 24;
+	int buildNumber = 38;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
