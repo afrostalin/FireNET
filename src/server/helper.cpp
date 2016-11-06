@@ -117,7 +117,7 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
     }
 
     if (item.name.isEmpty())
-        qWarning() << "Shop item not finded!!!";
+		qDebug() << "Shop item not finded!!!";
 
     return item;
 }

@@ -25,7 +25,7 @@ void DBWorker::Update()
 
 void DBWorker::Clear()
 {
-	qDebug() << "~DBWorker";
+	qInfo() << "~DBWorker";
 
 	if (pRedis != nullptr)
 	{

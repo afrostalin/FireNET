@@ -20,11 +20,14 @@ class TcpServer : public QTcpServer
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = 0);
+public slots:
+	void Update();
 public:
 	void Clear();
 public:
-	void sendMessageToClient(QSslSocket* socket, QByteArray data);
-	void sendGlobalMessage(QByteArray data);
+	void sendMessageToClient(QSslSocket* socket, QByteArray &data);
+	void sendGlobalMessage(QByteArray &data);
+public:
     virtual void setMaxThreads(int maximum);
     virtual bool listen(const QHostAddress &address, quint16 port);
 	virtual void close();

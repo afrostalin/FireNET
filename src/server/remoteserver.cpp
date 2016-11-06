@@ -17,7 +17,7 @@ RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent)
 
 void RemoteServer::Clear()
 {
-	qDebug() << "~RemoteServer";
+	qInfo() << "~RemoteServer";
 
 	emit stop();
 
@@ -67,11 +67,10 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 	m_remoteConnection->accept(socketDescriptor);
 }
 
-void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, QByteArray data)
+void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, QByteArray &data)
 {
 	qDebug() << "Send message to remote client. Original size = " << data.size();
 	socket->write(data);
-	socket->waitForBytesWritten(3);
 }
 
 void RemoteServer::AddNewClient(SRemoteClient client)

@@ -16,7 +16,7 @@ RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)
 
 RemoteConnection::~RemoteConnection()
 {
-	qInfo() << "~RemoteConnection";
+	qDebug() << "~RemoteConnection";
 }
 
 void RemoteConnection::accept(qint64 socketDescriptor)

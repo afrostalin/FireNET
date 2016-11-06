@@ -11,7 +11,7 @@ SettingsManager::SettingsManager(QObject *parent) : QObject(parent)
 
 void SettingsManager::Clear()
 {
-	qDebug() << "~SettingManager";
+	qInfo() << "~SettingManager";
 	m_Variables.clear();
 }
 

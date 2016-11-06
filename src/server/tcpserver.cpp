@@ -12,10 +12,15 @@ TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
     setMaxThreads(m_pool->maxThreadCount());
 }
 
+
 void TcpServer::Clear()
 {
 	qInfo() << "~TcpServer";
 	close();
+}
+
+void TcpServer::Update()
+{
 }
 
 void TcpServer::setMaxThreads(int maximum)
@@ -160,22 +165,25 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 	return nullptr;
 }
 
-void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray data)
+void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray &data)
 {
 	qDebug() << "Send message to client. Original size = " << data.size();
 	socket->write(data);
-	socket->waitForBytesWritten(3);
 }
 
-void TcpServer::sendGlobalMessage(QByteArray data)
+void TcpServer::sendGlobalMessage(QByteArray &data)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	qDebug() << "Send message to all clients. Original size = " << data.size();
 
-	QVector<SClient>::iterator it;
-	for (it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
-		it->socket->write(data);
-		it->socket->waitForBytesWritten(3);
+		// Send message only for authorizated clients
+		if (it->profile != nullptr && it->socket != nullptr)
+		{
+			it->socket->write(data);
+		}
 	}
 }
 

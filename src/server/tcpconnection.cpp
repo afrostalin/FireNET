@@ -18,7 +18,7 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 
 TcpConnection::~TcpConnection()
 {
-	qInfo() << "~TcpConnection";
+	qDebug() << "~TcpConnection";
 }
 
 void TcpConnection::accept(qint64 socketDescriptor)

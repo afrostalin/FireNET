@@ -36,7 +36,7 @@ private:
 	bool CreateServer();
 public:
     virtual void incomingConnection(qintptr socketDescriptor);
-	void sendMessageToRemoteClient(QSslSocket* socket, QByteArray data);
+	void sendMessageToRemoteClient(QSslSocket* socket, QByteArray &data);
 public:
 	bool bHaveAdmin;
 private:

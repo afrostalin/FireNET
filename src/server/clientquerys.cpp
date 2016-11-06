@@ -23,7 +23,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 	if (login.isEmpty() || password.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Login = " << login << "Password = " << password;
 		return;
 	}
@@ -49,11 +49,13 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-------------------------Profile found--------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QString result = "<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>");
+				pServer->sendMessageToClient(m_socket, result);
 				result.clear();
-				result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 			else
@@ -61,8 +63,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-----------------------Profile not found------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QString result = "<result type='auth_complete'><data uid='" + QString::number(uid) + "'/></result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='auth_complete'><data uid='" + QString::number(uid) + "'/></result>");
+				pServer->sendMessageToClient(m_socket, result);
 
 
 				m_Client->profile->uid = uid;
@@ -76,8 +79,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 		{
 			int errorType = pDataBase->pHTTP->GetError();
 
-			QString result = "<error type='auth_failed' reason = '" + QString::number(errorType) + "'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result;
+			result.append("<error type='auth_failed' reason = '" + QString::number(errorType) + "'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -88,8 +92,10 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 		qDebug() << "-----------------------Login not found------------------------";
 		qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-		QString result = "<error type='auth_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result;
+		result.append("<error type='auth_failed' reason = '0'/>");
+
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 	else
@@ -104,8 +110,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 			qDebug() << "-----------------------Account blocked------------------------";
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-			QString result = "<error type='auth_failed' reason = '1'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result;
+			result.append( "<error type='auth_failed' reason = '1'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 
@@ -123,11 +130,13 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-------------------------Profile found--------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QString result = "<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>");
+				pServer->sendMessageToClient(m_socket, result);
 				result.clear();
-				result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 			else
@@ -135,8 +144,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-----------------------Profile not found------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QString result = "<result type='auth_complete'><data uid='" + QString::number(userData->uid) + "'/></result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='auth_complete'><data uid='" + QString::number(userData->uid) + "'/></result>");
+				pServer->sendMessageToClient(m_socket, result);
 
 
 				m_Client->profile->uid = userData->uid;
@@ -152,8 +162,8 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 			qDebug() << "----------------------Incorrect password----------------------";
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-			QString result = "<error type='auth_failed' reason = '2'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result ("<error type='auth_failed' reason = '2'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -167,7 +177,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 
 	if (login.isEmpty() || password.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Login = " << login << "Password = " << password;
 		return;
 	}
@@ -184,15 +194,18 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 
 			int uid = pDataBase->pHTTP->GetUID();
 
-			QString result = "<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result;
+			result.append("<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 		else
 		{
 			int errorType = pDataBase->pHTTP->GetError();
-			QString result = "<error type='reg_failed' reason = '" + QString::number(errorType) + "'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+
+			QByteArray result;
+			result.append("<error type='reg_failed' reason = '" + QString::number(errorType) + "'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -208,8 +221,9 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 			{
 				qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
 
-				QString result = "<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 			else
@@ -217,8 +231,9 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 				qDebug() << "--------------Can't create account in database!--------------";
 				qDebug() << "---------------------REGISTRATION FAILED---------------------";
 
-				QString result = "<error type='reg_failed' reason = '1'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<error type='reg_failed' reason = '1'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 		}
@@ -227,8 +242,9 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	{
 		qDebug() << "----------Login alredy register or some values empty!--------";
 		qDebug() << "---------------------REGISTRATION FAILED---------------------";
-		QString result = "<error type='reg_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result;
+		result.append("<error type='reg_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 }
@@ -247,7 +263,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 
 	if (nickname.isEmpty() || fileModel.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Nickname = " << nickname << "fileModel = " << fileModel;
 		return;
 	}
@@ -260,8 +276,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		qDebug() << "------------------Client alredy have profile-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
-		QString result = "<error type='create_profile_failed' reason = '2'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result ("<error type='create_profile_failed' reason = '2'/>");
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 
@@ -281,8 +297,9 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		{
 			qDebug() << "---------------------CREATE PROFILE COMPLETE---------------------";
 
-			QString result = "<result type='profile_data'>" + stringProfile + "</result>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result;
+			result.append("<result type='profile_data'>" + stringProfile + "</result>");
+			pServer->sendMessageToClient(m_socket, result);
 
 			m_Client->status = 1;
 			pServer->UpdateClient(m_Client);
@@ -294,8 +311,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 			qDebug() << "---------------------Database return error---------------------";
 			qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
-			QString result = "<error type='create_profile_failed' reason = '0'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result("<error type='create_profile_failed' reason = '0'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -304,8 +321,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		qDebug() << "-------------------Nickname alredy registered!-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED-----------------------";
 
-		QString result = "<error type='create_profile_failed' reason = '1'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result("<error type='create_profile_failed' reason = '1'/>");
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 }
@@ -325,16 +342,18 @@ void ClientQuerys::onGetProfile()
 		qDebug() << "-------------------------Profile found--------------------------";
 		qDebug() << "----------------------GET PROFILE COMPLETE----------------------";
 
-		QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result;
+		result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+		pServer->sendMessageToClient(m_socket, result);
+		return;
 	}
 	else
 	{
 		qDebug() << "----------------------Profile not found-----------------------";
 		qDebug() << "----------------------GET PROFILE FAILED----------------------";
 
-		QString result = "<error type='get_profile_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result ("<error type='get_profile_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 	}
 }
 
@@ -350,8 +369,8 @@ void ClientQuerys::onGetShopItems()
 	{
 		qCritical() << "Can't get shop.xml!!!";
 
-		QString result = "<error type='get_shop_items_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result ("<error type='get_shop_items_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 
 		return;
 	}
@@ -361,7 +380,10 @@ void ClientQuerys::onGetShopItems()
 	file.deleteLater();
 	cleanShop.replace(reg, "");
 
-	pServer->sendMessageToClient(m_socket, cleanShop.toStdString().c_str());
+	QByteArray result;
+	result.append(cleanShop);
+
+	pServer->sendMessageToClient(m_socket, result);
 }
 
 void ClientQuerys::onBuyItem(QByteArray &bytes)
@@ -377,7 +399,7 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 
 	if (itemName.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Item = " << itemName;
 		return;
 	}
@@ -395,8 +417,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				qDebug() << "------------------This item alredy purchased------------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				QString result = "<error type='buy_item_failed' reason = '4'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result ("<error type='buy_item_failed' reason = '4'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 
@@ -406,14 +428,14 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				qDebug() << "-----------------Profile level < minimal level----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				QString result = "<error type='buy_item_failed' reason = '5'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result("<error type='buy_item_failed' reason = '5'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 
 			if (m_Client->profile->money - item.cost >= 0)
 			{
-				//qDebug() << "[ClientQuerys] Client can buy this item";
+				qDebug() << "Client can buy item" << item.name;
 
 				// Add item and update money
 				m_Client->profile->money = m_Client->profile->money - item.cost;
@@ -427,8 +449,9 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 					qDebug() << "----------------------Profile updated----------------------";
 					qDebug() << "---------------------BUI ITEM COMPLETE---------------------";
 
-					QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+					QByteArray result;
+					result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+					pServer->sendMessageToClient(m_socket, result);
 					return;
 				}
 				else
@@ -436,8 +459,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 					qDebug() << "---------------------Can't update profile---------------------";
 					qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-					QString result = "<error type='buy_item_failed' reason = '3'/>";
-					pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+					QByteArray result ("<error type='buy_item_failed' reason = '3'/>");
+					pServer->sendMessageToClient(m_socket, result);
 					return;
 				}
 			}
@@ -446,8 +469,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				qDebug() << "-------------------Insufficient money to buy-----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				QString result = "<error type='buy_item_failed' reason = '2'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result("<error type='buy_item_failed' reason = '2'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 		}
@@ -456,8 +479,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 			qDebug() << "------------------------Item not found------------------------";
 			qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-			QString result = "<error type='buy_item_failed' reason = '1'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result("<error type='buy_item_failed' reason = '1'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -466,8 +489,8 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 		qDebug() << "----------------------Profile not found-----------------------";
 		qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-		QString result = "<error type='buy_item_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result("<error type='buy_item_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 
 		return;
 	}
@@ -487,7 +510,7 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 	if (itemName.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Item = " << itemName;
 		return;
 	}
@@ -502,8 +525,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 			qDebug() << "-------------------Item not found in inventory--------------------";
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
-			QString result = "<error type='remove_item_failed' reason = '3'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result("<error type='remove_item_failed' reason = '3'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 		else
@@ -515,8 +538,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 				qDebug() << "-------------------Item not found in shop list-------------------";
 				qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
-				QString result = "<error type='remove_item_failed' reason = '2'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result("<error type='remove_item_failed' reason = '2'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 
@@ -530,8 +553,9 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 				qDebug() << "-----------------------Profile updated------------------------";
 				qDebug() << "---------------------REMOVE ITEM COMPLETE---------------------";
 
-				QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 			else
@@ -539,8 +563,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 				qDebug() << "--------------------Can't update profile--------------------";
 				qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
-				QString result = "<error type='remove_item_failed' reason = '1'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result("<error type='remove_item_failed' reason = '1'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 		}
@@ -550,8 +574,8 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 		qDebug() << "---------------------Error get profile----------------------";
 		qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
-		QString result = "<error type='remove_item_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result("<error type='remove_item_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 }
@@ -571,7 +595,7 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 
 	if (m_Client->profile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Invite type  = " << inviteType << "Client = " << m_Client->profile->nickname << "Reciver = " << reciver;
 		return;
 	}
@@ -589,8 +613,8 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			qDebug() << "------------------------User not found------------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
-			QString result = "<error type='invite_failed' reason = '0'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result("<error type='invite_failed' reason = '0'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 
@@ -599,8 +623,9 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 		if (reciverSocket != nullptr)
 		{
 			// Send invite to client
-			QString query = "<invite type='friend_invite' from='" + m_Client->profile->nickname + "'/>";
-			pServer->sendMessageToClient(reciverSocket, query.toStdString().c_str());
+			QByteArray query;
+			query.append("<invite type='friend_invite' from='" + m_Client->profile->nickname + "'/>");
+			pServer->sendMessageToClient(reciverSocket, query);
 			return;
 		}
 		else
@@ -608,8 +633,8 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			qDebug() << "----------------------Reciver not online----------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
-			QString result = "<error type='invite_failed' reason = '1'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result("<error type='invite_failed' reason = '1'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -641,7 +666,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 
 	if (m_Client->profile->nickname.isEmpty() || reciver.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Client = " << m_Client->profile->nickname << "Reciver = " << reciver;
 		return;
 	}
@@ -663,8 +688,8 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 	if (reciverSocket != nullptr)
 	{
 		// Send decline invite to invite sender
-		QString result = "<error type='invite_failed' reason = '2'/>";
-		pServer->sendMessageToClient(reciverSocket, result.toStdString().c_str());
+		QByteArray result ("<error type='invite_failed' reason = '2'/>");
+		pServer->sendMessageToClient(reciverSocket, result);
 		return;
 	}
 	else
@@ -688,7 +713,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 	if (friendName.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Friend = " << friendName;
 		return;
 	}
@@ -710,8 +735,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				qDebug() << "--------------------This friend alredy added--------------------";
 				qDebug() << "------------------------ADD FRIEND FAILED-----------------------";
 
-				QString result = "<error type='add_friend_failed' reason = '4'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result ("<error type='add_friend_failed' reason = '4'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 
@@ -721,8 +746,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				qDebug() << "----------------Can't add yourself to friends--------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-				QString result = "<error type='add_friend_failed' reason = '3'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result("<error type='add_friend_failed' reason = '3'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 
@@ -736,14 +761,16 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				qDebug() << "-----------------------Profile updated-----------------------";
 				qDebug() << "---------------------ADD FRIEND COMPLETE---------------------";
 
-				QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+				pServer->sendMessageToClient(m_socket, result);
 
 				//Send new info to friend here
 				if (friendSocket != nullptr)
 				{
-					QString friendResult = "<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>";
-					pServer->sendMessageToClient(friendSocket, friendResult.toStdString().c_str());
+					QByteArray friendResult;
+					friendResult.append("<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>");
+					pServer->sendMessageToClient(friendSocket, friendResult);
 				}
 				//
 
@@ -754,8 +781,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				qDebug() << "-------------------Can't update profile--------------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-				QString result = "<error type='add_friend_failed' reason = '2'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result ("<error type='add_friend_failed' reason = '2'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 		}
@@ -764,8 +791,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 			qDebug() << "---------------------Error get profile---------------------";
 			qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-			QString result = "<error type='add_friend_failed' reason = '1'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result ("<error type='add_friend_failed' reason = '1'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -774,8 +801,8 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 		qDebug() << "---------------------Friend not found----------------------";
 		qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-		QString result = "<error type='add_friend_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result("<error type='add_friend_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 }
@@ -793,7 +820,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 	if (friendName.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Friend = " << friendName;
 		return;
 	}
@@ -812,8 +839,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 			qDebug() << "--------------------------Friend not found-------------------------";
 			qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
 
-			QString result = "<error type='remove_friend_failed' reason = '2'/>";
-			pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+			QByteArray result ("<error type='remove_friend_failed' reason = '2'/>");
+			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 		else
@@ -833,14 +860,16 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 				qDebug() << "------------------------Profile updated-------------------------";
 				qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
 
-				QString result = "<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result;
+				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
+				pServer->sendMessageToClient(m_socket, result);
 
 				//Send new info to friend here
 				if (friendSocket != nullptr)
 				{
-					QString friendResult = "<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>";
-					pServer->sendMessageToClient(friendSocket, friendResult.toStdString().c_str());
+					QByteArray friendResult;
+					friendResult.append("<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>");
+					pServer->sendMessageToClient(friendSocket, friendResult);
 				}
 				//
 				return;
@@ -850,8 +879,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 				qDebug() << "---------------------Can't update profile---------------------";
 				qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-				QString result = "<error type='remove_friend_failed' reason = '1'/>";
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+				QByteArray result ("<error type='remove_friend_failed' reason = '1'/>");
+				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 		}
@@ -861,8 +890,8 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 		qDebug() << "----------------------Error get profile-----------------------";
 		qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-		QString result = "<error type='remove_friend_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result("<error type='remove_friend_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 }
@@ -881,7 +910,7 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 	if (message.isEmpty() || reciver.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "Wrong packet data! Some values empty!";
 		qDebug() << "Message = " << message << "Reciver = " << reciver;
 		return;
 	}
@@ -900,8 +929,9 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	{
 		if (gEnv->pSettings->GetVariable("bUseGlobalChat").toBool())
 		{
-			QString chat = "<chat><message type='global' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>";
-			pServer->sendGlobalMessage(chat.toStdString().c_str());
+			QByteArray chat;
+			chat.append("<chat><message type='global' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>");
+			pServer->sendGlobalMessage(chat);
 		}
 		else
 		{
@@ -918,8 +948,9 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 		if (reciverSocket != nullptr)
 		{
-			QString chat = "<chat><message type='private' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>";
-			pServer->sendMessageToClient(reciverSocket, chat.toStdString().c_str());
+			QByteArray chat;
+			chat.append("<chat><message type='private' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>");
+			pServer->sendMessageToClient(reciverSocket, chat);
 		}
 		else
 		{
@@ -1044,6 +1075,6 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 	qDebug() << "Server not found!";
 
 	// Send error to client
-	QString result = "<error type='get_game_server_failed' reason = '1'/>";
-	pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+	QByteArray result ("<error type='get_game_server_failed' reason = '1'/>");
+	pServer->sendMessageToClient(m_socket, result);
 }

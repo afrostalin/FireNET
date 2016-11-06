@@ -194,13 +194,14 @@ int main(int argc, char *argv[])
 	gEnv->pTimer = new QTimer;	
 	gEnv->pSettings = new SettingsManager;
 
-	// Connect pTimer with Update functions in DBWorker and RemoteServer class
+	// Connect pTimer with Update functions
+	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pServer, &TcpServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pRemoteServer, &RemoteServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
 	
 	// Build version and number
 	QString buildVersion = "2.0.5";
-	int buildNumber = 92;
+	int buildNumber = 106;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
