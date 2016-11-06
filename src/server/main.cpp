@@ -143,7 +143,6 @@ void RegisterVariables()
 	gEnv->pSettings->RegisterVariable("sv_max_servers", 1);
 	gEnv->pSettings->RegisterVariable("sv_tickrate", 30);
 	// Remote server vars
-	gEnv->pSettings->RegisterVariable("remote_server_ip", "127.0.0.1");
 	gEnv->pSettings->RegisterVariable("remote_server_port", 64000);
 	// Database vars
 	gEnv->pSettings->RegisterVariable("db_mode", "Redis");
@@ -201,7 +200,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.5";
-	int buildNumber = 106;
+	int buildNumber = 111;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");

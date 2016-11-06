@@ -37,7 +37,7 @@ void RemoteServer::run()
 	{
 		m_Thread = QThread::currentThread();
 
-		qInfo() << "Remote server started on" << gEnv->pSettings->GetVariable("remote_server_ip").toString();
+		qInfo() << "Remote server started on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 		qInfo() << "Remote server thread " << m_Thread;
 	}
 	else
@@ -50,7 +50,7 @@ void RemoteServer::run()
 bool RemoteServer::CreateServer()
 {
 	m_Server = new QTcpServer(this);
-	return QTcpServer::listen(QHostAddress(gEnv->pSettings->GetVariable("remote_server_ip").toString()), 
+	return QTcpServer::listen(QHostAddress(gEnv->pSettings->GetVariable("sv_ip").toString()), 
 		gEnv->pSettings->GetVariable("remote_server_port").toInt());
 }
 
@@ -71,6 +71,7 @@ void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, QByteArray &da
 {
 	qDebug() << "Send message to remote client. Original size = " << data.size();
 	socket->write(data);
+	socket->waitForBytesWritten(10);
 }
 
 void RemoteServer::AddNewClient(SRemoteClient client)

@@ -169,6 +169,7 @@ void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray &data)
 {
 	qDebug() << "Send message to client. Original size = " << data.size();
 	socket->write(data);
+	socket->waitForBytesWritten(10);
 }
 
 void TcpServer::sendGlobalMessage(QByteArray &data)
@@ -183,6 +184,7 @@ void TcpServer::sendGlobalMessage(QByteArray &data)
 		if (it->profile != nullptr && it->socket != nullptr)
 		{
 			it->socket->write(data);
+			it->socket->waitForBytesWritten(10);
 		}
 	}
 }
@@ -201,7 +203,7 @@ void TcpServer::startThreads()
 void TcpServer::startThread(TcpThread *pThread)
 {
 	connect(gEnv->pTimer, &QTimer::timeout, pThread, &TcpThread::Update);
-	connect(this,&TcpServer::stop, pThread, &TcpThread::stop);
+	//connect(this,&TcpServer::stop, pThread, &TcpThread::stop);
 
     m_threads.append(pThread);
     pThread->setAutoDelete(true);

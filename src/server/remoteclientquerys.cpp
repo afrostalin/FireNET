@@ -120,6 +120,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString command = attributes.value("command").toString();
+	QString value = attributes.value("value").toString();
 
 	if (command == "status")
 	{
@@ -129,17 +130,12 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 		msg.append("Server ip = " + gEnv->pSettings->GetVariable("sv_ip").toString() + "\n");
 		msg.append("Server port = " + gEnv->pSettings->GetVariable("sv_port").toString() + "\n");
 		msg.append("Server tickrate = " + gEnv->pSettings->GetVariable("sv_tickrate").toString() + " per/sec.\n");
-		//msg.append("Active thread count = ");
-		//msg.append("Database mode = ");
-		//msg.append("Authrorization type = ");
-		//msg.append("Players ammount = . Maximum players count = ");
+		msg.append("Database mode = " + gEnv->pSettings->GetVariable("db_mode").toString() + "\n");
+		msg.append("Authrorization type = " + gEnv->pSettings->GetVariable("auth_mode").toString() + "\n");
+		msg.append("Players ammount = " + QString::number(gEnv->pServer->GetClientCount()) + ". Maximum players count = " + gEnv->pSettings->GetVariable("sv_max_players").toString() + "\n");
 		//msg.append("Game servers ammount = . Maximum game servers count = ");
-		//msg.append("Average time for reading = ");
-		//msg.append("Average time for sending = ");
-		//msg.append("Server start time = ");
 		//msg.append("Errors count = ");
 		//msg.append("Warnings count = ");
-		//msg.append("Server work");
 		msg.append("*******************");
 
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
@@ -147,21 +143,16 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 		return;
 	}
 
-	if (command == "variables")
+	if (command == "list")
 	{
-
-		QStringList varList = gEnv->pSettings->GetVariablesList();
 		QByteArray msg;
-
-		msg.append("Variables count = " + QString::number(varList.size()) + "\n");
-
-		for (int i = 0; i < varList.size(); ++i)
-		{
-			msg.append(QString::number(i + 1) + ") " + varList[i] + " = " + gEnv->pSettings->GetVariable(varList[i]).toString() + "\n");
-		}
-
+		msg.append("status - Get full server status\n");
+		msg.append("send_global_message <message> - Send message to all connected players\n");
+		msg.append("send_console_command <r_displayinfo 1> - Send console command to all connected players\n");
+		msg.append("players - Get player list\n");
+		msg.append("servers - Get game server list\n");
+		msg.append("quit - Shutdown server\n");
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
-
 		return;
 	}
 
