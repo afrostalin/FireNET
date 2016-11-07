@@ -14,6 +14,9 @@ ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
 {
     startMoney = 10000;
 	m_socket = nullptr;
+	bAuthorizated = false;
+	bRegistered = false;
+	bProfileCreated = false;
 }
 
 void ClientQuerys::SetClient(SClient * client)

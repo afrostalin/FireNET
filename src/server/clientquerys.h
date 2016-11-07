@@ -57,6 +57,10 @@ private:
 	SClient* m_Client;
 
 	int startMoney;
+private:
+	bool bAuthorizated;
+	bool bRegistered;
+	bool bProfileCreated;
 };
 
 

@@ -140,6 +140,29 @@ void TcpServer::UpdateClient(SClient* client)
 	qWarning() << "Can't update client. Client" << client->socket << "not found";
 }
 
+QStringList TcpServer::GetPlayersList()
+{
+	QMutexLocker locker(&m_Mutex);
+
+	QStringList playerList;
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->profile != nullptr)
+		{
+			if (!it->profile->nickname.isEmpty())
+			{
+				playerList.push_back("Uid: " + QString::number(it->profile->uid) +
+					" Nickname: " + it->profile->nickname +
+					" Level: " + QString::number(it->profile->lvl) +
+					" XP: " + QString::number(it->profile->xp));
+			}
+		}
+	}
+
+	return playerList;
+}
+
 int TcpServer::GetClientCount()
 {
 	QMutexLocker locker(&m_Mutex);

@@ -16,6 +16,12 @@
 
 void ClientQuerys::onLogin(QByteArray &bytes)
 {
+	if (bAuthorizated)
+	{
+		qDebug() << "Client alredy authorizated!";
+		return;
+	}
+
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 
 	QString login = attributes.value("login").toString();
@@ -42,6 +48,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 			if (dbProfile != nullptr)
 			{
+				bAuthorizated = true;
 				m_Client->profile = dbProfile;
 				m_Client->status = 1;
 				pServer->UpdateClient(m_Client);
@@ -67,7 +74,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				result.append("<result type='auth_complete'><data uid='" + QString::number(uid) + "'/></result>");
 				pServer->sendMessageToClient(m_socket, result);
 
-
+				bAuthorizated = true;
 				m_Client->profile->uid = uid;
 				m_Client->status = 0;
 				pServer->UpdateClient(m_Client);
@@ -123,6 +130,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 			if (dbProfile != nullptr)
 			{
+				bAuthorizated = true;
 				m_Client->profile = dbProfile;
 				m_Client->status = 1;
 				pServer->UpdateClient(m_Client);
@@ -148,7 +156,7 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				result.append("<result type='auth_complete'><data uid='" + QString::number(userData->uid) + "'/></result>");
 				pServer->sendMessageToClient(m_socket, result);
 
-
+				bAuthorizated = true;
 				m_Client->profile->uid = userData->uid;
 				m_Client->status = 0;
 				pServer->UpdateClient(m_Client);
@@ -171,6 +179,12 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 
 void ClientQuerys::onRegister(QByteArray &bytes)
 {
+	if (bRegistered)
+	{
+		qDebug() << "Client alredy registered!";
+		return;
+	}
+
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 	QString login = attributes.value("login").toString();
 	QString password = attributes.value("password").toString();
@@ -193,6 +207,8 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 			qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
 
 			int uid = pDataBase->pHTTP->GetUID();
+
+			bRegistered = true;
 
 			QByteArray result;
 			result.append("<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>");
@@ -221,6 +237,8 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 			{
 				qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
 
+				bRegistered = true;
+
 				QByteArray result;
 				result.append("<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>");
 				pServer->sendMessageToClient(m_socket, result);
@@ -231,8 +249,7 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 				qDebug() << "--------------Can't create account in database!--------------";
 				qDebug() << "---------------------REGISTRATION FAILED---------------------";
 
-				QByteArray result;
-				result.append("<error type='reg_failed' reason = '1'/>");
+				QByteArray result("<error type='reg_failed' reason = '1'/>");
 				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
@@ -251,6 +268,12 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 
 void ClientQuerys::onCreateProfile(QByteArray &bytes)
 {
+	if (bProfileCreated)
+	{
+		qDebug() << "Client alredy create profile!";
+		return;
+	}
+
 	if (m_Client->profile->uid <= 0)
 	{
 		qWarning() << "Client can't create profile without authorization!!! Uid = " << m_Client->profile->uid;
@@ -301,6 +324,7 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 			result.append("<result type='profile_data'>" + stringProfile + "</result>");
 			pServer->sendMessageToClient(m_socket, result);
 
+			bProfileCreated = true;
 			m_Client->status = 1;
 			pServer->UpdateClient(m_Client);
 

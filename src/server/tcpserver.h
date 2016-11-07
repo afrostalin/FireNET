@@ -35,6 +35,7 @@ public:
 	void AddNewClient(SClient client);
 	void RemoveClient(SClient client);
 	void UpdateClient(SClient* client);
+	QStringList GetPlayersList();
 	int GetClientCount();
 	QSslSocket* GetSocketByUid(int uid);
 private:
