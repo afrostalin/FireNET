@@ -124,6 +124,12 @@
 				<param name="Message" desc="Message" type="string"/>		
 			</function>
 			
+			<function name="AddFriend" funcname="AddFriend" desc="Add friend in friend block">
+			    <param name="Nickname" desc="Friend nickname" type="string"/>
+				<param name="UID" desc="Friedn uid" type="int"/>
+                <param name="Status" desc="Friedn status" type="int"/>			
+			</function>
+			
 		</functions>
 		
 		<events>
@@ -140,6 +146,10 @@
 			<event name="OnPrivateChatMessageSended" fscommand="onPrivateChatMessageSended" desc="Start when local user send new message to some player">
 				<param name="Message" desc="Message" type="string"/>
 				<param name="Reciver" desc="Reciver" type="string"/>
+			</event>
+			
+			<event name="OnFriendInviteSended" fscommand="onFriendInviteSended" desc="Start when friend invite button pressed">
+			    <param name="Nickname" desc="Friend nickname" type="string"/>
 			</event>
 			
 		</events>
