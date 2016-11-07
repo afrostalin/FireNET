@@ -16,13 +16,6 @@ class TcpConnection : public QObject
 public:
     explicit TcpConnection(QObject *parent = 0);
     ~TcpConnection();
-protected:
-    virtual void connected();
-    virtual void disconnected();
-    virtual void readyRead();
-    virtual void bytesWritten(qint64 bytes);
-    virtual void stateChanged(QAbstractSocket::SocketState socketState);
-
 signals:
     void finished();
 
@@ -30,12 +23,19 @@ public slots:
     virtual void accept(qint64 socketDescriptor);
     virtual void close();
 
+	void connected();
+	void disconnected();
+	void readyRead();
+	void bytesWritten(qint64 bytes);
+	void stateChanged(QAbstractSocket::SocketState socketState);
+
 	void socketSslErrors(const QList<QSslError> list);
 	void socketError(QAbstractSocket::SocketError error);
 private:
     ClientQuerys* pQuery;
 	QSslSocket* m_Socket;
 	SClient m_Client;
+	bool bConnected;
 };
 
 #endif // TCPCONNECTION_H

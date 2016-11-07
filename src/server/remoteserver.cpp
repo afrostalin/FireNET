@@ -19,8 +19,6 @@ void RemoteServer::Clear()
 {
 	qInfo() << "~RemoteServer";
 
-	emit stop();
-
 	m_connections.clear();
 	m_Clients.clear();
 
@@ -59,8 +57,7 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 	qInfo() << "New incomining connection to remote server. Try accept...";
 	
 	RemoteConnection* m_remoteConnection = new RemoteConnection();
-	connect(this, &RemoteServer::stop, m_Server, &QTcpServer::close);
-	connect(this, &QTcpServer::close, m_remoteConnection, &RemoteConnection::close);
+	connect(this, &RemoteServer::close, m_remoteConnection, &RemoteConnection::close);
 	connect(m_remoteConnection, &RemoteConnection::finished, this, &RemoteServer::CloseConnection);
 
 	m_connections.append(m_remoteConnection);
@@ -76,7 +73,7 @@ void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, QByteArray &da
 
 void RemoteServer::AddNewClient(SRemoteClient client)
 {
-	QMutexLocker locker(&m_Mutex);
+	//QMutexLocker locker(&m_Mutex);
 
 	if (client.socket == nullptr)
 	{
@@ -99,7 +96,7 @@ void RemoteServer::AddNewClient(SRemoteClient client)
 
 void RemoteServer::RemoveClient(SRemoteClient client)
 {
-	QMutexLocker locker(&m_Mutex);
+	//QMutexLocker locker(&m_Mutex);
 
 	if (client.socket == nullptr)
 	{
@@ -122,7 +119,7 @@ void RemoteServer::RemoveClient(SRemoteClient client)
 
 void RemoteServer::UpdateClient(SRemoteClient* client)
 {
-	QMutexLocker locker(&m_Mutex);
+	//QMutexLocker locker(&m_Mutex);
 
 	if (client->socket == nullptr)
 	{

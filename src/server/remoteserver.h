@@ -25,7 +25,7 @@ public slots:
 	void Update();
 	void CloseConnection();
 signals:
-	void stop();
+	void close();
 public:
 	virtual void run();
 	void AddNewClient(SRemoteClient client);

@@ -5,6 +5,7 @@
 #include "remoteconnection.h"
 #include "remoteserver.h"
 #include "remoteclientquerys.h"
+#include "settings.h"
 
 #include <QXmlStreamReader>
 
@@ -12,6 +13,7 @@ RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)
 {
 	m_socket = nullptr;
 	pQuerys = nullptr;
+	bConnected = false;
 }
 
 RemoteConnection::~RemoteConnection()
@@ -22,6 +24,12 @@ RemoteConnection::~RemoteConnection()
 void RemoteConnection::accept(qint64 socketDescriptor)
 {
 	m_socket = new QSslSocket(this);
+	connect(m_socket, &QSslSocket::encrypted, this, &RemoteConnection::connected);
+	connect(m_socket, &QSslSocket::disconnected, this, &RemoteConnection::disconnected);
+	connect(m_socket, &QSslSocket::readyRead, this, &RemoteConnection::readyRead);
+	connect(m_socket, &QSslSocket::bytesWritten, this, &RemoteConnection::bytesWritten);
+	connect(m_socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
+	connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
 	
 	if (!m_socket->setSocketDescriptor(socketDescriptor))
 	{
@@ -32,11 +40,15 @@ void RemoteConnection::accept(qint64 socketDescriptor)
 	m_socket->setLocalCertificate("key.pem");
 	m_socket->setPrivateKey("key.key");
 	m_socket->startServerEncryption();
+	
+	int timeout = gEnv->pSettings->GetVariable("net_encryption_timeout").toInt();
 
-	connect(m_socket, &QSslSocket::encrypted, this, &RemoteConnection::connected);
-	connect(m_socket, &QSslSocket::disconnected, this, &RemoteConnection::disconnected);
-	connect(m_socket, &QSslSocket::readyRead, this, &RemoteConnection::readyRead);
-	connect(m_socket, &QSslSocket::bytesWritten, this, &RemoteConnection::bytesWritten);
+	if (!m_socket->waitForEncrypted(timeout * 1000))
+	{
+		qCritical() << "Can't accept socket! Encryption timeout!";
+		emit finished();
+		return;
+	}
 }
 
 void RemoteConnection::connected()
@@ -56,14 +68,20 @@ void RemoteConnection::connected()
 	pQuerys->SetSocket(m_socket);
 	pQuerys->SetClient(&m_Client);
 
+	bConnected = true;
+
 	qInfo() << "Remote client" << m_socket << "connected.";
 	qInfo() << "Remote client count " << gEnv->pRemoteServer->GetClientCount();
 }
 
 void RemoteConnection::disconnected()
 {
-	if (!m_socket)
+	if (!m_socket || !bConnected)
+	{
+		emit finished();
 		return;
+	}
+		
 
 	if (gEnv->pRemoteServer->bHaveAdmin && m_Client.isAdmin)
 	{
@@ -124,6 +142,25 @@ void RemoteConnection::bytesWritten(qint64 bytes)
 		return;
 
 	qDebug() << "Message to remote client" << m_socket << "sended! Size =" << bytes;
+}
+
+void RemoteConnection::socketSslErrors(const QList<QSslError> list)
+{
+	foreach(QSslError item, list)
+	{
+		qCritical() << "Client" << m_socket << "return socket error" << item.errorString();
+	}
+}
+
+void RemoteConnection::socketError(QAbstractSocket::SocketError error)
+{
+	if (error == QAbstractSocket::SocketError::RemoteHostClosedError)
+		close();
+	else
+	{
+		qCritical() << "Client" << m_socket << "return socket error" << error;
+		close();
+	}
 }
 
 void RemoteConnection::close()

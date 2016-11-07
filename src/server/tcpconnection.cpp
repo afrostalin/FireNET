@@ -7,6 +7,7 @@
 #include "mysqlconnector.h"
 #include "dbworker.h"
 #include "tcpserver.h"
+#include "settings.h"
 
 #include <QXmlStreamReader>
 
@@ -14,6 +15,7 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 {
 	pQuery = nullptr;
 	m_Socket = nullptr;
+	bConnected = true;
 }
 
 TcpConnection::~TcpConnection()
@@ -24,6 +26,12 @@ TcpConnection::~TcpConnection()
 void TcpConnection::accept(qint64 socketDescriptor)
 {
 	m_Socket = new QSslSocket(this);
+	connect(m_Socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
+	connect(m_Socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
+	connect(m_Socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
+	connect(m_Socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
+	connect(m_Socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
+	connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
 
 	if (!m_Socket->setSocketDescriptor(socketDescriptor))
 	{
@@ -35,13 +43,14 @@ void TcpConnection::accept(qint64 socketDescriptor)
 	m_Socket->setPrivateKey("key.key");
 	m_Socket->startServerEncryption();
 
-	connect(m_Socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
-	connect(m_Socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
-	connect(m_Socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
-	connect(m_Socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
+	int timeout = gEnv->pSettings->GetVariable("net_encryption_timeout").toInt();
 
-	connect(m_Socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
-	connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+	if (!m_Socket->waitForEncrypted(timeout * 1000))
+	{
+		qCritical() << "Can't accept socket! Encryption timeout!";
+		emit finished();
+		return;
+	}
 }
 
 void TcpConnection::connected()
@@ -63,14 +72,19 @@ void TcpConnection::connected()
 	// Set client
 	pQuery->SetClient(&m_Client);
 
+	bConnected = true;
+
 	qInfo() << "Client" << m_Socket << "connected.";
 	qInfo() << "Client count " << gEnv->pServer->GetClientCount();
 }
 
 void TcpConnection::disconnected()
 {
-	if (!m_Socket)
+	if (!m_Socket || !bConnected)
+	{
+		emit finished();
 		return;
+	}
 
 	// Remove client from server client list
 	gEnv->pServer->RemoveClient(m_Client);

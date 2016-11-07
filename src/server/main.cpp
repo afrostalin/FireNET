@@ -161,6 +161,7 @@ void RegisterVariables()
 	gEnv->pSettings->RegisterVariable("http_register_page", "http://127.0.0.1/reg.php");
 	// Network vars
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false);
+	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3);
 
 	// Gloval vars (This variables not need read from server.cfg)
 	gEnv->pSettings->RegisterVariable("bUseRedis", true);
@@ -200,7 +201,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.5";
-	int buildNumber = 111;
+	int buildNumber = 144;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");

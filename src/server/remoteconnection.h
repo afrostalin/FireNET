@@ -15,21 +15,24 @@ class RemoteConnection : public QObject
 public:
     explicit RemoteConnection(QObject *parent = 0);
 	~RemoteConnection();
-
-protected:
-	virtual void connected();
-	virtual void disconnected();
-	virtual void readyRead();
-	virtual void bytesWritten(qint64 bytes);
 public slots:
-	virtual void accept(qint64 socketDescriptor);
-	virtual void close();
+	void accept(qint64 socketDescriptor);
+	void close();
+	//
+	void connected();
+	void disconnected();
+	void readyRead();
+	void bytesWritten(qint64 bytes);
+
+	void socketSslErrors(const QList<QSslError> list);
+	void socketError(QAbstractSocket::SocketError error);
 signals:
 	void finished();
 private:
 	QSslSocket* m_socket;
 	RemoteClientQuerys* pQuerys;
 	SRemoteClient m_Client;
+	bool bConnected;
 };
 
 #endif // REMOTECONNECTION_H
