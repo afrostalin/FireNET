@@ -10,8 +10,8 @@
       <Node Id="4" Class="Camera:View" pos="-540,-410,0" flags="0" InHideMask="2047" EntityGUID="{4AEF7AB4-9009-4ADD-9761-36CBA2D25AA6}" EntityGUID_64="4ADD90094AEF7AB4">
        <Inputs entityId="0" Enable="0" Disable="0" FOV="60" Blend="0" BlendFOVSpeed="5" BlendFOVOffset="0" BlendPosSpeed="5" BlendPosOffset="0,0,0" BlendRotSpeed="10" BlendRotOffset="0,0,0"/>
       </Node>
-      <Node Id="9" Class="FireNET:Other:SpawnPlayerAI" pos="110,-560,0" flags="0">
-       <Inputs Archetype="Characters.Friendly.Easy_Empty" Name="DummyCharacter" Pos="0,0,0" Rot="0,0,0" Scale="1,1,1" Model="objects/characters/human/sdk_player/sdk_player_blue.cdf"/>
+      <Node Id="9" Class="FireNET:Other:SpawnPlayerAI" pos="420,-540,0" flags="0">
+       <Inputs Archetype="FireNET.Characters.Human" Name="DummyCharacter" Pos="0,0,0" Rot="0,0,0" Scale="1,1,1" Model="objects/characters/human/sdk_player/sdk_player_blue.cdf"/>
       </Node>
       <Node Id="10" Class="Entity:GetPos" pos="-320,-640,0" flags="0" InHideMask="7" OutHideMask="63" EntityGUID="{5DCCE6C4-E4D0-4473-889B-79EDD192D5F4}" EntityGUID_64="4473E4D05DCCE6C4">
        <Inputs entityId="0" CoordSys="1"/>
@@ -19,31 +19,31 @@
       <Node Id="17" Class="UI:Display:Display" pos="1500,-1200,0" flags="0">
        <Inputs uiElements_Element="FireNetUI:AuthenticationPage" instanceID="-1"/>
       </Node>
-      <Node Id="21" Name="Show_auth_page" Class="_commentbox" pos="1090,-1279.4121,0" flags="0">
+      <Node Id="21" Name="Show_auth_page" Class="_commentbox" pos="1090,-1390.0833,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="1300" Height="290"/>
-       <NodeSize Width="1300" Height="336.25555"/>
+       <NodeSize Width="1300" Height="446.92719"/>
       </Node>
       <Node Id="30" Class="Debug:ExecuteString" pos="-1160,-1300,0" flags="0">
        <Inputs String="quit" NextFrame="0"/>
       </Node>
-      <Node Id="31" Name="Authentication_page" Class="_commentbox" pos="-1580,-1579.9934,0" flags="0">
+      <Node Id="31" Name="Authentication_page" Class="_commentbox" pos="-1580,-1690.6648,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="860" Height="590"/>
-       <NodeSize Width="860" Height="636.25555"/>
+       <NodeSize Width="1072.7061" Height="746.92719"/>
       </Node>
       <Node Id="40" Class="UI:Display:Display" pos="1480,-650,0" flags="0">
        <Inputs uiElements_Element="FireNetUI:CreateProfilePage" instanceID="-1"/>
       </Node>
-      <Node Id="44" Name="Create_profile_page" Class="_commentbox" pos="-1560,142.89275,0" flags="0">
+      <Node Id="44" Name="Create_profile_page" Class="_commentbox" pos="-1560,32.221123,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="820" Height="360"/>
-       <NodeSize Width="820" Height="406.25555"/>
+       <NodeSize Width="1025.6683" Height="516.92719"/>
       </Node>
-      <Node Id="46" Name="Show_create_profile_page" Class="_commentbox" pos="1090,-721.97021,0" flags="0">
+      <Node Id="46" Name="Show_create_profile_page" Class="_commentbox" pos="1090,-832.64215,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="2020" Height="1080"/>
-       <NodeSize Width="2020" Height="1126.2556"/>
+       <NodeSize Width="2020" Height="1236.9272"/>
       </Node>
       <Node Id="56" Class="FireNET:Profile:CreateProfile" pos="-1070,200,0" flags="0">
        <Inputs Nickname="" Model=""/>
@@ -96,13 +96,13 @@
       <Node Id="107" Class="UI:Functions:FireNetUI:AuthenticationPage:ShowLoginPage" pos="-1200,-1120,0" flags="0">
        <Inputs instanceID="-1"/>
       </Node>
-      <Node Id="109" Class="Game:Start" pos="1170,-1140,0" flags="0">
+      <Node Id="109" Class="Game:Start" pos="1170,-1140,0" flags="1">
        <Inputs InGame="1" InEditor="1"/>
       </Node>
-      <Node Id="110" Name="Game_start" Class="_commentbox" pos="-560,-733.90253,0" flags="0">
+      <Node Id="110" Name="Game_start" Class="_commentbox" pos="-560,-920.83307,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
-       <ResizeBorder X="0" Y="0" Width="1200" Height="680"/>
-       <NodeSize Width="1200" Height="726.25555"/>
+       <ResizeBorder X="0" Y="0" Width="1510" Height="750"/>
+       <NodeSize Width="1510" Height="906.92719"/>
       </Node>
       <Node Id="111" Class="Input:ActionMaps:ActionFilter" pos="-540,-590,0" flags="0">
        <Inputs actionFilter_Filter="only_ui"/>
@@ -110,7 +110,7 @@
       <Node Id="124" Class="entity:SpawnPoint" pos="-540,-510,0" flags="0" EntityGUID="{3860EC92-2847-4F4D-BA38-311122FC73F7}" EntityGUID_64="4F4D28473860EC92">
        <Inputs entityId="0" Disable="0" Enable="1" Spawn="0"/>
       </Node>
-      <Node Id="132" Class="Logic:Any" pos="-170,-660,0" flags="0" InHideMask="1023" OutHideMask="1">
+      <Node Id="132" Class="Logic:Any" pos="-150,-650,0" flags="0" InHideMask="1023" OutHideMask="1">
        <Inputs />
       </Node>
       <Node Id="133" Class="Logic:Any" pos="-90,-400,0" flags="0" InHideMask="1023" OutHideMask="1">
@@ -158,42 +158,42 @@
       <Node Id="147" Class="UI:Functions:FireNetUI:MainMenuPage:SetPlayerName" pos="100,-1020,0" flags="0">
        <Inputs instanceID="-1" Name=""/>
       </Node>
-      <Node Id="148" Name="Show_main_menu" Class="_commentbox" pos="-550,-1281.4868,0" flags="0">
+      <Node Id="148" Name="Show_main_menu" Class="_commentbox" pos="-550,-1392.1584,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="1560" Height="440"/>
-       <NodeSize Width="1560" Height="486.25555"/>
+       <NodeSize Width="1560" Height="596.92719"/>
       </Node>
-      <Node Id="149" Class="UI:Events:FireNetUI:MainMenuPage:OnExit" pos="-1540,-190,0" flags="0">
+      <Node Id="149" Class="UI:Events:FireNetUI:MainMenuPage:OnExit" pos="-1580,-460,0" flags="0">
        <Inputs instanceID="-1" Port="-1" Idx=""/>
       </Node>
-      <Node Id="150" Class="UI:Events:FireNetUI:MainMenuPage:OnStorageOpen" pos="-1540,-510,0" flags="0">
+      <Node Id="150" Class="UI:Events:FireNetUI:MainMenuPage:OnStorageOpen" pos="-1580,-780,0" flags="0">
        <Inputs instanceID="-1" Port="-1" Idx=""/>
       </Node>
-      <Node Id="151" Class="UI:Events:FireNetUI:MainMenuPage:OnShopOpen" pos="-1530,-430,0" flags="0">
+      <Node Id="151" Class="UI:Events:FireNetUI:MainMenuPage:OnShopOpen" pos="-1570,-700,0" flags="0">
        <Inputs instanceID="-1" Port="-1" Idx=""/>
       </Node>
-      <Node Id="152" Class="UI:Events:FireNetUI:MainMenuPage:OnWantToPlay" pos="-1540,-350,0" flags="0">
+      <Node Id="152" Class="UI:Events:FireNetUI:MainMenuPage:OnWantToPlay" pos="-1580,-620,0" flags="0">
        <Inputs instanceID="-1" Port="-1" Idx=""/>
       </Node>
-      <Node Id="153" Class="UI:Events:FireNetUI:MainMenuPage:OnSettingsOpen" pos="-1540,-270,0" flags="0">
+      <Node Id="153" Class="UI:Events:FireNetUI:MainMenuPage:OnSettingsOpen" pos="-1580,-540,0" flags="0">
        <Inputs instanceID="-1" Port="-1" Idx=""/>
       </Node>
-      <Node Id="154" Class="FireNET:Matchmaking:GetGameServer" pos="-1070,-350,0" flags="0">
+      <Node Id="154" Class="FireNET:Matchmaking:GetGameServer" pos="-1110,-620,0" flags="0">
        <Inputs MapName="airfield" Gamerules="" ServerName=""/>
       </Node>
-      <Node Id="155" Class="FireNET:Shop:GetShopItems" pos="-1050,-430,0" flags="0">
+      <Node Id="155" Class="FireNET:Shop:GetShopItems" pos="-1090,-700,0" flags="0">
        <Inputs />
       </Node>
-      <Node Id="156" Class="Debug:ExecuteString" pos="-1030,-180,0" flags="0">
+      <Node Id="156" Class="Debug:ExecuteString" pos="-1070,-450,0" flags="0">
        <Inputs String="quit" NextFrame="0"/>
       </Node>
-      <Node Id="157" Class="FireNET:Profile:GetProfile" pos="-1050,-510,0" flags="0">
+      <Node Id="157" Class="FireNET:Profile:GetProfile" pos="-1090,-780,0" flags="0">
        <Inputs />
       </Node>
-      <Node Id="158" Name="Main_menu_page" Class="_commentbox" pos="-1550,-567.00946,0" flags="0">
+      <Node Id="158" Name="Main_menu_page" Class="_commentbox" pos="-1590,-949.89337,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
-       <ResizeBorder X="0" Y="0" Width="780" Height="450"/>
-       <NodeSize Width="780" Height="496.25555"/>
+       <ResizeBorder X="0" Y="0" Width="780" Height="660"/>
+       <NodeSize Width="900.9906" Height="816.92719"/>
       </Node>
       <Node Id="160" Class="Logic:Any" pos="100,-320,0" flags="0" InHideMask="1023" OutHideMask="1">
        <Inputs />
@@ -237,10 +237,10 @@
       <Node Id="214" Class="Math:Add" pos="810,-1490,0" flags="0">
        <Inputs A="0" B="1"/>
       </Node>
-      <Node Id="215" Name="Read_News.xml" Class="_commentbox" pos="410,-1892.2993,0" flags="0">
+      <Node Id="215" Name="Read_News.xml" Class="_commentbox" pos="410,-2002.9705,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="1295" Height="414"/>
-       <NodeSize Width="1295" Height="460.25555"/>
+       <NodeSize Width="1295" Height="570.92719"/>
       </Node>
       <Node Id="216" Class="UI:Functions:FireNetUI:MainMenuPage:SetNewsTitle" pos="1120,-1830,0" flags="0">
        <Inputs instanceID="-1" Title=""/>
@@ -272,10 +272,10 @@
       <Node Id="230" Class="UI:Functions:FireNetUI:MainMenuPage:AddPrivateChatMessage" pos="-130,490,0" flags="0">
        <Inputs instanceID="-1" Sender="" Message=""/>
       </Node>
-      <Node Id="231" Name="Chat_functionality" Class="_commentbox" pos="-560,132.89275,0" flags="0">
+      <Node Id="231" Name="Chat_functionality" Class="_commentbox" pos="-560,22.221184,0" flags="0">
        <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
        <ResizeBorder X="0" Y="0" Width="851" Height="409"/>
-       <NodeSize Width="851" Height="455.25555"/>
+       <NodeSize Width="942.93726" Height="565.92719"/>
       </Node>
       <Node Id="232" Class="UI:Functions:FireNetUI:CreateProfilePage:AddCharacter" pos="1460,-300,0" flags="0">
        <Inputs instanceID="-1" Race="Human" Gender="Beanie" Color="Blue" Model="objects/characters/human/sdk_player/sdk_player_blue_beanie.cdf"/>
@@ -303,6 +303,35 @@
       </Node>
       <Node Id="240" Class="UI:Functions:FireNetUI:CreateProfilePage:AddCharacter" pos="2110,120,0" flags="0">
        <Inputs instanceID="-1" Race="Human" Gender="Sunglasses" Color="Red" Model="objects/characters/human/sdk_player/sdk_player_red_sunglasses.cdf"/>
+      </Node>
+      <Node Id="241" Class="UI:Events:FireNetUI:MainMenuPage:OnFriendInviteSended" pos="-550,710,0" flags="0">
+       <Inputs instanceID="-1" Port="-1" Idx=""/>
+      </Node>
+      <Node Id="242" Class="FireNET:Invites:SendInvite" pos="-50,710,0" flags="0">
+       <Inputs UserName="" ServerIP="" MapName="" ClanName=""/>
+      </Node>
+      <Node Id="243" Class="UI:Events:FireNET:Invites:OnFriendInviteRecived" pos="-510,870,0" flags="0">
+       <Inputs Port="-1" Idx=""/>
+      </Node>
+      <Node Id="244" Class="UI:Events:FireNET:Friends:OnFriendRecived" pos="-460,980,0" flags="0">
+       <Inputs Port="-1" Idx=""/>
+      </Node>
+      <Node Id="245" Class="UI:Functions:FireNetUI:MainMenuPage:AddFriend" pos="-60,980,0" flags="0">
+       <Inputs instanceID="-1" Nickname="" UID="0" Status="0"/>
+      </Node>
+      <Node Id="246" Name="Friend_system" Class="_commentbox" pos="-560,539.31085,0" flags="0">
+       <Inputs TextSize="1" Color="0.27451,0.352941,0.705882" DisplayFilled="1" DisplayBox="1" SortPriority="16"/>
+       <ResizeBorder X="0" Y="0" Width="837" Height="397"/>
+       <NodeSize Width="837" Height="553.92719"/>
+      </Node>
+      <Node Id="247" Class="String:SetString" pos="10,-660,0" flags="0">
+       <Inputs In="Dummy_"/>
+      </Node>
+      <Node Id="248" Class="Math:Counter" pos="10,-740,0" flags="0">
+       <Inputs max="0"/>
+      </Node>
+      <Node Id="251" Class="String:Concat" pos="203.53105,-703.68805,0" flags="0">
+       <Inputs String1="" String2=""/>
       </Node>
      </Nodes>
      <Edges>
@@ -337,6 +366,9 @@
       <Edge nodeIn="124" nodeOut="111" portIn="Spawn" portOut="Enabled" enabled="1"/>
       <Edge nodeIn="4" nodeOut="124" portIn="Enable" portOut="Spawn" enabled="1"/>
       <Edge nodeIn="9" nodeOut="132" portIn="Spawn" portOut="out" enabled="1"/>
+      <Edge nodeIn="247" nodeOut="132" portIn="Set" portOut="out" enabled="1"/>
+      <Edge nodeIn="248" nodeOut="132" portIn="in" portOut="out" enabled="1"/>
+      <Edge nodeIn="251" nodeOut="132" portIn="Set" portOut="out" enabled="1"/>
       <Edge nodeIn="9" nodeOut="133" portIn="Model" portOut="out" enabled="1"/>
       <Edge nodeIn="133" nodeOut="134" portIn="in1" portOut="Out" enabled="1"/>
       <Edge nodeIn="132" nodeOut="135" portIn="in2" portOut="Done" enabled="1"/>
@@ -399,6 +431,14 @@
       <Edge nodeIn="239" nodeOut="238" portIn="Call" portOut="OnCall" enabled="1"/>
       <Edge nodeIn="240" nodeOut="239" portIn="Call" portOut="OnCall" enabled="1"/>
       <Edge nodeIn="106" nodeOut="240" portIn="Call" portOut="OnCall" enabled="1"/>
+      <Edge nodeIn="242" nodeOut="241" portIn="UserName" portOut="Nickname" enabled="1"/>
+      <Edge nodeIn="242" nodeOut="241" portIn="SendFriendInvite" portOut="onEvent" enabled="1"/>
+      <Edge nodeIn="245" nodeOut="244" portIn="Nickname" portOut="Name" enabled="1"/>
+      <Edge nodeIn="245" nodeOut="244" portIn="UID" portOut="Uid" enabled="1"/>
+      <Edge nodeIn="245" nodeOut="244" portIn="Call" portOut="onEvent" enabled="1"/>
+      <Edge nodeIn="251" nodeOut="247" portIn="String1" portOut="Out" enabled="1"/>
+      <Edge nodeIn="251" nodeOut="248" portIn="String2" portOut="count" enabled="1"/>
+      <Edge nodeIn="9" nodeOut="251" portIn="Name" portOut="Out" enabled="1"/>
      </Edges>
      <GraphTokens />
     </FlowGraph>
