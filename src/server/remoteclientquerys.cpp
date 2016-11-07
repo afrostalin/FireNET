@@ -143,16 +143,56 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 		return;
 	}
 
-	if (command == "list")
+	if (command == "send_global_message")
 	{
 		QByteArray msg;
-		msg.append("status - Get full server status\n");
-		msg.append("send_global_message <message> - Send message to all connected players\n");
-		msg.append("send_console_command <r_displayinfo 1> - Send console command to all connected players\n");
-		msg.append("players - Get player list\n");
-		msg.append("servers - Get game server list\n");
-		msg.append("quit - Shutdown server\n");
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
+		msg.append("<server><data type='message' value='" + value + "'/></server>");
+		gEnv->pServer->sendGlobalMessage(msg);
+
+		QByteArray answer("Message sended.");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, answer);
+
+		return;
+	}
+
+	if (command == "send_console_command")
+	{
+		QByteArray msg;
+		msg.append("<server><data type='command' value='" + value + "'/></server>");
+		gEnv->pServer->sendGlobalMessage(msg);
+
+		QByteArray answer("Console command sended.");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, answer);
+
+		return;
+	}
+
+	if (command == "players")
+	{
+		QStringList players = gEnv->pServer->GetPlayersList();
+		QByteArray answer;
+		answer.clear();
+
+		for (int i = 0; i < players.size(); i++)
+		{
+			answer.append(players[i] + "\n");
+		}
+
+		if (!players.isEmpty() && !answer.isEmpty())
+		{
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, answer);
+		}
+		else
+		{
+			answer.append("Player list empty.");
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, answer);
+		}
+
+		return;
+	}
+
+	if (command == "servers")
+	{
 		return;
 	}
 

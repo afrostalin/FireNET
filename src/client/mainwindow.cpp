@@ -223,7 +223,7 @@ void MainWindow::on_pushButton_2_clicked()
 
     QString query = "<query type = 'register'><data login='test' password = 'qwerty'/></query>";
     QString query1 = "<query type = 'auth'><data login='test' password = 'qwerty'/></query>";
-    QString query2 = "<query type = 'create_profile'><data nickname='Test' model = 'test'/></query>";
+    QString query2 = "<query type = 'create_profile'><data nickname='Test' fileModel = 'test'/></query>";
     QString query3 = "<query type = 'get_profile'/>";
     QString query4 = "<query type = 'get_shop_items'/>";
     QString query5 = "<query type = 'buy_item'><data item = 'Grenade'/></query>";
