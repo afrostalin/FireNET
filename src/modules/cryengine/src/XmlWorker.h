@@ -4,6 +4,8 @@
 #ifndef _Xml_Worker_H_
 #define _Xml_Worker_H_
 
+#include <QXmlStreamReader>
+
 class CXmlWorker
 {
 public:
@@ -22,6 +24,9 @@ private:
 	void onInvite(const char* data);
 	void onFriendStatusUpdated(const char* data);
 	void onGameServerDataRecived(const char* data);
+	void onServerMessageRecived(const char* data);
+private:
+	QXmlStreamAttributes GetAttributesFromArray(const char* data, const char* name);
 private:
 	void UpdateFriendList();
 };

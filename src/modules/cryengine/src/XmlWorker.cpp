@@ -51,6 +51,9 @@ void CXmlWorker::ReadXmlData(const char* data)
 			if (xml.name() == "online_status")
 				onFriendStatusUpdated(data);
 
+			if (xml.name() == "server")
+				onServerMessageRecived(data);
+
 			return;
 		}
 	}
@@ -82,258 +85,230 @@ void CXmlWorker::UpdateFriendList()
 
 void CXmlWorker::onError(const char* data)
 {
-	QXmlStreamReader xml(data);
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "error");
+	QString type = attributes.value("type").toString();
+	QString reason = attributes.value("reason").toString();
 
-	while (!xml.atEnd() && !xml.hasError())
+	gEnv->pLog->LogAlways(TITLE  "Error type = '%s' reason = '%s'", type.toStdString().c_str(), reason.toStdString().c_str());
+
+	if (!type.isEmpty() && !reason.isEmpty())
 	{
-		xml.readNext();
-
-		if (xml.name() == "error")
+		if (type == "auth_failed")
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString type = attributes.value("type").toString();
-			QString reason = attributes.value("reason").toString();
+			SUIArguments args;
 
-			gEnv->pLog->LogAlways(TITLE  "Error type = '%s' reason = '%s'", type.toStdString().c_str(), reason.toStdString().c_str());
-
-			if (!type.isEmpty() && !reason.isEmpty())
-			{
-				if (type == "auth_failed")
-				{
-					SUIArguments args;
-
-					if(reason == "0")
-						args.AddArgument("@loginNotFound");			
-					if (reason == "1")
-						args.AddArgument("@accountBlocked");
-					if (reason == "2")
-						args.AddArgument("@incorrectPassword");
+			if (reason == "0")
+				args.AddArgument("@loginNotFound");
+			if (reason == "1")
+				args.AddArgument("@accountBlocked");
+			if (reason == "2")
+				args.AddArgument("@incorrectPassword");
 
 
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 
-					return;
-				}
-
-				if (type == "reg_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@loginAlredyRegistered");
-					if (reason == "1")
-						args.AddArgument("@serverError");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "create_profile_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@serverError");
-					if (reason == "1")
-						args.AddArgument("@nicknameAlredyRegister");
-					if (reason == "2")
-						args.AddArgument("@profileAlredyCreated");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "get_profile_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@serverError");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
-
-					return;
-				}
-
-				if (type == "get_shop_items_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@serverError");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
-
-					return;
-				}
-
-				if (type == "buy_item_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@serverError");
-					if (reason == "1")
-						args.AddArgument("@itemNotFinded");
-					if (reason == "2")
-						args.AddArgument("@insufficientMoney");
-					if (reason == "3")
-						args.AddArgument("@serverError");
-					if (reason == "4")
-						args.AddArgument("@itemAlredyPurchased");
-					if (reason == "5")
-						args.AddArgument("@lowProfileLevel");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "remove_item_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@serverError");
-					if (reason == "1")
-						args.AddArgument("@serverError");
-					if (reason == "2")
-						args.AddArgument("@serverError");
-					if (reason == "3")
-						args.AddArgument("@itemNotFound");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "invite_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@userNotFound");
-					if (reason == "1")
-						args.AddArgument("@userNotOnline");
-					if (reason == "2")
-						args.AddArgument("@userDeclineInvite");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "add_friend_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@friendNotFound");
-					if (reason == "1")
-						args.AddArgument("@serverError");
-					if (reason == "2")
-						args.AddArgument("@serverError");
-					if (reason == "3")
-						args.AddArgument("@cantAddYourselfInFriends");
-					if (reason == "4")
-						args.AddArgument("@friendAlredyAdded");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "remove_friend_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@serverError");
-					if (reason == "1")
-						args.AddArgument("@serverError");
-					if (reason == "2")
-						args.AddArgument("@friendNotFound");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-
-				if (type == "get_game_server_failed")
-				{
-					SUIArguments args;
-
-					if (reason == "0")
-						args.AddArgument("@noAnyServerOnline");
-					if (reason == "1")
-						args.AddArgument("@serverNotFound");
-
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-					return;
-				}
-			}
-
-			break;
+			return;
 		}
+
+		if (type == "reg_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@loginAlredyRegistered");
+			if (reason == "1")
+				args.AddArgument("@serverError");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "create_profile_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@serverError");
+			if (reason == "1")
+				args.AddArgument("@nicknameAlredyRegister");
+			if (reason == "2")
+				args.AddArgument("@profileAlredyCreated");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "get_profile_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@serverError");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+
+			return;
+		}
+
+		if (type == "get_shop_items_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@serverError");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+
+			return;
+		}
+
+		if (type == "buy_item_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@serverError");
+			if (reason == "1")
+				args.AddArgument("@itemNotFinded");
+			if (reason == "2")
+				args.AddArgument("@insufficientMoney");
+			if (reason == "3")
+				args.AddArgument("@serverError");
+			if (reason == "4")
+				args.AddArgument("@itemAlredyPurchased");
+			if (reason == "5")
+				args.AddArgument("@lowProfileLevel");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "remove_item_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@serverError");
+			if (reason == "1")
+				args.AddArgument("@serverError");
+			if (reason == "2")
+				args.AddArgument("@serverError");
+			if (reason == "3")
+				args.AddArgument("@itemNotFound");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "invite_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@userNotFound");
+			if (reason == "1")
+				args.AddArgument("@userNotOnline");
+			if (reason == "2")
+				args.AddArgument("@userDeclineInvite");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "add_friend_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@friendNotFound");
+			if (reason == "1")
+				args.AddArgument("@serverError");
+			if (reason == "2")
+				args.AddArgument("@serverError");
+			if (reason == "3")
+				args.AddArgument("@cantAddYourselfInFriends");
+			if (reason == "4")
+				args.AddArgument("@friendAlredyAdded");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "remove_friend_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@serverError");
+			if (reason == "1")
+				args.AddArgument("@serverError");
+			if (reason == "2")
+				args.AddArgument("@friendNotFound");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+
+		if (type == "get_game_server_failed")
+		{
+			SUIArguments args;
+
+			if (reason == "0")
+				args.AddArgument("@noAnyServerOnline");
+			if (reason == "1")
+				args.AddArgument("@serverNotFound");
+
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+
+			return;
+		}
+	}
+	else
+	{
+		gEnv->pLog->LogWarning(TITLE "Some attributes empty. See log");
 	}
 }
 
 void CXmlWorker::onRegisterComplete(const char* data)
 {
-	QXmlStreamReader xml(data);
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "data");
+	QString uid = attributes.value("uid").toString();
+
+	if (!uid.isEmpty())
 	{
-		xml.readNext();
-
-		if (xml.name() == "data")
-		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString uid = attributes.value("uid").toString();
-
-			if (!uid.isEmpty())
-			{
-				gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnRegComplete);
-				gEnv->pLog->LogAlways(TITLE  "Register complete!");
-				return;
-			}
-			else
-			{
-				gEnv->pLog->LogWarning(TITLE  "Register failed!");
-				return;
-			}
-		}
+		gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnRegComplete);
+		gEnv->pLog->LogAlways(TITLE  "Register complete!");
+		return;
+	}
+	else
+	{
+		gEnv->pLog->LogWarning(TITLE  "Register failed!");
+		return;
 	}
 }
 
 void CXmlWorker::onAuthComplete(const char* data)
 {
-	QXmlStreamReader xml(data);
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "data");
+	QString uid = attributes.value("uid").toString();
+
+	if (!uid.isEmpty())
 	{
-		xml.readNext();
-
-		if (xml.name() == "data")
-		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString uid = attributes.value("uid").toString();
-
-			if (!uid.isEmpty())
-			{
-				gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnLoginComplete);
-				gEnv->pLog->LogAlways(TITLE  "Authorization complete!");
-				return;
-			}
-			else
-			{
-				gEnv->pLog->LogWarning(TITLE  "Authorization failed!");
-				return;
-			}
-		}
+		gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnLoginComplete);
+		gEnv->pLog->LogAlways(TITLE  "Authorization complete!");
+		return;
+	}
+	else
+	{
+		gEnv->pLog->LogWarning(TITLE  "Authorization failed!");
+		return;
 	}
 }
 
@@ -500,184 +475,187 @@ void CXmlWorker::onShopItemsRecived(const char* data)
 
 void CXmlWorker::onChatMessageRecived(const char * data)
 {
-	QXmlStreamReader xml(data);
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "message");
+	if (!attributes.isEmpty())
 	{
-		xml.readNext();
+		QString type = attributes.value("type").toString();
+		QString message = attributes.value("message").toString();
+		QString from = attributes.value("from").toString();
 
-		if (xml.name() == "message")
+		if (type == "global")
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			if (!attributes.isEmpty())
-			{
-				QString type = attributes.value("type").toString();
-				QString message = attributes.value("message").toString();
-				QString from = attributes.value("from").toString();
+			QString complete = message.replace("#comma#", ",");
 
-				if (type == "global")
-				{
-					QString complete = message.replace("#comma#", ",");
+			SUIArguments args;
+			args.AddArgument(complete.toStdString().c_str());
+			args.AddArgument(from.toStdString().c_str());
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnGlobalChatMessageRecived, args);
 
-					SUIArguments args;
-					args.AddArgument(complete.toStdString().c_str());
-					args.AddArgument(from.toStdString().c_str());
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnGlobalChatMessageRecived, args);
-
-					gEnv->pLog->LogAlways(TITLE  "Recived global chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
-					return;
-				}
-
-				if (type == "private")
-				{
-					QString complete = message.replace("#comma#", ",");
-
-					SUIArguments args;
-					args.AddArgument(complete.toStdString().c_str());
-					args.AddArgument(from.toStdString().c_str());
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnPrivateChatMessageRecived, args);
-
-					gEnv->pLog->LogAlways(TITLE  "Recived private chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
-					return;
-				}
-				
-			}
+			gEnv->pLog->LogAlways(TITLE  "Recived global chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
+			return;
 		}
+
+		if (type == "private")
+		{
+			QString complete = message.replace("#comma#", ",");
+
+			SUIArguments args;
+			args.AddArgument(complete.toStdString().c_str());
+			args.AddArgument(from.toStdString().c_str());
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnPrivateChatMessageRecived, args);
+
+			gEnv->pLog->LogAlways(TITLE  "Recived private chat message (%s) from (%s)", message.toStdString().c_str(), from.toStdString().c_str());
+			return;
+		}
+
 	}
 }
 
 void CXmlWorker::onInvite(const char * data)
 {
-	QXmlStreamReader xml(data);
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "invite");
+	QString type = attributes.value("type").toString();
+	QString from = attributes.value("from").toString();
 
-	while (!xml.atEnd() && !xml.hasError())
+	gEnv->pLog->LogAlways(TITLE  "Invite type = '%s' From = '%s'", type.toStdString().c_str(), from.toStdString().c_str());
+
+	if (!type.isEmpty() && !from.isEmpty())
 	{
-		xml.readNext();
-
-		if (xml.name() == "invite")
+		if (type == "friend_invite")
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString type = attributes.value("type").toString();
-			QString from = attributes.value("from").toString();
+			SUIArguments args;
+			args.AddArgument(from.toStdString().c_str());
+			gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendInviteRecived, args);
 
-			gEnv->pLog->LogAlways(TITLE  "Invite type = '%s' From = '%s'", type.toStdString().c_str(), from.toStdString().c_str());
+			gEnv->pLog->LogAlways(TITLE  "Recived friend invite from (%s)", from.toStdString().c_str());
 
-			if (!type.isEmpty() && !from.isEmpty())
-			{
-				if (type == "friend_invite")
-				{
-					SUIArguments args;
-					args.AddArgument(from.toStdString().c_str());
-					gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendInviteRecived, args);
-
-					gEnv->pLog->LogAlways(TITLE  "Recived friend invite from (%s)", from.toStdString().c_str());
-
-					return;
-				}
-				if (type == "game_invite")
-				{
-				}
-				if (type == "clan_invite")
-				{
-				}
-			}
+			return;
+		}
+		if (type == "game_invite")
+		{
+		}
+		if (type == "clan_invite")
+		{
 		}
 	}
 }
 
 void CXmlWorker::onFriendStatusUpdated(const char * data)
 {
-	QXmlStreamReader xml(data);
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "online_status");
+	QString type = attributes.value("type").toString();
+	QString from = attributes.value("from").toString();
+	int status = attributes.value("status").toInt();
 
-	while (!xml.atEnd() && !xml.hasError())
+	if (!type.isEmpty() && !from.isEmpty())
 	{
-		xml.readNext();
+		SUIArguments args;
+		args.AddArgument(from.toStdString().c_str());
 
-		if (xml.name() == "online_status")
-		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString type = attributes.value("type").toString();
-			QString from = attributes.value("from").toString();
-			int status = attributes.value("status").toInt();
+		if (status == 0)
+			args.AddArgument("offline");
+		if (status == 1)
+			args.AddArgument("online");
+		if (status == 3)
+			args.AddArgument("ingame");
+		if (status == 4)
+			args.AddArgument("afk");
 
-			if (!type.isEmpty() && !from.isEmpty())
-			{
-				SUIArguments args;
-				args.AddArgument(from.toStdString().c_str());
+		gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendUpdateStatus, args);
 
-				if (status == 0)
-					args.AddArgument("offline");
-				if (status == 1)
-					args.AddArgument("online");
-				if (status == 3)
-					args.AddArgument("ingame");
-				if (status == 4)
-					args.AddArgument("afk");
-
-				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendUpdateStatus, args);
-
-				gEnv->pLog->LogAlways(TITLE  "<%s> change online status to <%d>", from.toStdString().c_str(), status);
-				return;
-			}
-			else
-			{
-				gEnv->pLog->LogWarning(TITLE  "Failed update friend status, because some values empty!");
-				return;
-			}
-		}
+		gEnv->pLog->LogAlways(TITLE  "<%s> change online status to <%d>", from.toStdString().c_str(), status);
+		return;
+	}
+	else
+	{
+		gEnv->pLog->LogWarning(TITLE  "Failed update friend status, because some values empty!");
+		return;
 	}
 }
 
 void CXmlWorker::onGameServerDataRecived(const char * data)
 {
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "data");
+
+	QString serverName = attributes.value("name").toString();
+	QString serverIp = attributes.value("ip").toString();
+	int serverPort = attributes.value("port").toInt();
+	QString mapName = attributes.value("map").toString();
+	QString gamerules = attributes.value("gamerules").toString();
+	int online = attributes.value("online").toInt();
+	int maxPlayers = attributes.value("maxPlayers").toInt();
+
+	if (serverName.isEmpty() || serverIp.isEmpty() ||
+		serverPort == 0 || mapName.isEmpty() || gamerules.isEmpty())
+	{
+		gEnv->pLog->LogWarning(TITLE  "Game server data wrong or empty!!!");
+		return;
+	}
+
+	gEnv->pLog->Log(TITLE  "Recived game server data!");
+	gEnv->pLog->Log(TITLE  "Server name = %s, ip = %s, port = %d, map = %s, gamerules = %s, online = %d, maxPlayers = %d", serverName.toStdString().c_str(), serverIp.toStdString().c_str(), serverPort, mapName.toStdString().c_str(), gamerules.toStdString().c_str(), online, maxPlayers);
+
+	ICVar* pClServerIp = gEnv->pConsole->GetCVar("cl_serveraddr");
+	ICVar* pClServerPort = gEnv->pConsole->GetCVar("cl_serverport");
+	ICVar* pClNickname = gEnv->pConsole->GetCVar("cl_nickname");
+
+	if (pClServerIp && pClServerPort)
+	{
+		gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnMatchmakingSuccess);
+
+		gEnv->pLog->Log(TITLE  "Set cl_server.... parametres");
+
+		pClServerIp->Set(serverIp.toStdString().c_str());
+		pClServerPort->Set(serverPort);
+		pClNickname->Set(gCryModule->m_profile->nickname.toStdString().c_str());
+
+		gEnv->pLog->Log(TITLE  "New client parametres : address = %s , port = %d, nickname = %s", pClServerIp->GetString(), pClServerPort->GetIVal(), pClNickname->GetString());
+	}
+
+	return;
+}
+
+void CXmlWorker::onServerMessageRecived(const char * data)
+{
+	QXmlStreamAttributes attributes = GetAttributesFromArray(data, "data");
+	QString type = attributes.value("type").toString();
+	QString m_value = attributes.value("value").toString();
+
+	gEnv->pLog->Log(TITLE  "Server message recived. Type = %s, Value = %s", type.toStdString().c_str(), m_value.toStdString().c_str());
+
+	if (type == "message")
+	{
+		gEnv->pLog->Log(TITLE "SERVER MESSAGE : %s", m_value.toStdString().c_str());
+
+		SUIArguments args;
+		args.AddArgument(m_value.toStdString().c_str());
+
+		gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerMessageRecive, args);
+	}
+
+	if (type == "command")
+	{
+		gEnv->pConsole->ExecuteString(m_value.toStdString().c_str());
+	}
+}
+
+QXmlStreamAttributes CXmlWorker::GetAttributesFromArray(const char* data, const char* name)
+{
 	QXmlStreamReader xml(data);
+	QXmlStreamAttributes attributes;
+
 	xml.readNext();
 	while (!xml.atEnd() && !xml.hasError())
 	{
 		xml.readNext();
 
-		if (xml.name() == "data")
+		if (xml.name() == name)
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-
-			QString serverName = attributes.value("name").toString();
-			QString serverIp = attributes.value("ip").toString();
-			int serverPort = attributes.value("port").toInt();
-			QString mapName = attributes.value("map").toString();
-			QString gamerules = attributes.value("gamerules").toString();
-			int online = attributes.value("online").toInt();
-			int maxPlayers = attributes.value("maxPlayers").toInt();
-
-			if (serverName.isEmpty() || serverIp.isEmpty() ||
-				serverPort == 0 || mapName.isEmpty() || gamerules.isEmpty())
-			{
-				gEnv->pLog->LogWarning(TITLE  "Game server data wrong or empty!!!");
-				return;
-			}
-
-			gEnv->pLog->Log(TITLE  "Recived game server data!");
-			gEnv->pLog->Log(TITLE  "Server name = %s, ip = %s, port = %d, map = %s, gamerules = %s, online = %d, maxPlayers = %d", serverName.toStdString().c_str(), serverIp.toStdString().c_str(), serverPort, mapName.toStdString().c_str(), gamerules.toStdString().c_str(), online, maxPlayers);
-
-			ICVar* pClServerIp = gEnv->pConsole->GetCVar("cl_serveraddr");
-			ICVar* pClServerPort = gEnv->pConsole->GetCVar("cl_serverport");
-			ICVar* pClNickname = gEnv->pConsole->GetCVar("cl_nickname");
-
-			if (pClServerIp && pClServerPort)
-			{
-				gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnMatchmakingSuccess);
-
-				gEnv->pLog->Log(TITLE  "Set cl_server.... parametres");
-
-				pClServerIp->Set(serverIp.toStdString().c_str());
-				pClServerPort->Set(serverPort);
-				pClNickname->Set(gCryModule->m_profile->nickname.toStdString().c_str());
-
-				gEnv->pLog->Log(TITLE  "New client parametres : address = %s , port = %d, nickname = %s", pClServerIp->GetString(), pClServerPort->GetIVal(), pClNickname->GetString());
-			}
-
-			return;
+			return xml.attributes();
 		}
 	}
+
+	return attributes;
 }
 
 
