@@ -182,6 +182,10 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	if (bRegistered)
 	{
 		qDebug() << "Client alredy registered!";
+
+		QByteArray result;
+		result.append("<error type='reg_failed' reason = '1'/>");
+		gEnv->pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 
@@ -383,6 +387,12 @@ void ClientQuerys::onGetProfile()
 
 void ClientQuerys::onGetShopItems()
 {
+	if (m_Client->profile->uid <= 0)
+	{
+		qWarning() << "Client can't get shop without authorization!!!";
+		return;
+	}
+
 	QFile file("scripts/shop.xml");
 	QString cleanShop;
 	QRegExp reg("\r\n");
