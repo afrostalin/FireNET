@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 22;
+	int buildNumber = 30;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
@@ -246,10 +246,7 @@ int main(int argc, char *argv[])
 
 		if (gEnv->pServer->listen(QHostAddress(gEnv->pSettings->GetVariable("sv_ip").toString()), gEnv->pSettings->GetVariable("sv_port").toInt()))
 		{
-			qInfo() << "Server started. Main thread " << QThread::currentThread();
-
-			// Init connection to databases
-			gEnv->pDBWorker->Init();
+			qInfo() << "Server started. Main thread " << QThread::currentThread();			
 
 			// Start remote server
 			gEnv->pRemoteServer->run();
@@ -258,6 +255,9 @@ int main(int argc, char *argv[])
 			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();
 			qInfo() << "Server tickrate set to" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
 			gEnv->pTimer->start(tick);
+
+			// Init connection to databases
+			gEnv->pDBWorker->Init();
 		}
 		else
 		{

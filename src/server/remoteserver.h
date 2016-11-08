@@ -27,11 +27,15 @@ public slots:
 signals:
 	void close();
 public:
-	virtual void run();
+	void run();
+	int GetClientCount();
+	QStringList GetServerList();
+
 	void AddNewClient(SRemoteClient client);
 	void RemoveClient(SRemoteClient client);
 	void UpdateClient(SRemoteClient* client);
-	int GetClientCount();
+
+	bool CheckGameServerExists(QString name, QString ip, int port);
 private:
 	bool CreateServer();
 public:

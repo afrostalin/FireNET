@@ -124,6 +124,9 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 
 	if (command == "status")
 	{
+		int gameServersCount = 0;
+		gEnv->pRemoteServer->bHaveAdmin ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+
 		QByteArray msg;
 		msg.append("***Server status***\n");
 		msg.append("Server version = " + qApp->applicationVersion() + "\n");
@@ -133,9 +136,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 		msg.append("Database mode = " + gEnv->pSettings->GetVariable("db_mode").toString() + "\n");
 		msg.append("Authrorization type = " + gEnv->pSettings->GetVariable("auth_mode").toString() + "\n");
 		msg.append("Players ammount = " + QString::number(gEnv->pServer->GetClientCount()) + ". Maximum players count = " + gEnv->pSettings->GetVariable("sv_max_players").toString() + "\n");
-		//msg.append("Game servers ammount = . Maximum game servers count = ");
-		//msg.append("Errors count = ");
-		//msg.append("Warnings count = ");
+		msg.append("Game servers ammount = " + QString::number(gameServersCount) + ". Maximum game servers count = " + gEnv->pSettings->GetVariable("sv_max_servers").toString() + "\n");
 		msg.append("*******************");
 
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
@@ -193,6 +194,25 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 
 	if (command == "servers")
 	{
+		QStringList servers = gEnv->pRemoteServer->GetServerList();
+		QByteArray answer;
+		answer.clear();
+
+		for (int i = 0; i < servers.size(); i++)
+		{
+			answer.append(servers[i] + "\n");
+		}
+
+		if (!servers.isEmpty() && !answer.isEmpty())
+		{
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, answer);
+		}
+		else
+		{
+			answer.append("Server list empty.");
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, answer);
+		}
+
 		return;
 	}
 
@@ -219,48 +239,38 @@ void RemoteClientQuerys::onGameServerRegister(QByteArray & bytes)
 		return;
 	}
 
-	/*QVector<SGameServer>::iterator it;
-	for (it = vServers.begin(); it != vServers.end(); ++it)
+	if (!gEnv->pRemoteServer->CheckGameServerExists(serverName, serverIp, serverPort))
 	{
-	if (it->name == serverName)
-	{
-	qDebug() << "---------------Server with this name alredy registered---------------";
-	qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
-	return;
+		m_client->isGameServer = true;
+		m_client->server->name = serverName;
+		m_client->server->ip = serverIp;
+		m_client->server->port = serverPort;
+		m_client->server->map = mapName;
+		m_client->server->gamerules = gamerules;
+		m_client->server->online = online;
+		m_client->server->maxPlayers = maxPlayers;
+
+		gEnv->pRemoteServer->UpdateClient(m_client);
+
+		int gameServersCount = 0;
+		gEnv->pRemoteServer->bHaveAdmin ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+
+		QByteArray result;
+		result.append("<result type='register_game_server_complete'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+
+		qDebug() << "Game server [" << serverName << "] registered!";
+		qDebug() << "Connected game servers count = " << gameServersCount;
 	}
-	if (it->ip == serverIp && it->port == serverPort)
+	else
 	{
-	qDebug() << "-------------Server with this address alredy registered--------------";
-	qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
-	return;
+		qDebug() << "----------Server with this address or name alredy registered---------";
+		qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
+
+		QByteArray result("<error type='register_game_server_failed' reason = '0'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+		return;
 	}
-	}*/
-
-	// Register new game server here
-	SGameServer gameServer;
-	gameServer.name = serverName;
-	gameServer.ip = serverIp;
-	gameServer.port = serverPort;
-	gameServer.map = mapName;
-	gameServer.gamerules = gamerules;
-	gameServer.online = online;
-	gameServer.maxPlayers = maxPlayers;
-
-	//vServers.push_back(gameServer);
-
-	// Update client info
-	/*QVector<SClient>::iterator clientIt;
-	for (clientIt = vClients.begin(); clientIt != vClients.end(); ++it)
-	{
-	if (clientIt->socket == m_socket)
-	{
-	clientIt->isGameServer = true;
-	break;
-	}
-	}*/
-
-	qDebug() << "Game server [" << serverName << "] registered!";
-	//qDebug() << "Connected game servers count = " << vServers.size();
 }
 
 void RemoteClientQuerys::onGameServerUpdateInfo(QByteArray & bytes)

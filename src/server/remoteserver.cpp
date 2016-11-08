@@ -73,8 +73,6 @@ void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, QByteArray &da
 
 void RemoteServer::AddNewClient(SRemoteClient client)
 {
-	//QMutexLocker locker(&m_Mutex);
-
 	if (client.socket == nullptr)
 	{
 		qWarning() << "Can't add remote client. Remote client socket = nullptr";
@@ -96,8 +94,6 @@ void RemoteServer::AddNewClient(SRemoteClient client)
 
 void RemoteServer::RemoveClient(SRemoteClient client)
 {
-	//QMutexLocker locker(&m_Mutex);
-
 	if (client.socket == nullptr)
 	{
 		qWarning() << "Can't remove  remove client. Remove client socket = nullptr";
@@ -119,8 +115,6 @@ void RemoteServer::RemoveClient(SRemoteClient client)
 
 void RemoteServer::UpdateClient(SRemoteClient* client)
 {
-	//QMutexLocker locker(&m_Mutex);
-
 	if (client->socket == nullptr)
 	{
 		qWarning() << "Can't update client. Client socket = nullptr";
@@ -147,10 +141,43 @@ void RemoteServer::UpdateClient(SRemoteClient* client)
 	qWarning() << "Can't update client. Client" << client->socket << "not found";
 }
 
+bool RemoteServer::CheckGameServerExists(QString name, QString ip, int port)
+{
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->server != nullptr)
+		{
+			if ((it->server->ip == ip && it->server->port == port) || it->server->name == name)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 int RemoteServer::GetClientCount()
 {
 	QMutexLocker locker(&m_Mutex);
 	return m_Clients.size();
+}
+
+QStringList RemoteServer::GetServerList()
+{
+	QStringList serverList;
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->server != nullptr && it->isGameServer)
+		{
+			serverList.push_back(it->server->name + " <" + it->server->ip + ":" + QString::number(it->server->port) + ">"
+			" Map <" + it->server->map + ":" + it->server->gamerules + ">"
+			" Online <" + QString::number(it->server->online) + "/" + QString::number(it->server->maxPlayers) + ">");
+		}
+	}
+
+	return serverList;
 }
 
 void RemoteServer::CloseConnection()

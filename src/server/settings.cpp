@@ -6,7 +6,6 @@
 
 SettingsManager::SettingsManager(QObject *parent) : QObject(parent)
 {
-
 }
 
 void SettingsManager::Clear()
@@ -17,8 +16,6 @@ void SettingsManager::Clear()
 
 QVariant SettingsManager::GetVariable(QString key)
 {
-	QMutexLocker locker(&m_Mutex);
-
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
 	{
 		if (it->key == key)
@@ -31,8 +28,6 @@ QVariant SettingsManager::GetVariable(QString key)
 
 QStringList SettingsManager::GetVariablesList()
 {
-	QMutexLocker locker(&m_Mutex);
-
 	QStringList varList;
 
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
@@ -45,8 +40,6 @@ QStringList SettingsManager::GetVariablesList()
 
 void SettingsManager::SetVariable(QString key, QVariant value)
 {
-	QMutexLocker locker(&m_Mutex);
-
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
 	{
 		if (it->key == key)
@@ -70,8 +63,6 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 
 void SettingsManager::RegisterVariable(QString key, QVariant value)
 {
-	QMutexLocker locker(&m_Mutex);
-
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
 	{
 		if (it->key == key)
