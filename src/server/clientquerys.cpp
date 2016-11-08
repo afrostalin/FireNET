@@ -7,6 +7,7 @@
 #include "dbworker.h"
 #include "httpconnector.h"
 #include "settings.h"
+#include "remoteserver.h"
 
 #include <QRegExp>
 
@@ -1006,16 +1007,19 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 	}
 	TcpServer* pServer = gEnv->pServer;
 
-	/*if (vServers.size() == 0)
+	int gameServersCount = 0;
+	gEnv->pRemoteServer->bHaveAdmin ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+
+	if (gameServersCount <= 0)
 	{
-		qWarning() << "Not any online servers";
+		qDebug() << "Not any online servers";
 
 		// Send error to client
-		QString result = "<error type='get_game_server_failed' reason = '0'/>";
-		pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
+		QByteArray result ("<error type='get_game_server_failed' reason = '0'/>");
+		pServer->sendMessageToClient(m_socket, result);
 
 		return;
-	}*/
+	}
 
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
 
@@ -1023,93 +1027,29 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 	QString gamerules = attributes.value("gamerules").toString();
 	QString serverName = attributes.value("name").toString();
 
-	bool byMap = false;
-	bool byGameRules = false;
-	bool byName = false;
+	SGameServer* pGameServer = gEnv->pRemoteServer->GetGameServer(serverName, map, gamerules);
 
-	if (!map.isEmpty())
-		byMap = true;
-
-	if (!gamerules.isEmpty() && !byMap)
-		byGameRules = true;
-
-	if (!serverName.isEmpty() && !byMap && !byGameRules)
-		byName = true;
-
-	/*QVector<SGameServer>::iterator it;
-	for (it = vServers.begin(); it != vServers.end(); ++it)
+	if (pGameServer != nullptr)
 	{
-		if (byMap)
-		{
-			qDebug() << "Searching server by map " << map;
+		QByteArray result;
+		result.append("<result type='game_server_data'><data name = '" + pGameServer->name +
+			"' ip = '" + pGameServer->ip +
+			"' port = '" + QString::number(pGameServer->port) +
+			"' map = '" + pGameServer->map +
+			"' gamerules = '" + pGameServer->gamerules +
+			"' online = '" + QString::number(pGameServer->online) +
+			"' maxPlayers = '" + QString::number(pGameServer->maxPlayers) + "'/></result>");
 
-			if (it->map == "Multiplayer/" + map)
-			{
-				qDebug() << "Server found";
+		pServer->sendMessageToClient(m_socket, result);
 
-				QString result = "<result type='game_server_data'><data name = '" + it->name +
-					"' ip = '" + it->ip +
-					"' port = '" + QString::number(it->port) +
-					"' map = '" + it->map +
-					"' gamerules = '" + it->gamerules +
-					"' online = '" + QString::number(it->online) +
-					"' maxPlayers = '" + QString::number(it->maxPlayers) + "'/></result>";
-
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
-
-				return;
-			}
-		}
-
-		if (byGameRules)
-		{
-			qDebug() << "Searching server by gamerules " << gamerules;
-
-			if (it->gamerules == gamerules)
-			{
-				qDebug() << "Server found";
-
-				QString result = "<result type='game_server_data'><data name = '" + it->name +
-					"' ip = '" + it->ip +
-					"' port = '" + QString::number(it->port) +
-					"' map = '" + it->map +
-					"' gamerules = '" + it->gamerules +
-					"' online = '" + QString::number(it->online) +
-					"' maxPlayers = '" + QString::number(it->maxPlayers) + "'/></result>";
-
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
-
-				return;
-			}
-		}
-
-		if (byName)
-		{
-			qDebug() << "Searching server by server name " << serverName;
-
-			if (it->name == serverName)
-			{
-				qDebug() << "Server found";
-
-				QString result = "<result type='game_server_data'><data name = '" + it->name +
-					"' ip = '" + it->ip +
-					"' port = '" + QString::number(it->port) +
-					"' map = '" + it->map +
-					"' gamerules = '" + it->gamerules +
-					"' online = '" + QString::number(it->online) +
-					"' maxPlayers = '" + QString::number(it->maxPlayers) + "'/></result>";
-
-				pServer->sendMessageToClient(m_socket, result.toStdString().c_str());
-
-				return;
-			}
-		}
+		return;
 	}
-	*/
+	else
+	{
+		qDebug() << "Server not found!";
 
-	qDebug() << "Server not found!";
-
-	// Send error to client
-	QByteArray result ("<error type='get_game_server_failed' reason = '1'/>");
-	pServer->sendMessageToClient(m_socket, result);
+		// Send error to client
+		QByteArray result("<error type='get_game_server_failed' reason = '1'/>");
+		pServer->sendMessageToClient(m_socket, result);
+	}
 }

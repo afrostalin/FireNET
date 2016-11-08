@@ -180,6 +180,39 @@ QStringList RemoteServer::GetServerList()
 	return serverList;
 }
 
+SGameServer* RemoteServer::GetGameServer(QString name, QString map, QString gamerules)
+{
+	SGameServer gameServer;
+	bool byMap = false;
+	bool byGameRules = false;
+	bool byName = false;
+
+	if (!map.isEmpty())
+		byMap = true;
+	if (!gamerules.isEmpty() && !byMap)
+		byGameRules = true;
+	if (!name.isEmpty() && !byMap && !byGameRules)
+		byName = true;
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->server != nullptr && it->isGameServer)
+		{
+			// by map
+			if (byMap && it->server->map == map)
+				return it->server;
+			// by gamerules
+			if (byGameRules && it->server->gamerules == gamerules)
+				return it->server;
+			// by name
+			if (byName && it->server->name == name)
+				return it->server;
+		}
+	}
+
+	return nullptr;
+}
+
 void RemoteServer::CloseConnection()
 {
 	if (!QObject::sender())

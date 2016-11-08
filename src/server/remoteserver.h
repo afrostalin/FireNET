@@ -30,6 +30,7 @@ public:
 	void run();
 	int GetClientCount();
 	QStringList GetServerList();
+	SGameServer* GetGameServer(QString name, QString map, QString gamerules);
 
 	void AddNewClient(SRemoteClient client);
 	void RemoveClient(SRemoteClient client);

@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 30;
+	int buildNumber = 32;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
