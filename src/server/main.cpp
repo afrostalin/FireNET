@@ -201,7 +201,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 8;
+	int buildNumber = 22;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
@@ -248,45 +248,11 @@ int main(int argc, char *argv[])
 		{
 			qInfo() << "Server started. Main thread " << QThread::currentThread();
 
-			// Create thread with Redis connection
-			if (gEnv->pSettings->GetVariable("bUseRedis").toBool())
-			{
-				qInfo() << "Start Redis service...";
-				QThread* redisThread = new QThread;
-				gEnv->pDBWorker->pRedis = new RedisConnector;
-				gEnv->pDBWorker->pRedis->moveToThread(redisThread);
-				QObject::connect(redisThread, &QThread::started, gEnv->pDBWorker->pRedis, &RedisConnector::run);
-				QObject::connect(redisThread, &QThread::finished, gEnv->pDBWorker->pRedis, &RedisConnector::deleteLater);
-				redisThread->start();
-			}
+			// Init connection to databases
+			gEnv->pDBWorker->Init();
 
-			// Create thread with MySQL connection
-			if (gEnv->pSettings->GetVariable("bUseMySQL").toBool())
-			{
-				qInfo() << "Start MySql service...";
-				gEnv->pSettings->SetVariable("redis_bg_saving", true);
-				QThread* mysqlThread = new QThread;
-				gEnv->pDBWorker->pMySql = new MySqlConnector;
-				gEnv->pDBWorker->pMySql->moveToThread(mysqlThread);
-				QObject::connect(mysqlThread, &QThread::started, gEnv->pDBWorker->pMySql, &MySqlConnector::run);
-				QObject::connect(mysqlThread, &QThread::finished, gEnv->pDBWorker->pMySql, &MySqlConnector::deleteLater);
-				mysqlThread->start();
-			}
-
-			// Create HTTP connector
-			if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
-			{
-				qWarning() << "Authorization mode set to HTTP, this can slows server";
-				gEnv->pDBWorker->pHTTP = new HttpConnector;
-			}
-
-			// Start remote server for remote administration and game server connection
-			qInfo() << "Start remote server...";
-			QThread* remoteThread = new QThread;
-			gEnv->pRemoteServer->moveToThread(remoteThread);
-			QObject::connect(remoteThread, &QThread::started, gEnv->pRemoteServer, &RemoteServer::run);
-			QObject::connect(remoteThread, &QThread::finished, gEnv->pRemoteServer, &RemoteServer::deleteLater);
-			remoteThread->start();
+			// Start remote server
+			gEnv->pRemoteServer->run();
 
 			// Calculate and set server tick rate
 			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();

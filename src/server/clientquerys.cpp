@@ -966,13 +966,14 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 			QByteArray chat;
 			chat.append("<chat><message type='global' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>");
 			pServer->sendGlobalMessage(chat);
+
+			return;
 		}
 		else
 		{
 			qWarning() << "Client send message to global chat, but global chat now disabled, see server.cfg";
-		}
-
-		return;
+			return;
+		}	
 	}
 	else
 	{
@@ -985,14 +986,14 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 			QByteArray chat;
 			chat.append("<chat><message type='private' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>");
 			pServer->sendMessageToClient(reciverSocket, chat);
+			return;
 		}
 		else
 		{
 			qDebug() << "-------------------Reciver not found or offline-------------------";
 			qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
+			return;
 		}
-
-		return;
 	}
 }
 

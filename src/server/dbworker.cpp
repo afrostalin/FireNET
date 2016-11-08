@@ -23,6 +23,33 @@ void DBWorker::Update()
 {
 }
 
+void DBWorker::Init()
+{
+	// Create Redis connection
+	if (gEnv->pSettings->GetVariable("bUseRedis").toBool())
+	{
+		qInfo() << "Start Redis service...";
+		pRedis = new RedisConnector;
+		pRedis->run();
+	}
+
+	// Create MySQL connection
+	if (gEnv->pSettings->GetVariable("bUseMySQL").toBool())
+	{
+		qInfo() << "Start MySql service...";
+		gEnv->pSettings->SetVariable("redis_bg_saving", true);
+		pMySql = new MySqlConnector;
+		pMySql->run();
+	}
+
+	// Create HTTP connector
+	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
+	{
+		qWarning() << "Authorization mode set to HTTP, this can slows server";
+		pHTTP = new HttpConnector;
+	}
+}
+
 void DBWorker::Clear()
 {
 	qInfo() << "~DBWorker";
@@ -379,8 +406,8 @@ int DBWorker::GetUIDbyNick(QString nickname)
 		}
 		else
 		{
-			qCritical() << "Failed found UID for " << nickname << "in Redis DB because Redis DB not opened!";
-			return false;
+			qCritical() << "Failed found UID for " << nickname << "in Redis DB because Redis DB not connected!";
+			return uid;
 		}
 	}
 
@@ -410,13 +437,13 @@ int DBWorker::GetUIDbyNick(QString nickname)
 			else
 			{
 				qWarning() << "Failed send query to MySql DB";
-				return false;
+				return uid;
 			}
 		}
 		else
 		{
 			qCritical() << "Failed found UID for " << nickname << "in MySql DB because MySql DB not opened!";
-			return false;
+			return uid;
 		}
 	}
 

@@ -63,7 +63,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 void TcpServer::AddNewClient(SClient client)
 {
-	QMutexLocker locker(&m_Mutex);
+//	QMutexLocker locker(&m_Mutex);
 
 	if (client.socket == nullptr)
 	{
@@ -86,7 +86,7 @@ void TcpServer::AddNewClient(SClient client)
 
 void TcpServer::RemoveClient(SClient client)
 {
-	QMutexLocker locker(&m_Mutex);
+//	QMutexLocker locker(&m_Mutex);
 
 	if (client.socket == nullptr)
 	{
@@ -109,7 +109,7 @@ void TcpServer::RemoveClient(SClient client)
 
 void TcpServer::UpdateClient(SClient* client)
 {
-	QMutexLocker locker(&m_Mutex);
+//	QMutexLocker locker(&m_Mutex);
 
 	if (client->socket == nullptr)
 	{
@@ -142,7 +142,7 @@ void TcpServer::UpdateClient(SClient* client)
 
 QStringList TcpServer::GetPlayersList()
 {
-	QMutexLocker locker(&m_Mutex);
+//	QMutexLocker locker(&m_Mutex);
 
 	QStringList playerList;
 
@@ -171,6 +171,9 @@ int TcpServer::GetClientCount()
 
 QSslSocket * TcpServer::GetSocketByUid(int uid)
 {
+	if (uid <= 0)
+		return nullptr;
+
 	QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
@@ -190,17 +193,19 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 
 void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray &data)
 {
-	qDebug() << "Send message to client. Original size = " << data.size();
-	socket->write(data);
-	socket->waitForBytesWritten(10);
+	if (socket != nullptr)
+	{
+		qDebug() << "Send message to client. Original size = " << data.size();
+		socket->write(data);
+		socket->waitForBytesWritten(10);
+	}
 }
 
 void TcpServer::sendGlobalMessage(QByteArray &data)
 {
-	QMutexLocker locker(&m_Mutex);
-
 	qDebug() << "Send message to all clients. Original size = " << data.size();
-
+	
+//	QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
 		// Send message only for authorizated clients
