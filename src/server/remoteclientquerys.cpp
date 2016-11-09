@@ -221,6 +221,45 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 	gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
 }
 
+bool RemoteClientQuerys::CheckInServerList(QString name, QString ip, int port)
+{
+	QFile serverList("scripts/server_list.xml");
+
+	if (!serverList.open(QIODevice::ReadOnly))
+	{
+		qCritical() << "Can't get server_list.xml!!!";
+		return false;
+	}
+
+	QByteArray data = serverList.readAll();
+	serverList.close();
+	serverList.deleteLater();
+	QXmlStreamReader xml(data);
+
+	xml.readNext();
+	while (!xml.atEnd() && !xml.hasError())
+	{
+		xml.readNext();
+
+		if (xml.name() == "Server")
+		{
+			QXmlStreamAttributes attributes = xml.attributes();
+			QString list_name = attributes.value("name").toString();
+			QString list_ip = attributes.value("ip").toString();
+			int list_port = attributes.value("port").toInt();
+
+			if (name == list_name && ip == list_ip && port == list_port)
+			{
+				qDebug() << "Server found in trusted server list";
+				return true;
+			}
+		}
+	}
+
+	qDebug() << "Server not found in trusted server list!";
+	return false;
+}
+
 void RemoteClientQuerys::onGameServerRegister(QByteArray & bytes)
 {
 	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
@@ -236,6 +275,15 @@ void RemoteClientQuerys::onGameServerRegister(QByteArray & bytes)
 	{
 		qWarning() << "Wrong packet data! Some values empty!";
 		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+		return;
+	}
+
+	if (!CheckInServerList(serverName, serverIp, serverPort))
+	{
+		qWarning() << "Game server" << serverName << "not found in trusted server list. Registration not posible!";
+
+		QByteArray result("<error type='register_game_server_failed' reason = '1'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
 		return;
 	}
 

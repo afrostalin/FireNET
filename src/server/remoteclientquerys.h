@@ -23,6 +23,7 @@ public:
 	void onAdminLogining(QByteArray &bytes);
 	void onConsoleCommandRecived(QByteArray &bytes);
 	// Game server functionality
+	bool CheckInServerList(QString name, QString ip, int port);
 	void onGameServerRegister(QByteArray &bytes);
 	void onGameServerUpdateInfo(QByteArray &bytes);
 
