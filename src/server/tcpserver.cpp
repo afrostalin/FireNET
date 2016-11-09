@@ -48,7 +48,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 	TcpThread *pThread = freeThread();
 
-	if (!pThread)
+	if (pThread == nullptr)
 	{
 		qCritical() << "No free thread!";
 		return;
@@ -296,35 +296,21 @@ TcpThread *TcpServer::freeThread()
         return nullptr;
     }
 
-	TcpThread* pThread;
+	int prevClientsCount = 0;
 
-	int threadsCount = 0;
-	int maxClientsInThread = 0;
-
-    // Detect maximum clients in thread
-	for (threadsCount; threadsCount != m_pool->maxThreadCount(); threadsCount++)
+	for (int i = 0; i < m_pool->maxThreadCount(); i++)
 	{
-		pThread = m_threads.at(threadsCount);
-		int clientsInThread = pThread->GetClientsCount();
+		TcpThread* pThread = m_threads.at(i);
+		int clientsCount = pThread->GetClientsCount();
 
-		if (clientsInThread > maxClientsInThread)
-			maxClientsInThread = clientsInThread;
-	}
-
-	threadsCount = 0;
-
-    // Return thread with minimal clients count
-	for (threadsCount; threadsCount != m_pool->maxThreadCount(); threadsCount++)
-	{
-		pThread = m_threads.at(threadsCount);
-		int clientsInThread = pThread->GetClientsCount();
-		if (clientsInThread < maxClientsInThread)
-		{
+		if (prevClientsCount > clientsCount)	
 			return pThread;
-		}
+		else
+			prevClientsCount = clientsCount;
 	}
 
-
+	// Return first thread
+	TcpThread* pThread = m_threads.at(0);
     return pThread;
 }
 
