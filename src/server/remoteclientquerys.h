@@ -25,10 +25,12 @@ public:
 	// Game server functionality
 	void onGameServerRegister(QByteArray &bytes);
 	void onGameServerUpdateInfo(QByteArray &bytes);
+
 	void onGameServerGetOnlineProfile(QByteArray &bytes);
 	void onGameServerUpdateOnlineProfile(QByteArray &bytes);
 private:
 	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
+	QString ProfileToString(SProfile* profile);
 private:
 	QSslSocket* m_socket;
 	SRemoteClient* m_client;

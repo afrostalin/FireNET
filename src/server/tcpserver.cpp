@@ -5,6 +5,7 @@
 #include "tcpserver.h"
 #include "settings.h"
 #include "tcpthread.h"
+#include "dbworker.h"
 
 TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
@@ -140,6 +141,34 @@ void TcpServer::UpdateClient(SClient* client)
 	qWarning() << "Can't update client. Client" << client->socket << "not found";
 }
 
+bool TcpServer::UpdateProfile(SProfile * profile)
+{
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->profile != nullptr)
+		{
+			if (it->profile->uid == profile->uid)
+			{
+				// First update profile in DB
+				if (gEnv->pDBWorker->UpdateProfile(profile))
+				{
+					it->profile = profile;
+					qDebug() << "Profile" << profile->nickname << "updated";
+					return true;
+				}
+				else
+				{
+					qWarning() << "Failed update" << profile->nickname << "profile in DB!";
+					return false;
+				}
+			}
+		}
+	}
+
+	qDebug() << "Profile" << profile->nickname << "not found.";
+	return false;
+}
+
 QStringList TcpServer::GetPlayersList()
 {
 //	QMutexLocker locker(&m_Mutex);
@@ -174,7 +203,7 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 	if (uid <= 0)
 		return nullptr;
 
-	QMutexLocker locker(&m_Mutex);
+	//QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
 		if (it->profile != nullptr)
@@ -188,6 +217,27 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 	}
 
 	qDebug() << "Socket not finded.";
+	return nullptr;
+}
+
+SProfile * TcpServer::GetProfileByUid(int uid)
+{
+	if (uid <= 0)
+		return nullptr;
+
+	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	{
+		if (it->profile != nullptr)
+		{
+			if (it->profile->uid == uid)
+			{
+				qDebug() << "Profile finded. Return";
+				return it->profile;
+			}
+		}
+	}
+
+	qDebug() << "Profile not finded.";
 	return nullptr;
 }
 

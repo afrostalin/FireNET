@@ -269,20 +269,143 @@ void RemoteClientQuerys::onGameServerRegister(QByteArray & bytes)
 
 		QByteArray result("<error type='register_game_server_failed' reason = '0'/>");
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
-		return;
 	}
 }
 
 void RemoteClientQuerys::onGameServerUpdateInfo(QByteArray & bytes)
 {
+	if (!m_client->isGameServer)
+	{
+		qWarning() << "Only registered game servers can update info";
+		return;
+	}
+
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	QString serverName = attributes.value("name").toString();
+	QString serverIp = attributes.value("ip").toString();
+	int serverPort = attributes.value("port").toInt();
+	QString mapName = attributes.value("map").toString();
+	QString gamerules = attributes.value("gamerules").toString();
+	int online = attributes.value("online").toInt();
+	int maxPlayers = attributes.value("maxPlayers").toInt();
+
+	if (serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
+	{
+		qWarning() << "Wrong packet data! Some values empty!";
+		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+		return;
+	}
+
+	if (gEnv->pRemoteServer->CheckGameServerExists(serverName, serverIp, serverPort))
+	{
+		m_client->isGameServer = true;
+		m_client->server->name = serverName;
+		m_client->server->ip = serverIp;
+		m_client->server->port = serverPort;
+		m_client->server->map = mapName;
+		m_client->server->gamerules = gamerules;
+		m_client->server->online = online;
+		m_client->server->maxPlayers = maxPlayers;
+
+		gEnv->pRemoteServer->UpdateClient(m_client);
+
+		QByteArray result("<result type='game_server_info_updated'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+
+		qDebug() << "Game server [" << serverName << "] updated info";
+	}
+	else
+	{
+		qDebug() << "-------------------------Server not found--------------------------";
+		qDebug() << "---------------------UPDATE GAME SERVER FAILED---------------------";
+
+		QByteArray result("<error type='update_game_server_failed' reason = '0'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+	}
 }
 
 void RemoteClientQuerys::onGameServerGetOnlineProfile(QByteArray & bytes)
 {
+	if (!m_client->isGameServer)
+	{
+		qWarning() << "Only registered game servers can get online profiles";
+		return;
+	}
+
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	int uid = attributes.value("uid").toInt();
+
+	SProfile* pProfile = gEnv->pServer->GetProfileByUid(uid);
+
+	if (pProfile != nullptr)
+	{
+		QByteArray result;
+		result.append("<result type='profile_data'>" + ProfileToString(pProfile) + "</result>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+		return;
+	}
+	else
+	{
+		qDebug() << "Failed get online profile";
+
+		QByteArray result("<error type='get_online_profile_failed' reason = '0'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+	}
 }
 
 void RemoteClientQuerys::onGameServerUpdateOnlineProfile(QByteArray & bytes)
 {
+	if (!m_client->isGameServer)
+	{
+		qWarning() << "Only registered game servers can update profiles";
+		return;
+	}
+
+	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
+	int uid = attributes.value("uid").toInt();
+	QString nickname = attributes.value("nickname").toString();
+	QString fileModel = attributes.value("fileModel").toString();
+	int lvl = attributes.value("lvl").toInt();
+	int xp = attributes.value("xp").toInt();
+	int money = attributes.value("money").toInt();
+	QString items = attributes.value("items").toString();
+	QString friends = attributes.value("friends").toString();
+
+	SProfile* pOldProfile = gEnv->pServer->GetProfileByUid(uid);	
+
+	if (pOldProfile != nullptr)
+	{
+		// Game server can update only lvl, xp and money!
+		SProfile* pNewProfile = new SProfile;
+		pNewProfile->uid = pOldProfile->uid;
+		pNewProfile->nickname = pOldProfile->nickname;
+		pNewProfile->fileModel = pOldProfile->fileModel;
+		pNewProfile->lvl = lvl;
+		pNewProfile->xp = xp;
+		pNewProfile->money = money;
+		pNewProfile->items = pOldProfile->items;
+		pNewProfile->friends = pOldProfile->friends;
+
+		if (gEnv->pServer->UpdateProfile(pNewProfile))
+		{
+			QByteArray result("<result type='profile_updated'/>");
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+		}
+		else
+		{
+			qDebug() << "Failed update online profile";
+
+			QByteArray result("<error type='update_online_profile_failed' reason = '1'/>");
+			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+		}	
+	}
+	else
+	{
+		qDebug() << "Failed get online profile";
+
+		QByteArray result("<error type='update_online_profile_failed' reason = '0'/>");
+		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, result);
+	}
 }
 
 QXmlStreamAttributes RemoteClientQuerys::GetAttributesFromArray(QByteArray & bytes)
@@ -302,4 +425,24 @@ QXmlStreamAttributes RemoteClientQuerys::GetAttributesFromArray(QByteArray & byt
 	}
 
 	return attributes;
+}
+
+QString RemoteClientQuerys::ProfileToString(SProfile * profile)
+{
+	if (profile == nullptr)
+		return QString();
+
+	QString Profile = "<data>"
+		"<profile uid='" + QString::number(profile->uid) +
+		"' nickname='" + profile->nickname +
+		"' fileModel='" + profile->fileModel +
+		"' lvl='" + QString::number(profile->lvl) +
+		"' xp='" + QString::number(profile->xp) +
+		"' money='" + QString::number(profile->money) + "' >"
+		"<items>" + profile->items + "</items>"
+		"<friends>" + profile->friends + "</friends>"
+		"</profile>"
+		"</data>";
+
+	return Profile;
 }

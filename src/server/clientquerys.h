@@ -43,13 +43,13 @@ public:
 	// Matchmaking system
 	void onGetGameServer(QByteArray &bytes);
 private:
-	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
-
+	// Profile
     bool UpdateProfile(SProfile* profile);
 	QString ProfileToString(SProfile* profile);
-
+	// Shop
 	SShopItem GetShopItemByName(QString name);
-
+	// Utils
+	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
 	bool CheckAttributeInRow(QString source, QString tag, QString attribute, QString checkAttribute);
 	QString RemoveElementFromRow(QString source, QString element);	
 private:

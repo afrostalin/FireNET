@@ -35,9 +35,12 @@ public:
 	void AddNewClient(SClient client);
 	void RemoveClient(SClient client);
 	void UpdateClient(SClient* client);
+	bool UpdateProfile(SProfile* profile);
+
 	QStringList GetPlayersList();
 	int GetClientCount();
 	QSslSocket* GetSocketByUid(int uid);
+	SProfile* GetProfileByUid(int uid);
 private:
 	QVector<SClient> m_Clients;
 	QMutex m_Mutex;

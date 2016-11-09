@@ -123,12 +123,21 @@ void RemoteConnection::readyRead()
 				qDebug() << "Remote query type = " << type;
 				qDebug() << "Remote query data = " << bytes;
 
+				// Remote admin panel functional
 				if (type == "admin_auth")
 					pQuerys->onAdminLogining(bytes);
 				if (type == "console_command")
 					pQuerys->onConsoleCommandRecived(bytes);
+
+				// Game server functional
 				if (type == "register_game_server")
 					pQuerys->onGameServerRegister(bytes);
+				if (type == "update_game_server")
+					pQuerys->onGameServerUpdateInfo(bytes);
+				if (type == "get_online_profile")
+					pQuerys->onGameServerGetOnlineProfile(bytes);
+				if (type == "update_online_profile")
+					pQuerys->onGameServerUpdateOnlineProfile(bytes);
 
 				return;
 			}
