@@ -20,11 +20,11 @@
 #include "remoteserver.h"
 #include "settings.h"
 
-#include <signal.h>
-
 FileAppender *fileAppender;
 ConsoleAppender *consoleAppender;
 
+#ifdef _WIN64
+#include <signal.h>
 static void ClearManager(int sig)
 {
 	if (sig == SIGBREAK || sig == SIGINT || sig == SIGTERM)
@@ -44,6 +44,7 @@ static void ClearManager(int sig)
 		qApp->quit();
 	}
 }
+#endif
 
 bool init()
 {
@@ -201,7 +202,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 41;
+	int buildNumber = 52;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
@@ -265,6 +266,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+#ifdef _WIN64
 	signal(SIGBREAK, ClearManager);
+#endif
 	return a->exec();
 }
