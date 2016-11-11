@@ -469,11 +469,11 @@ int main(int argc, char *argv[])
             errors = true;
         }
 
-        if(!CopyFireNetLibraries(cryEngineFolder))
+        /*if(!CopyFireNetLibraries(cryEngineFolder))
         {
             qCritical() << "Integration failed! Can't copying FireNET libraries !!!";
             errors = true;
-        }
+        }*/
 
         if(!errors)
         {
