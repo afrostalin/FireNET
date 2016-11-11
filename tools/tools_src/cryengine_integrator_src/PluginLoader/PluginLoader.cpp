@@ -13,6 +13,7 @@ CPLuginLoader::CPLuginLoader()
 	InitModule = nullptr;
 	SendRequest = nullptr;
 	RegisterFlowNodes = nullptr;
+	GetUID = nullptr;
 
 #if defined(DEDICATED_SERVER)
 	GameServerUpdateInfo = nullptr;
@@ -38,6 +39,7 @@ void CPLuginLoader::LoadPlugin()
 		InitModule = (void(*)(SSystemGlobalEnvironment&)) CryGetProcAddress(hndl, "InitModule");
 		SendRequest = (void(*)(const char*)) CryGetProcAddress(hndl, "SendRequestToServer");
 		RegisterFlowNodes = (void(*)(void)) CryGetProcAddress(hndl, "RegisterFlowNodes");
+		GetUID = (int(*)(void)) CryGetProcAddress(hndl, "GetUID");
 
 #if defined(DEDICATED_SERVER)
 		GameServerUpdateInfo = (void(*)(void)) CryGetProcAddress(hndl, "GameServerUpdateInfo");
@@ -45,7 +47,7 @@ void CPLuginLoader::LoadPlugin()
 		GameServerUpdateOnlineProfile = (void(*)(SProfile*)) CryGetProcAddress(hndl, "GameServerUpdateOnlineProfile");
 
 		if (InitModule != nullptr && SendRequest != nullptr  && RegisterFlowNodes != nullptr &&
-			GameServerUpdateInfo != nullptr && GameServerGetOnlineProfile != nullptr && GameServerUpdateOnlineProfile != nullptr)
+			GameServerUpdateInfo != nullptr && GameServerGetOnlineProfile != nullptr && GameServerUpdateOnlineProfile != nullptr && GetUID != nullptr)
 		{
 			InitModule(*gEnv);
 			CryLogAlways(PLUGIN_LOADED);
@@ -56,7 +58,7 @@ void CPLuginLoader::LoadPlugin()
 			CryLogAlways(PLUGIN_ERROR " - POINTERS ERROR");
 		}
 #else
-		if (InitModule != nullptr && RegisterFlowNodes != nullptr && SendRequest != nullptr)
+		if (InitModule != nullptr && RegisterFlowNodes != nullptr && SendRequest != nullptr && GetUID != nullptr)
 		{
 			InitModule(*gEnv);
 			CryLogAlways(PLUGIN_LOADED);
