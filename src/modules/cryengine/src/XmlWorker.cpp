@@ -338,7 +338,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 			QXmlStreamAttributes attributes = xml.attributes();
 			if (!attributes.isEmpty())
 			{
-				int uid = attributes.value("id").toInt();
+				int uid = attributes.value("uid").toInt();
 				QString nickname = attributes.value("nickname").toString();
 				QString fileModel = attributes.value("fileModel").toString();
 				int money = attributes.value("money").toInt();
@@ -362,7 +362,7 @@ void CXmlWorker::onProfileDataRecived(const char*data)
 
 				gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnProfileDataRecived, args);
 
-				gEnv->pLog->LogAlways(TITLE  "Recived profile data. Nickname = %s, FileModel = %s, Lvl = %d, XP = %d, Money = %d", nickname.toStdString().c_str(), fileModel.toStdString().c_str(), lvl, xp, money);
+				gEnv->pLog->LogAlways(TITLE  "Recived profile data. Uid = %d, Nickname = %s, FileModel = %s, Lvl = %d, XP = %d, Money = %d", uid, nickname.toStdString().c_str(), fileModel.toStdString().c_str(), lvl, xp, money);
 			}
 		}
 
