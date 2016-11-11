@@ -346,7 +346,6 @@ void RemoteClientQuerys::onGameServerUpdateInfo(QByteArray & bytes)
 
 	if (gEnv->pRemoteServer->CheckGameServerExists(serverName, serverIp, serverPort))
 	{
-		m_client->isGameServer = true;
 		m_client->server->name = serverName;
 		m_client->server->ip = serverIp;
 		m_client->server->port = serverPort;
