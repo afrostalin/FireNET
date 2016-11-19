@@ -221,7 +221,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(QByteArray & bytes)
 	gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, msg);
 }
 
-bool RemoteClientQuerys::CheckInServerList(QString name, QString ip, int port)
+bool RemoteClientQuerys::CheckInTrustedList(QString name, QString ip, int port)
 {
 	QFile serverList("scripts/server_list.xml");
 
@@ -278,7 +278,7 @@ void RemoteClientQuerys::onGameServerRegister(QByteArray & bytes)
 		return;
 	}
 
-	if (!CheckInServerList(serverName, serverIp, serverPort))
+	if (!CheckInTrustedList(serverName, serverIp, serverPort))
 	{
 		qWarning() << "Game server" << serverName << "not found in trusted server list. Registration not posible!";
 

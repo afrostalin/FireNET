@@ -89,23 +89,27 @@ void TcpServer::RemoveClient(SClient client)
 {
 //	QMutexLocker locker(&m_Mutex);
 
-	if (client.socket == nullptr)
+	if (!client.socket)
 	{
 		qWarning() << "Can't remove client. Client socket = nullptr";
 		return;
 	}
 
-	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	if (m_Clients.size() > 0)
 	{
-		if (it->socket == client.socket)
+		for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 		{
-			qDebug() << "Removing client" << client.socket;
-			m_Clients.erase(it);
-			return;
+			if (it->socket == client.socket)
+			{
+				qDebug() << "Removing client" << client.socket;
+
+				m_Clients.erase(it);
+				return;
+			}
 		}
 	}
 
-	qWarning() << "Can't remove client. Client" << client.socket << "not found";
+	qWarning() << "Can't remove client. Client not found";
 }
 
 void TcpServer::UpdateClient(SClient* client)

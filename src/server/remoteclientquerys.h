@@ -23,7 +23,6 @@ public:
 	void onAdminLogining(QByteArray &bytes);
 	void onConsoleCommandRecived(QByteArray &bytes);
 	// Game server functionality
-	bool CheckInServerList(QString name, QString ip, int port);
 	void onGameServerRegister(QByteArray &bytes);
 	void onGameServerUpdateInfo(QByteArray &bytes);
 
@@ -32,6 +31,8 @@ public:
 private:
 	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
 	QString ProfileToString(SProfile* profile);
+private:
+	bool CheckInTrustedList(QString name, QString ip, int port);
 private:
 	QSslSocket* m_socket;
 	SRemoteClient* m_client;

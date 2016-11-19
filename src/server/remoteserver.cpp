@@ -100,17 +100,20 @@ void RemoteServer::RemoveClient(SRemoteClient client)
 		return;
 	}
 
-	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	if (m_Clients.size() > 0)
 	{
-		if (it->socket == client.socket)
+		for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 		{
-			qDebug() << "Removing remote client" << client.socket;
-			m_Clients.erase(it);
-			return;
+			if (it->socket == client.socket)
+			{
+				qDebug() << "Removing remote client" << client.socket;
+				m_Clients.erase(it);
+				return;
+			}
 		}
 	}
 
-	qWarning() << "Can't remove remote client. Remote client" << client.socket << "not found";
+	qWarning() << "Can't remove remote client. Remote client not found";
 }
 
 void RemoteServer::UpdateClient(SRemoteClient* client)
