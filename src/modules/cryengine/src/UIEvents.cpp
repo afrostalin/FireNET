@@ -1,13 +1,13 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "StdAfx.h"
+#include <StdAfx.h>
 #include "Global.h"
 
 
 bool CModuleUIEvents::RegisterUIEvents()
 {
-	gEnv->pLog->Log(TITLE "Register UI events");
+	CryLog(TITLE "Register UI events...");
 
 	if (gEnv->pFlashUI)
 	{		
@@ -74,36 +74,16 @@ bool CModuleUIEvents::RegisterUIEvents()
 		OnPrivateChatMessageRecived.AddParam<SUIParameterDesc::eUIPT_String>("From", "Message sender nickname");
 		m_EventMap[eUIGE_OnPrivateChatMessageRecived] = m_pGameEvents->RegisterEvent(OnPrivateChatMessageRecived);
 
-		// On friend list need update
-		SUIEventDesc OnFriendListNeedUpdate("Friends:OnFriendListNeedUpdate", "Friends:OnFriendListNeedUpdate", "Event when client need update friend list");
-		m_EventMap[eUIGE_OnFriendListNeedUpdate] = m_pGameEvents->RegisterEvent(OnFriendListNeedUpdate);
-
 		// On friend invite recived
 		SUIEventDesc OnFriendInviteRecived("Invites:OnFriendInviteRecived", "Invites:OnFriendInviteRecived", "Event when client recived friend invite");
 		OnFriendInviteRecived.AddParam<SUIParameterDesc::eUIPT_String>("Sender", "Invite sender");
 		m_EventMap[eUIGE_OnFriendInviteRecived] = m_pGameEvents->RegisterEvent(OnFriendInviteRecived);
 
-		// On game invite recived
-		SUIEventDesc OnGameInviteRecived("Invites:OnGameInviteRecived", "Invites:OnGameInviteRecived", "Event when client recived game invite");
-		OnGameInviteRecived.AddParam<SUIParameterDesc::eUIPT_String>("Sender", "Invite sender");
-		OnGameInviteRecived.AddParam<SUIParameterDesc::eUIPT_String>("Map", "Map name");
-		OnGameInviteRecived.AddParam<SUIParameterDesc::eUIPT_String>("ServerIP", "Server ip");
-		m_EventMap[eUIGE_OnGameInviteRecived] = m_pGameEvents->RegisterEvent(OnGameInviteRecived);
-
-		// On clan invite recived
-		SUIEventDesc OnClanInviteRecived("Invites:OnClanInviteRecived", "Invites:OnClanInviteRecived", "Event when client recived game invite");
-		OnClanInviteRecived.AddParam<SUIParameterDesc::eUIPT_String>("Sender", "Invite sender");
-		OnClanInviteRecived.AddParam<SUIParameterDesc::eUIPT_String>("ClanName", "Clan name");
-		m_EventMap[eUIGE_OnClanInviteRecived] = m_pGameEvents->RegisterEvent(OnClanInviteRecived);
-
-		// On clan invite recived
-		SUIEventDesc OnFriendUpdateStatus("Friends:OnFriendUpdateStatus", "Friends:OnFriendUpdateStatus", "Event when friend update status");
-		OnFriendUpdateStatus.AddParam<SUIParameterDesc::eUIPT_String>("Nickname", "Friend nickname");
-		OnFriendUpdateStatus.AddParam<SUIParameterDesc::eUIPT_String>("Status", "Status");
-		m_EventMap[eUIGE_OnFriendUpdateStatus] = m_pGameEvents->RegisterEvent(OnFriendUpdateStatus);
-
 		// On matchmaking success
 		SUIEventDesc OnMatchmakingSuccess("Matchmaking:OnMatchmakingSuccess", "Matchmaking:OnMatchmakingSuccess", "Event when client start work with game server");
+		OnMatchmakingSuccess.AddParam<SUIParameterDesc::eUIPT_String>("Name", "Server name");
+		OnMatchmakingSuccess.AddParam<SUIParameterDesc::eUIPT_String>("IP", "Server ip");
+		OnMatchmakingSuccess.AddParam<SUIParameterDesc::eUIPT_Int>("Port", "Server port");
 		m_EventMap[eUIGE_OnMatchmakingSuccess] = m_pGameEvents->RegisterEvent(OnMatchmakingSuccess);
 
 		// On server result recived
@@ -116,10 +96,11 @@ bool CModuleUIEvents::RegisterUIEvents()
 		OnServerMessageRecived.AddParam<SUIParameterDesc::eUIPT_String>("Message", "Message string");
 		m_EventMap[eUIGE_OnServerMessageRecive] = m_pGameEvents->RegisterEvent(OnServerMessageRecived);
 
+		CryLog(TITLE "UI events registered");
 		return true;
 	}
 
-	gEnv->pLog->LogError(TITLE "Register UI events failed!");
+	CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Register UI events failed!");
 	return false;
 }
 

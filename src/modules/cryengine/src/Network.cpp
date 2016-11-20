@@ -1,11 +1,12 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "StdAfx.h"
+#include <StdAfx.h>
 #include "Global.h"
 #include <QCoreApplication>
 #include <thread>
 
+// TODD - Remove this and use PostUpdate
 void TimeoutCounter()
 {
 	float timeout = gEnv->pConsole->GetCVar("firenet_timeout")->GetFVal();
@@ -13,11 +14,11 @@ void TimeoutCounter()
 	float start_time = gEnv->pTimer->GetCurrTime();
 	float end_time = start_time + timeout;
 
-	gEnv->pLog->LogAlways(TITLE  "Start time = %f, end time = %f", start_time, end_time);
+	CryLog(TITLE  "DEPRICATED : Start time = %f, end time = %f", start_time, end_time);
 
 	while (gEnv->pTimer->GetCurrTime() <= end_time)
 	{
-		if (gCryModule->bConnected)
+		if (gModuleEnv->bConnected)
 		{
 			return;
 		}
@@ -26,11 +27,12 @@ void TimeoutCounter()
 	}
 
 	// If server not connecting after timeout
-	gEnv->pLog->LogError(TITLE  "Can't connect to FireNET. Connection timeout!");
-
+	CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't connect to FireNET. Connection timeout");
+#ifndef DEDICATED_SERVER
 	SUIArguments args;
 	args.AddArgument("@connectionTimeout");
-	gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+	gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+#endif
 }
 
 CNetwork::CNetwork(QObject *parent) : QObject(parent)
@@ -41,12 +43,13 @@ CNetwork::CNetwork(QObject *parent) : QObject(parent)
 
 void CNetwork::Init()
 {
-	gEnv->pLog->LogAlways(TITLE  "Init network...");
+	CryLog(TITLE  "Init network...");
 
 	int argc = 0;
 	char* argv[1] = {};
 	QCoreApplication networker(argc, argv);
 
+	// Update certificate when you cnahge server ip
 	QByteArray certificate = "-----BEGIN CERTIFICATE-----\n"
 		"MIIDCDCCAnGgAwIBAgIJAPSN9sMotF78MA0GCSqGSIb3DQEBCwUAMIGcMQswCQYD\n"
 		"VQQGEwJSVTEbMBkGA1UECAwSVGFtYm92c2theWEgb2JsYXN0MQ8wDQYDVQQHDAZU\n"
@@ -79,63 +82,93 @@ void CNetwork::Init()
 
 	bInit = true;
 
-	gEnv->pLog->LogAlways(TITLE  "Init complete. Start connecting...");
-	ConnectToServer();
+	CryLog(TITLE  "Init complete. Start connecting...");
 
+	ConnectToServer();
 	networker.exec();
 }
 
 void CNetwork::ConnectToServer()
 {
-	if (gCryModule->bConnected)
+	if (gModuleEnv->bConnected)
 	{
-		gEnv->pLog->LogError(TITLE  "Can't connect to FireNET because you alredy connected!");
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't connect to FireNET because you alredy connected");
 		return;
 	}
 
 	if (bInit)
 	{
-		QString adrress = gEnv->pConsole->GetCVar("firenet_ip")->GetString();
-		int port = gEnv->pConsole->GetCVar("firenet_port")->GetIVal();
-		
-		if (!adrress.isEmpty() && port != 0)
+		if (gEnv && gEnv->pConsole)
 		{
-			gEnv->pLog->LogAlways(TITLE  "Connecting to FireNET...");
+			QString adrress = gEnv->pConsole->GetCVar("firenet_ip")->GetString();
+			int port = gEnv->pConsole->GetCVar("firenet_port")->GetIVal();
 
-			m_socket->connectToHostEncrypted(adrress, port);
+			if (!adrress.isEmpty() && port > 0)
+			{
+				CryLogAlways(TITLE  "Connecting to FireNET...");
 
-			std::thread pTimeoutCounter(TimeoutCounter);
-			pTimeoutCounter.detach();		
-		}
-		else
-		{
-			gEnv->pLog->LogError(TITLE  "Can't connect to FireNET because network settings is wrong!");
-			return;
+				m_socket->connectToHostEncrypted(adrress, port);
+
+				// TODO : Remove this
+				std::thread pTimeoutCounter(TimeoutCounter);
+				pTimeoutCounter.detach();
+			}
+			else
+			{
+				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't connect to FireNET because network settings is wrong");
+				return;
+			}
 		}
 	}
 	else
-		gEnv->pLog->LogError(TITLE  "Can't connect to FireNET because network not init!");
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't connect to FireNET because network not init");
 }
 
-void CNetwork::SendQuery(QByteArray data)
+bool CNetwork::SendQuery(const char* data)
 {
+	gModuleEnv->bHaveNewResult = false;
+
 	if (m_socket != nullptr)
+	{
 		m_socket->write(data);
+		return true;
+	}
 	else
 	{
-		gEnv->pLog->LogWarning(TITLE  "Can't send query to FireNET because you not conneted!!!");
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't send query to FireNET because you not conneted");
 
+#ifndef DEDICATED_SERVER
 		SUIArguments args;
 		args.AddArgument("@connectionLost");
-		gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+		gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+#endif
+		return false;
 	}
+}
+
+bool CNetwork::SendSyncQuery(const char * data, float timeout)
+{
+	int i = 0;
+
+	while (i < 5)
+	{
+		CryLog("Test wait function");
+		CrySleep(1000);
+		i++;
+	}
+
+	return false;
 }
 
 void CNetwork::onConnectedToServer()
 {
-	gEnv->pLog->LogAlways(TITLE  "Connection with FireNET establishment");
-	gCryModule->bConnected = true;
-	gCryModule->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnConnectionEstablishment);
+	CryLogAlways(TITLE  "Connection with FireNET establishment");
+	gModuleEnv->bConnected = true;
+#ifndef DEDICATED_SERVER
+	gModuleEnv->pUIEvents->SendEmptyEvent(CModuleUIEvents::eUIGE_OnConnectionEstablishment);
+#else
+	RegisterGameServer();
+#endif
 }
 
 void CNetwork::onReadyRead()
@@ -143,11 +176,13 @@ void CNetwork::onReadyRead()
 	if (!m_socket)
 		return;
 
-	gEnv->pLog->Log(TITLE  "Recived new message from FireNET");
+	CryLog(TITLE "Recived new message from FireNET");
 
 	QByteArray rawmessage;
 	rawmessage = m_socket->readAll();
-	gCryModule->pXmlWorker->ReadXmlData(rawmessage.toStdString().c_str());
+
+	if (gModuleEnv->pXmlWorker)
+		gModuleEnv->pXmlWorker->ReadXmlData(rawmessage.toStdString().c_str());
 }
 
 void CNetwork::onBytesWritten(qint64 bytes)
@@ -155,20 +190,90 @@ void CNetwork::onBytesWritten(qint64 bytes)
 	if (!m_socket)
 		return;
 
-	gEnv->pLog->Log(TITLE  "Message to FireNET sended");
+	CryLog(TITLE  "Message to FireNET sended. Size = %d", bytes);
 }
 
 void CNetwork::onDisconnected()
 {
-	gEnv->pLog->LogError(TITLE  "Connection with FireNET lost!!!");
-	gCryModule->bConnected = false;
+	CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection with FireNET lost");
+	gModuleEnv->bConnected = false;
 
+#ifndef DEDICATED_SERVER
 	SUIArguments args;
 	args.AddArgument("@connectionLost");
-	gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+	gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+#endif
 }
 
 void CNetwork::CloseConnection()
 {
-	m_socket->close();
+	if (m_socket)
+	{
+		CryLog(TITLE "Closing connection with FireNET");
+		m_socket->close();
+	}
 }
+
+#ifdef DEDICATED_SERVER
+bool CNetwork::RegisterGameServer()
+{
+	CryLogAlways(TITLE "Register game server in FireNET...");
+
+	QString ip = gEnv->pConsole->GetCVar("sv_bind")->GetString();
+	int port = gEnv->pConsole->GetCVar("sv_port")->GetIVal();
+	QString serverName = gEnv->pConsole->GetCVar("sv_servername")->GetString();
+	int online = 0;
+	int maxPlayers = gEnv->pConsole->GetCVar("sv_maxplayers")->GetIVal();
+	QString mapName = gEnv->pConsole->GetCVar("sv_map")->GetString();
+	mapName.remove("Multiplayer/");
+	QString gamerules = (char*)gEnv->pConsole->GetCVar("sv_gamerules")->GetString();
+
+	QString query = "<query type='register_game_server'><data name = '" + serverName +
+		"' ip = '" + ip +
+		"' port = '" + QString::number(port) +
+		"' map = '" + mapName +
+		"' gamerules = '" + gamerules +
+		"' online = '" + QString::number(online) +
+		"' maxPlayers = '" + QString::number(maxPlayers) + "'/></query>";
+
+	if (SendQuery(query.toStdString().c_str()))
+	{
+		return true;
+	}
+	else
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register game server because you not connected to FireNET");
+
+	return false;
+}
+
+bool CNetwork::UpdateGameServer()
+{
+	CryLogAlways(TITLE "Try update game server info in FireNET");
+
+	QString ip = gEnv->pConsole->GetCVar("sv_bind")->GetString();
+	int port = gEnv->pConsole->GetCVar("sv_port")->GetIVal();
+	QString serverName = gEnv->pConsole->GetCVar("sv_servername")->GetString();
+	int online = 0; // TODO
+	int maxPlayers = gEnv->pConsole->GetCVar("sv_maxplayers")->GetIVal();
+	QString mapName = gEnv->pConsole->GetCVar("sv_map")->GetString();
+	mapName.remove("Multiplayer/");
+	QString gamerules = (char*)gEnv->pConsole->GetCVar("sv_gamerules")->GetString();
+
+	QString query = "<query type='update_game_server'><data name = '" + serverName +
+		"' ip = '" + ip +
+		"' port = '" + QString::number(port) +
+		"' map = '" + mapName +
+		"' gamerules = '" + gamerules +
+		"' online = '" + QString::number(online) +
+		"' maxPlayers = '" + QString::number(maxPlayers) + "'/></query>";
+
+	if (SendQuery(query.toStdString().c_str()))
+	{
+		return true;
+	}
+	else
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't update game server because you not connected to FireNET");
+
+	return false;
+}
+#endif

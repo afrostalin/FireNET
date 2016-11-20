@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_Dedicated|Win32">
@@ -35,7 +35,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CryModule.cpp" />
+    <ClCompile Include="src\CFireNET_Base.cpp" />
+    <ClCompile Include="src\DllMain.cpp" />
     <ClCompile Include="src\CVars.cpp" />
     <ClCompile Include="src\FlowNodes.cpp" />
     <ClCompile Include="src\Global.cpp" />
@@ -46,7 +47,8 @@
     <ClCompile Include="src\XmlWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\CryModule.h" />
+    <ClInclude Include="includes\FireNET_Base.h" />
+    <ClInclude Include="src\CFireNET_Base.h" />
     <ClInclude Include="src\CVars.h" />
     <ClInclude Include="src\Global.h" />
     <ClInclude Include="src\Network.h" />
@@ -211,7 +213,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_GUI_LIB;CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;QT_GUI_LIB;FIRENET_MODULE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryCommon;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryAction;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\boost;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\yasli;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\Libs\yasli;..\..\..\3rd\includes\qt;..\..\..\3rd\includes\qt\QtNetwork;..\..\..\3rd\includes\qt\QtCore;..\..\..\3rd\includes\qt\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -244,7 +246,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;DEDICATED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;DEDICATED_SERVER;FIRENET_MODULE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryCommon;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryAction;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\boost;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\yasli;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\Libs\yasli;..\..\..\3rd\includes\qt;..\..\..\3rd\includes\qt\QtNetwork;..\..\..\3rd\includes\qt\QtCore;..\..\..\3rd\includes\qt\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -314,7 +316,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;CLIENT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;FIRENET_MODULE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryCommon;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryAction;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\boost;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\yasli;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\Libs\yasli;..\..\..\3rd\includes\qt;..\..\..\3rd\includes\qt\QtNetwork;..\..\..\3rd\includes\qt\QtCore;..\..\..\3rd\includes\qt\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
     </ClCompile>
@@ -337,7 +339,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;DEDICATED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN64;QT_CORE_LIB;QT_NETWORK_LIB;DEDICATED_SERVER;FIRENET_MODULE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>.\;%(AdditionalIncludeDirectories);E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryCommon;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\CryEngine\CryAction;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\boost;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\SDKs\yasli;E:\_Development\CustomCryEngine\Crytek\CRYENGINE_5.2.3\Code\Libs\yasli;..\..\..\3rd\includes\qt;..\..\..\3rd\includes\qt\QtNetwork;..\..\..\3rd\includes\qt\QtCore;..\..\..\3rd\includes\qt\mkspecs\win32-msvc2015</AdditionalIncludeDirectories>
     </ClCompile>

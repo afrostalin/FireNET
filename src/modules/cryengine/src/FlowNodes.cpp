@@ -1,110 +1,16 @@
 // Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: http://opensource.org/licenses/MIT
 
-#include "StdAfx.h"
-#include "CryFlowGraph\IFlowBaseNode.h"
+#include <StdAfx.h>
+#include <CryFlowGraph/IFlowBaseNode.h>
 #include "Global.h"
-#include <thread>
 
 #include "Shellapi.h"
 
-CAutoRegFlowNodeBase* CAutoRegFlowNodeBase::m_pFirst = 0;
-CAutoRegFlowNodeBase* CAutoRegFlowNodeBase::m_pLast = 0;
+#ifndef DEDICATED_SERVER
 
-
-
-void NetworkThread()
+namespace FireNET_FlowNodes
 {
-	gCryModule->pNetwork = new CNetwork;
-
-	if (gCryModule->pNetwork != nullptr)
-		gCryModule->pNetwork->Init();
-	else
-		return;
-}
-
-namespace FireNET
-{
-	// Connect to master server
-	class CFlowNode_ConnectToMS : public CFlowBaseNode<eNCT_Instanced>
-	{
-		enum INPUTS
-		{
-			EIP_Connect = 0,
-		};
-
-	public:
-		CFlowNode_ConnectToMS(SActivationInfo * pActInfo)
-		{
-		}
-
-		~CFlowNode_ConnectToMS()
-		{
-		}
-
-		IFlowNodePtr Clone(SActivationInfo* pActInfo)
-		{
-			return new CFlowNode_ConnectToMS(pActInfo);
-		}
-
-		virtual void GetMemoryUsage(ICrySizer * s) const
-		{
-			s->Add(*this);
-		}
-
-		void GetConfiguration(SFlowNodeConfig& config)
-		{
-			static const SInputPortConfig in_ports[] =
-			{
-				InputPortConfig_Void("Connect", _HELP("Connect to online master server")),
-				{ 0 }
-			};
-			static const SOutputPortConfig out_ports[] =
-			{
-				{ 0 }
-			};
-			config.pInputPorts = in_ports;
-			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Connect to online master server");
-			config.SetCategory(EFLN_APPROVED);
-		}
-
-		void ProcessEvent(EFlowEvent event, SActivationInfo *pActInfo)
-		{
-			switch (event)
-			{
-			case eFE_Initialize:
-			{
-				m_actInfo = *pActInfo;
-			}
-			break;
-			case eFE_Activate:
-			{
-				if (IsPortActive(pActInfo, EIP_Connect))
-				{
-					if (gCryModule->pNetwork != nullptr)
-					{
-						if (gCryModule->pNetwork->isInit())
-							gCryModule->pNetwork->ConnectToServer();
-						else
-							gEnv->pLog->LogError(TITLE "Can't connect to server, because network thread not init!");
-					}
-					else
-					{
-						// First init network thread
-						std::thread networkThread(NetworkThread);
-						networkThread.detach();
-					}
-				}
-			}
-			break;
-			}
-		}
-
-	protected:
-		SActivationInfo m_actInfo;
-	};
-
 	// Send login request
 	class CFlowNode_Login : public CFlowBaseNode<eNCT_Instanced>
 	{
@@ -149,7 +55,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send login request to online server");
+			config.sDescription = _HELP("Send login request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -170,7 +76,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortLogin");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -178,7 +84,7 @@ namespace FireNET
 						{
 							SUIArguments args;
 							args.AddArgument("@shortPassword");
-							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+							gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 						}
 						else
 						{
@@ -186,8 +92,8 @@ namespace FireNET
 							string password = GetPortString(pActInfo, EIP_Password);
 							string query = "<query type='auth'><data login='" + login + "' password='" + password + "'/></query>";
 
-							if (gCryModule->pNetwork != nullptr)
-								gCryModule->pNetwork->SendQuery(query.c_str());
+							if (gModuleEnv->pNetwork)
+								gModuleEnv->pNetwork->SendQuery(query.c_str());
 						}
 					}
 				}
@@ -244,7 +150,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send register request to online server");
+			config.sDescription = _HELP("Send register request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -266,7 +172,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortLogin");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -275,7 +181,7 @@ namespace FireNET
 						{
 							SUIArguments args;
 							args.AddArgument("@shortPassword");
-							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+							gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 						}
 						else
 						{
@@ -283,8 +189,8 @@ namespace FireNET
 							string password = GetPortString(pActInfo, 2);
 							string query = "<query type='register'><data login='" + login + "' password='" + password + "'/></query>";
 
-							if (gCryModule->pNetwork != nullptr)
-								gCryModule->pNetwork->SendQuery(query.c_str());
+							if (gModuleEnv->pNetwork)
+								gModuleEnv->pNetwork->SendQuery(query.c_str());
 						}
 					}
 				}
@@ -361,7 +267,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortNickname");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -370,8 +276,8 @@ namespace FireNET
 						string model = GetPortString(pActInfo, EIP_Model);
 						string query = "<query type='create_profile'><data nickname='" + nickname + "' fileModel='" + model + "'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -413,7 +319,7 @@ namespace FireNET
 		{
 			static const SInputPortConfig in_ports[] =
 			{
-				InputPortConfig_Void("Get", _HELP("Get profile from online server")),
+				InputPortConfig_Void("Get", _HELP("Get profile from FireNET")),
 				{ 0 }
 			};
 			static const SOutputPortConfig out_ports[] =
@@ -422,7 +328,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send get profile request to online server");
+			config.sDescription = _HELP("Send get profile request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -441,8 +347,8 @@ namespace FireNET
 				{
 					string query = "<query type='get_profile'/>";
 
-					if (gCryModule->pNetwork != nullptr)
-						gCryModule->pNetwork->SendQuery(query.c_str());
+					if (gModuleEnv->pNetwork)
+						gModuleEnv->pNetwork->SendQuery(query.c_str());
 				}
 			}
 			break;
@@ -483,7 +389,7 @@ namespace FireNET
 		{
 			static const SInputPortConfig in_ports[] =
 			{
-				InputPortConfig_Void("Get", _HELP("Get items in shop from online server")),
+				InputPortConfig_Void("Get", _HELP("Get items in shop from FireNET")),
 				{ 0 }
 			};
 			static const SOutputPortConfig out_ports[] =
@@ -492,7 +398,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Get items in shop from online server");
+			config.sDescription = _HELP("Get items in shop from FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -511,8 +417,8 @@ namespace FireNET
 				{
 					string query = "<query type='get_shop_items'/>";
 
-					if (gCryModule->pNetwork != nullptr)
-						gCryModule->pNetwork->SendQuery(query.c_str());
+					if (gModuleEnv->pNetwork)
+						gModuleEnv->pNetwork->SendQuery(query.c_str());
 				}
 			}
 			break;
@@ -564,7 +470,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send buy item request to online server");
+			config.sDescription = _HELP("Send buy item request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -585,7 +491,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortItemName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -593,8 +499,8 @@ namespace FireNET
 						string itemName = GetPortString(pActInfo, EIP_Item);
 						string query = "<query type='buy_item'><data item = '" + itemName + "'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -647,7 +553,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send remove item request to online server");
+			config.sDescription = _HELP("Send remove item request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -668,7 +574,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortItemName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -676,8 +582,8 @@ namespace FireNET
 						string itemName = GetPortString(pActInfo, EIP_Item);
 						string query = "<query type='remove_item'><data name = '" + itemName + "'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -757,11 +663,11 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_SendFriendInvite))
 				{
-					if (GetPortString(pActInfo, EIP_UserName) == gCryModule->m_profile->nickname)
+					if (GetPortString(pActInfo, EIP_UserName) == gModuleEnv->m_profile->nickname)
 					{
 						SUIArguments args;
 						args.AddArgument("@youCannotSendInviteYourself");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 						break;
 					}
 
@@ -769,21 +675,20 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortUserName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
 						bool userAdded = false;
 						string userName = GetPortString(pActInfo, EIP_UserName);
 
-						QVector<SFriend>::iterator it;
-						for (it = gCryModule->m_friends.begin(); it != gCryModule->m_friends.end(); ++it)
+						for (auto it = gModuleEnv->m_friends.begin(); it != gModuleEnv->m_friends.end(); ++it)
 						{
 							if (it->nickname == userName)
 							{
 								SUIArguments args;
 								args.AddArgument("@thisUserAlredyAddedToYouFriends");
-								gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+								gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 								userAdded = true;
 								break;
 							}
@@ -793,8 +698,8 @@ namespace FireNET
 						{
 							string query = "<query type='invite'><data invite_type='friend_invite' to='" + userName + "'/></query>";
 
-							if (gCryModule->pNetwork != nullptr)
-								gCryModule->pNetwork->SendQuery(query.c_str());
+							if (gModuleEnv->pNetwork)
+								gModuleEnv->pNetwork->SendQuery(query.c_str());
 						}
 					}
 				}
@@ -876,15 +781,15 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortUserName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
 						string userName = GetPortString(pActInfo, EIP_UserName);
 						string query = "<query type='decline_invite'><data to='" + userName + "'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -937,7 +842,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send add friend request to online server");
+			config.sDescription = _HELP("Send add friend request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -958,9 +863,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-						gEnv->pLog->LogError(TITLE "Can't add friend because friend name short!");
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -968,8 +871,8 @@ namespace FireNET
 						string friendName = GetPortString(pActInfo, EIP_Friend);
 						string query = "<query type='add_friend'><data name = '" + friendName + "'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -1022,7 +925,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send remove friend request to online server");
+			config.sDescription = _HELP("Send remove friend request to FireNET");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -1043,9 +946,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortFriendName");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
-
-						gEnv->pLog->LogError(TITLE "Can't add friend because friend name short!");
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -1053,8 +954,8 @@ namespace FireNET
 						string friendName = GetPortString(pActInfo, EIP_Friend);
 						string query = "<query type='remove_friend'><data name = '" + friendName + "'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -1122,11 +1023,10 @@ namespace FireNET
 			{
 				if (IsPortActive(pActInfo, EIP_Get))
 				{
-					QVector<SFriend>::iterator it;
-					for (it = gCryModule->m_friends.begin(); it != gCryModule->m_friends.end(); ++it)
+					for (auto it = gModuleEnv->m_friends.begin(); it != gModuleEnv->m_friends.end(); ++it)
 					{
 						SUIArguments args;
-						args.AddArgument(it->nickname.toStdString().c_str());
+						args.AddArgument(it->nickname);
 						args.AddArgument(it->uid);
 
 						if (it->status == 0)
@@ -1138,9 +1038,9 @@ namespace FireNET
 						if (it->status == 4)
 							args.AddArgument("afk");
 
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnFriendRecived, args);
 
-						gEnv->pLog->LogAlways(TITLE  "Add friend from friend list");
+						CryLog(TITLE  "Add friend from friend list buffer");
 					}
 				}
 			}
@@ -1193,7 +1093,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send chat message to global or private chat");
+			config.sDescription = _HELP("Send chat message to global chat");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -1214,7 +1114,7 @@ namespace FireNET
 					{
 						SUIArguments args;
 						args.AddArgument("@shortMessage");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
@@ -1222,8 +1122,8 @@ namespace FireNET
 						string message = GetPortString(pActInfo, EIP_Message);
 						string query = "<query type = 'chat_message'><data message = '" + message + "' to = 'all'/></query>";
 
-						if (gCryModule->pNetwork != nullptr)
-							gCryModule->pNetwork->SendQuery(query.c_str());
+						if (gModuleEnv->pNetwork)
+							gModuleEnv->pNetwork->SendQuery(query.c_str());
 					}
 				}
 			}
@@ -1239,7 +1139,7 @@ namespace FireNET
 	{
 		enum INPUTS
 		{
-			EIP_SendPrivate,
+			EIP_Send,
 			EIP_Message,
 			EIP_Reciver,
 		};
@@ -1267,7 +1167,7 @@ namespace FireNET
 		{
 			static const SInputPortConfig in_ports[] =
 			{
-				InputPortConfig_Void("SendPrivateMessage", _HELP("Send private chat message")),
+				InputPortConfig_Void("Send", _HELP("Send private chat message")),
 				InputPortConfig<string>("Message", _HELP("Message")),
 				InputPortConfig<string>("Reciver", _HELP("Message reciver")),
 				{ 0 }
@@ -1278,7 +1178,7 @@ namespace FireNET
 			};
 			config.pInputPorts = in_ports;
 			config.pOutputPorts = out_ports;
-			config.sDescription = _HELP("Send chat message to global or private chat");
+			config.sDescription = _HELP("Send private chat message");
 			config.SetCategory(EFLN_APPROVED);
 		}
 
@@ -1293,17 +1193,16 @@ namespace FireNET
 			break;
 			case eFE_Activate:
 			{
-				if (IsPortActive(pActInfo, EIP_SendPrivate))
+				if (IsPortActive(pActInfo, EIP_Send))
 				{
 					if (GetPortString(pActInfo, EIP_Message).size() == 0)
 					{
 						SUIArguments args;
 						args.AddArgument("@shortMessage");
-						gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
+						gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnServerResultRecived, args);
 					}
 					else
 					{
-
 						string message = GetPortString(pActInfo, EIP_Message);
 						string reciver = GetPortString(pActInfo, EIP_Reciver);
 
@@ -1311,14 +1210,14 @@ namespace FireNET
 						{
 							string query = "<query type = 'chat_message'><data message = '" + message + "' to = '" + reciver + "'/></query>";
 
-							if (gCryModule->pNetwork != nullptr)
-								gCryModule->pNetwork->SendQuery(query.c_str());
+							if (gModuleEnv->pNetwork)
+								gModuleEnv->pNetwork->SendQuery(query.c_str());
 						}
 						else
 						{
 							SUIArguments args;
 							args.AddArgument("@emptyReciver");
-							gCryModule->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
+							gModuleEnv->pUIEvents->SendEvent(CModuleUIEvents::eUIGE_OnError, args);
 						}
 					}
 				}
@@ -1487,21 +1386,21 @@ namespace FireNET
 							}
 
 							if (pEntity->LoadCharacter(0, GetPortString(pActInfo, EIP_Model), 0) != -1)
-								gEnv->pLog->LogAlways(TITLE  "Player model loaded");
+								CryLog(TITLE  "Player model loaded");
 							else
-								gEnv->pLog->LogAlways(TITLE  "Failed load player model !!!");
+								CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Failed load player model");
 						}
 					}
 
 					if (pEntity == NULL)
 					{
 						ActivateOutput(pActInfo, EOP_Failed, true);
-						gEnv->pLog->LogAlways(TITLE  "Failed spawn player model !!!");
+						CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Failed spawn player model");
 					}
 					else
 					{
 						ActivateOutput(pActInfo, EOP_Succeeded, pEntity->GetId());
-						gEnv->pLog->LogAlways(TITLE  "Player model spawned on %.f, %.f, %.f", pos.x, pos.y, pos.z);
+						CryLog(TITLE  "Player model spawned on %.f, %.f, %.f", pos.x, pos.y, pos.z);
 					}
 
 					ActivateOutput(pActInfo, EOP_Done, true);
@@ -1596,7 +1495,7 @@ namespace FireNET
 					else
 					{
 						ActivateOutput(pActInfo, EOP_Failed, true);
-						gEnv->pLog->LogAlways(TITLE  "Failed remove entity, because entity not found!");
+						CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Failed remove entity, because entity not found!");
 					}
 					
 				}
@@ -1681,8 +1580,8 @@ namespace FireNET
 
 					string query = "<query type='get_game_server'><data map = '" + mapName + "' gamerules = '" + gamerules + "' name = '" + serverName + "'/><query/>";
 
-					if (gCryModule->pNetwork != nullptr)
-						gCryModule->pNetwork->SendQuery(query.c_str());
+					if (gModuleEnv->pNetwork)
+						gModuleEnv->pNetwork->SendQuery(query.c_str());
 				}
 			}
 			break;
@@ -1692,7 +1591,7 @@ namespace FireNET
 		SActivationInfo m_actInfo;
 	};
 
-	// Open url in browser
+	// Open url in default browser
 	class CFlowNode_OpenURL : public CFlowBaseNode<eNCT_Singleton>
 	{
 		enum EInputPorts
@@ -1753,10 +1652,10 @@ namespace FireNET
 			case eFE_Activate:
 			{
 				if (IsPortActive(pActInfo, EIP_Open))
-				{		
+				{
 					string url = GetPortString(pActInfo, EIP_Url);
-					gEnv->pLog->LogAlways(TITLE "Open url = %s", url);
-					ShellExecute(0, "OPEN", url.c_str() , NULL, NULL, SW_SHOW);
+					CryLog(TITLE "Open url = %s", url);
+					ShellExecute(0, "OPEN", url.c_str(), NULL, NULL, SW_SHOW);
 				}
 			}
 			break;
@@ -1772,34 +1671,32 @@ namespace FireNET
 }
 
 
+REGISTER_FLOW_NODE_EX("FireNET:AuthSystem:Login", FireNET_FlowNodes::CFlowNode_Login, CFlowNode_Login);
+REGISTER_FLOW_NODE_EX("FireNET:AuthSystem:Register", FireNET_FlowNodes::CFlowNode_Register, CFlowNode_Register);
 
-REGISTER_FLOW_NODE_EX("FireNET:Server:ConnectToOnlineServer", FireNET::CFlowNode_ConnectToMS, CFlowNode_ConnectToMS);
+REGISTER_FLOW_NODE_EX("FireNET:Profile:CreateProfile", FireNET_FlowNodes::CFlowNode_CreateProfile, CFlowNode_CreateProfile);
+REGISTER_FLOW_NODE_EX("FireNET:Profile:GetProfile", FireNET_FlowNodes::CFlowNode_GetProfile, CFlowNode_GetProfile);
 
-REGISTER_FLOW_NODE_EX("FireNET:AuthSystem:Login", FireNET::CFlowNode_Login, CFlowNode_Login);
-REGISTER_FLOW_NODE_EX("FireNET:AuthSystem:Register", FireNET::CFlowNode_Register, CFlowNode_Register);
+REGISTER_FLOW_NODE_EX("FireNET:Shop:GetShopItems", FireNET_FlowNodes::CFlowNode_GetShopItems, CFlowNode_GetShopItems);
+REGISTER_FLOW_NODE_EX("FireNET:Shop:BuyItem", FireNET_FlowNodes::CFlowNode_BuyItem, CFlowNode_BuyItem);
+REGISTER_FLOW_NODE_EX("FireNET:Invenrory:RemoveItem", FireNET_FlowNodes::CFlowNode_RemoveItem, CFlowNode_RemoveItem);
 
-REGISTER_FLOW_NODE_EX("FireNET:Profile:CreateProfile", FireNET::CFlowNode_CreateProfile, CFlowNode_CreateProfile);
-REGISTER_FLOW_NODE_EX("FireNET:Profile:GetProfile", FireNET::CFlowNode_GetProfile, CFlowNode_GetProfile);
+REGISTER_FLOW_NODE_EX("FireNET:Friends:AddFriend", FireNET_FlowNodes::CFlowNode_AddFriend, CFlowNode_AddFriend);
+REGISTER_FLOW_NODE_EX("FireNET:Friends:RemoveFriend", FireNET_FlowNodes::CFlowNode_RemoveFriend, CFlowNode_RemoveFriend);
+REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET_FlowNodes::CFlowNode_GetFriends, CFlowNode_GetFriends);
 
-REGISTER_FLOW_NODE_EX("FireNET:Shop:GetShopItems", FireNET::CFlowNode_GetShopItems, CFlowNode_GetShopItems);
-REGISTER_FLOW_NODE_EX("FireNET:Shop:BuyItem", FireNET::CFlowNode_BuyItem, CFlowNode_BuyItem);
-REGISTER_FLOW_NODE_EX("FireNET:Invenrory:RemoveItem", FireNET::CFlowNode_RemoveItem, CFlowNode_RemoveItem);
-
-REGISTER_FLOW_NODE_EX("FireNET:Friends:AddFriend", FireNET::CFlowNode_AddFriend, CFlowNode_AddFriend);
-REGISTER_FLOW_NODE_EX("FireNET:Friends:RemoveFriend", FireNET::CFlowNode_RemoveFriend, CFlowNode_RemoveFriend);
-REGISTER_FLOW_NODE_EX("FireNET:Friends:GetFriendList", FireNET::CFlowNode_GetFriends, CFlowNode_GetFriends);
-
-REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
-REGISTER_FLOW_NODE_EX("FireNET:Chat:SendMessageToGlobalChat", FireNET::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
+REGISTER_FLOW_NODE_EX("FireNET:Chat:SendPrivateMessage", FireNET_FlowNodes::CFlowNode_SendPrivateChatMessage, CFlowNode_SendPrivateChatMessage);
+REGISTER_FLOW_NODE_EX("FireNET:Chat:SendMessageToGlobalChat", FireNET_FlowNodes::CFlowNode_SendGlobalChatMessage, CFlowNode_SendGlobalChatMessage);
 
 // This need only for creating 3D menu with character selection
-REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET::CFlowNode_SpawnPlayerModel, CFlowNode_SpawnPlayerModel);
-REGISTER_FLOW_NODE_EX("FireNET:Other:RemoveEntity", FireNET::CFlowNode_RemoveEntity, CFlowNode_RemoveEntity);
+REGISTER_FLOW_NODE_EX("FireNET:Other:SpawnPlayerAI", FireNET_FlowNodes::CFlowNode_SpawnPlayerModel, CFlowNode_SpawnPlayerModel);
+REGISTER_FLOW_NODE_EX("FireNET:Other:RemoveEntity", FireNET_FlowNodes::CFlowNode_RemoveEntity, CFlowNode_RemoveEntity);
 // ************************************************************
-REGISTER_FLOW_NODE_EX("FireNET:Other:OpenURL", FireNET::CFlowNode_OpenURL, CFlowNode_OpenURL);
+REGISTER_FLOW_NODE_EX("FireNET:Other:OpenURL", FireNET_FlowNodes::CFlowNode_OpenURL, CFlowNode_OpenURL);
 
+REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET_FlowNodes::CFlowNode_SendInvite, CFlowNode_SendInvite);
+REGISTER_FLOW_NODE_EX("FireNET:Invites:DeclineInvite", FireNET_FlowNodes::CFlowNode_DeclineInvite, CFlowNode_DeclineInvite);
 
-REGISTER_FLOW_NODE_EX("FireNET:Invites:SendInvite", FireNET::CFlowNode_SendInvite, CFlowNode_SendInvite);
-REGISTER_FLOW_NODE_EX("FireNET:Invites:DeclineInvite", FireNET::CFlowNode_DeclineInvite, CFlowNode_DeclineInvite);
+REGISTER_FLOW_NODE_EX("FireNET:Matchmaking:GetGameServer", FireNET_FlowNodes::CFlowNode_GetGameServer, CFlowNode_GetGameServer);
 
-REGISTER_FLOW_NODE_EX("FireNET:Matchmaking:GetGameServer", FireNET::CFlowNode_GetGameServer, CFlowNode_GetGameServer);
+#endif

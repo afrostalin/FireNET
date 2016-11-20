@@ -24,7 +24,17 @@ public:
 	void Init();
 	void ConnectToServer();
 	void CloseConnection();
-	void SendQuery(QByteArray data);
+public:
+	bool SendQuery(const char* data);
+	bool SendSyncQuery(const char* data, float timeout);
+
+#ifdef DEDICATED_SERVER
+public:
+	bool RegisterGameServer();
+	bool UpdateGameServer();
+#endif
+
+public:
 	bool isInit() { return bInit; }
 private:
 	bool bInit; 

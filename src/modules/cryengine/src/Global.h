@@ -4,88 +4,83 @@
 #ifndef _ModuleGlobal_
 #define _ModuleGlobal_
 
-
 #include "CVars.h"
 #include "UIEvents.h"
 #include "XmlWorker.h"
 #include "Network.h"
+#include "../includes/FireNET_Base.h"
 
 #define TITLE "[FireNET] "
 
 struct SFriend
 {
-	QString nickname;
+	string nickname;
 	int uid;
 	int status;
 };
 
 struct SItem
 {
-	QString name;
-	QString icon;
-	QString description;
+	string name;
+	string icon;
+	string description;
 };
 
 struct SShopItem
 {
-	QString name;
-	QString icon;
-	QString description;
+	string name;
+	string icon;
+	string description;
 	int cost;
 	int minLvl;
 };
 
-struct SProfile
+struct SModuleEnv
 {
-	int uid;
-	QString nickname;
-	QString fileModel;
-	int lvl;
-	int xp;
-	int money;
-	QString items;
-	QString friends;
-};
-
-struct SGlobalCryModule
-{
-	CModuleCVars* pCVars;
-	CModuleUIEvents* pUIEvents;
-	CXmlWorker* pXmlWorker;
-	CNetwork* pNetwork;
-	SProfile* m_profile;
-
-	QVector<SItem> m_items;
-	QVector<SFriend> m_friends;
-	QVector<SShopItem> m_shopItems;
-
-	string online_ms_address;
-	int online_ms_port;
-	float online_ms_timeout;
-
-	bool bConnected;
-
-	inline void Init()
+	SModuleEnv()
 	{
-		gEnv->pLog->Log(TITLE "Global environment Init()");
 		// Strings
-		online_ms_address = "127.0.0.1";
+		m_firenet_ip = "127.0.0.1";
 		// Ints
-		online_ms_port = 3322;
+		m_firenet_port = 3322;
 		// Floats
-		online_ms_timeout = 3.0f;
+		m_timeout = 3.0f;
 		// Booleans
 		bConnected = false;
 		// Pointers
 		pCVars = new CModuleCVars;
-		pUIEvents = new CModuleUIEvents;
 		pXmlWorker = new CXmlWorker;
-		m_profile = nullptr;
 		pNetwork = nullptr;
+
+#ifndef DEDICATED_SERVER
+		pUIEvents = new CModuleUIEvents;
+		m_profile = nullptr;
+#endif
 	}
 
+	CModuleCVars* pCVars;
+	CXmlWorker* pXmlWorker;
+	CNetwork* pNetwork;
+
+#ifdef DEDICATED_SERVER
+	std::vector<FireNET::SProfile> m_Profiles;
+#else
+	CModuleUIEvents* pUIEvents;
+	FireNET::SProfile* m_profile;
+
+	std::vector<SItem> m_items;
+	std::vector<SFriend> m_friends;
+	std::vector<SShopItem> m_shopItems;
+#endif
+
+	string m_firenet_ip;
+	int m_firenet_port;
+	float m_timeout;
+
+	bool bConnected;
+	bool bHaveNewResult;
 };
 
-extern SGlobalCryModule* gCryModule;
+extern SModuleEnv* gModuleEnv;
 
 #endif

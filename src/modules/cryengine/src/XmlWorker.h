@@ -5,6 +5,7 @@
 #define _Xml_Worker_H_
 
 #include <QXmlStreamReader>
+#include "../includes/FireNET_Base.h"
 
 class CXmlWorker
 {
@@ -16,19 +17,19 @@ public:
 	void ReadXmlData(const char* data);
 private:
 	void onError(const char* data);
+	void onProfileDataRecived(const char* data);
+	void onServerMessageRecived(const char* data);
+
+#ifndef DEDICATED_SERVER
 	void onRegisterComplete(const char* data);
 	void onAuthComplete(const char* data);
-	void onProfileDataRecived(const char* data);
 	void onShopItemsRecived(const char* data);
 	void onChatMessageRecived(const char* data);
 	void onInvite(const char* data);
-	void onFriendStatusUpdated(const char* data);
 	void onGameServerDataRecived(const char* data);
-	void onServerMessageRecived(const char* data);
+#endif
 private:
 	QXmlStreamAttributes GetAttributesFromArray(const char* data, const char* name);
-private:
-	void UpdateFriendList();
 };
 
 #endif // _Xml_Worker_H_

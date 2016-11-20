@@ -20,11 +20,14 @@
     <ClCompile Include="src\XmlWorker.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="src\CryModule.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="src\Global.cpp">
       <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DllMain.cpp">
+      <Filter>System\DLL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CFireNET_Base.cpp">
+      <Filter>System\Base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -40,11 +43,14 @@
     <ClInclude Include="src\XmlWorker.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="src\CryModule.h">
-      <Filter>System</Filter>
-    </ClInclude>
     <ClInclude Include="src\Global.h">
       <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\FireNET_Base.h">
+      <Filter>System\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CFireNET_Base.h">
+      <Filter>System\Base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -65,6 +71,12 @@
     </Filter>
     <Filter Include="System">
       <UniqueIdentifier>{91cf8d13-4f2f-4664-be89-7fc75f9d6ab5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\DLL">
+      <UniqueIdentifier>{ca287091-1d8c-4d39-951b-1fe9be076097}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Base">
+      <UniqueIdentifier>{1ec2c74a-49c7-4409-baba-f78fdaa4b29e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
