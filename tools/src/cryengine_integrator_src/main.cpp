@@ -11,19 +11,19 @@
 QString codeFolder = "/Code/GameSDK/GameDll";
 QString pluginIncludesFolder = "tools_src/cryengine_integrator_src/PluginLoader";
 
-bool UpdateUberFileList(QString cryEngineFolder)
+bool UpdateIncludeFileList(QString cryEngineFolder)
 {
-    qInfo() << "Updating gamesdk.waf_files ...";
+    qInfo() << "Updating wscript ...";
 
-    QFile oldFile(cryEngineFolder + codeFolder + "/gamedllsdk.waf_files");
+    QFile oldFile(cryEngineFolder + codeFolder + "/wscript");
     bool line0Finded = false;
 
-    if(oldFile.exists() && !QFile::exists(cryEngineFolder + codeFolder + "/gamedllsdk.waf_files.bak"))
+    if(oldFile.exists() && !QFile::exists(cryEngineFolder + codeFolder + "/wscript.bak"))
     {
-        qInfo() << "gamedllsdk.waf_files finded";
+        qInfo() << "wscript finded";
         if(oldFile.open(QIODevice::ReadWrite))
         {
-            qInfo() << "gamedllsdk.waf_files opened";
+            qInfo() << "wscript opened";
 
             QTextStream in (&oldFile);
             in.setCodec(QTextCodec::codecForName("UTF-8"));
@@ -45,7 +45,7 @@ bool UpdateUberFileList(QString cryEngineFolder)
                 textBuffer.append(line);
                 lineNumber++;
 
-                if(lineNumber == 35)
+                if(lineNumber == 12)
                 {
                     qInfo() << "Update line " << lineNumber;
                     textBuffer.append(paste0);
@@ -119,15 +119,14 @@ bool UpdateGameCpp(QString cryEngineFolder)
             QByteArray textBuffer;
             int lineNumber = 0;
 
-            QString paste0 = "// Plugin loader\n"
-                             "#include \"PluginLoader/PluginLoader.h\"\n";
+            QString paste0 = "// FireNET module loader\n"
+                             "#include <FireNET_impl.h>\n";
 
-            QString paste1 = "\t// Plugin loader\n"
-                             "\tpPluginLoader->LoadPlugin();\n";
+            QString paste1 = "\t// FireNET loader\n"
+                             "\tFireNET::InitFireNETModule();\n";
 
-            QString paste2 = "\t\t// Plugin loader\n"
-                             "\t\tif (pPluginLoader->hndl != nullptr)\n"
-                             "\t\t\tpPluginLoader->RegisterFlowNodes();\n";
+            QString paste2 = "\t\t// FireNET loader\n"
+                             "\t\tFireNET::RegisterFlowNodes();\n";
 
             QString line;
             do
@@ -207,6 +206,7 @@ bool UpdateGameStartupCpp(QString cryEngineFolder)
 
     QFile oldFile(cryEngineFolder + codeFolder + "/GameStartup.cpp");
     bool line0Finded = false;
+    bool line1Finded = false;
 
     if(oldFile.exists() && !QFile::exists(cryEngineFolder + codeFolder + "/GameStartup.cpp.bak"))
     {
@@ -227,6 +227,9 @@ bool UpdateGameStartupCpp(QString cryEngineFolder)
                     "\tgEnv->pConsole->ExecuteString(\"exec client.cfg\");\n"
                     "#endif\n";
 
+            QString paste1 = "// FireNET module loader\n"
+                             "#include <FireNET_impl.h>\n";
+
             QString line;
             do
             {
@@ -239,6 +242,14 @@ bool UpdateGameStartupCpp(QString cryEngineFolder)
                     line.clear();
                     line = paste0;
                     line0Finded = true;
+                }
+
+                if(line.contains("#include <CryThreading/IThreadConfigManager.h>"))
+                {
+                    qInfo() << "Update line " << lineNumber;
+                    line.clear();
+                    line = paste1;
+                    line1Finded = true;
                 }
 
                 if(!line.isNull())
@@ -367,8 +378,8 @@ bool CopyFireNetLibraries(QString cryEngineFolder)
 
     qInfo() << "Copying new FireNET libraries...";
 
-    if(QFile::copy("../bin/WIN64/_modules/cryengine/debug/FireNET.dll", cryEngineFolder + "/bin/win_x64/FireNET.dll") &&
-            QFile::copy("../bin/WIN64/_modules/cryengine/debug/FireNET_Dedicated.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET_Dedicated.dll"))
+    if(QFile::copy("../bin/WIN64/_modules/cryengine/release/FireNET.dll", cryEngineFolder + "/bin/win_x64/FireNET.dll") &&
+            QFile::copy("../bin/WIN64/_modules/cryengine/release/FireNET_Dedicated.dll", cryEngineFolder + "/bin/win_x64_dedicated/FireNET_Dedicated.dll"))
     {
         qInfo() << "FireNET libraries copyed!";
         return true;
@@ -402,38 +413,38 @@ int main(int argc, char *argv[])
     else
     {
         qInfo() << "Code folder finded!";
-        qInfo() << "Creating 'PluginLoader' folder...";
+        qInfo() << "Creating 'FireNET' sdk folder...";
 
-        if(!QDir().exists(cryEngineFolder + codeFolder + "/PluginLoader"))
+        if(!QDir().exists(cryEngineFolder + "/SDKs/FireNET"))
         {
-            if(!QDir().mkdir(cryEngineFolder + codeFolder + "/PluginLoader"))
+            if(!QDir().mkdir(cryEngineFolder + "/SDKs/FireNET"))
             {
                 qCritical() << "Integration failed! Failed create folder!";
                 errors = true;
             }
             else
-                qInfo() << "'PluginLoader' folder created!";
+                qInfo() << "'FireNET' sdk folder created!";
         }
         else
             qInfo() << "Folder alredy exists";
 
         qInfo() << "Copying files...";
 
-        QString pluginFolder =  cryEngineFolder + codeFolder + "/PluginLoader/";
+        QString pluginFolder =  cryEngineFolder + "/SDKs/FireNET";
 
-        QFile pluginLoaderCpp(pluginFolder + "/PluginLoader.cpp");
-        QFile pluginLoaderH(pluginFolder + "/PluginLoader.h");
+        QFile pluginFile0(pluginFolder + "/FireNET_impl.h");
+        QFile pluginFile1(pluginFolder + "/FireNET_Base.h");
 
-        if(pluginLoaderCpp.exists() || pluginLoaderH.exists())
+        if(pluginFile0.exists() || pluginFile1.exists())
         {
             qInfo() << "Files alredy exists. Removing...";
 
-            pluginLoaderCpp.remove();
-            pluginLoaderH.remove();
+            pluginFile0.remove();
+            pluginFile1.remove();
         }
 
-        if(QFile::copy(pluginIncludesFolder + "/PluginLoader.cpp", pluginFolder + "/PluginLoader.cpp") &&
-                QFile::copy(pluginIncludesFolder + "/PluginLoader.h", pluginFolder + "/PluginLoader.h"))
+        if(QFile::copy(pluginIncludesFolder + "/FireNET_impl.cpp", pluginFolder + "/FireNET_impl.cpp") &&
+                QFile::copy(pluginIncludesFolder + "/FireNET_Base.h", pluginFolder + "/FireNET_Base.h"))
         {
             qInfo() << "Files copyed!";
         }
@@ -444,7 +455,7 @@ int main(int argc, char *argv[])
         }
 
 
-        if(!UpdateUberFileList(cryEngineFolder))
+        if(!UpdateIncludeFileList(cryEngineFolder))
         {
             qCritical() << "Integration failed! Can't update gamesdk.waf_files !!!";
             errors = true;
