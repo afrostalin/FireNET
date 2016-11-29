@@ -48,8 +48,11 @@ private:
 private:
 	std::string m_data;
 	std::string m_separator;
-	std::string m_Magic;
+	std::string m_MagicHeader;
+	std::string m_MagicFooter;
+
 	std::vector<std::string> m_packet;
+
 	ENetPacketType m_type;
 
 	// Only for reading

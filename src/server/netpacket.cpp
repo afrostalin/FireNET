@@ -10,7 +10,8 @@ NetPacket::NetPacket(ENetPacketType type)
 	m_data = "";
 	m_separator = "~";
 	m_type = net_Empty;
-	m_Magic = "";
+	m_MagicHeader = "";
+	m_MagicFooter = "";
 
 	// Only for reading
 	bInitFromData = false;
@@ -29,7 +30,8 @@ NetPacket::NetPacket(const char * data)
 		m_data = data;
 		m_type = net_Empty;
 		m_separator = "~";
-		m_Magic = "";
+		m_MagicHeader = "";
+		m_MagicFooter = "";
 
 		bInitFromData = true;
 		bIsGoodPacket = false;
@@ -219,10 +221,9 @@ void NetPacket::SetMagicHeader()
 	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
 	char m_MagicKey[10] = "";
 	itoa(m_MagicValue, m_MagicKey, 16);
-	m_Magic = "0x" + std::string(m_MagicKey);
+	m_MagicHeader = "0x" + std::string(m_MagicKey);
 
-	qDebug() << m_Magic.c_str();
-	WriteString("!" + m_Magic);
+	WriteString("!" + m_MagicHeader);
 }
 
 void NetPacket::SetPacketType(ENetPacketType type)
@@ -232,7 +233,13 @@ void NetPacket::SetPacketType(ENetPacketType type)
 
 void NetPacket::SetMagicFooter()
 {
-	m_data = m_data + m_Magic + "!";
+	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
+	char m_MagicKey[10] = "";
+	// Abracadabra
+	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKey, 16);
+	m_MagicFooter = "0x" + std::string(m_MagicKey);
+
+	m_data = m_data + m_MagicFooter + "!";
 }
 
 void NetPacket::ReadPacket()
@@ -247,7 +254,7 @@ void NetPacket::ReadPacket()
 			std::string packet_type = m_packet.at(1);
 			std::string packet_footer = m_packet.at(m_packet.size() - 1);
 
-			if (packet_header == "!" + m_Magic && packet_footer == m_Magic + "!")
+			if (packet_header == "!" + m_MagicHeader && packet_footer == m_MagicFooter + "!")
 			{
 				m_type = (ENetPacketType)std::stoi(packet_type);
 

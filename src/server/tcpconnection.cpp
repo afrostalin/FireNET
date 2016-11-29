@@ -65,7 +65,7 @@ void TcpConnection::connected()
 	// Add client to server client list
 	gEnv->pServer->AddNewClient(m_Client);
 
-	// Create client querts worker
+	// Create client querys worker
 	pQuery = new ClientQuerys(this);
 	// Set socket for client querys worker
 	pQuery->SetSocket(m_Socket);
