@@ -126,6 +126,9 @@
     <ClCompile Include="..\..\temp\moc\server\moc_settings.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="netpacket.cpp">
+      <Filter>FireNET\Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="dbworker.h">
@@ -168,6 +171,9 @@
   <ItemGroup>
     <ClInclude Include="global.h">
       <Filter>FireNET</Filter>
+    </ClInclude>
+    <ClInclude Include="netpacket.h">
+      <Filter>FireNET\Server</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

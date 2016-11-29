@@ -163,6 +163,7 @@ void RegisterVariables()
 	// Network vars
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false);
 	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3);
+	gEnv->pSettings->RegisterVariable("net_magic_key", 2016206);
 
 	// Gloval vars (This variables not need read from server.cfg)
 	gEnv->pSettings->RegisterVariable("bUseRedis", true);
@@ -202,7 +203,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 65;
+	int buildNumber = 101;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
