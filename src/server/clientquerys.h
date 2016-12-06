@@ -7,11 +7,11 @@
 #include <QObject>
 #include <QDebug>
 #include <QSslSocket>
-#include <QXmlStreamReader>
 #include <QFile>
 
 #include "redisconnector.h"
 #include "global.h"
+#include "netpacket.h"
 
 class ClientQuerys : public QObject
 {
@@ -23,35 +23,30 @@ public:
 	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
 	void SetClient(SClient* client);
     // Auth system
-    void onLogin(QByteArray &bytes);
-    void onRegister(QByteArray &bytes);
+    void onLogin(NetPacket &packet);
+    void onRegister(NetPacket &packet);
     // Profile querys
-    void onCreateProfile(QByteArray &bytes);
+    void onCreateProfile(NetPacket &packet);
     void onGetProfile();
     // Shop querys
     void onGetShopItems();
-    void onBuyItem(QByteArray &bytes);
-	void onRemoveItem(QByteArray &bytes);
+    void onBuyItem(NetPacket &packet);
+	void onRemoveItem(NetPacket &packet);
     // Friend system
-    void onAddFriend(QByteArray &bytes);
-    void onRemoveFriend(QByteArray &bytes);
+    void onAddFriend(NetPacket &packet);
+    void onRemoveFriend(NetPacket &packet);
 	// Chat system
-	void onChatMessage(QByteArray &bytes);
+	void onChatMessage(NetPacket &packet);
 	// Invite system
-	void onInvite(QByteArray &bytes);
-	void onDeclineInvite(QByteArray &bytes);
+	void onInvite(NetPacket &packet);
+	void onDeclineInvite(NetPacket &packet);
 	// Matchmaking system
-	void onGetGameServer(QByteArray &bytes);
+	void onGetGameServer(NetPacket &packet);
 private:
 	// Profile
     bool UpdateProfile(SProfile* profile);
-	QString ProfileToString(SProfile* profile);
-	// Shop
+	// Depricated. TODO - Remove this
 	SShopItem GetShopItemByName(QString name);
-	// Utils
-	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
-	bool CheckAttributeInRow(QString source, QString tag, QString attribute, QString checkAttribute);
-	QString RemoveElementFromRow(QString source, QString element);	
 private:
 	QSslSocket* m_socket;
 	SClient* m_Client;

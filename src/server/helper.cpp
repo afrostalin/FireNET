@@ -8,6 +8,7 @@
 #include "settings.h"
 
 #include <qdatastream.h>
+#include <QXmlStreamReader>
 
 
 ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
@@ -31,25 +32,6 @@ void ClientQuerys::SetClient(SClient * client)
 	m_Client->profile->money = 0;
 	m_Client->profile->items = "";
 	m_Client->profile->friends = "";
-}
-
-QXmlStreamAttributes ClientQuerys::GetAttributesFromArray(QByteArray &bytes)
-{
-	QXmlStreamReader xml(bytes);
-	QXmlStreamAttributes attributes;
-
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
-	{
-		xml.readNext();
-
-		if (xml.name() == "data")
-		{
-			return xml.attributes();
-		}
-	}
-
-	return attributes;
 }
 
 bool ClientQuerys::UpdateProfile(SProfile* profile)
@@ -123,52 +105,4 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
 		qDebug() << "Shop item not finded!!!";
 
     return item;
-}
-
-bool ClientQuerys::CheckAttributeInRow(QString source, QString tag, QString attribute, QString checkAttribute)
-{
-    QXmlStreamReader xml(source);
-    xml.readNext();
-    while (!xml.atEnd() && !xml.hasError())
-    {
-        xml.readNext();
-
-        if (xml.name() == tag)
-        {
-            QXmlStreamAttributes attributes = xml.attributes();
-            if (!attributes.isEmpty())
-            {
-                if (checkAttribute == attributes.value(attribute).toString())
-                    return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-QString ClientQuerys::RemoveElementFromRow(QString source, QString element)
-{
-	QString complete = source.remove(element);
-	return complete;
-}
-
-QString ClientQuerys::ProfileToString(SProfile * profile)
-{
-	if (profile == nullptr)
-		return QString();
-
-	QString Profile = "<data>"
-		"<profile uid='" + QString::number(profile->uid) +
-		"' nickname='" + profile->nickname +
-		"' fileModel='" + profile->fileModel +
-		"' lvl='" + QString::number(profile->lvl) +
-		"' xp='" + QString::number(profile->xp) +
-		"' money='" + QString::number(profile->money) + "' >"	
-		"<items>" + profile->items + "</items>"
-		"<friends>" + profile->friends + "</friends>"
-		"</profile>"
-		"</data>";
-
-	return Profile;
 }

@@ -188,7 +188,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication *a = new QCoreApplication(argc, argv);
 
-	
 	// Init global environment
 	gEnv->pServer = new TcpServer;
 	gEnv->pRemoteServer = new RemoteServer;
@@ -203,7 +202,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 104;
+	int buildNumber = 106;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");

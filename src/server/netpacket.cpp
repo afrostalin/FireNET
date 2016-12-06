@@ -5,6 +5,20 @@
 #include "global.h"
 #include "settings.h"
 
+/* Simple packet
+* // Create packet
+* NetPacket packet(net_query);
+* packet.WriteInt(net_query_auth);
+* packet.WriteString("login");
+* packet.WriteSrting("password");
+* // Read packet
+* NetPacket packet("recived_packet_data");
+* packet.getType();
+* packet.ReadInt();
+* packet.ReadString();
+* packet.ReadString();
+*/
+
 NetPacket::NetPacket(ENetPacketType type)
 {
 	m_data = "";
@@ -216,6 +230,11 @@ ENetPacketType NetPacket::getType()
 	return m_type;
 }
 
+int NetPacket::size()
+{
+	return sizeof(m_data);
+}
+
 void NetPacket::SetMagicHeader()
 {
 	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
@@ -261,7 +280,7 @@ void NetPacket::ReadPacket()
 				if (m_type > 0)
 				{
 					bIsGoodPacket = true;
-					lastIndex = 2;
+					lastIndex = 2; // 0 - header, 1 - type, 2 - start data
 				}
 				else
 				{

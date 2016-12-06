@@ -1,6 +1,6 @@
 <shop>
-    <item name = '@rifle' icon = 'icons/rifle.png' description = '@rifle_desc' cost = '3500' minLvl = '2'/>
-    <item name = '@shotgun' icon = 'icons/shotgun.png' description = '@shotgun_desc' cost = '2700' minLvl = '1'/>
-    <item name = '@pistol' icon = 'icons/pistol.png' description = '@pistol_desc' cost = '1500' minLvl = '0'/>
-    <item name = '@grenade' icon = 'icons/grenade.png' description = '@grenade_desc' cost = '150' minLvl = '0'/>
+    <item id = '1' name = '@rifle' icon = 'icons/rifle.png' description = '@rifle_desc' cost = '3500' minLvl = '2'/>
+    <item id = '2' name = '@shotgun' icon = 'icons/shotgun.png' description = '@shotgun_desc' cost = '2700' minLvl = '1'/>
+    <item id = '3' name = '@pistol' icon = 'icons/pistol.png' description = '@pistol_desc' cost = '1500' minLvl = '0'/>
+    <item id = '4' name = '@grenade' icon = 'icons/grenade.png' description = '@grenade_desc' cost = '150' minLvl = '0'/>
 </shop>

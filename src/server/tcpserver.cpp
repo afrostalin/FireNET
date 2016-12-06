@@ -245,19 +245,19 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 	return nullptr;
 }
 
-void TcpServer::sendMessageToClient(QSslSocket * socket, QByteArray &data)
+void TcpServer::sendMessageToClient(QSslSocket * socket, NetPacket &packet)
 {
 	if (socket != nullptr)
 	{
-		qDebug() << "Send message to client. Original size = " << data.size();
-		socket->write(data);
+		qDebug() << "Send message to client. Original size = " << packet.size();
+		socket->write(packet.toString());
 		socket->waitForBytesWritten(10);
 	}
 }
 
-void TcpServer::sendGlobalMessage(QByteArray &data)
+void TcpServer::sendGlobalMessage(NetPacket &packet)
 {
-	qDebug() << "Send message to all clients. Original size = " << data.size();
+	qDebug() << "Send message to all clients. Original size = " << packet.size();
 	
 //	QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
@@ -265,7 +265,7 @@ void TcpServer::sendGlobalMessage(QByteArray &data)
 		// Send message only for authorizated clients
 		if (it->profile != nullptr && it->socket != nullptr)
 		{
-			it->socket->write(data);
+			it->socket->write(packet.toString());
 			it->socket->waitForBytesWritten(10);
 		}
 	}

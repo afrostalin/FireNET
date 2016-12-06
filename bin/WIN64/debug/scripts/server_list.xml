@@ -1,4 +1,4 @@
 <GameServers>
-<Server name='Closed beta server #1' ip='127.0.0.1' port='64090'/>
-<Server name='Closed beta server #2' ip='127.0.0.1' port='64090'/>
+    <Server name='Closed beta server #1' ip='127.0.0.1' port='64090'/>
+    <Server name='Closed beta server #2' ip='127.0.0.1' port='64090'/>
 <GameServers/>

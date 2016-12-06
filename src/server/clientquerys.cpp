@@ -15,18 +15,24 @@
 #include "helper.cpp"
 #endif
 
-void ClientQuerys::onLogin(QByteArray &bytes)
+// Error types : 0 - Login not found, 1 - Account blocked, 2 - Incorrect password, 3 - Double authorization
+void ClientQuerys::onLogin(NetPacket &packet)
 {
 	if (bAuthorizated)
 	{
 		qDebug() << "Client alredy authorizated!";
+
+		// Auth failed (Double authorization)
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_auth_fail);
+		m_packet.WriteInt(3);
+		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
+
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-
-	QString login = attributes.value("login").toString();
-	QString password = attributes.value("password").toString();
+	QString login = packet.ReadString();
+	QString password = packet.ReadString();
 
 	if (login.isEmpty() || password.isEmpty())
 	{
@@ -57,13 +63,19 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-------------------------Profile found--------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>");
-				pServer->sendMessageToClient(m_socket, result);
-				result.clear();
+				// Auth complete
+				NetPacket m_packet(net_Result);
+				m_packet.WriteInt(net_result_auth_complete);
+				m_packet.WriteInt(m_Client->profile->uid);
+				m_packet.WriteString(m_Client->profile->nickname.toStdString());
+				m_packet.WriteString(m_Client->profile->fileModel.toStdString());
+				m_packet.WriteInt(m_Client->profile->lvl);
+				m_packet.WriteInt(m_Client->profile->xp);
+				m_packet.WriteInt(m_Client->profile->money);
+				m_packet.WriteString(m_Client->profile->items.toStdString());
+				m_packet.WriteString(m_Client->profile->friends.toStdString());
+				pServer->sendMessageToClient(m_socket, m_packet);
 
-				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 			else
@@ -71,9 +83,11 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-----------------------Profile not found------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='auth_complete'><data uid='" + QString::number(uid) + "'/></result>");
-				pServer->sendMessageToClient(m_socket, result);
+				// Auth complete
+				NetPacket m_packet(net_Result);
+				m_packet.WriteInt(net_result_auth_complete);
+
+				pServer->sendMessageToClient(m_socket, m_packet);
 
 				bAuthorizated = true;
 				m_Client->profile->uid = uid;
@@ -85,11 +99,12 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 		}
 		else
 		{
-			int errorType = pDataBase->pHTTP->GetError();
+			// Auth failed
+			NetPacket m_packet(net_Result);
+			m_packet.WriteInt(net_result_auth_fail);
+			m_packet.WriteInt(pDataBase->pHTTP->GetError());
+			pServer->sendMessageToClient(m_socket, m_packet);
 
-			QByteArray result;
-			result.append("<error type='auth_failed' reason = '" + QString::number(errorType) + "'/>");
-			pServer->sendMessageToClient(m_socket, result);
 			return;
 		}
 	}
@@ -100,10 +115,12 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 		qDebug() << "-----------------------Login not found------------------------";
 		qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-		QByteArray result;
-		result.append("<error type='auth_failed' reason = '0'/>");
+		// Auth failed
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_auth_fail);
+		m_packet.WriteInt(0);
+		pServer->sendMessageToClient(m_socket, m_packet);
 
-		pServer->sendMessageToClient(m_socket, result);
 		return;
 	}
 	else
@@ -118,9 +135,11 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 			qDebug() << "-----------------------Account blocked------------------------";
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-			QByteArray result;
-			result.append( "<error type='auth_failed' reason = '1'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			// Auth failed
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_auth_fail);
+			packet.WriteInt(1);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 
@@ -139,13 +158,18 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-------------------------Profile found--------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='auth_complete'><data uid='" + QString::number(m_Client->profile->uid) + "'/></result>");
-				pServer->sendMessageToClient(m_socket, result);
-				result.clear();
+				NetPacket m_packet(net_Result);
+				m_packet.WriteInt(net_result_auth_complete);
+				m_packet.WriteInt(m_Client->profile->uid);
+				m_packet.WriteString(m_Client->profile->nickname.toStdString());
+				m_packet.WriteString(m_Client->profile->fileModel.toStdString());
+				m_packet.WriteInt(m_Client->profile->lvl);
+				m_packet.WriteInt(m_Client->profile->xp);
+				m_packet.WriteInt(m_Client->profile->money);
+				m_packet.WriteString(m_Client->profile->items.toStdString());
+				m_packet.WriteString(m_Client->profile->friends.toStdString());
+				pServer->sendMessageToClient(m_socket, m_packet);
 
-				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-				pServer->sendMessageToClient(m_socket, result);
 				return;
 			}
 			else
@@ -153,9 +177,9 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 				qDebug() << "-----------------------Profile not found------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='auth_complete'><data uid='" + QString::number(userData->uid) + "'/></result>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket m_packet(net_Result);
+				m_packet.WriteInt(net_result_auth_complete);
+				pServer->sendMessageToClient(m_socket, m_packet);
 
 				bAuthorizated = true;
 				m_Client->profile->uid = userData->uid;
@@ -171,28 +195,31 @@ void ClientQuerys::onLogin(QByteArray &bytes)
 			qDebug() << "----------------------Incorrect password----------------------";
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-			QByteArray result ("<error type='auth_failed' reason = '2'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket m_packet(net_Result);
+			m_packet.WriteInt(net_result_auth_fail);
+			m_packet.WriteInt(2);
+			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
 		}
 	}
 }
 
-void ClientQuerys::onRegister(QByteArray &bytes)
+// Error types : 0 - Login alredy register, 1 - Can't create account, 2 - Double registration
+void ClientQuerys::onRegister(NetPacket &packet)
 {
 	if (bRegistered)
 	{
 		qDebug() << "Client alredy registered!";
 
-		QByteArray result;
-		result.append("<error type='reg_failed' reason = '1'/>");
-		gEnv->pServer->sendMessageToClient(m_socket, result);
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_register_fail);
+		m_packet.WriteInt(2);
+		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString login = attributes.value("login").toString();
-	QString password = attributes.value("password").toString();
+	QString login = packet.ReadString();
+	QString password = packet.ReadString();
 
 	if (login.isEmpty() || password.isEmpty())
 	{
@@ -210,23 +237,19 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 		if (pDataBase->pHTTP->Register(login, password))
 		{
 			qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
-
-			int uid = pDataBase->pHTTP->GetUID();
-
 			bRegistered = true;
 
-			QByteArray result;
-			result.append("<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket m_packet(net_Result);
+			m_packet.WriteInt(net_result_register_complete);
+			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
 		}
 		else
 		{
-			int errorType = pDataBase->pHTTP->GetError();
-
-			QByteArray result;
-			result.append("<error type='reg_failed' reason = '" + QString::number(errorType) + "'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket m_packet(net_Result);
+			m_packet.WriteInt(net_result_register_fail);
+			m_packet.WriteInt(pDataBase->pHTTP->GetError());
+			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
 		}
 	}
@@ -244,9 +267,9 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 
 				bRegistered = true;
 
-				QByteArray result;
-				result.append("<result type='reg_complete'><data uid='" + QString::number(uid) + "'/></result>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket m_packet(net_Result);
+				m_packet.WriteInt(net_result_register_complete);
+				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
 			}
 			else
@@ -254,8 +277,10 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 				qDebug() << "--------------Can't create account in database!--------------";
 				qDebug() << "---------------------REGISTRATION FAILED---------------------";
 
-				QByteArray result("<error type='reg_failed' reason = '1'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket m_packet(net_Result);
+				m_packet.WriteInt(net_result_register_fail);
+				m_packet.WriteInt(1);
+				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
 			}
 		}
@@ -264,18 +289,26 @@ void ClientQuerys::onRegister(QByteArray &bytes)
 	{
 		qDebug() << "----------Login alredy register or some values empty!--------";
 		qDebug() << "---------------------REGISTRATION FAILED---------------------";
-		QByteArray result;
-		result.append("<error type='reg_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_register_fail);
+		m_packet.WriteInt(0);
+		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
 	}
 }
 
-void ClientQuerys::onCreateProfile(QByteArray &bytes)
+// Error types : 0 - Client alredy have profile, 1 - Nickname alredy registered, 2 - Can't create profile, 3 - Double profile creation
+void ClientQuerys::onCreateProfile(NetPacket &packet)
 {
 	if (bProfileCreated)
 	{
 		qDebug() << "Client alredy create profile!";
+
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_profile_creation_fail);
+		m_packet.WriteInt(3);
+		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
+
 		return;
 	}
 
@@ -285,9 +318,8 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString nickname = attributes.value("nickname").toString();
-	QString fileModel = attributes.value("fileModel").toString();
+	QString nickname = packet.ReadString();
+	QString fileModel = packet.ReadString();
 
 	if (nickname.isEmpty() || fileModel.isEmpty())
 	{
@@ -304,8 +336,11 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		qDebug() << "------------------Client alredy have profile-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
-		QByteArray result ("<error type='create_profile_failed' reason = '2'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket m_paket(net_Result);
+		m_paket.WriteInt(net_result_profile_creation_fail);
+		m_paket.WriteInt(0);
+		pServer->sendMessageToClient(m_socket, m_paket);
+
 		return;
 	}
 
@@ -319,15 +354,22 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		m_Client->profile->items = "";
 		m_Client->profile->friends = "";
 
-		QString stringProfile = ProfileToString(m_Client->profile);
-
 		if (pDataBase->CreateProfile(m_Client->profile))
 		{
 			qDebug() << "---------------------CREATE PROFILE COMPLETE---------------------";
 
-			QByteArray result;
-			result.append("<result type='profile_data'>" + stringProfile + "</result>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket m_paket(net_Result);
+			m_paket.WriteInt(net_result_profile_creation_complete);
+			m_paket.WriteInt(m_Client->profile->uid);
+			m_paket.WriteString(m_Client->profile->nickname.toStdString());
+			m_paket.WriteString(m_Client->profile->fileModel.toStdString());
+			m_paket.WriteInt(m_Client->profile->lvl);
+			m_paket.WriteInt(m_Client->profile->xp);
+			m_paket.WriteInt(m_Client->profile->money);
+			m_paket.WriteString(m_Client->profile->items.toStdString());
+			m_paket.WriteString(m_Client->profile->friends.toStdString());
+
+			pServer->sendMessageToClient(m_socket, m_paket);
 
 			bProfileCreated = true;
 			m_Client->status = 1;
@@ -340,8 +382,10 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 			qDebug() << "---------------------Database return error---------------------";
 			qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
-			QByteArray result("<error type='create_profile_failed' reason = '0'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket m_paket(net_Result);
+			m_paket.WriteInt(net_result_profile_creation_fail);
+			m_paket.WriteInt(2);
+			pServer->sendMessageToClient(m_socket, m_paket);
 			return;
 		}
 	}
@@ -350,12 +394,15 @@ void ClientQuerys::onCreateProfile(QByteArray &bytes)
 		qDebug() << "-------------------Nickname alredy registered!-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED-----------------------";
 
-		QByteArray result("<error type='create_profile_failed' reason = '1'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket m_paket(net_Result);
+		m_paket.WriteInt(net_result_profile_creation_fail);
+		m_paket.WriteInt(1);
+		pServer->sendMessageToClient(m_socket, m_paket);
 		return;
 	}
 }
 
+// Error types : 0  - Profile not found
 void ClientQuerys::onGetProfile()
 {
 	if (m_Client->profile->uid <= 0)
@@ -371,9 +418,17 @@ void ClientQuerys::onGetProfile()
 		qDebug() << "-------------------------Profile found--------------------------";
 		qDebug() << "----------------------GET PROFILE COMPLETE----------------------";
 
-		QByteArray result;
-		result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket profile(net_Result);
+		profile.WriteInt(net_result_get_profile_complete);
+		profile.WriteInt(m_Client->profile->uid);
+		profile.WriteString(m_Client->profile->nickname.toStdString());
+		profile.WriteString(m_Client->profile->fileModel.toStdString());
+		profile.WriteInt(m_Client->profile->lvl);
+		profile.WriteInt(m_Client->profile->xp);
+		profile.WriteInt(m_Client->profile->money);
+		profile.WriteString(m_Client->profile->items.toStdString());
+		profile.WriteString(m_Client->profile->friends.toStdString());
+		pServer->sendMessageToClient(m_socket, profile);
 		return;
 	}
 	else
@@ -381,11 +436,14 @@ void ClientQuerys::onGetProfile()
 		qDebug() << "----------------------Profile not found-----------------------";
 		qDebug() << "----------------------GET PROFILE FAILED----------------------";
 
-		QByteArray result ("<error type='get_profile_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_get_profile_fail);
+		m_packet.WriteInt(1);
+		pServer->sendMessageToClient(m_socket, m_packet);
 	}
 }
 
+// Error types : 0 - Can't get shop from shop.xml
 void ClientQuerys::onGetShopItems()
 {
 	if (m_Client->profile->uid <= 0)
@@ -394,6 +452,7 @@ void ClientQuerys::onGetShopItems()
 		return;
 	}
 
+	// TODO - Not need read shop every time. Need use startup reading!
 	QFile file("scripts/shop.xml");
 	QString cleanShop;
 	QRegExp reg("\r\n");
@@ -404,8 +463,9 @@ void ClientQuerys::onGetShopItems()
 	{
 		qCritical() << "Can't get shop.xml!!!";
 
-		QByteArray result ("<error type='get_shop_items_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_get_shop_fail);
+		m_packet.WriteInt(0);
 
 		return;
 	}
@@ -418,10 +478,15 @@ void ClientQuerys::onGetShopItems()
 	QByteArray result;
 	result.append(cleanShop);
 
-	pServer->sendMessageToClient(m_socket, result);
+	NetPacket m_packet(net_Result);
+	m_packet.WriteInt(net_result_get_shop_complete);
+	m_packet.WriteString(result.toStdString());
+	pServer->sendMessageToClient(m_socket, m_packet);
 }
 
-void ClientQuerys::onBuyItem(QByteArray &bytes)
+// Error types : 0 - Item alredy purchased, 1 - Player lvl < minimal lvl for buy this item, 2 - Insufficient money to buy, 3 - Item not found,
+// 4 - Can't get profile,  5 - Can't update profile
+void ClientQuerys::onBuyItem(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -429,8 +494,7 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString itemName = attributes.value("item").toString();
+	QString itemName = packet.ReadString();
 
 	if (itemName.isEmpty())
 	{
@@ -446,14 +510,18 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 	{
 		if (!item.name.isEmpty())
 		{
+			QStringList itemList = m_Client->profile->items.split(",");
+
 			// Check if it is there in inventory
-			if (CheckAttributeInRow(m_Client->profile->items, "item", "name", item.name))
+			if (itemList.contains(item.name))
 			{
 				qDebug() << "------------------This item alredy purchased------------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				QByteArray result ("<error type='buy_item_failed' reason = '4'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_buy_item_fail);
+				packet.WriteInt(0);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 
@@ -463,8 +531,10 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				qDebug() << "-----------------Profile level < minimal level----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				QByteArray result("<error type='buy_item_failed' reason = '5'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_buy_item_fail);
+				packet.WriteInt(1);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 
@@ -474,9 +544,11 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 
 				// Add item and update money
 				m_Client->profile->money = m_Client->profile->money - item.cost;
-				m_Client->profile->items = m_Client->profile->items + "<item name='" + item.name +
-					"' icon='" + item.icon +
-					"' description='" + item.description + "'/>";
+				itemList.append(QString::number(item.id));
+				// Remove this
+				qDebug() << "ITEM LIST = " << itemList;
+				//
+				m_Client->profile->items = itemList.join(",");
 
 				// Update profile
 				if (UpdateProfile(m_Client->profile))
@@ -484,9 +556,17 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 					qDebug() << "----------------------Profile updated----------------------";
 					qDebug() << "---------------------BUI ITEM COMPLETE---------------------";
 
-					QByteArray result;
-					result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-					pServer->sendMessageToClient(m_socket, result);
+					NetPacket profile(net_Result);
+					profile.WriteInt(net_result_buy_item_complete);
+					profile.WriteInt(m_Client->profile->uid);
+					profile.WriteString(m_Client->profile->nickname.toStdString());
+					profile.WriteString(m_Client->profile->fileModel.toStdString());
+					profile.WriteInt(m_Client->profile->lvl);
+					profile.WriteInt(m_Client->profile->xp);
+					profile.WriteInt(m_Client->profile->money);
+					profile.WriteString(m_Client->profile->items.toStdString());
+					profile.WriteString(m_Client->profile->friends.toStdString());
+					pServer->sendMessageToClient(m_socket, profile);
 					return;
 				}
 				else
@@ -494,8 +574,10 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 					qDebug() << "---------------------Can't update profile---------------------";
 					qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-					QByteArray result ("<error type='buy_item_failed' reason = '3'/>");
-					pServer->sendMessageToClient(m_socket, result);
+					NetPacket packet(net_Result);
+					packet.WriteInt(net_result_buy_item_fail);
+					packet.WriteInt(5);
+					pServer->sendMessageToClient(m_socket, packet);
 					return;
 				}
 			}
@@ -504,8 +586,10 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 				qDebug() << "-------------------Insufficient money to buy-----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				QByteArray result("<error type='buy_item_failed' reason = '2'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_buy_item_fail);
+				packet.WriteInt(2);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 		}
@@ -514,8 +598,10 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 			qDebug() << "------------------------Item not found------------------------";
 			qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-			QByteArray result("<error type='buy_item_failed' reason = '1'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_buy_item_fail);
+			packet.WriteInt(3);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 	}
@@ -524,14 +610,17 @@ void ClientQuerys::onBuyItem(QByteArray &bytes)
 		qDebug() << "----------------------Profile not found-----------------------";
 		qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-		QByteArray result("<error type='buy_item_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_buy_item_fail);
+		packet.WriteInt(4);
+		pServer->sendMessageToClient(m_socket, packet);
 
 		return;
 	}
 }
 
-void ClientQuerys::onRemoveItem(QByteArray &bytes)
+// Error types : 0 - Item not found in shop list, 1 - Item not found in inventory, 2 - Can't get profile, 3 - Can't update profile
+void ClientQuerys::onRemoveItem(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -539,9 +628,7 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 		return;
 	}
 
-	QString uid = QString::number(m_Client->profile->uid);
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString itemName = attributes.value("name").toString();
+	QString itemName = packet.ReadString();
 
 	if (itemName.isEmpty())
 	{
@@ -554,43 +641,57 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 
 	if (!m_Client->profile->nickname.isEmpty())
 	{
+		// Search item in shop list
+		SShopItem item = GetShopItemByName(itemName);
+		if (item.name.isEmpty())
+		{
+			qDebug() << "-------------------Item not found in shop list-------------------";
+			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
+
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_remove_item_fail);
+			packet.WriteInt(0);
+			pServer->sendMessageToClient(m_socket, packet);
+			return;
+		}
+
 		// Check item if it is there in item list
-		if (!CheckAttributeInRow(m_Client->profile->items, "item", "name", itemName))
+		QStringList itemList = m_Client->profile->items.split(",");
+
+		if (!itemList.contains(QString::number(item.id)))
 		{
 			qDebug() << "-------------------Item not found in inventory--------------------";
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
-			QByteArray result("<error type='remove_item_failed' reason = '3'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_remove_item_fail);
+			packet.WriteInt(1);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 		else
 		{
-			// Search item in shop list
-			SShopItem item = GetShopItemByName(itemName);
-			if (item.name.isEmpty())
-			{
-				qDebug() << "-------------------Item not found in shop list-------------------";
-				qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
-
-				QByteArray result("<error type='remove_item_failed' reason = '2'/>");
-				pServer->sendMessageToClient(m_socket, result);
-				return;
-			}
-
 			// Remove item
-			QString removeItem = "<item name='" + item.name + "' icon='" + item.icon + "' description='" + item.description + "'/>";
-			m_Client->profile->items = RemoveElementFromRow(m_Client->profile->items, removeItem);
+			bool result = itemList.removeOne(QString::number(item.id));
+			m_Client->profile->items = itemList.join(",");
 
 			// Update profile
-			if (UpdateProfile(m_Client->profile))
+			if (result && UpdateProfile(m_Client->profile))
 			{
 				qDebug() << "-----------------------Profile updated------------------------";
 				qDebug() << "---------------------REMOVE ITEM COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket profile(net_Result);
+				profile.WriteInt(net_result_remove_item_complete);
+				profile.WriteInt(m_Client->profile->uid);
+				profile.WriteString(m_Client->profile->nickname.toStdString());
+				profile.WriteString(m_Client->profile->fileModel.toStdString());
+				profile.WriteInt(m_Client->profile->lvl);
+				profile.WriteInt(m_Client->profile->xp);
+				profile.WriteInt(m_Client->profile->money);
+				profile.WriteString(m_Client->profile->items.toStdString());
+				profile.WriteString(m_Client->profile->friends.toStdString());
+				pServer->sendMessageToClient(m_socket, profile);
 				return;
 			}
 			else
@@ -598,8 +699,10 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 				qDebug() << "--------------------Can't update profile--------------------";
 				qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
-				QByteArray result("<error type='remove_item_failed' reason = '1'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_remove_item_fail);
+				packet.WriteInt(3);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 		}
@@ -609,13 +712,16 @@ void ClientQuerys::onRemoveItem(QByteArray &bytes)
 		qDebug() << "---------------------Error get profile----------------------";
 		qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
-		QByteArray result("<error type='remove_item_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_remove_item_fail);
+		packet.WriteInt(2);
+		pServer->sendMessageToClient(m_socket, packet);
 		return;
 	}
 }
 
-void ClientQuerys::onInvite(QByteArray & bytes)
+// Error types : 0 - User not found, 1 - User not online
+void ClientQuerys::onInvite(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -623,10 +729,8 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 		return;
 	}
 
-	QString uid = QString::number(m_Client->profile->uid);
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString inviteType = attributes.value("invite_type").toString();
-	QString reciver = attributes.value("to").toString();
+	QString inviteType = packet.ReadString();
+	QString reciver = packet.ReadString();
 
 	if (m_Client->profile->nickname.isEmpty() || reciver.isEmpty() || inviteType.isEmpty())
 	{
@@ -648,8 +752,10 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			qDebug() << "------------------------User not found------------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
-			QByteArray result("<error type='invite_failed' reason = '0'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_send_invite_fail);
+			packet.WriteInt(0);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 
@@ -657,10 +763,16 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 
 		if (reciverSocket != nullptr)
 		{
-			// Send invite to client
-			QByteArray query;
-			query.append("<invite type='friend_invite' from='" + m_Client->profile->nickname + "'/>");
-			pServer->sendMessageToClient(reciverSocket, query);
+			// Send result to client
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_send_invite_complete);
+			pServer->sendMessageToClient(m_socket, packet);
+
+			// Send invite to user
+			NetPacket invite(net_Query);
+			invite.WriteInt(net_query_send_invite);
+			invite.WriteInt(m_Client->profile->uid); // From
+			pServer->sendMessageToClient(reciverSocket, invite);
 			return;
 		}
 		else
@@ -668,8 +780,10 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 			qDebug() << "----------------------Reciver not online----------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
-			QByteArray result("<error type='invite_failed' reason = '1'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_send_invite_fail);
+			packet.WriteInt(1);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 	}
@@ -687,7 +801,8 @@ void ClientQuerys::onInvite(QByteArray & bytes)
 	}
 }
 
-void ClientQuerys::onDeclineInvite(QByteArray & bytes)
+// Error types : 0 - User not found, 1 - User not online
+void ClientQuerys::onDeclineInvite(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -695,9 +810,7 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 		return;
 	}
 
-	QString uid = QString::number(m_Client->profile->uid);
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString reciver = attributes.value("to").toString();
+	QString reciver = packet.ReadString();
 
 	if (m_Client->profile->nickname.isEmpty() || reciver.isEmpty())
 	{
@@ -715,6 +828,11 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 	{
 		qDebug() << "------------------------User not found-------------------------";
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
+
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_decline_invite_fail);
+		packet.WriteInt(1);
+		pServer->sendMessageToClient(m_socket, packet);
 		return;
 	}
 
@@ -723,19 +841,26 @@ void ClientQuerys::onDeclineInvite(QByteArray & bytes)
 	if (reciverSocket != nullptr)
 	{
 		// Send decline invite to invite sender
-		QByteArray result ("<error type='invite_failed' reason = '2'/>");
-		pServer->sendMessageToClient(reciverSocket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_send_invite_fail);
+		pServer->sendMessageToClient(reciverSocket, packet);
 		return;
 	}
 	else
 	{
 		qDebug() << "----------------------Reciver not online-----------------------";
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
+
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_decline_invite_fail);
+		packet.WriteInt(1);
+		pServer->sendMessageToClient(m_socket, packet);
 		return;
 	}
 }
 
-void ClientQuerys::onAddFriend(QByteArray &bytes)
+// Error types : 0 - Friend alredy exist, 1 - Can't add yourself to friend, 2 - Friend not found,  3 - Can't get profile, 4 - Can't update profile
+void ClientQuerys::onAddFriend(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -743,8 +868,7 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString friendName = attributes.value("name").toString();
+	QString friendName = packet.ReadString();
 
 	if (friendName.isEmpty())
 	{
@@ -764,30 +888,37 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 
 		if (!m_Client->profile->nickname.isEmpty() && friendProfile != nullptr)
 		{
+			QStringList friendList = m_Client->profile->friends.split(",");
+			QStringList friendFriendList = friendProfile->friends.split(",");
+
 			// Check friend is there in friends list
-			if (CheckAttributeInRow(m_Client->profile->friends, "friend", "name", friendProfile->nickname))
+			if (friendList.contains(friendProfile->nickname))
 			{
 				qDebug() << "--------------------This friend alredy added--------------------";
 				qDebug() << "------------------------ADD FRIEND FAILED-----------------------";
 
-				QByteArray result ("<error type='add_friend_failed' reason = '4'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_add_friend_fail);
+				packet.WriteInt(0);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
-			}
-
-			// Block add yourself in friends
-			if (m_Client->profile->uid == friendUID)
+			} else if (m_Client->profile->uid == friendUID) // Block add yourself in friends
 			{
 				qDebug() << "----------------Can't add yourself to friends--------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-				QByteArray result("<error type='add_friend_failed' reason = '3'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_add_friend_fail);
+				packet.WriteInt(1);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 
-			m_Client->profile->friends = m_Client->profile->friends + "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
-			friendProfile->friends = friendProfile->friends + "<friend name='" + m_Client->profile->nickname + "' uid='" + QString::number(m_Client->profile->uid) + "' status='0'/>";
+			// Update friend list
+			friendList.append(QString::number(friendProfile->uid));
+			friendFriendList.append(QString::number(m_Client->profile->uid));
+			m_Client->profile->friends = friendList.join(",");
+			friendProfile->friends = friendFriendList.join(",");
 
 			QSslSocket* friendSocket = pServer->GetSocketByUid(friendUID);
 
@@ -796,18 +927,35 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				qDebug() << "-----------------------Profile updated-----------------------";
 				qDebug() << "---------------------ADD FRIEND COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket m_paket(net_Result);
+				m_paket.WriteInt(net_result_add_friend_complete);
+				m_paket.WriteInt(m_Client->profile->uid);
+				m_paket.WriteString(m_Client->profile->nickname.toStdString());
+				m_paket.WriteString(m_Client->profile->fileModel.toStdString());
+				m_paket.WriteInt(m_Client->profile->lvl);
+				m_paket.WriteInt(m_Client->profile->xp);
+				m_paket.WriteInt(m_Client->profile->money);
+				m_paket.WriteString(m_Client->profile->items.toStdString());
+				m_paket.WriteString(m_Client->profile->friends.toStdString());
+
+				pServer->sendMessageToClient(m_socket, m_paket);
 
 				//Send new info to friend here
 				if (friendSocket != nullptr)
 				{
-					QByteArray friendResult;
-					friendResult.append("<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>");
-					pServer->sendMessageToClient(friendSocket, friendResult);
+					NetPacket m_paket(net_Result);
+					m_paket.WriteInt(net_result_add_friend_complete);
+					m_paket.WriteInt(m_Client->profile->uid);
+					m_paket.WriteString(m_Client->profile->nickname.toStdString());
+					m_paket.WriteString(m_Client->profile->fileModel.toStdString());
+					m_paket.WriteInt(m_Client->profile->lvl);
+					m_paket.WriteInt(m_Client->profile->xp);
+					m_paket.WriteInt(m_Client->profile->money);
+					m_paket.WriteString(m_Client->profile->items.toStdString());
+					m_paket.WriteString(m_Client->profile->friends.toStdString());
+
+					pServer->sendMessageToClient(friendSocket, m_paket);
 				}
-				//
 
 				return;
 			}
@@ -816,8 +964,10 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 				qDebug() << "-------------------Can't update profile--------------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-				QByteArray result ("<error type='add_friend_failed' reason = '2'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_add_friend_fail);
+				packet.WriteInt(4);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 		}
@@ -826,8 +976,10 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 			qDebug() << "---------------------Error get profile---------------------";
 			qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-			QByteArray result ("<error type='add_friend_failed' reason = '1'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_add_friend_fail);
+			packet.WriteInt(3);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 	}
@@ -836,13 +988,16 @@ void ClientQuerys::onAddFriend(QByteArray &bytes)
 		qDebug() << "---------------------Friend not found----------------------";
 		qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-		QByteArray result("<error type='add_friend_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_add_friend_fail);
+		packet.WriteInt(2);
+		pServer->sendMessageToClient(m_socket, packet);
 		return;
 	}
 }
 
-void ClientQuerys::onRemoveFriend(QByteArray &bytes)
+// Error types : 0 - Friend not found, 1 - Can't get profile, 2 - Can't update profile
+void ClientQuerys::onRemoveFriend(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -850,8 +1005,7 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString friendName = attributes.value("name").toString();
+	QString friendName = packet.ReadString();
 
 	if (friendName.isEmpty())
 	{
@@ -865,48 +1019,69 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 
 	if (!m_Client->profile->nickname.isEmpty())
 	{
-		int friendUID = pDataBase->GetUIDbyNick(friendName);
-		SProfile *friendProfile = pDataBase->GetUserProfile(friendUID);
+		SProfile *friendProfile = pDataBase->GetUserProfile(pDataBase->GetUIDbyNick(friendName));
+		QStringList friendList = m_Client->profile->friends.split(",");
 
 		// Check friend is there in friends list
-		if (!CheckAttributeInRow(m_Client->profile->friends, "friend", "name", friendName) || friendProfile == nullptr)
+		if (!friendProfile || friendList.contains(QString::number(friendProfile->uid)))
 		{
 			qDebug() << "--------------------------Friend not found-------------------------";
 			qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
 
-			QByteArray result ("<error type='remove_friend_failed' reason = '2'/>");
-			pServer->sendMessageToClient(m_socket, result);
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_remove_friend_fail);
+			packet.WriteInt(0);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 		else
 		{
-			// Delete friend from client's profile
-			QString removeFriend = "<friend name='" + friendProfile->nickname + "' uid='" + QString::number(friendUID) + "' status='0'/>";
-			m_Client->profile->friends = RemoveElementFromRow(m_Client->profile->friends, removeFriend);
-			// Delete client from friend's profile
-			removeFriend.clear();
-			removeFriend = "<friend name='" + m_Client->profile->nickname + "' uid='" + QString::number(m_Client->profile->uid) + "' status='0'/>";
-			friendProfile->friends = RemoveElementFromRow(friendProfile->friends, removeFriend);
+			QStringList friendFriendList = friendProfile->friends.split(",");
 
-			QSslSocket* friendSocket = pServer->GetSocketByUid(friendUID);
+			// Delete friend from client's profile
+			friendList.removeOne(QString::number(friendProfile->uid));
+			m_Client->profile->friends = friendList.join(",");
+			// Delete client from friend's profile
+			friendFriendList.removeOne(QString::number(m_Client->profile->uid));
+			friendProfile->friends = friendFriendList.join(",");
+
+			QSslSocket* friendSocket = pServer->GetSocketByUid(friendProfile->uid);
 
 			if (UpdateProfile(m_Client->profile) && UpdateProfile(friendProfile))
 			{
 				qDebug() << "------------------------Profile updated-------------------------";
 				qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
 
-				QByteArray result;
-				result.append("<result type='profile_data'>" + ProfileToString(m_Client->profile) + "</result>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket m_paket(net_Result);
+				m_paket.WriteInt(net_result_add_friend_complete);
+				m_paket.WriteInt(m_Client->profile->uid);
+				m_paket.WriteString(m_Client->profile->nickname.toStdString());
+				m_paket.WriteString(m_Client->profile->fileModel.toStdString());
+				m_paket.WriteInt(m_Client->profile->lvl);
+				m_paket.WriteInt(m_Client->profile->xp);
+				m_paket.WriteInt(m_Client->profile->money);
+				m_paket.WriteString(m_Client->profile->items.toStdString());
+				m_paket.WriteString(m_Client->profile->friends.toStdString());
+
+				pServer->sendMessageToClient(m_socket, m_paket);
 
 				//Send new info to friend here
 				if (friendSocket != nullptr)
 				{
-					QByteArray friendResult;
-					friendResult.append("<result type='profile_data'>" + ProfileToString(friendProfile) + "</result>");
-					pServer->sendMessageToClient(friendSocket, friendResult);
+					NetPacket m_paket(net_Result);
+					m_paket.WriteInt(net_result_add_friend_complete);
+					m_paket.WriteInt(m_Client->profile->uid);
+					m_paket.WriteString(m_Client->profile->nickname.toStdString());
+					m_paket.WriteString(m_Client->profile->fileModel.toStdString());
+					m_paket.WriteInt(m_Client->profile->lvl);
+					m_paket.WriteInt(m_Client->profile->xp);
+					m_paket.WriteInt(m_Client->profile->money);
+					m_paket.WriteString(m_Client->profile->items.toStdString());
+					m_paket.WriteString(m_Client->profile->friends.toStdString());
+
+					pServer->sendMessageToClient(friendSocket, m_paket);
 				}
-				//
+
 				return;
 			}
 			else
@@ -914,8 +1089,10 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 				qDebug() << "---------------------Can't update profile---------------------";
 				qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-				QByteArray result ("<error type='remove_friend_failed' reason = '1'/>");
-				pServer->sendMessageToClient(m_socket, result);
+				NetPacket packet(net_Result);
+				packet.WriteInt(net_result_remove_friend_fail);
+				packet.WriteInt(2);
+				pServer->sendMessageToClient(m_socket, packet);
 				return;
 			}
 		}
@@ -925,13 +1102,16 @@ void ClientQuerys::onRemoveFriend(QByteArray &bytes)
 		qDebug() << "----------------------Error get profile-----------------------";
 		qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-		QByteArray result("<error type='remove_friend_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_remove_friend_fail);
+		packet.WriteInt(1);
+		pServer->sendMessageToClient(m_socket, packet);
 		return;
 	}
 }
 
-void ClientQuerys::onChatMessage(QByteArray &bytes)
+// Error types : 0 - Can't send message to himself, 1 - Reciver not online
+void ClientQuerys::onChatMessage(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -939,9 +1119,8 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-	QString message = attributes.value("message").toString();
-	QString reciver = attributes.value("to").toString();
+	QString message = packet.ReadString();
+	QString reciver = packet.ReadString();
 
 	if (message.isEmpty() || reciver.isEmpty())
 	{
@@ -957,6 +1136,11 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	{
 		qDebug() << "--------------Client cannot send message to himself---------------";
 		qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
+
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_send_chat_msg_fail);
+		packet.WriteInt(0);
+		pServer->sendMessageToClient(m_socket, packet);
 		return;
 	}
 
@@ -964,9 +1148,11 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 	{
 		if (gEnv->pSettings->GetVariable("bUseGlobalChat").toBool())
 		{
-			QByteArray chat;
-			chat.append("<chat><message type='global' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>");
-			pServer->sendGlobalMessage(chat);
+			NetPacket msg(net_Server);
+			msg.WriteInt(net_server_global_chat_msg);
+			msg.WriteString(m_Client->profile->nickname.toStdString());
+			msg.WriteString(message.toStdString());
+			pServer->sendGlobalMessage(msg);
 
 			return;
 		}
@@ -984,21 +1170,30 @@ void ClientQuerys::onChatMessage(QByteArray &bytes)
 
 		if (reciverSocket != nullptr)
 		{
-			QByteArray chat;
-			chat.append("<chat><message type='private' message='" + message + "' from='" + m_Client->profile->nickname + "'/></chat>");
-			pServer->sendMessageToClient(reciverSocket, chat);
+			NetPacket msg(net_Server);
+			msg.WriteInt(net_server_private_chat_msg);
+			msg.WriteString(m_Client->profile->nickname.toStdString());
+			msg.WriteString(message.toStdString());
+			pServer->sendMessageToClient(reciverSocket, msg);
+
 			return;
 		}
 		else
 		{
 			qDebug() << "-------------------Reciver not found or offline-------------------";
 			qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
+
+			NetPacket packet(net_Result);
+			packet.WriteInt(net_result_send_chat_msg_fail);
+			packet.WriteInt(1);
+			pServer->sendMessageToClient(m_socket, packet);
 			return;
 		}
 	}
 }
 
-void ClientQuerys::onGetGameServer(QByteArray & bytes)
+// Error types : 0 - Not any online servers, 1 - Server not found
+void ClientQuerys::onGetGameServer(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -1012,44 +1207,47 @@ void ClientQuerys::onGetGameServer(QByteArray & bytes)
 
 	if (gameServersCount <= 0)
 	{
-		qDebug() << "Not any online servers";
+		qDebug() << "---------------------Not any online server----------------------";
+		qDebug() << "---------------------GET GAME SERVER FAILED---------------------";
 
-		// Send error to client
-		QByteArray result ("<error type='get_game_server_failed' reason = '0'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_get_server_fail);
+		packet.WriteInt(0);
+		pServer->sendMessageToClient(m_socket, packet);
 
 		return;
 	}
 
-	QXmlStreamAttributes attributes = GetAttributesFromArray(bytes);
-
-	QString map = attributes.value("map").toString();
-	QString gamerules = attributes.value("gamerules").toString();
-	QString serverName = attributes.value("name").toString();
+	QString map = packet.ReadString();
+	QString gamerules = packet.ReadString();
+	QString serverName = packet.ReadString();
 
 	SGameServer* pGameServer = gEnv->pRemoteServer->GetGameServer(serverName, map, gamerules);
 
 	if (pGameServer != nullptr)
 	{
-		QByteArray result;
-		result.append("<result type='game_server_data'><data name = '" + pGameServer->name +
-			"' ip = '" + pGameServer->ip +
-			"' port = '" + QString::number(pGameServer->port) +
-			"' map = '" + pGameServer->map +
-			"' gamerules = '" + pGameServer->gamerules +
-			"' online = '" + QString::number(pGameServer->online) +
-			"' maxPlayers = '" + QString::number(pGameServer->maxPlayers) + "'/></result>");
+		NetPacket gameServer(net_Result);
+		gameServer.WriteInt(net_result_get_server_complete);
+		gameServer.WriteString(pGameServer->name.toStdString());
+		gameServer.WriteString(pGameServer->ip.toStdString());
+		gameServer.WriteInt(pGameServer->port);
+		gameServer.WriteString(pGameServer->map.toStdString());
+		gameServer.WriteString(pGameServer->gamerules.toStdString());
+		gameServer.WriteInt(pGameServer->online);
+		gameServer.WriteInt(pGameServer->maxPlayers);
 
-		pServer->sendMessageToClient(m_socket, result);
+		pServer->sendMessageToClient(m_socket, gameServer);
 
 		return;
 	}
 	else
 	{
-		qDebug() << "Server not found!";
+		qDebug() << "-----------------------Server not found-------------------------";
+		qDebug() << "---------------------GET GAME SERVER FAILED---------------------";
 
-		// Send error to client
-		QByteArray result("<error type='get_game_server_failed' reason = '1'/>");
-		pServer->sendMessageToClient(m_socket, result);
+		NetPacket packet(net_Result);
+		packet.WriteInt(net_result_get_server_fail);
+		packet.WriteInt(1);
+		pServer->sendMessageToClient(m_socket, packet);
 	}
 }

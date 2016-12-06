@@ -8,8 +8,7 @@
 #include "dbworker.h"
 #include "tcpserver.h"
 #include "settings.h"
-
-#include <QXmlStreamReader>
+#include "netpacket.h"
 
 TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
 {
@@ -103,66 +102,101 @@ void TcpConnection::readyRead()
     qDebug() << "Read message from client" << m_Socket;
 
 	QByteArray bytes = m_Socket->readAll();
-    QXmlStreamReader xml(bytes);
+	NetPacket packet(bytes);
 
-	// Check message type
-    xml.readNext();
-    while (!xml.atEnd() && !xml.hasError())
-    {
-        QXmlStreamReader::TokenType token = xml.readNext();
-        if (token == QXmlStreamReader::StartDocument)
-            continue;
-        if (token == QXmlStreamReader::StartElement)
-        {
-            if (xml.name() == "query")
-            {
-                QXmlStreamAttributes attributes = xml.attributes();
-                QString type = attributes.value("type").toString();
+	switch (packet.getType())
+	{
+	case net_Query :
+	{
+		switch ((ENetPacketQueryType)packet.ReadInt())
+		{
+		case net_query_auth :
+		{
+			pQuery->onLogin(packet);
+			break;
+		}
+		case net_query_register :
+		{
+			pQuery->onRegister(packet);
+			break;
+		}
+		case net_query_create_profile :
+		{
+			pQuery->onCreateProfile(packet);
+			break;
+		}
+		case net_query_get_profile :
+		{
+			pQuery->onGetProfile();
+			break;
+		}
+		case net_query_get_shop :
+		{
+			pQuery->onGetShopItems();
+			break;
+		}
+		case net_query_buy_item :
+		{
+			pQuery->onBuyItem(packet);
+			break;
+		}
+		case net_query_remove_item :
+		{
+			pQuery->onRemoveItem(packet);
+			break;
+		}		
+		case net_query_send_invite :
+		{
+			// TO DO
+			pQuery->onInvite(packet);
+			break;
+		}
+		case net_query_decline_invite :
+		{
+			pQuery->onDeclineInvite(packet);
+			break;
+		}
+		case net_query_accept_invite :
+		{
+			// TO DO
+			break;
+		}
+		case net_query_add_friend :
+		{
+			pQuery->onAddFriend(packet);
+			break;
+		}
+		case net_query_remove_friend :
+		{
+			pQuery->onRemoveFriend(packet);
+			break;
+		}
+		case net_query_send_chat_msg :
+		{
+			pQuery->onChatMessage(packet);
+			break;
+		}
+		case net_query_get_server :
+		{
+			pQuery->onGetGameServer(packet);
+			break;
+		}
 
-                qDebug() << "Query type = " << type;
-				qDebug() << "Query data = " << bytes;
+		default:
+		{
+			qCritical() << "Error reading query. Can't get query type!";
+			break;
+		}
+		}
 
-				// Authorization
-                if(type == "auth")
-                    pQuery->onLogin(bytes);
-                if(type == "register")
-                    pQuery->onRegister(bytes);
-				// Profile
-                if(type == "create_profile")
-                    pQuery->onCreateProfile(bytes);
-                if(type == "get_profile")
-                    pQuery->onGetProfile();
-				// Shop
-                if(type == "get_shop_items")
-                    pQuery->onGetShopItems();
-				// Items
-                if(type == "buy_item")
-                    pQuery->onBuyItem(bytes);
-				if (type == "remove_item")
-					pQuery->onRemoveItem(bytes);
-				// Invites
-				if (type == "invite")
-					pQuery->onInvite(bytes);
-				if (type == "decline_invite")
-					pQuery->onDeclineInvite(bytes);
-				// Friends
-                if(type == "add_friend")
-                    pQuery->onAddFriend(bytes);
-                if(type == "remove_friend")
-                    pQuery->onRemoveFriend(bytes);
-				// Chat
-				if (type == "chat_message")
-					pQuery->onChatMessage(bytes);
-				// Matchmaking
-				if (type == "get_game_server")
-					pQuery->onGetGameServer(bytes);
-
-
-				return;
-            }
-
-        }
-    }
+		break;
+	}
+	default:
+	{
+		qCritical() << "Error reading packet. Can't get packet type!";
+		break;
+	}
+	}
 }
 
 void TcpConnection::bytesWritten(qint64 bytes)
@@ -207,4 +241,3 @@ void TcpConnection::close()
 
 	m_Socket->close();
 }
-

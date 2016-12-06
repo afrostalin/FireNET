@@ -45,6 +45,7 @@ struct SClient
 // Shop item structure
 struct SShopItem
 {
+	int id;
 	QString name;
 	QString icon;
 	QString description;

@@ -18,6 +18,69 @@ enum ENetPacketType
 	net_Server,
 };
 
+enum ENetPacketQueryType
+{
+	net_query_auth,
+	net_query_register,
+	net_query_create_profile,
+	net_query_get_profile,
+	net_query_get_shop,
+	net_query_buy_item,
+	net_query_remove_item,
+	net_query_send_invite,
+	net_query_decline_invite,
+	net_query_accept_invite,
+	net_query_add_friend,
+	net_query_remove_friend,
+	net_query_send_chat_msg,
+	net_query_get_server,
+};
+
+enum ENetPacketResultType
+{
+	net_result_auth_fail,
+	net_result_auth_complete,
+	net_result_register_fail,
+	net_result_register_complete,
+	net_result_profile_creation_fail,
+	net_result_profile_creation_complete,
+	net_result_get_profile_fail,
+	net_result_get_profile_complete,
+	net_result_get_shop_fail,
+	net_result_get_shop_complete,
+	net_result_buy_item_fail,
+	net_result_buy_item_complete,
+	net_result_remove_item_fail,
+	net_result_remove_item_complete,
+	net_result_send_invite_fail,
+	net_result_send_invite_complete,
+	net_result_decline_invite_fail,
+	net_result_decline_invite_complete,
+	net_result_accept_invite_fail,
+	net_result_accept_invite_complete,
+	net_result_add_friend_fail,
+	net_result_add_friend_complete,
+	net_result_remove_friend_fail,
+	net_result_remove_friend_complete,
+	net_result_send_chat_msg_fail,
+	net_result_send_chat_msg_complete,
+	net_result_get_server_fail,
+	net_result_get_server_complete,
+};
+
+enum ENetPacketErrorType
+{
+};
+
+enum ENetPacketServerType
+{
+	net_server_global_chat_msg,
+	net_server_private_chat_msg,
+	net_server_message,
+	net_server_command,
+	net_server_register_game_server,
+};
+
 class NetPacket
 {
 public:
@@ -38,6 +101,7 @@ public:
 public:
 	const char* toString();
 	ENetPacketType getType();
+	int size();
 private:
 	void SetMagicHeader();
 	void SetPacketType(ENetPacketType type);

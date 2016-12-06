@@ -14,6 +14,7 @@
 #include <QMutex>
 
 #include "tcpthread.h"
+#include "netpacket.h"
 
 class TcpServer : public QTcpServer
 {
@@ -25,8 +26,8 @@ public slots:
 public:
 	void Clear();
 public:
-	void sendMessageToClient(QSslSocket* socket, QByteArray &data);
-	void sendGlobalMessage(QByteArray &data);
+	void sendMessageToClient(QSslSocket* socket, NetPacket &packet);
+	void sendGlobalMessage(NetPacket &packet);
 public:
     virtual void setMaxThreads(int maximum);
     virtual bool listen(const QHostAddress &address, quint16 port);
