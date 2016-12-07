@@ -6,8 +6,7 @@
 #include "remoteserver.h"
 #include "remoteclientquerys.h"
 #include "settings.h"
-
-#include <QXmlStreamReader>
+#include "netpacket.h"
 
 RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)
 {
@@ -105,43 +104,52 @@ void RemoteConnection::readyRead()
 
 	qDebug() << "Read message from remote client" << m_socket;
 
-	QByteArray bytes = m_socket->readAll();
-	QXmlStreamReader xml(bytes);
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
+	NetPacket packet(m_socket->readAll());
+
+	if (packet.getType() == net_Query)
 	{
-		QXmlStreamReader::TokenType token = xml.readNext();
-		if (token == QXmlStreamReader::StartDocument)
-			continue;
-		if (token == QXmlStreamReader::StartElement)
+		switch ((ENetPacketQueryType)packet.ReadInt())
 		{
-			if (xml.name() == "query")
-			{
-				QXmlStreamAttributes attributes = xml.attributes();
-				QString type = attributes.value("type").toString();
-
-				qDebug() << "Remote query type = " << type;
-				qDebug() << "Remote query data = " << bytes;
-
-				// Remote admin panel functional
-				if (type == "admin_auth")
-					pQuerys->onAdminLogining(bytes);
-				if (type == "console_command")
-					pQuerys->onConsoleCommandRecived(bytes);
-
-				// Game server functional
-				if (type == "register_game_server")
-					pQuerys->onGameServerRegister(bytes);
-				if (type == "update_game_server")
-					pQuerys->onGameServerUpdateInfo(bytes);
-				if (type == "get_online_profile")
-					pQuerys->onGameServerGetOnlineProfile(bytes);
-				if (type == "update_online_profile")
-					pQuerys->onGameServerUpdateOnlineProfile(bytes);
-
-				return;
-			}
+		case net_query_remote_admin_login:
+		{
+			pQuerys->onAdminLogining(packet);
+			break;
 		}
+		case net_query_remote_server_command:
+		{
+			pQuerys->onConsoleCommandRecived(packet);
+			break;
+		}
+		case net_query_remote_register_server:
+		{
+			pQuerys->onGameServerRegister(packet);
+			break;
+		}
+		case net_query_remote_update_server:
+		{
+			pQuerys->onGameServerUpdateInfo(packet);
+			break;
+		}
+		case net_query_remote_get_profile:
+		{
+			pQuerys->onGameServerGetOnlineProfile(packet);
+			break;
+		}
+		case net_query_remote_update_profile:
+		{
+			pQuerys->onGameServerUpdateOnlineProfile(packet);
+			break;
+		}
+		default:
+		{
+			qCritical() << "Error reading query. Can't get query type!";
+			break;
+		}
+		}
+	}
+	else
+	{
+		qCritical() << "Error reading packet. Can't get packet type!";
 	}
 }
 

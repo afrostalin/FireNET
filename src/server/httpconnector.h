@@ -26,8 +26,8 @@ public slots:
 private:
 	void SendPostRequest(QUrl url, QByteArray requestData);
 private:
-	// Login error types : -1 - no errors, 0 - login not found, 1 - account banned, 2 - wrong password, 3 - database error
-	// Register error types : -1 - no errors, 0 - login alredy register, 3 - database error
+	// Login error types : 0 - Login not found, 1 - Account blocked, 2 - Incorrect password, 3 - Double authorization
+	// Register error types : 0 - Login alredy register, 1 - Can't create account, 2 - Double registration
 	int m_lastError;
 	int m_uid;
 	bool bHaveResult;

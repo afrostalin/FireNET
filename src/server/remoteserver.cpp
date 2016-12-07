@@ -5,6 +5,7 @@
 #include "remoteserver.h"
 #include "remoteconnection.h"
 #include "settings.h"
+#include "netpacket.h"
 
 #include <QDebug>
 
@@ -64,10 +65,10 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 	m_remoteConnection->accept(socketDescriptor);
 }
 
-void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, QByteArray &data)
+void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, NetPacket &paket)
 {
-	qDebug() << "Send message to remote client. Original size = " << data.size();
-	socket->write(data);
+	qDebug() << "Send message to remote client. Original size = " << paket.size();
+	socket->write(paket.toString());
 	socket->waitForBytesWritten(10);
 }
 

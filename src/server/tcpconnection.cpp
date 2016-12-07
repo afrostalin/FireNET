@@ -101,12 +101,9 @@ void TcpConnection::readyRead()
 
     qDebug() << "Read message from client" << m_Socket;
 
-	QByteArray bytes = m_Socket->readAll();
-	NetPacket packet(bytes);
+	NetPacket packet(m_Socket->readAll());
 
-	switch (packet.getType())
-	{
-	case net_Query :
+	if(packet.getType() == net_Query)
 	{
 		switch ((ENetPacketQueryType)packet.ReadInt())
 		{
@@ -188,14 +185,10 @@ void TcpConnection::readyRead()
 			break;
 		}
 		}
-
-		break;
 	}
-	default:
+	else
 	{
 		qCritical() << "Error reading packet. Can't get packet type!";
-		break;
-	}
 	}
 }
 

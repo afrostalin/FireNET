@@ -34,6 +34,13 @@ enum ENetPacketQueryType
 	net_query_remove_friend,
 	net_query_send_chat_msg,
 	net_query_get_server,
+	// Remote server only
+	net_query_remote_admin_login,
+	net_query_remote_server_command,
+	net_query_remote_register_server,
+	net_query_remote_update_server,
+	net_query_remote_get_profile,
+	net_query_remote_update_profile,
 };
 
 enum ENetPacketResultType
@@ -66,6 +73,19 @@ enum ENetPacketResultType
 	net_result_send_chat_msg_complete,
 	net_result_get_server_fail,
 	net_result_get_server_complete,
+	// Remote server only
+	net_result_remote_admin_login_fail,
+	net_result_remote_admin_login_complete,
+	net_result_remote_command_fail,
+	net_result_remote_command_complete,
+	net_result_remote_register_server_fail,
+	net_result_remote_register_server_complete,
+	net_result_remote_update_server_fail,
+	net_result_remote_update_server_complete,
+	net_result_remote_get_profile_fail,
+	net_result_remote_get_profile_complete,
+	net_result_remote_update_profile_fail,
+	net_result_remote_update_profile_complete,
 };
 
 enum ENetPacketErrorType

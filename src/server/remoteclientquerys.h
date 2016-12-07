@@ -6,9 +6,10 @@
 
 #include <QObject>
 #include <QSslSocket>
-#include <QXmlStreamReader>
 
 #include "global.h"
+#include "netpacket.h"
+
 
 class RemoteClientQuerys : public QObject
 {
@@ -20,17 +21,14 @@ public:
 	void SetClient(SRemoteClient* client);
 public:
 	// Administration functional
-	void onAdminLogining(QByteArray &bytes);
-	void onConsoleCommandRecived(QByteArray &bytes);
+	void onAdminLogining(NetPacket &packet);
+	void onConsoleCommandRecived(NetPacket &packet);
 	// Game server functionality
-	void onGameServerRegister(QByteArray &bytes);
-	void onGameServerUpdateInfo(QByteArray &bytes);
+	void onGameServerRegister(NetPacket &packet);
+	void onGameServerUpdateInfo(NetPacket &packet);
 
-	void onGameServerGetOnlineProfile(QByteArray &bytes);
-	void onGameServerUpdateOnlineProfile(QByteArray &bytes);
-private:
-	QXmlStreamAttributes GetAttributesFromArray(QByteArray &bytes);
-	QString ProfileToString(SProfile* profile);
+	void onGameServerGetOnlineProfile(NetPacket &packet);
+	void onGameServerUpdateOnlineProfile(NetPacket &packet);
 private:
 	bool CheckInTrustedList(QString name, QString ip, int port);
 private:

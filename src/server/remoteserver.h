@@ -13,6 +13,7 @@
 #include "global.h"
 
 class RemoteConnection;
+class NetPacket;
 
 class RemoteServer : public QTcpServer
 {
@@ -41,7 +42,7 @@ private:
 	bool CreateServer();
 public:
     virtual void incomingConnection(qintptr socketDescriptor);
-	void sendMessageToRemoteClient(QSslSocket* socket, QByteArray &data);
+	void sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
 public:
 	bool bHaveAdmin;
 private:

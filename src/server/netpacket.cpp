@@ -22,7 +22,7 @@
 NetPacket::NetPacket(ENetPacketType type)
 {
 	m_data = "";
-	m_separator = "~";
+	m_separator = "|";
 	m_type = net_Empty;
 	m_MagicHeader = "";
 	m_MagicFooter = "";
@@ -43,7 +43,7 @@ NetPacket::NetPacket(const char * data)
 	{
 		m_data = data;
 		m_type = net_Empty;
-		m_separator = "~";
+		m_separator = "|";
 		m_MagicHeader = "";
 		m_MagicFooter = "";
 
