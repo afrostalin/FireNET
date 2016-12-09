@@ -462,8 +462,8 @@ void ClientQuerys::onGetShopItems()
 
 		for (auto it = m_shop.begin(); it != m_shop.end(); ++it)
 		{
-			// rifle;icons/rifle.png;@rifle_desc;3500
-			m_shopList.append(it->name + ";" + it->icon + ";" + it->description + ";" + QString::number(it->cost) + ";");
+			// name;icon;description;cost;minLvl
+			m_shopList.append(it->name + ";" + it->icon + ";" + it->description + ";" + QString::number(it->cost) + ";" + QString::number(it->minLnl) + ";");
 		}
 
 		NetPacket m_packet(net_Result);

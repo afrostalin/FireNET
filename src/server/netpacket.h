@@ -88,10 +88,6 @@ enum ENetPacketResultType
 	net_result_remote_update_profile_complete,
 };
 
-enum ENetPacketErrorType
-{
-};
-
 enum ENetPacketServerType
 {
 	net_server_global_chat_msg,

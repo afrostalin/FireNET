@@ -240,9 +240,9 @@ void NetPacket::SetMagicHeader()
 	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
 	char m_MagicKey[10] = "";
 	itoa(m_MagicValue, m_MagicKey, 16);
-	m_MagicHeader = "0x" + std::string(m_MagicKey);
+	m_MagicHeader = "!0x" + std::string(m_MagicKey);
 
-	WriteString("!" + m_MagicHeader);
+	WriteString(m_MagicHeader);
 }
 
 void NetPacket::SetPacketType(ENetPacketType type)
@@ -256,15 +256,27 @@ void NetPacket::SetMagicFooter()
 	char m_MagicKey[10] = "";
 	// Abracadabra
 	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKey, 16);
-	m_MagicFooter = "0x" + std::string(m_MagicKey);
+	m_MagicFooter = "0x" + std::string(m_MagicKey) + "!";
 
-	m_data = m_data + m_MagicFooter + "!";
+	m_data = m_data + m_MagicFooter;
 }
 
 void NetPacket::ReadPacket()
 {
 	if (!m_data.empty())
 	{
+		// First generate header and footer
+		int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
+		char m_MagicKeyH[10] = "";
+		itoa(m_MagicValue, m_MagicKeyH, 16);
+		char m_MagicKeyF[10] = "";
+		itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
+		m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
+		m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
+		//
+
+		qDebug() << "Packet : " << m_data.c_str();
+
 		m_packet = Split(m_data, m_separator.at(0));
 
 		if (m_packet.size() >= 3)
@@ -273,7 +285,7 @@ void NetPacket::ReadPacket()
 			std::string packet_type = m_packet.at(1);
 			std::string packet_footer = m_packet.at(m_packet.size() - 1);
 
-			if (packet_header == "!" + m_MagicHeader && packet_footer == m_MagicFooter + "!")
+			if (packet_header == m_MagicHeader && packet_footer == m_MagicFooter)
 			{
 				m_type = (ENetPacketType)std::stoi(packet_type);
 
@@ -291,6 +303,8 @@ void NetPacket::ReadPacket()
 			else
 			{
 				qCritical() << "Error reading packet. Wrong magic key!";
+				qCritical() << "Header" << packet_header.c_str();
+				qCritical() << "Footer" << packet_footer.c_str();
 				bIsGoodPacket = false;
 			}
 		}
