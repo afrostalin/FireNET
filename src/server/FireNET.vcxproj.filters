@@ -129,6 +129,12 @@
     <ClCompile Include="netpacket.cpp">
       <Filter>FireNET\Server</Filter>
     </ClCompile>
+    <ClCompile Include="scripts.cpp">
+      <Filter>FireNET\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_scripts.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="dbworker.h">
@@ -165,6 +171,9 @@
       <Filter>FireNET\MessageProcessing\RemoteClient</Filter>
     </CustomBuild>
     <CustomBuild Include="settings.h">
+      <Filter>FireNET\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="scripts.h">
       <Filter>FireNET\Tools</Filter>
     </CustomBuild>
   </ItemGroup>

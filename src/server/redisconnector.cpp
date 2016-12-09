@@ -6,8 +6,6 @@
 #include "dbworker.h"
 #include "settings.h"
 
-#include <QDebug>
-
 RedisConnector::RedisConnector(QObject *parent) : QObject(parent)
 {
 	connection = nullptr;

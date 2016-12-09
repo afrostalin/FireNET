@@ -9,8 +9,8 @@
 #include "dbworker.h"
 #include "settings.h"
 #include "netpacket.h"
+#include "scripts.h"
 
-#include <QDebug>
 #include <QCoreApplication>
 
 RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent)
@@ -435,32 +435,13 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 
 bool RemoteClientQuerys::CheckInTrustedList(QString name, QString ip, int port)
 {
-	QFile serverList("scripts/server_list.xml");
+	QVector<STrustedServer> m_server = gEnv->pScripts->GetTrustedList();
 
-	if (!serverList.open(QIODevice::ReadOnly))
+	if (m_server.size() > 0)
 	{
-		qCritical() << "Can't get server_list.xml!!!";
-		return false;
-	}
-
-	QByteArray data = serverList.readAll();
-	serverList.close();
-	serverList.deleteLater();
-	QXmlStreamReader xml(data);
-
-	xml.readNext();
-	while (!xml.atEnd() && !xml.hasError())
-	{
-		xml.readNext();
-
-		if (xml.name() == "Server")
+		for (auto it = m_server.begin(); it != m_server.end(); ++it)
 		{
-			QXmlStreamAttributes attributes = xml.attributes();
-			QString list_name = attributes.value("name").toString();
-			QString list_ip = attributes.value("ip").toString();
-			int list_port = attributes.value("port").toInt();
-
-			if (name == list_name && ip == list_ip && port == list_port)
+			if (it->name == name && it->ip == ip && it->port == port)
 			{
 				qDebug() << "Server found in trusted server list";
 				return true;
@@ -468,6 +449,6 @@ bool RemoteClientQuerys::CheckInTrustedList(QString name, QString ip, int port)
 		}
 	}
 
-	qDebug() << "Server not found in trusted server list!";
+	qWarning() << "Server not found in trusted server list!";
 	return false;
 }

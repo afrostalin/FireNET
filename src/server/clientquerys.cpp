@@ -8,6 +8,7 @@
 #include "httpconnector.h"
 #include "settings.h"
 #include "remoteserver.h"
+#include "scripts.h"
 
 #include <QRegExp>
 
@@ -452,36 +453,32 @@ void ClientQuerys::onGetShopItems()
 		return;
 	}
 
-	// TODO - Not need read shop every time. Need use startup reading!
-	QFile file("scripts/shop.xml");
-	QString cleanShop;
-	QRegExp reg("\r\n");
-
 	TcpServer* pServer = gEnv->pServer;
+	QVector<SShopItem> m_shop = gEnv->pScripts->GetShop();
 
-	if (!file.open(QIODevice::ReadOnly))
+	if (m_shop.size() > 0)
 	{
-		qCritical() << "Can't get shop.xml!!!";
+		QStringList m_shopList;
 
+		for (auto it = m_shop.begin(); it != m_shop.end(); ++it)
+		{
+			// rifle;icons/rifle.png;@rifle_desc;3500
+			m_shopList.append(it->name + ";" + it->icon + ";" + it->description + ";" + QString::number(it->cost) + ";");
+		}
+
+		NetPacket m_packet(net_Result);
+		m_packet.WriteInt(net_result_get_shop_complete);
+		m_packet.WriteString(m_shopList.join(",").toStdString());
+		pServer->sendMessageToClient(m_socket, m_packet);
+	}
+	else
+	{
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_get_shop_fail);
 		m_packet.WriteInt(0);
 
 		return;
 	}
-
-	cleanShop = file.readAll();
-	file.close();
-	file.deleteLater();
-	cleanShop.replace(reg, "");
-
-	QByteArray result;
-	result.append(cleanShop);
-
-	NetPacket m_packet(net_Result);
-	m_packet.WriteInt(net_result_get_shop_complete);
-	m_packet.WriteString(result.toStdString());
-	pServer->sendMessageToClient(m_socket, m_packet);
 }
 
 // Error types : 0 - Item alredy purchased, 1 - Player lvl < minimal lvl for buy this item, 2 - Insufficient money to buy, 3 - Item not found,

@@ -9,6 +9,7 @@
 #include <QRunnable>
 #include <QEventLoop>
 #include <QDebug>
+
 #include "tcpthread.h"
 #include "tcpconnection.h"
 #include "redisconnector.h"

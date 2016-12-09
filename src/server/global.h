@@ -9,8 +9,10 @@ class DBWorker;
 class QTimer;
 class RemoteServer;
 class SettingsManager;
+class Scripts;
 
 #include <QSslSocket>
+#include <QDebug>
 
 // Need for authorization system
 struct SUser
@@ -34,7 +36,7 @@ struct SProfile
 	QString friends;
 };
 
-// Client sturcture
+// Client structure
 struct SClient
 {
 	QSslSocket* socket;
@@ -53,6 +55,14 @@ struct SShopItem
 	int minLnl;
 };
 
+// Trusted server structure
+struct STrustedServer
+{
+	QString name;
+	QString ip;
+	int port;
+};
+
 // Game server sturcture
 struct SGameServer
 {
@@ -65,6 +75,7 @@ struct SGameServer
 	int maxPlayers;
 };
 
+// Remote client sturcture
 struct SRemoteClient
 {
 	QSslSocket* socket;
@@ -82,6 +93,7 @@ struct SGlobalEnvironment
 	QTimer* pTimer;
 	RemoteServer* pRemoteServer;
 	SettingsManager* pSettings;
+	Scripts* pScripts;
 };
 
 extern SGlobalEnvironment* gEnv;

@@ -6,10 +6,7 @@
 #include "dbworker.h"
 #include "tcpserver.h"
 #include "settings.h"
-
-#include <qdatastream.h>
-#include <QXmlStreamReader>
-
+#include "scripts.h"
 
 ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
 {
@@ -63,46 +60,30 @@ bool ClientQuerys::UpdateProfile(SProfile* profile)
 SShopItem ClientQuerys::GetShopItemByName(QString name)
 {
     SShopItem item;
-    QFile file("scripts/shop.xml");
-    QByteArray shop;
 
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        qCritical() << "Can't get shop.xml!!!";
-        return item;
-    }
+	QVector<SShopItem> m_shop = gEnv->pScripts->GetShop();
 
-    shop = file.readAll();
+	if (m_shop.size() > 0)
+	{
+		for (auto it = m_shop.begin(); it != m_shop.end(); ++it)
+		{
+			if (it->name == name)
+			{
+				item.id = it->id;
+				item.name = it->name;
+				item.icon = it->icon;
+				item.description = it->description;
+				item.cost = it->cost;
+				item.minLnl = it->minLnl;
 
-    QXmlStreamReader xml(shop);
-    xml.readNext();
+				return item;
+			}
+		}
+	}
 
-    while (!xml.atEnd() && !xml.hasError())
-    {
-        xml.readNext();
+	NetPacket m_packet(net_Result);
+	m_packet.WriteInt(net_result_get_shop_fail);
+	m_packet.WriteInt(0);
 
-        if (xml.name() == "item")
-        {
-            QXmlStreamAttributes attributes = xml.attributes();
-            if (!attributes.isEmpty())
-            {
-                QString shopItem = attributes.value("name").toString();
-
-                if (shopItem == name)
-                {
-                    item.name = attributes.value("name").toString();
-                    item.icon = attributes.value("icon").toString();
-                    item.description = attributes.value("description").toString();
-                    item.cost = attributes.value("cost").toInt();
-                    item.minLnl = attributes.value("minLvl").toInt();
-                    return item;
-                }
-            }
-        }
-    }
-
-    if (item.name.isEmpty())
-		qDebug() << "Shop item not finded!!!";
-
-    return item;
+	return item;
 }

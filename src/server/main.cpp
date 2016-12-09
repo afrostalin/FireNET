@@ -2,16 +2,14 @@
 // License: http://opensource.org/licenses/MIT
 
 #include <QCoreApplication>
-#include <QDebug>
 #include <QThread>
 #include <QSettings>
 #include <QFile>
 #include <QTimer>
-// Logging tool
 #include <Logger.h>
 #include <FileAppender.h>
 #include <ConsoleAppender.h>
-//
+
 #include "global.h"
 #include "tcpserver.h"
 #include "dbworker.h"
@@ -19,6 +17,7 @@
 #include "httpconnector.h"
 #include "remoteserver.h"
 #include "settings.h"
+#include "scripts.h"
 
 FileAppender *fileAppender;
 ConsoleAppender *consoleAppender;
@@ -35,11 +34,13 @@ static void ClearManager(int sig)
 		gEnv->pRemoteServer->Clear();
 		gEnv->pDBWorker->Clear();
 		gEnv->pSettings->Clear();
+		gEnv->pScripts->Clear();
 
 		gEnv->pServer->deleteLater();
 		gEnv->pRemoteServer->deleteLater();
 		gEnv->pDBWorker->deleteLater();
 		gEnv->pSettings->deleteLater();
+		gEnv->pScripts->deleteLater();
 
 		qApp->quit();
 	}
@@ -194,6 +195,7 @@ int main(int argc, char *argv[])
 	gEnv->pDBWorker = new DBWorker;
 	gEnv->pTimer = new QTimer;	
 	gEnv->pSettings = new SettingsManager;
+	gEnv->pScripts = new Scripts;
 
 	// Connect pTimer with Update functions
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pServer, &TcpServer::Update);
@@ -202,7 +204,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.6";
-	int buildNumber = 106;
+	int buildNumber = 108;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
@@ -259,6 +261,10 @@ int main(int argc, char *argv[])
 
 			// Init connection to databases
 			gEnv->pDBWorker->Init();
+
+			// Load scripts 
+			gEnv->pScripts->LoadShopScript();
+			gEnv->pScripts->LoadTrustedServerList();
 		}
 		else
 		{

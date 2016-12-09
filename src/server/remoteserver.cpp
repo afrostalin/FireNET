@@ -7,8 +7,6 @@
 #include "settings.h"
 #include "netpacket.h"
 
-#include <QDebug>
-
 RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent)
 {
 	m_Server = nullptr;

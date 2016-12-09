@@ -5,9 +5,6 @@
 #define CLIENTQUERYS_H
 
 #include <QObject>
-#include <QDebug>
-#include <QSslSocket>
-#include <QFile>
 
 #include "redisconnector.h"
 #include "global.h"

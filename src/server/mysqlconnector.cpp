@@ -6,8 +6,6 @@
 #include "dbworker.h"
 #include "settings.h"
 
-#include <QDebug>
-
 MySqlConnector::MySqlConnector(QObject *parent) : QObject(parent)
 {
 	connectStatus = false;

@@ -5,11 +5,9 @@
 #define REMOTECLIENTQUERYS_H
 
 #include <QObject>
-#include <QSslSocket>
 
 #include "global.h"
 #include "netpacket.h"
-
 
 class RemoteClientQuerys : public QObject
 {
