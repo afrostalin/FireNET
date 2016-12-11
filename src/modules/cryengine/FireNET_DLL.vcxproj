@@ -41,19 +41,21 @@
     <ClCompile Include="src\FlowNodes.cpp" />
     <ClCompile Include="src\Global.cpp" />
     <ClCompile Include="src\moc_network.cpp" />
-    <ClCompile Include="src\Network.cpp" />
+    <ClCompile Include="src\netpacket.cpp" />
+    <ClCompile Include="src\NetworkThread.cpp" />
     <ClCompile Include="src\StdAdx.cpp" />
     <ClCompile Include="src\UIEvents.cpp" />
-    <ClCompile Include="src\XmlWorker.cpp" />
+    <ClCompile Include="src\NetWorker.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="includes\FireNET_Base.h" />
     <ClInclude Include="src\CFireNET_Base.h" />
     <ClInclude Include="src\CVars.h" />
     <ClInclude Include="src\Global.h" />
-    <ClInclude Include="src\Network.h" />
+    <ClInclude Include="src\netpacket.h" />
+    <ClInclude Include="src\NetworkThread.h" />
     <ClInclude Include="src\UIEvents.h" />
-    <ClInclude Include="src\XmlWorker.h" />
+    <ClInclude Include="src\NetWorker.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0EEC0F51-2CD0-49AB-B7B5-9D43457F6994}</ProjectGuid>
@@ -238,7 +240,7 @@
       <AdditionalDependencies>ws2_32.lib;ntdll.lib;ProfilerCore64.lib;Qt5Core.lib;Qt5Network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>..\..\..\tools\moc "src\network.h" -o "src\moc_network.cpp"</Command>
+      <Command>..\..\..\tools\moc "src\NetworkThread.h" -o "src\moc_network.cpp"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Dedicated|x64'">
@@ -272,7 +274,7 @@
       <AdditionalDependencies>ws2_32.lib;ntdll.lib;ProfilerCore64.lib;Qt5Core.lib;Qt5Network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>..\..\..\tools\moc "src\network.h" -o "src\moc_network.cpp"</Command>
+      <Command>..\..\..\tools\moc "src\NetworkThread.h" -o "src\moc_network.cpp"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -329,7 +331,7 @@
       <AdditionalDependencies>ws2_32.lib;ntdll.lib;ProfilerCore64.lib;Qt5Core.lib;Qt5Network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>..\..\..\tools\moc "src\network.h" -o "src\moc_network.cpp"</Command>
+      <Command>..\..\..\tools\moc "src\NetworkThread.h" -o "src\moc_network.cpp"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_Dedicated|x64'">
@@ -352,7 +354,7 @@
       <AdditionalDependencies>ws2_32.lib;ntdll.lib;ProfilerCore64.lib;Qt5Core.lib;Qt5Network.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>..\..\..\tools\moc "src\network.h" -o "src\moc_network.cpp"</Command>
+      <Command>..\..\..\tools\moc "src\NetworkThread.h" -o "src\moc_network.cpp"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -4,6 +4,7 @@
 #include <StdAfx.h>
 #include <CryFlowGraph/IFlowBaseNode.h>
 #include "Global.h"
+#include "NetPacket.h"
 
 #include "Shellapi.h"
 
@@ -90,10 +91,14 @@ namespace FireNET_FlowNodes
 						{
 							string login = GetPortString(pActInfo, EIP_Login);
 							string password = GetPortString(pActInfo, EIP_Password);
-							string query = "<query type='auth'><data login='" + login + "' password='" + password + "'/></query>";
+
+							NetPacket packet(net_Query);
+							packet.WriteInt(net_query_auth);
+							packet.WriteString(login.c_str());
+							packet.WriteString(password.c_str());
 
 							if (gModuleEnv->pNetwork)
-								gModuleEnv->pNetwork->SendQuery(query.c_str());
+								gModuleEnv->pNetwork->SendQuery(packet);
 						}
 					}
 				}
@@ -187,10 +192,14 @@ namespace FireNET_FlowNodes
 						{
 							string login = GetPortString(pActInfo, 1);
 							string password = GetPortString(pActInfo, 2);
-							string query = "<query type='register'><data login='" + login + "' password='" + password + "'/></query>";
+
+							NetPacket packet(net_Query);
+							packet.WriteInt(net_query_register);
+							packet.WriteString(login.c_str());
+							packet.WriteString(password.c_str());
 
 							if (gModuleEnv->pNetwork)
-								gModuleEnv->pNetwork->SendQuery(query.c_str());
+								gModuleEnv->pNetwork->SendQuery(packet);
 						}
 					}
 				}
@@ -274,10 +283,14 @@ namespace FireNET_FlowNodes
 
 						string nickname = GetPortString(pActInfo, EIP_Nickname);
 						string model = GetPortString(pActInfo, EIP_Model);
-						string query = "<query type='create_profile'><data nickname='" + nickname + "' fileModel='" + model + "'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_create_profile);
+						packet.WriteString(nickname.c_str());
+						packet.WriteString(model.c_str());
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -345,10 +358,11 @@ namespace FireNET_FlowNodes
 			{
 				if (IsPortActive(pActInfo, EIP_Get))
 				{
-					string query = "<query type='get_profile'/>";
+					NetPacket packet(net_Query);
+					packet.WriteInt(net_query_get_profile);
 
 					if (gModuleEnv->pNetwork)
-						gModuleEnv->pNetwork->SendQuery(query.c_str());
+						gModuleEnv->pNetwork->SendQuery(packet);
 				}
 			}
 			break;
@@ -415,10 +429,11 @@ namespace FireNET_FlowNodes
 			{
 				if (IsPortActive(pActInfo, EIP_Get))
 				{
-					string query = "<query type='get_shop_items'/>";
+					NetPacket packet(net_Query);
+					packet.WriteInt(net_query_get_shop);
 
 					if (gModuleEnv->pNetwork)
-						gModuleEnv->pNetwork->SendQuery(query.c_str());
+						gModuleEnv->pNetwork->SendQuery(packet);
 				}
 			}
 			break;
@@ -497,10 +512,13 @@ namespace FireNET_FlowNodes
 					{
 
 						string itemName = GetPortString(pActInfo, EIP_Item);
-						string query = "<query type='buy_item'><data item = '" + itemName + "'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_buy_item);
+						packet.WriteString(itemName.c_str());
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -580,10 +598,13 @@ namespace FireNET_FlowNodes
 					{
 
 						string itemName = GetPortString(pActInfo, EIP_Item);
-						string query = "<query type='remove_item'><data name = '" + itemName + "'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_remove_item);
+						packet.WriteString(itemName.c_str());
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -696,10 +717,12 @@ namespace FireNET_FlowNodes
 
 						if (!userAdded)
 						{
-							string query = "<query type='invite'><data invite_type='friend_invite' to='" + userName + "'/></query>";
+							NetPacket packet(net_Query);
+							packet.WriteInt(net_query_send_invite);
+							packet.WriteString(userName.c_str());
 
 							if (gModuleEnv->pNetwork)
-								gModuleEnv->pNetwork->SendQuery(query.c_str());
+								gModuleEnv->pNetwork->SendQuery(packet);
 						}
 					}
 				}
@@ -786,10 +809,13 @@ namespace FireNET_FlowNodes
 					else
 					{
 						string userName = GetPortString(pActInfo, EIP_UserName);
-						string query = "<query type='decline_invite'><data to='" + userName + "'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_decline_invite);
+						packet.WriteString(userName.c_str());
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -869,10 +895,13 @@ namespace FireNET_FlowNodes
 					{
 
 						string friendName = GetPortString(pActInfo, EIP_Friend);
-						string query = "<query type='add_friend'><data name = '" + friendName + "'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_add_friend);
+						packet.WriteString(friendName.c_str());
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -952,10 +981,13 @@ namespace FireNET_FlowNodes
 					{
 
 						string friendName = GetPortString(pActInfo, EIP_Friend);
-						string query = "<query type='remove_friend'><data name = '" + friendName + "'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_remove_friend);
+						packet.WriteString(friendName.c_str());
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -1120,10 +1152,14 @@ namespace FireNET_FlowNodes
 					{
 
 						string message = GetPortString(pActInfo, EIP_Message);
-						string query = "<query type = 'chat_message'><data message = '" + message + "' to = 'all'/></query>";
+
+						NetPacket packet(net_Query);
+						packet.WriteInt(net_query_send_chat_msg);
+						packet.WriteString(message.c_str());
+						packet.WriteString("all");
 
 						if (gModuleEnv->pNetwork)
-							gModuleEnv->pNetwork->SendQuery(query.c_str());
+							gModuleEnv->pNetwork->SendQuery(packet);
 					}
 				}
 			}
@@ -1208,10 +1244,13 @@ namespace FireNET_FlowNodes
 
 						if (reciver != "")
 						{
-							string query = "<query type = 'chat_message'><data message = '" + message + "' to = '" + reciver + "'/></query>";
+							NetPacket packet(net_Query);
+							packet.WriteInt(net_query_send_chat_msg);
+							packet.WriteString(message.c_str());
+							packet.WriteString(reciver.c_str());
 
 							if (gModuleEnv->pNetwork)
-								gModuleEnv->pNetwork->SendQuery(query.c_str());
+								gModuleEnv->pNetwork->SendQuery(packet);
 						}
 						else
 						{
@@ -1578,10 +1617,14 @@ namespace FireNET_FlowNodes
 					string gamerules = GetPortString(pActInfo, EIP_Gamerules);
 					string serverName = GetPortString(pActInfo, EIP_Name);
 
-					string query = "<query type='get_game_server'><data map = '" + mapName + "' gamerules = '" + gamerules + "' name = '" + serverName + "'/><query/>";
+					NetPacket packet(net_Query);
+					packet.WriteInt(net_query_get_server);
+					packet.WriteString(mapName.c_str());
+					packet.WriteString(gamerules.c_str());
+					packet.WriteString(serverName.c_str());
 
 					if (gModuleEnv->pNetwork)
-						gModuleEnv->pNetwork->SendQuery(query.c_str());
+						gModuleEnv->pNetwork->SendQuery(packet);
 				}
 			}
 			break;

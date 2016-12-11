@@ -66,7 +66,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 				// Auth complete
 				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_auth_complete);
+				m_packet.WriteInt(net_result_auth_complete_with_profile);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
 			}
@@ -151,7 +151,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
 				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_auth_complete);
+				m_packet.WriteInt(net_result_auth_complete_with_profile);
 				pServer->sendMessageToClient(m_socket, m_packet);
 
 				return;
@@ -751,7 +751,8 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			// Send invite to user
 			NetPacket invite(net_Query);
 			invite.WriteInt(net_query_send_invite);
-			invite.WriteInt(m_Client->profile->uid); // From
+			invite.WriteInt(0); // Friend invite
+			invite.WriteString(m_Client->profile->nickname.toStdString()); // From
 			pServer->sendMessageToClient(reciverSocket, invite);
 			return;
 		}
@@ -1090,7 +1091,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 	}
 }
 
-// Error types : 0 - Can't send message to himself, 1 - Reciver not online
+// Error types : 0 - Can't send message to yourself, 1 - Reciver not online
 void ClientQuerys::onChatMessage(NetPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)

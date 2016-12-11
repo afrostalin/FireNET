@@ -166,10 +166,12 @@ namespace FireNET
 				}
 			}
 
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, TITLE "Profile %d not found", uid);
+			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_WARNING, TITLE "Profile %d not found. Send get profile query to FireNET", uid);
 
-			QString query = "<query type='get_online_profile'><data uid ='" + QString::number(uid) + "'/></query>";
-			gModuleEnv->pNetwork->SendQuery(query.toStdString().c_str());
+			NetPacket packet(net_Query);
+			packet.WriteInt(net_query_remote_get_profile);
+			packet.WriteInt(uid);
+			gModuleEnv->pNetwork->SendQuery(packet);
 
 			return nullptr;
 		}
@@ -185,23 +187,23 @@ namespace FireNET
 	// Update profile
 	bool CFireNETBase::UpdateProfile(SProfile * profile)
 	{
-		CryLog(TITLE "UpdateProfile()");
+		CryLog(TITLE "UpdateProfile() executed on server");
 
-		QString query = "<query type='update_online_profile'>"
-			"<data uid ='" + QString::number(profile->uid) +
-			"' nickname ='" + profile->nickname +
-			"' fileModel ='" + profile->fileModel +
-			"' lvl ='" + QString::number(profile->lvl) +
-			"' xp ='" + QString::number(profile->xp) +
-			"' money ='" + QString::number(profile->money) +
-			"' items ='" + profile->items +
-			"' friends ='" + profile->friends + "'/>"
-			"</query>";
+		NetPacket packet(net_Query);
+		packet.WriteInt(net_query_remote_update_profile);
+		packet.WriteInt(profile->uid);
+		packet.WriteString(profile->nickname.c_str());
+		packet.WriteString(profile->fileModel.c_str());
+		packet.WriteInt(profile->lvl);
+		packet.WriteInt(profile->xp);
+		packet.WriteInt(profile->money);
+		packet.WriteString(profile->items.c_str());
+		packet.WriteString(profile->friends.c_str());
 
 		if (gModuleEnv->pNetwork)
 		{
 			// TODO : Use sync query
-			return gModuleEnv->pNetwork->SendQuery(query.toStdString().c_str());
+			return gModuleEnv->pNetwork->SendQuery(packet);
 		}
 
 		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't update profile because you not connected to FireNET");

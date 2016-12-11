@@ -6,8 +6,8 @@
 
 #include "CVars.h"
 #include "UIEvents.h"
-#include "XmlWorker.h"
-#include "Network.h"
+#include "NetWorker.h"
+#include "NetworkThread.h"
 #include "../includes/FireNET_Base.h"
 
 #define TITLE "[FireNET] "
@@ -39,17 +39,15 @@ struct SModuleEnv
 {
 	SModuleEnv()
 	{
-		// Strings
 		m_firenet_ip = "127.0.0.1";
-		// Ints
 		m_firenet_port = 3322;
-		// Floats
+		m_magic_key = 2016206; // You need update this key on server and client!
 		m_timeout = 3.0f;
-		// Booleans
+
 		bConnected = false;
-		// Pointers
+
 		pCVars = new CModuleCVars;
-		pXmlWorker = new CXmlWorker;
+		pNetWorker = new CNetWorker;
 		pNetwork = nullptr;
 
 #ifndef DEDICATED_SERVER
@@ -59,7 +57,7 @@ struct SModuleEnv
 	}
 
 	CModuleCVars* pCVars;
-	CXmlWorker* pXmlWorker;
+	CNetWorker* pNetWorker;
 	CNetwork* pNetwork;
 
 #ifdef DEDICATED_SERVER
@@ -75,6 +73,7 @@ struct SModuleEnv
 
 	string m_firenet_ip;
 	int m_firenet_port;
+	int m_magic_key;
 	float m_timeout;
 
 	bool bConnected;

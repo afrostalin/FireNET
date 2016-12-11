@@ -14,12 +14,6 @@
     <ClCompile Include="src\CVars.cpp">
       <Filter>Console variables</Filter>
     </ClCompile>
-    <ClCompile Include="src\Network.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XmlWorker.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="src\Global.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -29,6 +23,15 @@
     <ClCompile Include="src\CFireNET_Base.cpp">
       <Filter>System\Base</Filter>
     </ClCompile>
+    <ClCompile Include="src\netpacket.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NetWorker.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NetworkThread.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\UIEvents.h">
@@ -36,12 +39,6 @@
     </ClInclude>
     <ClInclude Include="src\CVars.h">
       <Filter>Console variables</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Network.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XmlWorker.h">
-      <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="src\Global.h">
       <Filter>System</Filter>
@@ -51,6 +48,15 @@
     </ClInclude>
     <ClInclude Include="src\CFireNET_Base.h">
       <Filter>System\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="src\netpacket.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NetWorker.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NetworkThread.h">
+      <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
