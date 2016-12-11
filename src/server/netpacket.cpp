@@ -219,6 +219,12 @@ const char* NetPacket::toString()
 	if (!bInitFromData)
 	{
 		SetMagicFooter();
+
+		if (gEnv->pSettings->GetVariable("bUsePacketDebug").toBool())
+		{
+			qDebug() << "Packet : " << m_data.c_str();
+		}
+
 		return m_data.c_str();
 	}
 	else
@@ -228,11 +234,6 @@ const char* NetPacket::toString()
 ENetPacketType NetPacket::getType()
 {
 	return m_type;
-}
-
-int NetPacket::size()
-{
-	return sizeof(m_data);
 }
 
 void NetPacket::SetMagicHeader()
@@ -274,9 +275,6 @@ void NetPacket::ReadPacket()
 		m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
 		m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
 		//
-
-		qDebug() << "Packet : " << m_data.c_str();
-
 		m_packet = Split(m_data, m_separator.at(0));
 
 		if (m_packet.size() >= 3)
@@ -291,6 +289,11 @@ void NetPacket::ReadPacket()
 
 				if (m_type > 0)
 				{
+					if (gEnv->pSettings->GetVariable("bUsePacketDebug").toBool())
+					{
+						qDebug() << "Packet : " << m_data.c_str();
+					}
+
 					bIsGoodPacket = true;
 					lastIndex = 2; // 0 - header, 1 - type, 2 - start data
 				}

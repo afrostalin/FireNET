@@ -249,7 +249,6 @@ void TcpServer::sendMessageToClient(QSslSocket * socket, NetPacket &packet)
 {
 	if (socket != nullptr)
 	{
-		qDebug() << "Send message to client. Original size = " << packet.size();
 		socket->write(packet.toString());
 		socket->waitForBytesWritten(10);
 	}
@@ -257,8 +256,6 @@ void TcpServer::sendMessageToClient(QSslSocket * socket, NetPacket &packet)
 
 void TcpServer::sendGlobalMessage(NetPacket &packet)
 {
-	qDebug() << "Send message to all clients. Original size = " << packet.size();
-	
 //	QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{

@@ -117,7 +117,6 @@ public:
 public:
 	const char* toString();
 	ENetPacketType getType();
-	int size();
 private:
 	void SetMagicHeader();
 	void SetPacketType(ENetPacketType type);

@@ -67,16 +67,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 				// Auth complete
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete);
-				m_packet.WriteInt(m_Client->profile->uid);
-				m_packet.WriteString(m_Client->profile->nickname.toStdString());
-				m_packet.WriteString(m_Client->profile->fileModel.toStdString());
-				m_packet.WriteInt(m_Client->profile->lvl);
-				m_packet.WriteInt(m_Client->profile->xp);
-				m_packet.WriteInt(m_Client->profile->money);
-				m_packet.WriteString(m_Client->profile->items.toStdString());
-				m_packet.WriteString(m_Client->profile->friends.toStdString());
 				pServer->sendMessageToClient(m_socket, m_packet);
-
 				return;
 			}
 			else
@@ -161,14 +152,6 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete);
-				m_packet.WriteInt(m_Client->profile->uid);
-				m_packet.WriteString(m_Client->profile->nickname.toStdString());
-				m_packet.WriteString(m_Client->profile->fileModel.toStdString());
-				m_packet.WriteInt(m_Client->profile->lvl);
-				m_packet.WriteInt(m_Client->profile->xp);
-				m_packet.WriteInt(m_Client->profile->money);
-				m_packet.WriteString(m_Client->profile->items.toStdString());
-				m_packet.WriteString(m_Client->profile->friends.toStdString());
 				pServer->sendMessageToClient(m_socket, m_packet);
 
 				return;

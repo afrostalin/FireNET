@@ -80,10 +80,5 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
 			}
 		}
 	}
-
-	NetPacket m_packet(net_Result);
-	m_packet.WriteInt(net_result_get_shop_fail);
-	m_packet.WriteInt(0);
-
 	return item;
 }

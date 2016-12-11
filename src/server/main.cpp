@@ -165,6 +165,7 @@ void RegisterVariables()
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false);
 	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3);
 	gEnv->pSettings->RegisterVariable("net_magic_key", 2016206);
+	gEnv->pSettings->RegisterVariable("bUsePacketDebug", false);
 
 	// Gloval vars (This variables not need read from server.cfg)
 	gEnv->pSettings->RegisterVariable("bUseRedis", true);
@@ -203,8 +204,8 @@ int main(int argc, char *argv[])
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
 	
 	// Build version and number
-	QString buildVersion = "2.0.6";
-	int buildNumber = 115;
+	QString buildVersion = "2.0.7";
+	int buildNumber = 1;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
@@ -223,6 +224,10 @@ int main(int argc, char *argv[])
 		ReadServerCFG();
 
 		UpdateLogLevel(gEnv->pSettings->GetVariable("sv_log_level").toInt());
+
+		// Load scripts 
+		gEnv->pScripts->LoadShopScript();
+		gEnv->pScripts->LoadTrustedServerList();
 
 		if (gEnv->pSettings->GetVariable("db_mode").toString() == "Redis")
 		{
@@ -261,10 +266,6 @@ int main(int argc, char *argv[])
 
 			// Init connection to databases
 			gEnv->pDBWorker->Init();
-
-			// Load scripts 
-			gEnv->pScripts->LoadShopScript();
-			gEnv->pScripts->LoadTrustedServerList();
 		}
 		else
 		{

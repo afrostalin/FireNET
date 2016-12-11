@@ -65,9 +65,11 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 
 void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, NetPacket &paket)
 {
-	qDebug() << "Send message to remote client. Original size = " << paket.size();
-	socket->write(paket.toString());
-	socket->waitForBytesWritten(10);
+	if (socket != nullptr)
+	{
+		socket->write(paket.toString());
+		socket->waitForBytesWritten(10);
+	}
 }
 
 void RemoteServer::AddNewClient(SRemoteClient client)
