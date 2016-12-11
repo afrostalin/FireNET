@@ -47,6 +47,7 @@ enum ENetPacketResultType
 {
 	net_result_auth_fail,
 	net_result_auth_complete,
+	net_result_auth_complete_with_profile,
 	net_result_register_fail,
 	net_result_register_complete,
 	net_result_profile_creation_fail,
