@@ -10,8 +10,10 @@ MOC_DIR += $$PWD/temp/moc/client
 OBJECTS_DIR += $$PWD/temp/obj/client
 
 SOURCES += src/client/main.cpp\
-        src/client/mainwindow.cpp
+        src/client/mainwindow.cpp \
+    src/client/netpacket.cpp
 
-HEADERS  += src/client/mainwindow.h
+HEADERS  += src/client/mainwindow.h \
+    src/server/netpacket.h
 
 FORMS    += src/client/mainwindow.ui

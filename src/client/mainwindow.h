@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QSslSocket>
+#include "src/server/netpacket.h"
 
 namespace Ui {
 class MainWindow;
@@ -62,7 +63,7 @@ private:
     bool stress_test;
     QSslSocket* m_socket;
 private:
-    void SendMessageToServer(QByteArray data);
+    void SendMessageToServer(NetPacket &packet);
 };
 
 #endif // MAINWINDOW_H

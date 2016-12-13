@@ -4,6 +4,7 @@
 #include <QTcpServer>
 #include <QTimer>
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -71,7 +72,7 @@ void MainWindow::onReadyRead()
 
 void MainWindow::onBytesWritten(qint64 bytes)
 {
-    qDebug() << "Bytes written";
+    qDebug() << "Packet sended. Size " << bytes;
 }
 
 void MainWindow::onDisconnected()
@@ -100,10 +101,9 @@ void MainWindow::onDisconnected()
     ui->sendPrivateBtn->setEnabled(false);
 }
 
-void MainWindow::SendMessageToServer(QByteArray data)
+void MainWindow::SendMessageToServer(NetPacket &packet)
 {
-    //QByteArray compressedData = qCompress(data,9);
-    m_socket->write(data);
+    m_socket->write(packet.toString());
     m_socket->waitForBytesWritten(3);
 }
 
@@ -127,65 +127,86 @@ void MainWindow::on_registerBtn_clicked()
 {
     QString login = ui->loginTxt->text();
     QString password = ui->passwordTxt->text();
-    QString query = "<query type = 'register'><data login='" + login + "' password = '" + password + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_register);
+    packet.WriteString(login.toStdString());
+    packet.WriteString(password.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_loginBtn_clicked()
 {
     QString login = ui->loginTxt->text();
     QString password = ui->passwordTxt->text();
-    QString query = "<query type = 'auth'><data login='" + login + "' password = '" + password + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_auth);
+    packet.WriteString(login.toStdString());
+    packet.WriteString(password.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_createProfileBtn_clicked()
 {
     QString nickname = ui->nicknameTxt->text();
     QString model = ui->modelTxt->text();
-    QString query = "<query type = 'create_profile'><data nickname='" + nickname + "' fileModel = '" + model + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_create_profile);
+    packet.WriteString(nickname.toStdString());
+    packet.WriteString(model.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_getProfileBtn_clicked()
 {
-    QString query = "<query type = 'get_profile'/>";
-
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_get_profile);
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_getShopBtn_clicked()
 {
-    QString query = "<query type = 'get_shop_items'/>";
-
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_get_shop);
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_buyItemBtn_clicked()
 {
     QString itemName = ui->itemNameTxt->text();
-    QString query = "<query type = 'buy_item'><data item = '" + itemName + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_buy_item);
+    packet.WriteString(itemName.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_addFriendBtn_clicked()
 {
     QString friendName = ui->friendNameTxt->text();
-    QString query = "<query type = 'add_friend'><data name = '" + friendName + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_add_friend);
+    packet.WriteString(friendName.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_removeFriendBtn_clicked()
 {
     QString friendName = ui->friendNameTxt->text();
-    QString query = "<query type = 'remove_friend'><data name = '" + friendName + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_remove_friend);
+    packet.WriteString(friendName.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_getServerBtn_clicked()
@@ -193,9 +214,14 @@ void MainWindow::on_getServerBtn_clicked()
     QString mapName = ui->mapNameTxt->text();
     QString gameRules = ui->gamerulesTxt->text();
     QString serverName = ui->serverNameTxt->text();
-    QString query = "<query type = 'get_game_server'><data map = '" + mapName + "' gamerules = '" + gameRules + "' name = '" + serverName + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_get_server);
+    packet.WriteString(mapName.toStdString());
+    packet.WriteString(gameRules.toStdString());
+    packet.WriteString(serverName.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_clearBtn_clicked()
@@ -203,12 +229,16 @@ void MainWindow::on_clearBtn_clicked()
     ui->logWindow->clear();
 }
 
+// Remove item
 void MainWindow::on_pushButton_clicked()
 {
     QString itemName = ui->itemNameTxt->text();
-    QString query = "<query type = 'remove_item'><data name = '" + itemName + "'/></query>";
 
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_remove_item);
+    packet.WriteString(itemName.toStdString());
+
+    SendMessageToServer(packet);
 }
 
 void MainWindow::on_disconnectBtn_clicked()
@@ -221,34 +251,64 @@ void MainWindow::on_pushButton_2_clicked()
 {
     stress_test = true;
 
-    QString query = "<query type = 'register'><data login='test' password = 'qwerty'/></query>";
-    QString query1 = "<query type = 'auth'><data login='test' password = 'qwerty'/></query>";
-    QString query2 = "<query type = 'create_profile'><data nickname='Test' fileModel = 'test'/></query>";
-    QString query3 = "<query type = 'get_profile'/>";
-    QString query4 = "<query type = 'get_shop_items'/>";
-    QString query5 = "<query type = 'buy_item'><data item = 'Grenade'/></query>";
-    QString query6 = "<query type = 'remove_item'><data name = 'Grenade'/></query>";
-    QString query7 = "<query type = 'add_friend'><data name = 'AfroStalin'/></query>";
-    QString query8 = "<query type = 'remove_friend'><data name = 'AfroStalin'/></query>";
-    QString query9 = "<query type = 'chat_message'><data message = 'Hello, world' to = 'all'/></query>";
-    QString query10 = "<query type = 'chat_message'><data message = 'Hello, AfroStalin' to = 'AfroStalin'/></query>";
-
     qDebug() << "Stress test runned!";
     ui->logWindow->addItem("Stress test runned!");
 
+    NetPacket login_packet(net_Query);
+    login_packet.WriteInt(net_query_auth);
+    login_packet.WriteString("test@test");
+    login_packet.WriteString("testtest");
+
+    NetPacket reg_packet(net_Query);
+    reg_packet.WriteInt(net_query_register);
+    login_packet.WriteString("test@test");
+    login_packet.WriteString("testtest");
+
+    NetPacket create_profile(net_Query);
+    create_profile.WriteInt(net_query_create_profile);
+    create_profile.WriteString("Test");
+    create_profile.WriteString("objects/character/human/sdk_player/sdk_player.cdf");
+
+    NetPacket get_profile(net_Query);
+    get_profile.WriteInt(net_query_get_profile);
+
+    NetPacket get_shop(net_Query);
+    get_shop.WriteInt(net_query_get_shop);
+
+    NetPacket buy_item(net_Query);
+    buy_item.WriteInt(net_query_buy_item);
+    buy_item.WriteString("pistol");
+
+    NetPacket add_friend(net_Query);
+    add_friend.WriteInt(net_query_add_friend);
+    add_friend.WriteString("AfroStalin");
+
+    NetPacket remove_friend(net_Query);
+    remove_friend.WriteInt(net_query_remove_friend);
+    remove_friend.WriteString("AfroStalin");
+
+    NetPacket get_server(net_Query);
+    get_server.WriteInt(net_query_get_server);
+    get_server.WriteString("Airfield");
+    get_server.WriteString("");
+    get_server.WriteString("");
+
+    NetPacket remove_item(net_Query);
+    remove_item.WriteInt(net_query_remove_item);
+    remove_item.WriteString("pistol");
+
     while(stress_test)
     {
-        SendMessageToServer(query.toStdString().c_str());
-        SendMessageToServer(query1.toStdString().c_str());
-        SendMessageToServer(query2.toStdString().c_str());
-        SendMessageToServer(query3.toStdString().c_str());
-        SendMessageToServer(query4.toStdString().c_str());
-        SendMessageToServer(query5.toStdString().c_str());
-        SendMessageToServer(query6.toStdString().c_str());
-        SendMessageToServer(query7.toStdString().c_str());
-        SendMessageToServer(query8.toStdString().c_str());
-        SendMessageToServer(query9.toStdString().c_str());
-        SendMessageToServer(query10.toStdString().c_str());
+        SendMessageToServer(login_packet);
+        SendMessageToServer(reg_packet);
+        SendMessageToServer(create_profile);
+        SendMessageToServer(get_profile);
+        SendMessageToServer(get_shop);
+        SendMessageToServer(buy_item);
+        SendMessageToServer(add_friend);
+        SendMessageToServer(remove_friend);
+        SendMessageToServer(get_server);
+        SendMessageToServer(remove_item);
 
         QEventLoop loop;
         QTimer::singleShot(33, &loop, SLOT(quit()));
@@ -269,9 +329,12 @@ void MainWindow::on_sendGlobalChatBtn_clicked()
     if(message.isEmpty())
         return;
 
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_send_chat_msg);
+    packet.WriteString(message.toStdString());
+    packet.WriteString("all");
 
-    QString query = "<query type = 'chat_message'><data message = '" + message + "' to = 'all'/></query>";
-    SendMessageToServer(query.toStdString().c_str());
+    SendMessageToServer(packet);
 
     ui->chatTxt->clear();
 }
@@ -283,8 +346,12 @@ void MainWindow::on_sendPrivateBtn_clicked()
     if(message.isEmpty() || clientName.isEmpty())
         return;
 
-    QString query = "<query type = 'chat_message'><data message = '" + message + "' to = '" + clientName + "'/></query>";
-    SendMessageToServer(query.toStdString().c_str());
+    NetPacket packet(net_Query);
+    packet.WriteInt(net_query_send_chat_msg);
+    packet.WriteString(message.toStdString());
+    packet.WriteString(clientName.toStdString());
+
+    SendMessageToServer(packet);
 
     ui->chatTxt->clear();
 }
