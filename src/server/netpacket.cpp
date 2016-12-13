@@ -306,8 +306,8 @@ void NetPacket::ReadPacket()
 			else
 			{
 				qCritical() << "Error reading packet. Wrong magic key!";
-				qCritical() << "Header" << packet_header.c_str();
-				qCritical() << "Footer" << packet_footer.c_str();
+				qDebug() << "Header" << packet_header.c_str();
+				qDebug() << "Footer" << packet_footer.c_str();
 				bIsGoodPacket = false;
 			}
 		}
