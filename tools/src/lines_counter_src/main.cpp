@@ -54,6 +54,11 @@ int main(int argc, char *argv[])
     fileList.push_back(serverFolder + "\\settings.cpp");
     fileList.push_back(serverFolder + "\\settings.h");
 
+    fileList.push_back(serverFolder + "\\scripts.cpp");
+    fileList.push_back(serverFolder + "\\scripts.h");
+
+    fileList.push_back(serverFolder + "\\netpacket.cpp");
+    fileList.push_back(serverFolder + "\\netpacket.h");
 
     int linesCounter = 0;
 
