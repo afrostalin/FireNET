@@ -16,9 +16,11 @@ TEMPLATE = app
 SOURCES += src/remote_admin_panel/main.cpp \
     src/remote_admin_panel/inputlistener.cpp \
     src/remote_admin_panel/global.cpp \
-    src/remote_admin_panel/client.cpp
+    src/remote_admin_panel/client.cpp \
+    src/remote_admin_panel/netpacket.cpp
 
 HEADERS += \
     src/remote_admin_panel/inputlistener.h \
     src/remote_admin_panel/global.h \
-    src/remote_admin_panel/client.h
+    src/remote_admin_panel/client.h \
+    src/server/netpacket.h

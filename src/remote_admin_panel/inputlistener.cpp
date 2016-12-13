@@ -1,6 +1,7 @@
 #include "inputlistener.h"
 #include "global.h"
 #include "client.h"
+#include "src/server/netpacket.h"
 
 #include <QTextStream>
 #include <QDebug>
@@ -27,13 +28,11 @@ void InputListener::Run()
             qDebug() << "connect - connecting to FireNET with default address (127.0.0.1:64000)";
             qDebug() << "login <login> <password> - authorization in FireNET by login and password";
             qDebug() << "status - get full FireNET status";
-            qDebug() << "send_global_message <message> - Send message to all connected players";
-            qDebug() << "send_console_command <command> <arguments> - Send console command to all connected players";
+            qDebug() << "send_message <message> - Send message to all connected players";
+            qDebug() << "send_command <command> <arguments> - Send console command to all connected players";
             qDebug() << "players - Get player list";
             qDebug() << "servers - Get game server list";
-        }
-
-        if(input.contains("connect"))
+        }else if(input.contains("connect"))
         {
             QStringList list = input.split(" ");
             if(list.size() == 3)
@@ -50,9 +49,7 @@ void InputListener::Run()
                 qDebug() << "Start connection to FireNET (127.0.0.1:64000)";
                 gEnv->pClient-> ConnectToServer("127.0.0.1", 64000);
             }
-        }
-
-        if(input.contains("login"))
+        }else if(input.contains("login"))
         {
             QStringList list = input.split(" ");
             if(list.size() == 3)
@@ -60,71 +57,75 @@ void InputListener::Run()
                 QString login = list[1];
                 QString password = list[2];
 
-                qDebug() << "Start loggining in FireNET";
+                NetPacket packet(net_Query);
+                packet.WriteInt(net_query_remote_admin_login);
+                packet.WriteString(login.toStdString());
+                packet.WriteString(password.toStdString());
 
-                QByteArray query;
-                query.append("<query type = 'admin_auth'><data login='" + login + "' password = '" + password + "'/></query>");
-
-                gEnv->pClient->SendMessage(query);
+                gEnv->pClient->SendMessage(packet);
             }
             else
             {
                 qDebug() << "Syntax error! Use login <login> <password>";
             }
-        }
-
-        if(input == "status")
+        }else if(input == "status")
         {
-            QByteArray query;
-            query.append("<query type = 'console_command'><data command='status' value=''/></query>");
+            NetPacket packet(net_Query);
+            packet.WriteInt(net_query_remote_server_command);
+            packet.WriteString("status");
+            packet.WriteString("");
 
-            gEnv->pClient->SendMessage(query);
-        }
-
-        if(input.contains("send_global_message"))
+            gEnv->pClient->SendMessage(packet);
+        }else if(input.contains("send_message"))
         {
-            QString message = input.remove("send_global_message");
+            QString message = input.remove("send_message");
 
             if(!message.isEmpty())
             {
-                QByteArray query;
-                query.append("<query type = 'console_command'><data command='send_global_message' value='" + message + "'/></query>");
+                NetPacket packet(net_Query);
+                packet.WriteInt(net_query_remote_server_command);
+                packet.WriteString("send_message");
+                packet.WriteString(message.toStdString());
 
-                gEnv->pClient->SendMessage(query);
+                gEnv->pClient->SendMessage(packet);
             }
             else
-                qDebug() << "Syntax error! Use send_global_message <message>";
-        }
-
-        if(input.contains("send_console_command"))
+                qDebug() << "Syntax error! Use send_message <message>";
+        }else if(input.contains("send_command"))
         {
-            QString message = input.remove("send_console_command");
+            QString message = input.remove("send_command");
 
             if(!message.isEmpty())
             {
-                QByteArray query;
-                query.append("<query type = 'console_command'><data command='send_console_command' value='" + message + "'/></query>");
+                NetPacket packet(net_Query);
+                packet.WriteInt(net_query_remote_server_command);
+                packet.WriteString("send_command");
+                packet.WriteString(message.toStdString());
 
-                gEnv->pClient->SendMessage(query);
+                gEnv->pClient->SendMessage(packet);
             }
             else
                 qDebug() << "Syntax error! Use send_console_command <command> <arguments>";
-        }
-
-        if(input == "players")
+        }else if(input == "players")
         {
-            QByteArray query;
-            query.append("<query type = 'console_command'><data command='players' value=''/></query>");
+            NetPacket packet(net_Query);
+            packet.WriteInt(net_query_remote_server_command);
+            packet.WriteString("players");
+            packet.WriteString("");
 
-            gEnv->pClient->SendMessage(query);
-        }
-
-        if(input == "servers")
+            gEnv->pClient->SendMessage(packet);
+        }else if(input == "servers")
         {
-            QByteArray query;
-            query.append("<query type = 'console_command'><data command='servers' value=''/></query>");
+            NetPacket packet(net_Query);
+            packet.WriteInt(net_query_remote_server_command);
+            packet.WriteString("servers");
+            packet.WriteString("");
 
-            gEnv->pClient->SendMessage(query);
+            gEnv->pClient->SendMessage(packet);
+        }
+        else
+        {
+            qCritical() << "Unknown command";
         }
 
         QEventLoop loop;

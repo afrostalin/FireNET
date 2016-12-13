@@ -6,8 +6,15 @@ class InputListener;
 
 struct SGlobalEnvironment
 {
+    SGlobalEnvironment()
+    {
+        magicKey = 2016207;
+        bUsePacketDebug = false;
+    }
     RemoteClient* pClient;
     InputListener* pListener;
+    int magicKey;
+    bool bUsePacketDebug;
 };
 
 extern SGlobalEnvironment* gEnv;

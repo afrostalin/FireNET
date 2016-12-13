@@ -26,11 +26,11 @@ void RemoteClient::ConnectToServer(QString ip, int port)
     }
 }
 
-void RemoteClient::SendMessage(QByteArray &data)
+void RemoteClient::SendMessage(NetPacket &packet)
 {
     if(m_socket)
     {
-        m_socket->write(data);
+        m_socket->write(packet.toString());
         m_socket->waitForBytesWritten(10);
     }
     else
@@ -47,19 +47,93 @@ void RemoteClient::onReadyRead()
 {
     if(m_socket)
     {
-        QByteArray data = m_socket->readAll();
-        QString rawData = data;
-        QStringList clearData = rawData.split("\n");
+       NetPacket packet(m_socket->readAll());
 
-        //qDebug() << "FireNET answer :";
+       if(packet.getType() == net_Result)
+       {
+           switch (packet.ReadInt())
+           {
+           case net_result_remote_admin_login_complete:
+           {
+               qInfo() << "You successfully log in!";
+               break;
+           }
+           case net_result_remote_command_complete:
+           {
+               qInfo() << "Command successfully executed on server :";
 
-        for(int i=0; i < clearData.size(); i++)
-        {
-            QString line = clearData[i];
+               int type = packet.ReadInt();
 
-            if(!line.isEmpty())
-                qDebug() << line;
-        }
+               if(type == 0)
+               {
+                   qInfo() << "Server status";
+                   qInfo() << "Version " << packet.ReadString();
+                   qInfo() << "IP " << packet.ReadString();
+                   qInfo() << "Port " << packet.ReadInt();
+                   qInfo() << "Tick rate " << packet.ReadInt() << " per/sec.";
+                   qInfo() << "Database mode " << packet.ReadString();
+                   qInfo() << "Authorization mode " << packet.ReadString();
+                   qInfo() << "Players amount " << packet.ReadInt();
+                   qInfo() << "Game servers amount " << packet.ReadInt();
+               } else if(type == 1)
+               {
+                   qInfo() << "Message sended";
+               } else if(type == 2)
+               {
+                   qInfo() << "Command sended";
+               } else if(type == 3)
+               {
+                   qInfo() << "Players : " << packet.ReadString();
+               } else if(type == 4)
+               {
+                   qInfo() << "Servers : " << packet.ReadString();
+               }
+
+               break;
+           }
+           default:
+           {
+               qCritical() << "Unknown result type";
+               break;
+           }
+           }
+       } else if(packet.getType() == net_Error)
+       {
+           switch (packet.ReadInt())
+           {
+           case net_result_remote_admin_login_fail:
+           {
+               int reason = packet.ReadInt();
+
+               if(reason == 0)
+               {
+                   qWarning() << "Can't log in in FireNet! Login not found!";
+               } else if (reason == 1)
+               {
+                   qWarning() << "Can't log in in FireNet! Incorrect password!";
+               } else if (reason == 2)
+               {
+                   qWarning() << "Can't log in in FireNet! Aministator alredy log in!";
+               }
+
+               break;
+           }
+           case net_result_remote_command_fail:
+           {
+               qWarning() << "Command not found in FireNET!";
+               break;
+           }
+           default:
+           {
+               qCritical() << "Unknown error type";
+               break;
+           }
+           }
+       }
+       else
+       {
+           qCritical() << "Unknown packet type!";
+       }
     }
 }
 

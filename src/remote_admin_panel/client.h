@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QSslSocket>
 
+#include "src/server/netpacket.h"
+
 class RemoteClient : public QObject
 {
     Q_OBJECT
@@ -12,7 +14,7 @@ public:
     explicit RemoteClient(QObject *parent = 0);
 public:
     void ConnectToServer(QString ip, int port);
-    void SendMessage(QByteArray &data);
+    void SendMessage(NetPacket &packet);
 public slots:
     void onConnectedToServer();
     void onReadyRead();
