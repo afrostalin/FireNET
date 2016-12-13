@@ -41,7 +41,7 @@ struct SModuleEnv
 	{
 		m_firenet_ip = "127.0.0.1";
 		m_firenet_port = 3322;
-		m_magic_key = 2016206; // You need update this key on server and client!
+		m_magic_key = 2016207; // You need update this key on server and client!
 		m_timeout = 3.0f;
 
 		bConnected = false;
