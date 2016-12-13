@@ -182,6 +182,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 			NetPacket m_packet(net_Result);
 			m_packet.WriteInt(net_result_remote_command_complete);
 			m_packet.WriteInt(3);
+			m_packet.WriteString("No any players");
 			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 		}
 
@@ -203,6 +204,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 			NetPacket m_packet(net_Result);
 			m_packet.WriteInt(net_result_remote_command_complete);
 			m_packet.WriteInt(4);
+			m_packet.WriteString("No any game servers");
 			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 		}
 
