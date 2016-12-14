@@ -445,8 +445,11 @@ void ClientQuerys::onGetShopItems()
 
 		for (auto it = m_shop.begin(); it != m_shop.end(); ++it)
 		{
-			// name;icon;description;cost;minLvl
-			m_shopList.append(it->name + ";" + it->icon + ";" + it->description + ";" + QString::number(it->cost) + ";" + QString::number(it->minLnl) + ";");
+			// name-cost-minLvl-canBuy
+			m_shopList.append(it->name + "-" + 
+				QString::number(it->cost) + "-" + 
+				QString::number(it->minLnl) + "-" + 
+			    QString::number(it->canBuy));
 		}
 
 		NetPacket m_packet(net_Result);
@@ -524,10 +527,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 
 				// Add item and update money
 				m_Client->profile->money = m_Client->profile->money - item.cost;
-				itemList.append(QString::number(item.id));
-				// Remove this
-				qDebug() << "ITEM LIST = " << itemList;
-				//
+				itemList.append(item.name);
 				m_Client->profile->items = itemList.join(",");
 
 				// Update profile
@@ -638,7 +638,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 		// Check item if it is there in item list
 		QStringList itemList = m_Client->profile->items.split(",");
 
-		if (!itemList.contains(QString::number(item.id)))
+		if (!itemList.contains(item.name))
 		{
 			qDebug() << "-------------------Item not found in inventory--------------------";
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
@@ -652,7 +652,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 		else
 		{
 			// Remove item
-			bool result = itemList.removeOne(QString::number(item.id));
+			bool result = itemList.removeOne(item.name);
 			m_Client->profile->items = itemList.join(",");
 
 			// Update profile

@@ -29,10 +29,9 @@ struct SItem
 struct SShopItem
 {
 	string name;
-	string icon;
-	string description;
 	int cost;
 	int minLvl;
+	bool canBuy;
 };
 
 struct SModuleEnv

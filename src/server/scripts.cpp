@@ -42,22 +42,18 @@ void Scripts::LoadShopScript()
 		if (xml.name() == "item")
 		{
 			QXmlStreamAttributes attributes = xml.attributes();
-			int id = attributes.value("id").toInt();
 			QString name = attributes.value("name").toString();
-			QString icon = attributes.value("icon").toString();
-			QString description = attributes.value("description").toString();
 			int cost = attributes.value("cost").toInt();
 			int minLvl = attributes.value("minLvl").toInt();
+			bool canBuy = attributes.value("canBuy").toInt() == 1 ? true : false;
 
-			if (id > 0 && !name.isEmpty() && !icon.isEmpty() && !description.isEmpty())
+			if (!name.isEmpty())
 			{
 				SShopItem item;
-				item.id = id;
 				item.name = name;
-				item.icon = icon;
-				item.description = description;
 				item.cost = cost;
 				item.minLnl = minLvl;
+				item.canBuy = canBuy;
 
 				m_shop.push_back(item);
 

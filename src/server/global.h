@@ -47,12 +47,10 @@ struct SClient
 // Shop item structure
 struct SShopItem
 {
-	int id;
 	QString name;
-	QString icon;
-	QString description;
 	int cost;
 	int minLnl;
+	bool canBuy;
 };
 
 // Trusted server structure

@@ -69,12 +69,10 @@ SShopItem ClientQuerys::GetShopItemByName(QString name)
 		{
 			if (it->name == name)
 			{
-				item.id = it->id;
 				item.name = it->name;
-				item.icon = it->icon;
-				item.description = it->description;
 				item.cost = it->cost;
 				item.minLnl = it->minLnl;
+				item.canBuy = it->canBuy;
 
 				return item;
 			}
