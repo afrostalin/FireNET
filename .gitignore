@@ -13,15 +13,21 @@
 *.log
 
 # Build temp files
-*.pdb
 *.ilk
 *.exp
-*.lib
 *.iobj
 *.ipdb
 *.Debug
 *.Release
 
-/3rd/bin/windows/redis/server_log.txt
 /bin/WIN64/Makefile
 /bin/WIN64/ui_mainwindow.h
+
+/bin/WIN64/debug/*.lib
+/bin/WIN64/debug/*.pdb
+/bin/WIN64/release/*.lib
+/bin/WIN64/release/*.pdb
+/bin/WIN64/_modules/cryengine/debug/*.lib
+/bin/WIN64/_modules/cryengine/debug/*.pdb
+/bin/WIN64/_modules/cryengine/release/*.lib
+/bin/WIN64/_modules/cryengine/release/*.pdb
