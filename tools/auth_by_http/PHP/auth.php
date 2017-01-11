@@ -22,7 +22,7 @@
     $password = trim($password);
 	
 	// Connect to mysql ( mysql_host, mysql_user, mysql_password )
-    $link = mysql_connect('mysql13.000webhost.com', 'a8669788_firenet', 'PgSf8JfC');
+    $link = mysql_connect('-------', '--------', '---------');
 	
     if (!$link) 
 	{
@@ -31,7 +31,7 @@
     }
 	
 	// Select users database
-    $db_selected = mysql_select_db('a8669788_firenet', $link);
+    $db_selected = mysql_select_db('---------', $link);
 	
     if (!$db_selected)
 	{
