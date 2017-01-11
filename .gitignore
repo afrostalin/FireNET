@@ -27,7 +27,3 @@
 /bin/WIN64/debug/*.pdb
 /bin/WIN64/release/*.lib
 /bin/WIN64/release/*.pdb
-/bin/WIN64/_modules/cryengine/debug/*.lib
-/bin/WIN64/_modules/cryengine/debug/*.pdb
-/bin/WIN64/_modules/cryengine/release/*.lib
-/bin/WIN64/_modules/cryengine/release/*.pdb
