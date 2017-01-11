@@ -6,10 +6,13 @@ It includes systems such as:
 * creating a player profile, indicating nickname and model character
 * in-game store system
 * inventory system
+* invite system
 * the system of friends and private messages
 * simple matchmaking system
 
 The server is based on the QT 5.7 framework, can use Redis and MySql databases, also ssl encryption with open and private keys.
+
+WARNING : FIRENET NOT COMPATIBLE WITH CRYENGINE VERSION < 5.3
 
 # Building
 
@@ -23,7 +26,7 @@ The server is based on the QT 5.7 framework, can use Redis and MySql databases, 
 
 On Windows :
 
-* Go to tools/databases/windows/redis/
+* [Download redis for Windows] (https://github.com/MSOpenTech/redis)
 * Start Redis-Server.exe
 * Go to bin/win64/release/
 * Start FireNET.exe
@@ -39,8 +42,3 @@ On Linux :
 # WIKI
 
 Please see [FireNET WIKI](https://github.com/afrostalin/FireNET/wiki)
-
-# TODO List
-
-* Add game server synchronization with master-server
-* Add compression for big packets 
