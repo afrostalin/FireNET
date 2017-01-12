@@ -1,23 +1,9 @@
-// Copyright (Ñ) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "netpacket.h"
 #include "global.h"
 #include "settings.h"
-
-/* Simple packet
-* // Create packet
-* NetPacket packet(net_query);
-* packet.WriteInt(net_query_auth);
-* packet.WriteString("login");
-* packet.WriteSrting("password");
-* // Read packet
-* NetPacket packet("recived_packet_data");
-* packet.getType();
-* packet.ReadInt();
-* packet.ReadString();
-* packet.ReadString();
-*/
 
 NetPacket::NetPacket(ENetPacketType type)
 {
