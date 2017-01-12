@@ -1,5 +1,5 @@
-// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
-// License: http://opensource.org/licenses/MIT
+// Copyright (Ñ) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
 #include "clientquerys.h"
@@ -25,7 +25,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 		// Auth failed (Double authorization)
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_auth_fail);
+		m_packet.WriteInt(net_error_auth_fail);
 		m_packet.WriteInt(3);
 		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
 
@@ -93,7 +93,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 		{
 			// Auth failed
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_auth_fail);
+			m_packet.WriteInt(net_error_auth_fail);
 			m_packet.WriteInt(pDataBase->pHTTP->GetError());
 			pServer->sendMessageToClient(m_socket, m_packet);
 
@@ -109,7 +109,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 		// Auth failed
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_auth_fail);
+		m_packet.WriteInt(net_error_auth_fail);
 		m_packet.WriteInt(0);
 		pServer->sendMessageToClient(m_socket, m_packet);
 
@@ -129,7 +129,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 			// Auth failed
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_auth_fail);
+			m_packet.WriteInt(net_error_auth_fail);
 			m_packet.WriteInt(1);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -180,7 +180,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_auth_fail);
+			m_packet.WriteInt(net_error_auth_fail);
 			m_packet.WriteInt(2);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -196,7 +196,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 		qDebug() << "Client alredy registered!";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_register_fail);
+		m_packet.WriteInt(net_error_register_fail);
 		m_packet.WriteInt(2);
 		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -231,7 +231,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 		else
 		{
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_register_fail);
+			m_packet.WriteInt(net_error_register_fail);
 			m_packet.WriteInt(pDataBase->pHTTP->GetError());
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -262,7 +262,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 				qDebug() << "---------------------REGISTRATION FAILED---------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_register_fail);
+				m_packet.WriteInt(net_error_register_fail);
 				m_packet.WriteInt(1);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -274,7 +274,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 		qDebug() << "----------Login alredy register or some values empty!--------";
 		qDebug() << "---------------------REGISTRATION FAILED---------------------";
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_register_fail);
+		m_packet.WriteInt(net_error_register_fail);
 		m_packet.WriteInt(0);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -289,7 +289,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		qDebug() << "Client alredy create profile!";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_profile_creation_fail);
+		m_packet.WriteInt(net_error_profile_creation_fail);
 		m_packet.WriteInt(3);
 		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
 
@@ -321,7 +321,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
 		NetPacket m_paket(net_Error);
-		m_paket.WriteInt(net_result_profile_creation_fail);
+		m_paket.WriteInt(net_error_profile_creation_fail);
 		m_paket.WriteInt(0);
 		pServer->sendMessageToClient(m_socket, m_paket);
 
@@ -367,7 +367,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 			qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
 			NetPacket m_paket(net_Error);
-			m_paket.WriteInt(net_result_profile_creation_fail);
+			m_paket.WriteInt(net_error_profile_creation_fail);
 			m_paket.WriteInt(2);
 			pServer->sendMessageToClient(m_socket, m_paket);
 			return;
@@ -379,7 +379,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		qDebug() << "---------------------CREATE PROFILE FAILED-----------------------";
 
 		NetPacket m_paket(net_Error);
-		m_paket.WriteInt(net_result_profile_creation_fail);
+		m_paket.WriteInt(net_error_profile_creation_fail);
 		m_paket.WriteInt(1);
 		pServer->sendMessageToClient(m_socket, m_paket);
 		return;
@@ -421,7 +421,7 @@ void ClientQuerys::onGetProfile()
 		qDebug() << "----------------------GET PROFILE FAILED----------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_get_profile_fail);
+		m_packet.WriteInt(net_error_get_profile_fail);
 		m_packet.WriteInt(1);
 		pServer->sendMessageToClient(m_socket, m_packet);
 	}
@@ -460,7 +460,7 @@ void ClientQuerys::onGetShopItems()
 	else
 	{
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_get_shop_fail);
+		m_packet.WriteInt(net_error_get_shop_fail);
 		m_packet.WriteInt(0);
 
 		return;
@@ -502,7 +502,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_buy_item_fail);
+				m_packet.WriteInt(net_error_buy_item_fail);
 				m_packet.WriteInt(0);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -515,7 +515,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_buy_item_fail);
+				m_packet.WriteInt(net_error_buy_item_fail);
 				m_packet.WriteInt(1);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -555,7 +555,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 					qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
 					NetPacket m_packet(net_Error);
-					m_packet.WriteInt(net_result_buy_item_fail);
+					m_packet.WriteInt(net_error_buy_item_fail);
 					m_packet.WriteInt(5);
 					pServer->sendMessageToClient(m_socket, m_packet);
 					return;
@@ -567,7 +567,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_buy_item_fail);
+				m_packet.WriteInt(net_error_buy_item_fail);
 				m_packet.WriteInt(2);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -579,7 +579,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 			qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_buy_item_fail);
+			m_packet.WriteInt(net_error_buy_item_fail);
 			m_packet.WriteInt(3);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -591,7 +591,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 		qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_buy_item_fail);
+		m_packet.WriteInt(net_error_buy_item_fail);
 		m_packet.WriteInt(4);
 		pServer->sendMessageToClient(m_socket, m_packet);
 
@@ -629,7 +629,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_remove_item_fail);
+			m_packet.WriteInt(net_error_remove_item_fail);
 			m_packet.WriteInt(0);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -644,7 +644,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_remove_item_fail);
+			m_packet.WriteInt(net_error_remove_item_fail);
 			m_packet.WriteInt(1);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -680,7 +680,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 				qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_remove_item_fail);
+				m_packet.WriteInt(net_error_remove_item_fail);
 				m_packet.WriteInt(3);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -693,7 +693,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 		qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remove_item_fail);
+		m_packet.WriteInt(net_error_remove_item_fail);
 		m_packet.WriteInt(2);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -733,7 +733,7 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_send_invite_fail);
+			m_packet.WriteInt(net_error_send_invite_fail);
 			m_packet.WriteInt(0);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -762,7 +762,7 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_send_invite_fail);
+			m_packet.WriteInt(net_error_send_invite_fail);
 			m_packet.WriteInt(1);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -811,7 +811,7 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_decline_invite_fail);
+		m_packet.WriteInt(net_error_decline_invite_fail);
 		m_packet.WriteInt(1);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -823,7 +823,7 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 	{
 		// Send decline invite to invite sender
 		NetPacket m_packet(net_Result);
-		m_packet.WriteInt(net_result_send_invite_fail);
+		m_packet.WriteInt(net_error_send_invite_fail);
 		pServer->sendMessageToClient(reciverSocket, m_packet);
 		return;
 	}
@@ -833,7 +833,7 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_decline_invite_fail);
+		m_packet.WriteInt(net_error_decline_invite_fail);
 		m_packet.WriteInt(1);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -879,7 +879,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "------------------------ADD FRIEND FAILED-----------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_add_friend_fail);
+				m_packet.WriteInt(net_error_accept_invite_fail);
 				m_packet.WriteInt(0);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -889,7 +889,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_add_friend_fail);
+				m_packet.WriteInt(net_error_accept_invite_fail);
 				m_packet.WriteInt(1);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -909,7 +909,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "---------------------ADD FRIEND COMPLETE---------------------";
 
 				NetPacket profile(net_Result);
-				profile.WriteInt(net_result_add_friend_complete);
+				profile.WriteInt(net_result_accept_invite_complete);
 				profile.WriteInt(m_Client->profile->uid);
 				profile.WriteString(m_Client->profile->nickname.toStdString());
 				profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -925,7 +925,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				if (friendSocket != nullptr)
 				{
 					NetPacket profile(net_Result);
-					profile.WriteInt(net_result_add_friend_complete);
+					profile.WriteInt(net_result_accept_invite_complete);
 					profile.WriteInt(m_Client->profile->uid);
 					profile.WriteString(m_Client->profile->nickname.toStdString());
 					profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -946,7 +946,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_add_friend_fail);
+				m_packet.WriteInt(net_error_accept_invite_fail);
 				m_packet.WriteInt(4);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -958,7 +958,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 			qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_add_friend_fail);
+			m_packet.WriteInt(net_error_accept_invite_fail);
 			m_packet.WriteInt(3);
 			pServer->sendMessageToClient(m_socket, packet);
 			return;
@@ -970,7 +970,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 		qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_add_friend_fail);
+		m_packet.WriteInt(net_error_accept_invite_fail);
 		m_packet.WriteInt(2);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -1010,7 +1010,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 			qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_remove_friend_fail);
+			m_packet.WriteInt(net_error_remove_friend_fail);
 			m_packet.WriteInt(0);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -1034,7 +1034,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
 
 				NetPacket profile (net_Result);
-				profile.WriteInt(net_result_add_friend_complete);
+				profile.WriteInt(net_result_remove_friend_complete);
 				profile.WriteInt(m_Client->profile->uid);
 				profile.WriteString(m_Client->profile->nickname.toStdString());
 				profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -1050,7 +1050,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				if (friendSocket != nullptr)
 				{
 					NetPacket profile(net_Result);
-					profile.WriteInt(net_result_add_friend_complete);
+					profile.WriteInt(net_result_remove_friend_complete);
 					profile.WriteInt(m_Client->profile->uid);
 					profile.WriteString(m_Client->profile->nickname.toStdString());
 					profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -1071,7 +1071,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
 				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_result_remove_friend_fail);
+				m_packet.WriteInt(net_error_remove_friend_fail);
 				m_packet.WriteInt(2);
 				pServer->sendMessageToClient(m_socket, m_packet);
 				return;
@@ -1084,7 +1084,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 		qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remove_friend_fail);
+		m_packet.WriteInt(net_error_remove_friend_fail);
 		m_packet.WriteInt(1);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -1119,7 +1119,7 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 		qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_send_chat_msg_fail);
+		m_packet.WriteInt(net_error_send_chat_msg_fail);
 		m_packet.WriteInt(0);
 		pServer->sendMessageToClient(m_socket, m_packet);
 		return;
@@ -1165,7 +1165,7 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 			qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_send_chat_msg_fail);
+			m_packet.WriteInt(net_error_send_chat_msg_fail);
 			m_packet.WriteInt(1);
 			pServer->sendMessageToClient(m_socket, m_packet);
 			return;
@@ -1192,7 +1192,7 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		qDebug() << "---------------------GET GAME SERVER FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_get_server_fail);
+		m_packet.WriteInt(net_error_get_server_fail);
 		m_packet.WriteInt(0);
 		pServer->sendMessageToClient(m_socket, m_packet);
 
@@ -1227,7 +1227,7 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		qDebug() << "---------------------GET GAME SERVER FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_get_server_fail);
+		m_packet.WriteInt(net_error_get_server_fail);
 		m_packet.WriteInt(1);
 		pServer->sendMessageToClient(m_socket, m_packet);
 	}

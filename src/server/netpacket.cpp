@@ -1,5 +1,5 @@
-// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
-// License: http://opensource.org/licenses/MIT
+// Copyright (Ñ) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "netpacket.h"
 #include "global.h"
@@ -21,18 +21,16 @@
 
 NetPacket::NetPacket(ENetPacketType type)
 {
-	m_data = "";
 	m_separator = "|";
 	m_type = net_Empty;
-	m_MagicHeader = "";
-	m_MagicFooter = "";
 
 	// Only for reading
 	bInitFromData = false;
 	bIsGoodPacket = false;
 	lastIndex = 0;
-	//
 
+	// First generate magic keys
+	GenerateMagic();
 	SetMagicHeader();
 	SetPacketType(type);
 }
@@ -44,21 +42,18 @@ NetPacket::NetPacket(const char * data)
 		m_data = data;
 		m_type = net_Empty;
 		m_separator = "|";
-		m_MagicHeader = "";
-		m_MagicFooter = "";
 
 		bInitFromData = true;
 		bIsGoodPacket = false;
 		lastIndex = 0;
 
+		GenerateMagic();
 		ReadPacket();
 	}
 	else
 	{
 		qCritical() << "Empty packet!";
-		m_data = "";
 		m_type = net_Empty;
-		m_separator = "";
 	}
 }
 
@@ -238,11 +233,6 @@ ENetPacketType NetPacket::getType()
 
 void NetPacket::SetMagicHeader()
 {
-	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
-	char m_MagicKey[10] = "";
-	itoa(m_MagicValue, m_MagicKey, 16);
-	m_MagicHeader = "!0x" + std::string(m_MagicKey);
-
 	WriteString(m_MagicHeader);
 }
 
@@ -253,28 +243,24 @@ void NetPacket::SetPacketType(ENetPacketType type)
 
 void NetPacket::SetMagicFooter()
 {
-	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
-	char m_MagicKey[10] = "";
-	// Abracadabra
-	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKey, 16);
-	m_MagicFooter = "0x" + std::string(m_MagicKey) + "!";
-
 	m_data = m_data + m_MagicFooter;
+}
+
+void NetPacket::GenerateMagic()
+{
+	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
+	char m_MagicKeyH[10] = ""; // Header
+	char m_MagicKeyF[10] = ""; // Footer
+	itoa(m_MagicValue, m_MagicKeyH, 16);
+	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
+	m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
+	m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
 }
 
 void NetPacket::ReadPacket()
 {
 	if (!m_data.empty())
 	{
-		// First generate header and footer
-		int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
-		char m_MagicKeyH[10] = "";
-		itoa(m_MagicValue, m_MagicKeyH, 16);
-		char m_MagicKeyF[10] = "";
-		itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
-		m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
-		m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
-		//
 		m_packet = Split(m_data, m_separator.at(0));
 
 		if (m_packet.size() >= 3)

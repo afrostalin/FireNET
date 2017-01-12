@@ -1,5 +1,5 @@
-// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
-// License: http://opensource.org/licenses/MIT
+// Copyright (С) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QCoreApplication>
 #include <QThread>
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.0.7";
-	int buildNumber = 16;
+	int buildNumber = 19;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");

@@ -1,5 +1,5 @@
-// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
-// License: http://opensource.org/licenses/MIT
+// Copyright (Ñ) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
 #include "remoteclientquerys.h"
@@ -46,7 +46,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 		qCritical() << "Error authorization in administator mode! Reason = Administrator alredy has entered";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remote_admin_login_fail);
+		m_packet.WriteInt(net_error_remote_admin_login_fail);
 		m_packet.WriteInt(2);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 
@@ -84,7 +84,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 			qCritical() << "Error authorization in administator mode! Reason = Wrong password. Password = " << password;
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_remote_admin_login_fail);
+			m_packet.WriteInt(net_error_remote_admin_login_fail);
 			m_packet.WriteInt(1);
 			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 
@@ -97,7 +97,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 		qCritical() << "Error authorization in administator mode! Reason = Wrong login. Login = " << login;
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remote_admin_login_fail);
+		m_packet.WriteInt(net_error_remote_admin_login_fail);
 		m_packet.WriteInt(0);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 
@@ -212,7 +212,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 	}
 
 	NetPacket m_packet(net_Error);
-	m_packet.WriteInt(net_result_remote_command_fail);
+	m_packet.WriteInt(net_error_remote_command_fail);
 	m_packet.WriteInt(0);
 	gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 }
@@ -240,7 +240,7 @@ void RemoteClientQuerys::onGameServerRegister(NetPacket &packet)
 		qWarning() << "Game server" << serverName << "not found in trusted server list. Registration not posible!";
 
 		NetPacket m_packet(net_Result);
-		m_packet.WriteInt(net_result_remote_register_server_fail);
+		m_packet.WriteInt(net_error_remote_register_server_fail);
 		m_packet.WriteInt(0);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 		return;
@@ -275,7 +275,7 @@ void RemoteClientQuerys::onGameServerRegister(NetPacket &packet)
 		qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remote_register_server_fail);
+		m_packet.WriteInt(net_error_remote_register_server_fail);
 		m_packet.WriteInt(1);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 	}
@@ -329,7 +329,7 @@ void RemoteClientQuerys::onGameServerUpdateInfo(NetPacket &packet)
 		qDebug() << "---------------------UPDATE GAME SERVER FAILED---------------------";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remote_update_server_fail);
+		m_packet.WriteInt(net_error_remote_update_server_fail);
 		m_packet.WriteInt(0);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 	}
@@ -369,7 +369,7 @@ void RemoteClientQuerys::onGameServerGetOnlineProfile(NetPacket &packet)
 		qDebug() << "Failed get online profile";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remote_get_profile_fail);
+		m_packet.WriteInt(net_error_remote_get_profile_fail);
 		m_packet.WriteInt(0);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 	}
@@ -419,7 +419,7 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 			qDebug() << "Failed update online profile";
 
 			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_result_remote_update_profile_fail);
+			m_packet.WriteInt(net_error_remote_update_profile_fail);
 			m_packet.WriteInt(1);
 			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 		}	
@@ -429,7 +429,7 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 		qDebug() << "Failed get online profile";
 
 		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_result_remote_update_profile_fail);
+		m_packet.WriteInt(net_error_remote_update_profile_fail);
 		m_packet.WriteInt(0);
 		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
 	}
