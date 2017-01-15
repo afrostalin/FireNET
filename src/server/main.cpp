@@ -11,13 +11,14 @@
 #include <ConsoleAppender.h>
 
 #include "global.h"
-#include "tcpserver.h"
-#include "dbworker.h"
-#include "mysqlconnector.h"
-#include "httpconnector.h"
-#include "remoteserver.h"
-#include "settings.h"
-#include "scripts.h"
+
+#include "Core/tcpserver.h"
+#include "Core/remoteserver.h"
+#include "Workers/Databases/dbworker.h"
+#include "Workers/Databases/mysqlconnector.h"
+#include "Workers/Databases/httpconnector.h"
+#include "Tools/settings.h"
+#include "Tools/scripts.h"
 
 FileAppender *fileAppender;
 ConsoleAppender *consoleAppender;
@@ -204,8 +205,8 @@ int main(int argc, char *argv[])
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
 	
 	// Build version and number
-	QString buildVersion = "2.0.7";
-	int buildNumber = 19;
+	QString buildVersion = "2.0.8";
+	int buildNumber = 2;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
     a->addLibraryPath("plugins");
