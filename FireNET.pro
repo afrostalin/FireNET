@@ -1,4 +1,3 @@
-QT -= gui
 QT += core
 QT += network
 QT += sql
@@ -14,41 +13,42 @@ OBJECTS_DIR += $$PWD/temp/obj/server
 
 TEMPLATE = app
 
-SOURCES += src/server/clientquerys.cpp \
+SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/main.cpp \
-    src/server/tcpconnection.cpp \
-    src/server/tcpserver.cpp \
-    src/server/tcpthread.cpp \
-    src/server/redisconnector.cpp \
-    src/server/global.cpp \
-    src/server/helper.cpp \
-    src/server/dbworker.cpp \
-    src/server/mysqlconnector.cpp \
-    src/server/httpconnector.cpp \
-    src/server/remoteclientquerys.cpp \
-    src/server/remoteserver.cpp \
-    src/server/remoteconnection.cpp \
-    src/server/settings.cpp \
-    src/server/netpacket.cpp \
-    src/server/scripts.cpp
+    src/server/core/tcpconnection.cpp \
+    src/server/core/tcpserver.cpp \
+    src/server/core/tcpthread.cpp \
+    src/server/workers/databases/redisconnector.cpp \
+    src/server/core/global.cpp \
+    src/server/workers/packets/helper.cpp \
+    src/server/workers/databases/dbworker.cpp \
+    src/server/workers/databases/mysqlconnector.cpp \
+    src/server/workers/databases/httpconnector.cpp \
+    src/server/workers/packets/remoteclientquerys.cpp \
+    src/server/core/remoteserver.cpp \
+    src/server/core/remoteconnection.cpp \
+    src/server/tools/settings.cpp \
+    src/server/core/netpacket.cpp \
+    src/server/tools/scripts.cpp
 
 HEADERS += \
-    src/server/clientquerys.h \
-    src/server/tcpconnection.h \
-    src/server/tcpserver.h \
-    src/server/tcpthread.h \
-    src/server/redisconnector.h \
+    src/server/workers/packets/clientquerys.h \
+    src/server/core/tcpconnection.h \
+    src/server/core/tcpserver.h \
+    src/server/core/tcpthread.h \
+    src/server/workers/databases/redisconnector.h \
     src/server/global.h \
-    src/server/dbworker.h \
-    src/server/mysqlconnector.h \
-    src/server/httpconnector.h \
-    src/server/remoteclientquerys.h \
-    src/server/remoteserver.h \
-    src/server/remoteconnection.h \
-    src/server/settings.h \
-    src/server/netpacket.h \
-    src/server/scripts.h
+    src/server/workers/databases/dbworker.h \
+    src/server/workers/databases/mysqlconnector.h \
+    src/server/workers/databases/httpconnector.h \
+    src/server/workers/packets/remoteclientquerys.h \
+    src/server/core/remoteserver.h \
+    src/server/core/remoteconnection.h \
+    src/server/tools/settings.h \
+    src/server/core/netpacket.h \
+    src/server/tools/scripts.h
 
+INCLUDEPATH += $$PWD/src/server/
 INCLUDEPATH += $$PWD/3rd/includes
 INCLUDEPATH += $$PWD/3rd/includes/libssh2
 INCLUDEPATH += $$PWD/3rd/includes/cutelogger/includes
