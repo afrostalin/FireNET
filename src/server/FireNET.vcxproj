@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;..\..\3rd\includes\cutelogger\includes;..\..\3rd\includes\qt;..\..\3rd\includes\qt\QtWidgets;..\..\3rd\includes\qt\QtGui;..\..\3rd\includes\qt\QtANGLE;..\..\3rd\includes\qt\QtNetwork;..\..\3rd\includes\qt\QtSql;..\..\3rd\includes\qt\QtCore;..\..\3rd\includes\qt\mkspecs\win32-msvc2015;..\..\temp\moc\server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;..\..\3rd\includes\cutelogger\includes;..\..\3rd\includes\qt;..\..\3rd\includes\qt\QtWidgets;..\..\3rd\includes\qt\QtGui;..\..\3rd\includes\qt\QtANGLE;..\..\3rd\includes\qt\QtNetwork;..\..\3rd\includes\qt\QtSql;..\..\3rd\includes\qt\QtCore;..\..\3rd\includes\qt\mkspecs\win32-msvc2015;..\..\temp\moc\server;..\..\temp\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>..\..\temp\obj\server\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -103,7 +103,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;..\..\3rd\includes\cutelogger\includes;..\..\3rd\includes\qt;..\..\3rd\includes\qt\QtWidgets;..\..\3rd\includes\qt\QtGui;..\..\3rd\includes\qt\QtANGLE;..\..\3rd\includes\qt\QtNetwork;..\..\3rd\includes\qt\QtSql;..\..\3rd\includes\qt\QtCore;..\..\3rd\includes\qt\mkspecs\win32-msvc2015;..\..\temp\moc\server;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\3rd\includes;..\..\3rd\includes\libssh2;..\..\3rd\includes\cutelogger\includes;..\..\3rd\includes\qt;..\..\3rd\includes\qt\QtWidgets;..\..\3rd\includes\qt\QtGui;..\..\3rd\includes\qt\QtANGLE;..\..\3rd\includes\qt\QtNetwork;..\..\3rd\includes\qt\QtSql;..\..\3rd\includes\qt\QtCore;..\..\3rd\includes\qt\mkspecs\win32-msvc2015;..\..\temp\moc\server;..\..\temp\UI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>-Zc:strictStrings -Zc:throwingNew -w34100 -w34189 -w44996 -w44456 -w44457 -w44458 %(AdditionalOptions)</AdditionalOptions>
       <AssemblerListingLocation>..\..\temp\obj\server\</AssemblerListingLocation>
       <BrowseInformation>false</BrowseInformation>
@@ -308,7 +308,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\tools\moc.exe;%(FullPath)</AdditionalInputs>
     </CustomBuild>
     <ClInclude Include="core\netpacket.h" />
-    <ClInclude Include="ui\ui_mainwindow.h" />
+    <ClInclude Include="..\..\temp\UI\ui_mainwindow.h" />
     <ClInclude Include="tools\UILogger.h" />
     <ClInclude Include="global.h" />
   </ItemGroup>
@@ -332,13 +332,13 @@
     <CustomBuild Include="ui\mainwindow.ui">
       <FileType>Document</FileType>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\tools\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"..\..\tools\uic.exe" -o "UI\ui_%(Filename).h" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"..\..\tools\uic.exe" -o "..\..\temp\UI\ui_%(Filename).h" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Uic%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UI\ui_%(Filename).h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\..\temp\UI\ui_%(Filename).h;%(Outputs)</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\tools\uic.exe;%(AdditionalInputs)</AdditionalInputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"..\..\tools\uic.exe" -o "UI\ui_%(Filename).h" "%(FullPath)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"..\..\tools\uic.exe" -o "..\..\temp\UI\ui_%(Filename).h" "%(FullPath)"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Uic%27ing %(Identity)...</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UI\ui_%(Filename).h;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\..\temp\UI\ui_%(Filename).h;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

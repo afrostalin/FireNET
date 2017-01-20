@@ -21,6 +21,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->Output->setTextElideMode(Qt::ElideNone);
+    ui->Output->setResizeMode(QListView::Adjust);
+
     m_OutputItemID = -1;
     SetServerStatus();
 }
@@ -91,8 +95,8 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 
 void MainWindow::SetServerStatus()
 {
-	ui->Status->clear();
-    ui->Status->addItem("Server status : null");
+        ui->Status->clear();
+        ui->Status->addItem("Server status : null");
 
 	auto pItem = ui->Status->item(0);
 

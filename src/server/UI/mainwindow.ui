@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>780</width>
-    <height>410</height>
+    <width>900</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>780</width>
-    <height>410</height>
+    <width>900</width>
+    <height>500</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>780</width>
-    <height>410</height>
+    <width>900</width>
+    <height>500</height>
    </size>
   </property>
   <property name="mouseTracking">
@@ -44,12 +44,24 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <widget class="QWidget" name="centralWidget">
+   <property name="minimumSize">
+    <size>
+     <width>900</width>
+     <height>500</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>900</width>
+     <height>500</height>
+    </size>
+   </property>
    <widget class="QLineEdit" name="Input">
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>390</y>
-      <width>781</width>
+      <y>480</y>
+      <width>901</width>
       <height>21</height>
      </rect>
     </property>
@@ -482,8 +494,8 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>370</y>
-      <width>781</width>
+      <y>460</y>
+      <width>901</width>
       <height>20</height>
      </rect>
     </property>
@@ -940,8 +952,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>781</width>
-      <height>371</height>
+      <width>901</width>
+      <height>461</height>
      </rect>
     </property>
     <property name="palette">
@@ -1375,6 +1387,12 @@
     </property>
     <property name="autoScroll">
      <bool>true</bool>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
+    </property>
+    <property name="textElideMode">
+     <enum>Qt::ElideNone</enum>
     </property>
    </widget>
   </widget>
