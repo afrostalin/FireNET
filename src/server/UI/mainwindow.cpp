@@ -17,21 +17,21 @@
 #include "Tools/UILogger.h"
 
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+	QMainWindow(parent),
+	ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+	ui->setupUi(this);
 
-    ui->Output->setTextElideMode(Qt::ElideNone);
-    ui->Output->setResizeMode(QListView::Adjust);
+	ui->Output->setTextElideMode(Qt::ElideNone);
+	ui->Output->setResizeMode(QListView::Adjust);
 
-    m_OutputItemID = -1;
-    SetServerStatus();
+	m_OutputItemID = -1;
+	emit UpdateServerStatus();
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+	delete ui;
 }
 
 void MainWindow::LogToOutput(ELogType type, const QString& msg)
@@ -39,10 +39,10 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	ui->Output->addItem(msg);
 	m_OutputItemID++;
 
-    switch (type)
-    {
-    case ELog_Debug:
-    {
+	switch (type)
+	{
+	case ELog_Debug:
+	{
 		auto pItem = ui->Output->item(m_OutputItemID);
 
 		if (pItem)
@@ -50,10 +50,10 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 			pItem->setForeground(Qt::green);
 		}
 
-        break;
-    }
-    case ELog_Info:
-    {
+		break;
+	}
+	case ELog_Info:
+	{
 		auto pItem = ui->Output->item(m_OutputItemID);
 
 		if (pItem)
@@ -61,10 +61,10 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 			pItem->setForeground(Qt::white);
 		}
 
-        break;
-    }
-    case ELog_Warning:
-    {
+		break;
+	}
+	case ELog_Warning:
+	{
 		auto pItem = ui->Output->item(m_OutputItemID);
 
 		if (pItem)
@@ -72,10 +72,10 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 			pItem->setForeground(Qt::yellow);
 		}
 
-        break;
-    }
-    case ELog_Error:
-    {
+		break;
+	}
+	case ELog_Error:
+	{
 		auto pItem = ui->Output->item(m_OutputItemID);
 
 		if (pItem)
@@ -83,8 +83,8 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 			pItem->setForeground(Qt::red);
 		}
 
-        break;
-    }
+		break;
+	}
 	default:
 		break;
 	};
@@ -93,15 +93,59 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 		ui->Output->scrollToBottom();
 }
 
-void MainWindow::SetServerStatus()
+void MainWindow::UpdateServerStatus()
 {
-        ui->Status->clear();
-        ui->Status->addItem("Server status : null");
+	ui->Status->clear();
+
+	// Server status
+	QString serverStatus = "offline";
+	if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Online)
+		serverStatus = "online";
+	else if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Offline)
+		serverStatus = "offline";
+
+	// Remote server status
+	QString remoteServerStatus = "offline";
+
+	// Databases mode
+	QString dbMode = "None";
+
+	if (gEnv->pSettings)
+		dbMode = gEnv->pSettings->GetVariable("db_mode").toString();
+
+	// Databases status
+	QString dbStatus = "not init";
+	if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Init)
+		dbStatus = "init";
+	else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_StartConnecting)
+		dbStatus = "connecting";
+	else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Connected)
+		dbStatus = "connected";
+	else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_NoConnection)
+		dbStatus = "offline";
+
+	// Global status
+	int clientCount = 0;
+	int maxClientCount = 0;
+
+	if (gEnv->pServer)
+	{
+		clientCount = gEnv->pServer->GetClientCount();
+		maxClientCount = gEnv->pServer->GetMaximumClients();
+	}
+
+	QString status = "MainServer : " + serverStatus +
+		" | RemoteServer : " + remoteServerStatus +
+		" | DB mode : " + dbMode +
+		" | DB status : " + dbStatus +
+		" | Clients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount);
+
+	ui->Status->addItem(status);
 
 	auto pItem = ui->Status->item(0);
 
 	if (pItem)
-		pItem->setForeground(Qt::green);
+		pItem->setForeground(Qt::darkCyan);
 }
 
 void MainWindow::CleanUp()
@@ -116,7 +160,7 @@ void MainWindow::CleanUp()
 
 	if (gEnv->pTimer)
 		gEnv->pTimer->stop();
-	
+
 
 	SAFE_CLEAR(gEnv->pServer);
 	SAFE_CLEAR(gEnv->pRemoteServer);
@@ -130,7 +174,7 @@ void MainWindow::CleanUp()
 		QTimer::singleShot(33, &loop, &QEventLoop::quit);
 		loop.exec();
 	}
-	
+
 	SAFE_RELEASE(gEnv->pTimer);
 	SAFE_RELEASE(gEnv->pServer);
 	SAFE_RELEASE(gEnv->pRemoteServer);
@@ -145,8 +189,8 @@ void MainWindow::CleanUp()
 
 void MainWindow::ClearOutput()
 {
-    ui->Output->clear();
-    m_OutputItemID = -1;
+	ui->Output->clear();
+	m_OutputItemID = -1;
 }
 
 void MainWindow::ClearStatus()

@@ -1,3 +1,6 @@
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -25,9 +28,9 @@ public:
     ~MainWindow();
 public:
     void LogToOutput(ELogType type, const QString& msg);
-    void SetServerStatus();
 public slots:
     void CleanUp();
+	void UpdateServerStatus();
 private slots:
     void on_Input_returnPressed();
 private:

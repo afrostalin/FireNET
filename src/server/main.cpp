@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "2.1.0";
-	int buildNumber = 18;
+	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pUI, &MainWindow::UpdateServerStatus);
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
 	pApp->addLibraryPath("plugins");
@@ -245,6 +245,7 @@ int main(int argc, char *argv[])
 		qInfo() << "Start server on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 
 		gEnv->pServer->SetMaxThreads(gEnv->pSettings->GetVariable("sv_thread_count").toInt());	
+		gEnv->pServer->SetMaxConnections(gEnv->pSettings->GetVariable("sv_max_players").toInt());
 
 		if (gEnv->pServer->Listen(QHostAddress(gEnv->pSettings->GetVariable("sv_ip").toString()), gEnv->pSettings->GetVariable("sv_port").toInt()))
 		{

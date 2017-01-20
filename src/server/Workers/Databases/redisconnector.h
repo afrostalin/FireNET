@@ -20,6 +20,8 @@ public:
 	QString SendSyncQuery(QString command, QString key);
     QString SendSyncQuery(QString command, QString key, QString value);
 	QString SendSyncQuery(QList<QByteArray> &rawCmd);
+public slots:
+	void disconnected();
 private:
 	bool Connect();
 public:

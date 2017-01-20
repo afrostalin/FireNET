@@ -16,6 +16,12 @@
 #include "tcpthread.h"
 #include "netpacket.h"
 
+enum EServerStatus
+{
+	EServer_Online,
+	EServer_Offline,
+};
+
 class TcpServer : public QTcpServer
 {
     Q_OBJECT
@@ -38,9 +44,11 @@ public:
 	bool UpdateProfile(SProfile* profile);
 
 	QStringList GetPlayersList();
-	int GetClientCount();
 	QSslSocket* GetSocketByUid(int uid);
 	SProfile* GetProfileByUid(int uid);
+
+	int GetClientCount();
+	int GetMaximumClients() { return maxConnections; }
 public slots:
 	void started();
 	void finished();
@@ -65,5 +73,7 @@ private:
 
 	QVector<SClient>  m_Clients;
 	QList<TcpThread*> m_threads;
+public:
+	EServerStatus m_Status;
 };
 #endif // TCPSERVER_H

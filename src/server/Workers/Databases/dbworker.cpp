@@ -46,6 +46,8 @@ void DBWorker::Update()
 
 void DBWorker::Init()
 {
+	m_Status = EDB_Init;
+
 	// Create Redis connection
 	if (gEnv->pSettings->GetVariable("bUseRedis").toBool())
 	{

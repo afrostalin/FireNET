@@ -21,21 +21,26 @@ MySqlConnector::~MySqlConnector()
 
 void MySqlConnector::run()
 {
+	gEnv->pDBWorker->m_Status = EDB_StartConnecting;
+
 	if (Connect())
 	{
 		qInfo() << "MySQL connected. Work on" << QThread::currentThread();
 		connectStatus = true;
+		gEnv->pDBWorker->m_Status = EDB_Connected;
 	}
 	else
 	{
 		qCritical() << "Failed connect to MySQL! MySQL functions not be work!";
-		connectStatus = false;
+		gEnv->pDBWorker->m_Status = EDB_NoConnection;
 		return;
 	}
 }
 
 void MySqlConnector::Disconnect()
 {
+	gEnv->pDBWorker->m_Status = EDB_NoConnection;
+
 	if (connectStatus)
 	{
 		qInfo() << "Disconnecting...";

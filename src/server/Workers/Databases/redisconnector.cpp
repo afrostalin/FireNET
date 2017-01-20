@@ -27,22 +27,41 @@ RedisConnector::~RedisConnector()
 
 void RedisConnector::run()
 {
+	gEnv->pDBWorker->m_Status = EDB_StartConnecting;
+
 	if (Connect())
 	{
 		qInfo() << "Redis connected. Work on" << QThread::currentThread();
+
+		gEnv->pDBWorker->m_Status = EDB_Connected;
+
+		connectStatus = true;
 	}
 	else
 	{
         qCritical() << "Failed connect to Redis! Database functions not be work!";
+		gEnv->pDBWorker->m_Status = EDB_NoConnection;
 		return;
 	}
 }
 
+void RedisConnector::disconnected()
+{
+	qCritical() << "Redis server disconnected. Database functions not be work!";
+
+	gEnv->pDBWorker->m_Status = EDB_NoConnection;
+	connectStatus = false;
+}
+
 void RedisConnector::Disconnect()
 {
+	gEnv->pDBWorker->m_Status = EDB_NoConnection;
+
 	if (connectStatus && connection)
 	{
 		connection->disconnect();
+		gEnv->pDBWorker->m_Status = EDB_NoConnection;
+		connectStatus = false;
 	}
 }
 
@@ -56,7 +75,7 @@ bool RedisConnector::Connect()
     connection = new RedisClient::Connection(config);
     connection->connect(false);
 
-    connectStatus = connection->isConnected();
+	connect(connection, &RedisClient::Connection::error, this, &RedisConnector::disconnected);
 
     return connection->isConnected();
 }
