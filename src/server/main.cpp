@@ -190,13 +190,14 @@ int main(int argc, char *argv[])
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pServer, &TcpServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pRemoteServer, &RemoteServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
+	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pUI, &MainWindow::UpdateServerStatus);
 
 	// Connect quit with clean up function
 	QObject::connect(pApp, &QApplication::aboutToQuit, gEnv->pUI, &MainWindow::CleanUp);
 	
 	// Build version and number
 	QString buildVersion = "2.1.0";
-	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pUI, &MainWindow::UpdateServerStatus);
+	int buildNumber = 39;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
 	pApp->addLibraryPath("plugins");
