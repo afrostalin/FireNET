@@ -1,7 +1,7 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#include <QCoreApplication>
+#include <QApplication>
 #include <QThread>
 #include <QSettings>
 #include <QFile>
@@ -9,44 +9,26 @@
 #include <Logger.h>
 #include <FileAppender.h>
 #include <ConsoleAppender.h>
+#include <QMetaObject>
 
 #include "global.h"
 
 #include "Core/tcpserver.h"
 #include "Core/remoteserver.h"
+
 #include "Workers/Databases/dbworker.h"
 #include "Workers/Databases/mysqlconnector.h"
 #include "Workers/Databases/httpconnector.h"
+
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
+#include "Tools/UILogger.h"
 
+#include "UI/mainwindow.h"
+
+QApplication *pApp;
 FileAppender *fileAppender;
-ConsoleAppender *consoleAppender;
-
-#ifdef _WIN64
-#include <signal.h>
-static void ClearManager(int sig)
-{
-	if (sig == SIGBREAK || sig == SIGINT || sig == SIGTERM)
-	{
-		qInfo() << "FireNET quiting...";
-
-		gEnv->pServer->Clear();
-		gEnv->pRemoteServer->Clear();
-		gEnv->pDBWorker->Clear();
-		gEnv->pSettings->Clear();
-		gEnv->pScripts->Clear();
-
-		gEnv->pServer->deleteLater();
-		gEnv->pRemoteServer->deleteLater();
-		gEnv->pDBWorker->deleteLater();
-		gEnv->pSettings->deleteLater();
-		gEnv->pScripts->deleteLater();
-
-		qApp->quit();
-	}
-}
-#endif
+UILogger    *uiAppender;
 
 bool init()
 {
@@ -78,7 +60,7 @@ void start_logging(QString logName, int level)
 
 	// Init logging tool
 	fileAppender = new FileAppender(logName);
-	consoleAppender = new ConsoleAppender();
+	uiAppender = new UILogger();
 
 	Logger::LogLevel logLevel;
 
@@ -100,11 +82,13 @@ void start_logging(QString logName, int level)
 	}
 	}
 
-	consoleAppender->setDetailsLevel(logLevel);
 	fileAppender->setDetailsLevel(logLevel);
 
+	uiAppender->setDetailsLevel(logLevel);
+	uiAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
+
 	logger->registerAppender((AbstractAppender*)fileAppender);
-	logger->registerAppender((AbstractAppender*)consoleAppender);
+	logger->registerAppender((AbstractAppender*)uiAppender);
 }
 
 void UpdateLogLevel(int lvl)
@@ -129,8 +113,8 @@ void UpdateLogLevel(int lvl)
 	}
 	}
 
-	consoleAppender->setDetailsLevel(logLevel);
 	fileAppender->setDetailsLevel(logLevel);
+	uiAppender->setDetailsLevel(logLevel);
 }
 
 void RegisterVariables()
@@ -189,7 +173,11 @@ void ReadServerCFG()
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication *a = new QCoreApplication(argc, argv);
+    pApp = new QApplication(argc, argv);
+	
+	// UI
+	gEnv->pUI = new MainWindow();
+	gEnv->pUI->show();
 
 	// Init global environment
 	gEnv->pServer = new TcpServer;
@@ -203,20 +191,26 @@ int main(int argc, char *argv[])
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pServer, &TcpServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pRemoteServer, &RemoteServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
+
+	// Connect quit with clean up function
+	QObject::connect(pApp, &QApplication::aboutToQuit, gEnv->pUI, &MainWindow::CleanUp);
 	
 	// Build version and number
-	QString buildVersion = "2.0.8";
-	int buildNumber = 2;
+	QString buildVersion = "2.1.0";
+	int buildNumber = 17;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
-    a->addLibraryPath("plugins");
-    a->setApplicationName("FireNET");
-    a->setApplicationVersion(appVersion);
+	pApp->addLibraryPath("plugins");
+	pApp->setApplicationName("FireNET");
+	pApp->setApplicationVersion(appVersion);
 	
 	if (init())
 	{
+#ifdef QT_NO_DEBUG
+		start_logging("FireNET.log", 1);
+#else
 		start_logging("FireNET.log", 2);
-
+#endif 
 		qInfo() << "FireNET" << buildVersion << " Build" << buildNumber;
 		qInfo() << "Created by Ilya Chernetsov";
 		qInfo() << "Copyright (c) All rights reserved";
@@ -251,14 +245,14 @@ int main(int argc, char *argv[])
 
 		qInfo() << "Start server on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 
-		gEnv->pServer->setMaxThreads(gEnv->pSettings->GetVariable("sv_thread_count").toInt());
+		gEnv->pServer->SetMaxThreads(gEnv->pSettings->GetVariable("sv_thread_count").toInt());	
 
-		if (gEnv->pServer->listen(QHostAddress(gEnv->pSettings->GetVariable("sv_ip").toString()), gEnv->pSettings->GetVariable("sv_port").toInt()))
+		if (gEnv->pServer->Listen(QHostAddress(gEnv->pSettings->GetVariable("sv_ip").toString()), gEnv->pSettings->GetVariable("sv_port").toInt()))
 		{
 			qInfo() << "Server started. Main thread " << QThread::currentThread();			
 
-			// Start remote server
-			gEnv->pRemoteServer->run();
+     		// Start remote server
+			//gEnv->pRemoteServer->run();
 
 			// Calculate and set server tick rate
 			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();
@@ -274,8 +268,5 @@ int main(int argc, char *argv[])
 		}
 	}
 
-#ifdef _WIN64
-	signal(SIGBREAK, ClearManager);
-#endif
-	return a->exec();
+	return pApp->exec();
 }

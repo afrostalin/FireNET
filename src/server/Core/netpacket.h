@@ -105,6 +105,7 @@ class NetPacket
 public:
 	NetPacket::NetPacket(ENetPacketType type);
 	NetPacket::NetPacket(const char* data);
+	~NetPacket();
 public:
 	void                       WriteString(std::string value);
 	void                       WriteInt(int value);

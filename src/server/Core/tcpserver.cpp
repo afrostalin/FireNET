@@ -10,63 +10,201 @@
 
 TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
-    m_pool = QThreadPool::globalInstance();
-    setMaxThreads(m_pool->maxThreadCount());
 }
 
+TcpServer::~TcpServer()
+{
+	qDebug() << "~TcpServer";
+	QThreadPool::globalInstance()->clear();
+}
 
 void TcpServer::Clear()
 {
-	qInfo() << "~TcpServer";
-	close();
+	emit stop();
 }
 
 void TcpServer::Update()
 {
+	if (connectionTimeout > 0)
+	{
+		emit idle(connectionTimeout);
+	}
 }
 
-void TcpServer::setMaxThreads(int maximum)
+void TcpServer::SetMaxThreads(int maximum)
 {
-    if(isListening())
-    {
-        qWarning() << "Max threads not changed, call setMaxThreads() before listen()";
-        return;
-    }
-
-    m_pool->setMaxThreadCount(maximum);
+	qDebug() << "Setting max threads to: " << maximum;
+	maxThreads = maximum;
 }
 
-bool TcpServer::listen(const QHostAddress &address, quint16 port)
+void TcpServer::SetMaxConnections(int value)
 {
-	qInfo() << "Start listening on port " << port;
-    startThreads();
-    return QTcpServer::listen(address,port);
+	qDebug() << "Setting max connections to: " << value;
+	maxConnections = value;
+}
+
+void TcpServer::SetConnectionTimeout(int value)
+{
+	qDebug() << "Setting the connection timeout to: " << value;
+	connectionTimeout = value;
+}
+
+bool TcpServer::Listen(const QHostAddress & address, quint16 port)
+{
+	if (maxThreads <= 0)
+	{
+		qCritical() << "Execute SetMaxThreads function before listen!";
+		return false;
+	}
+
+	if (!QTcpServer::listen(address, port))
+	{
+		qCritical() << errorString();
+		return false;
+	}
+
+	qInfo() << "Start listing on port :" << port;
+
+	Start();
+
+	return true;
+}
+
+void TcpServer::Start()
+{
+	for (int i = 0; i < maxThreads; i++)
+	{
+		TcpThread *runnable = CreateRunnable();
+		if (!runnable)
+		{
+			qWarning() << "Could not find runable!";
+			return;
+		}
+
+		StartRunnable(runnable);
+	}
+}
+
+TcpThread * TcpServer::CreateRunnable()
+{
+	qDebug() << "Creating runnable...";
+
+	TcpThread *runnable = new TcpThread();
+	runnable->setAutoDelete(false);
+
+	return runnable;
+}
+
+void TcpServer::StartRunnable(TcpThread * runnable)
+{
+	if (!runnable)
+	{
+		qWarning() << this << "Runnable is null!";
+		return;
+	}
+
+	qDebug() << this << "Starting " << runnable;
+
+	runnable->setAutoDelete(false);
+
+	m_threads.append(runnable);
+
+	connect(this, &TcpServer::closing, runnable, &TcpThread::closing, Qt::QueuedConnection);
+	connect(runnable, &TcpThread::started, this, &TcpServer::started, Qt::QueuedConnection);
+	connect(runnable, &TcpThread::finished, this, &TcpServer::finished, Qt::QueuedConnection);
+	connect(this, &TcpServer::connecting, runnable, &TcpThread::connecting, Qt::QueuedConnection);
+	connect(this, &TcpServer::idle, runnable, &TcpThread::idle, Qt::QueuedConnection);
+
+	QThreadPool::globalInstance()->start(runnable);
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-	qDebug() << "Incomming connection...";
+	qDebug() << "Accepting in pooled mode:" << socketDescriptor;
 
-	TcpThread *pThread = freeThread();
+	int previous = 0;
+	TcpThread *runnable = m_threads.at(0);
 
-	if (pThread == nullptr)
+	foreach(TcpThread *item, m_threads)
 	{
-		qCritical() << "No free thread!";
+		int count = item->Count();
+
+		if (count == 0 || count < previous)
+		{
+			runnable = item;
+			break;
+		}
+
+		previous = count;
+	}
+
+	if (!runnable)
+	{
+		qWarning() << "Could not find runable!";
 		return;
 	}
 
-	if (m_Clients.size() != gEnv->pSettings->GetVariable("sv_max_players").toInt())
-		pThread->accept(socketDescriptor, pThread->runnableThread());
-	else
+	Accept(socketDescriptor, runnable);
+}
+
+void TcpServer::Accept(qintptr handle, TcpThread * runnable)
+{
+	qDebug() << "Accepting" << handle << "on" << runnable;
+
+	TcpConnection *connection = new TcpConnection;
+	if (!connection)
 	{
-		qWarning() << "Connection limit exceeded! Max players = " << gEnv->pSettings->GetVariable("sv_max_players").toInt();
+		qCritical() << this << "could not find connection to accept connection: " << handle;
+		return;
 	}
+
+	emit connecting(handle, runnable, connection);
+}
+
+void TcpServer::Reject(qintptr handle)
+{
+	qDebug() << "Rejecting connection: " << handle;
+
+	QTcpSocket *socket = new QTcpSocket(this);
+	socket->setSocketDescriptor(handle);
+	socket->close();
+	socket->deleteLater();
+}
+
+void TcpServer::finished()
+{
+	qDebug() << this << "finished" << sender();
+	TcpThread *runnable = static_cast<TcpThread*>(sender());
+
+	if (!runnable)
+		return;
+
+	qDebug() << runnable << "has finished, removing from list";
+
+	m_threads.removeAll(runnable);
+	runnable->deleteLater();
+
+	if (m_threads.size() <= 0)
+		gEnv->isReadyToClose = true;
+}
+
+void TcpServer::stop()
+{
+	qDebug() << "Closing TcpServer and all connections...";
+	emit closing();
+	QTcpServer::close();
+}
+
+void TcpServer::started()
+{
+	TcpThread *runnable = static_cast<TcpThread*>(sender());
+	if (!runnable) 
+		return;
+	qDebug() << runnable << "has started";
 }
 
 void TcpServer::AddNewClient(SClient client)
 {
-//	QMutexLocker locker(&m_Mutex);
-
 	if (client.socket == nullptr)
 	{
 		qWarning() << "Can't add client. Client socket = nullptr";
@@ -88,8 +226,6 @@ void TcpServer::AddNewClient(SClient client)
 
 void TcpServer::RemoveClient(SClient client)
 {
-//	QMutexLocker locker(&m_Mutex);
-
 	if (!client.socket)
 	{
 		qWarning() << "Can't remove client. Client socket = nullptr";
@@ -115,8 +251,6 @@ void TcpServer::RemoveClient(SClient client)
 
 void TcpServer::UpdateClient(SClient* client)
 {
-//	QMutexLocker locker(&m_Mutex);
-
 	if (client->socket == nullptr)
 	{
 		qWarning() << "Can't update client. Client socket = nullptr";
@@ -176,8 +310,6 @@ bool TcpServer::UpdateProfile(SProfile * profile)
 
 QStringList TcpServer::GetPlayersList()
 {
-//	QMutexLocker locker(&m_Mutex);
-
 	QStringList playerList;
 
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
@@ -199,7 +331,6 @@ QStringList TcpServer::GetPlayersList()
 
 int TcpServer::GetClientCount()
 {
-	QMutexLocker locker(&m_Mutex);
 	return m_Clients.size();
 }
 
@@ -208,7 +339,6 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 	if (uid <= 0)
 		return nullptr;
 
-	//QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
 		if (it->profile != nullptr)
@@ -257,7 +387,6 @@ void TcpServer::sendMessageToClient(QSslSocket * socket, NetPacket &packet)
 
 void TcpServer::sendGlobalMessage(NetPacket &packet)
 {
-//	QMutexLocker locker(&m_Mutex);
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
 		// Send message only for authorizated clients
@@ -267,59 +396,4 @@ void TcpServer::sendGlobalMessage(NetPacket &packet)
 			it->socket->waitForBytesWritten(10);
 		}
 	}
-}
-
-void TcpServer::startThreads()
-{
-	qInfo() << "Starting threads :" << m_pool->maxThreadCount();
-
-    for(int i = 0; i < m_pool->maxThreadCount(); i++)
-    {
-        TcpThread *pThread = new TcpThread(this);
-        startThread(pThread);
-    }
-}
-
-void TcpServer::startThread(TcpThread *pThread)
-{
-	connect(gEnv->pTimer, &QTimer::timeout, pThread, &TcpThread::Update);
-	//connect(this,&TcpServer::stop, pThread, &TcpThread::stop);
-
-    m_threads.append(pThread);
-    pThread->setAutoDelete(true);
-    m_pool->start(pThread);
-}
-
-TcpThread *TcpServer::freeThread()
-{
-    if(m_threads.count() < 1)
-    {
-        qCritical() << "No threads to run connection on!";
-        return nullptr;
-    }
-
-	int prevClientsCount = 0;
-
-	for (int i = 0; i < m_pool->maxThreadCount(); i++)
-	{
-		TcpThread* pThread = m_threads.at(i);
-		int clientsCount = pThread->GetClientsCount();
-
-		if (prevClientsCount > clientsCount)	
-			return pThread;
-		else
-			prevClientsCount = clientsCount;
-	}
-
-	// Return first thread
-	TcpThread* pThread = m_threads.at(0);
-    return pThread;
-}
-
-void TcpServer::close()
-{
-	emit stop();
-
-	m_threads.clear();
-	m_pool->clear();
 }

@@ -9,13 +9,19 @@
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
 
-ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent)
+ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent),
+	m_socket(nullptr),
+	bAuthorizated(false),
+	bRegistered(false),
+	bProfileCreated(false)
 {
     startMoney = 10000;
-	m_socket = nullptr;
-	bAuthorizated = false;
-	bRegistered = false;
-	bProfileCreated = false;
+}
+
+ClientQuerys::~ClientQuerys()
+{
+	qDebug() << "~ClientQuerys";
+	SAFE_DELETE(m_Client->profile);
 }
 
 void ClientQuerys::SetClient(SClient * client)

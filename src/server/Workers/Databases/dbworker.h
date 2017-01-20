@@ -16,6 +16,7 @@ class DBWorker : public QObject
     Q_OBJECT
 public:
     explicit DBWorker(QObject *parent = 0);
+	~DBWorker();
 public:
 	void Init();
 	void Clear();

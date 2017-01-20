@@ -9,16 +9,18 @@
 #include "Workers/Packets/remoteclientquerys.h"
 #include "Tools/settings.h"
 
-RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent)
+RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent),
+	m_socket(nullptr),
+	pQuerys(nullptr),
+	bConnected(false)
 {
-	m_socket = nullptr;
-	pQuerys = nullptr;
-	bConnected = false;
 }
 
 RemoteConnection::~RemoteConnection()
 {
 	qDebug() << "~RemoteConnection";
+	SAFE_RELEASE(m_socket);
+	SAFE_RELEASE(pQuerys);
 }
 
 void RemoteConnection::accept(qint64 socketDescriptor)
@@ -90,7 +92,7 @@ void RemoteConnection::disconnected()
 	}
 
 	// Remove client from server client list
-	gEnv->pRemoteServer->RemoveClient(m_Client);
+	gEnv->pRemoteServer->RemoveClient(m_Client);	
 
 	qInfo() << "Remote client" << m_socket << "disconnected.";
 	qInfo() << "Remote client count " << gEnv->pRemoteServer->GetClientCount();

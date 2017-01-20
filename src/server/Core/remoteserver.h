@@ -20,6 +20,7 @@ class RemoteServer : public QTcpServer
     Q_OBJECT
 public:
     explicit RemoteServer(QObject *parent = 0);
+	~RemoteServer();
 public:
 	void Clear();
 public slots:

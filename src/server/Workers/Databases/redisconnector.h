@@ -5,7 +5,6 @@
 #define REDISCONNECTOR_H
 
 #include <QObject>
-#include <QThread>
 #include "qredisclient/redisclient.h"
 
 class RedisConnector : public QObject
@@ -26,7 +25,6 @@ private:
 public:
 	bool connectStatus;
 private:
-	QThread *m_thread;
 	RedisClient::Connection* connection;
 };
 

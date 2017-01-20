@@ -1,28 +1,29 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
+#include <QThread>
+
 #include "global.h"
 #include "mysqlconnector.h"
 #include "dbworker.h"
 
 #include "Tools/settings.h"
 
-MySqlConnector::MySqlConnector(QObject *parent) : QObject(parent)
+MySqlConnector::MySqlConnector(QObject *parent) : QObject(parent),
+	connectStatus(false)
 {
-	connectStatus = false;
-	m_thread = nullptr;
+}
+
+MySqlConnector::~MySqlConnector()
+{
+	qDebug() << "~MySqlConnector";
 }
 
 void MySqlConnector::run()
 {
 	if (Connect())
 	{
-		qInfo() << "MySQL connected!";
-
-		m_thread = QThread::currentThread();
-
-		qInfo() << "MySQL work on " << m_thread;
-
+		qInfo() << "MySQL connected. Work on" << QThread::currentThread();
 		connectStatus = true;
 	}
 	else

@@ -8,9 +8,13 @@ SettingsManager::SettingsManager(QObject *parent) : QObject(parent)
 {
 }
 
+SettingsManager::~SettingsManager()
+{
+	qDebug() << "~SettingsManager";
+}
+
 void SettingsManager::Clear()
 {
-	qInfo() << "~SettingManager";
 	m_Variables.clear();
 }
 
@@ -46,7 +50,7 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 		{
 			if (it->value != value)
 			{
-				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
+				qDebug() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
 				return;
 			}
@@ -78,5 +82,5 @@ void SettingsManager::RegisterVariable(QString key, QVariant value)
 
 	m_Variables.push_back(newKey);
 
-	qInfo() << "Registering new variable" << key;
+	qDebug() << "Registering new variable" << key;
 }

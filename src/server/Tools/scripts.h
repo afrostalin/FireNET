@@ -12,6 +12,7 @@ class Scripts : public QObject
     Q_OBJECT
 public:
     explicit Scripts(QObject *parent = 0);
+	~Scripts();
 	void Clear();
 public:
 	void LoadShopScript();

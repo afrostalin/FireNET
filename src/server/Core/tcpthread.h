@@ -9,6 +9,8 @@
 #include <QRunnable>
 #include <QEventLoop>
 #include <QDebug>
+#include <QReadWriteLock>
+#include <QReadLocker>
 
 #include "tcpthread.h"
 #include "tcpconnection.h"
@@ -22,22 +24,27 @@ public:
     explicit TcpThread(QObject *parent = 0);
     ~TcpThread();
 
-    virtual void run();
-    virtual void accept(qint64 socketDescriptor,QThread *owner);
-	int GetClientsCount();
-    virtual QThread *runnableThread();
+    void run();
+	int Count();
 
-protected:
-    QEventLoop *m_loop;
-    QThread *m_thread;
-    QList<TcpConnection*> m_connections;
 signals:
-    void close();
+	void started();
+	void finished();
+	void quit();
 
 public slots:
-    virtual void Update();
-    virtual void stop();
-    virtual void finished();
+	void connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
+	void idle(int value);
+	void closing();
+	void opened();
+	void closed();
+protected:
+	TcpConnection* CreateConnection();
+	void AddSignals(TcpConnection* connection);
+
+	QEventLoop *m_loop;
+	QReadWriteLock m_lock;
+	QList<TcpConnection*> m_connections;
 };
 
 #endif // TCPTHREAD_H

@@ -15,6 +15,7 @@ class HttpConnector : public QObject
     Q_OBJECT
 public:
     explicit HttpConnector(QObject *parent = 0);
+	~HttpConnector();
 public:
 	bool Login(QString login, QString password);
 	bool Register(QString login, QString password);

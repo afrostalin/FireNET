@@ -21,18 +21,17 @@ class TcpServer : public QTcpServer
     Q_OBJECT
 public:
     explicit TcpServer(QObject *parent = 0);
-public slots:
-	void Update();
+	~TcpServer();
 public:
+    void SetMaxThreads(int maximum);
+	void SetMaxConnections(int value);
+	void SetConnectionTimeout(int value);
+	bool Listen(const QHostAddress &address, quint16 port);
 	void Clear();
 public:
 	void sendMessageToClient(QSslSocket* socket, NetPacket &packet);
 	void sendGlobalMessage(NetPacket &packet);
-public:
-    virtual void setMaxThreads(int maximum);
-    virtual bool listen(const QHostAddress &address, quint16 port);
-	virtual void close();
-public:
+
 	void AddNewClient(SClient client);
 	void RemoveClient(SClient client);
 	void UpdateClient(SClient* client);
@@ -42,17 +41,29 @@ public:
 	int GetClientCount();
 	QSslSocket* GetSocketByUid(int uid);
 	SProfile* GetProfileByUid(int uid);
-private:
-	QVector<SClient> m_Clients;
-	QMutex m_Mutex;
-protected:
-    QList<TcpThread*> m_threads;
-    QThreadPool *m_pool;
-    virtual void incomingConnection(qintptr socketDescriptor);
-    virtual void startThreads();
-    virtual void startThread(TcpThread *cThread);
-	virtual TcpThread *freeThread();
+public slots:
+	void started();
+	void finished();
+	void stop();
+	void Update();
 signals:
-    void stop();
+	void connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
+	void closing();
+	void idle(int value);
+
+private:
+	virtual void incomingConnection(qintptr socketDescriptor);
+	virtual TcpThread* CreateRunnable();
+	virtual void StartRunnable(TcpThread *runnable);
+	virtual void Reject(qintptr handle);
+	virtual void Accept(qintptr handle, TcpThread *runnable);
+	virtual void Start();
+
+	int maxThreads = 0;
+	int maxConnections = 0;
+	int connectionTimeout = 0;
+
+	QVector<SClient>  m_Clients;
+	QList<TcpThread*> m_threads;
 };
 #endif // TCPSERVER_H

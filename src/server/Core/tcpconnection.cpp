@@ -11,27 +11,45 @@
 #include "Workers/Databases/dbworker.h"
 #include "Tools/settings.h"
 
-TcpConnection::TcpConnection(QObject *parent) : QObject(parent)
+TcpConnection::TcpConnection(QObject *parent) : QObject(parent),
+	pQuery(nullptr),
+	m_Socket(nullptr),
+	bConnected(nullptr)
 {
-	pQuery = nullptr;
-	m_Socket = nullptr;
-	bConnected = true;
+	Q_UNUSED(parent);
+	Active();
 }
 
 TcpConnection::~TcpConnection()
 {
 	qDebug() << "~TcpConnection";
+	SAFE_RELEASE(m_Socket);
+	SAFE_RELEASE(pQuery);
+}
+
+int TcpConnection::IdleTime()
+{
+	return m_activity.secsTo(QTime::currentTime());
+}
+
+void TcpConnection::quit()
+{
+	qDebug() << "Quit called, closing client";
+
+	m_Socket->close();
+	emit closed();
 }
 
 void TcpConnection::accept(qint64 socketDescriptor)
 {
-	m_Socket = new QSslSocket(this);
-	connect(m_Socket, &QSslSocket::encrypted, this, &TcpConnection::connected);
-	connect(m_Socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected);
-	connect(m_Socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead);
-	connect(m_Socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten);
-	connect(m_Socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
-	connect(m_Socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+	qDebug() << "Accepting new client...";
+
+	m_Socket = CreateSocket();
+
+	if (!m_Socket)
+	{
+		qWarning() << "Could not find created socket!";
+	}
 
 	if (!m_Socket->setSocketDescriptor(socketDescriptor))
 	{
@@ -48,9 +66,12 @@ void TcpConnection::accept(qint64 socketDescriptor)
 	if (!m_Socket->waitForEncrypted(timeout * 1000))
 	{
 		qCritical() << "Can't accept socket! Encryption timeout!";
-		emit finished();
+		emit quit();
 		return;
 	}
+
+	qDebug() << "Client accepted. Socket " << m_Socket;
+	m_activity = QTime::currentTime();
 }
 
 void TcpConnection::connected()
@@ -75,14 +96,16 @@ void TcpConnection::connected()
 	bConnected = true;
 
 	qInfo() << "Client" << m_Socket << "connected.";
-	qInfo() << "Client count " << gEnv->pServer->GetClientCount();
+
+	m_activity = QTime::currentTime();
+	emit opened();
 }
 
 void TcpConnection::disconnected()
 {
 	if (!m_Socket || !bConnected)
 	{
-		emit finished();
+		emit closed();
 		return;
 	}
 
@@ -90,9 +113,9 @@ void TcpConnection::disconnected()
 	gEnv->pServer->RemoveClient(m_Client);
 
 	qInfo() << "Client" << m_Socket << "disconnected.";
-	qInfo() << "Client count " << gEnv->pServer->GetClientCount();
 
-	emit finished();
+	m_activity = QTime::currentTime();
+	emit closed();
 }
 
 void TcpConnection::readyRead()
@@ -184,6 +207,8 @@ void TcpConnection::readyRead()
 	{
 		qCritical() << "Error reading packet. Can't get packet type!";
 	}
+
+	Active();
 }
 
 void TcpConnection::bytesWritten(qint64 bytes)
@@ -192,6 +217,8 @@ void TcpConnection::bytesWritten(qint64 bytes)
 		return;
 
     qDebug() << "Message to client" << m_Socket << "sended! Size =" << bytes;
+
+	Active();
 }
 
 void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -200,6 +227,8 @@ void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
 		return;
 
     qDebug() << "Client" << m_Socket << "changed socket state to " << socketState;
+
+	Active();
 }
 
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
@@ -208,23 +237,40 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 	{
 		qCritical() << "Client" << m_Socket << "return socket error" << item.errorString();
 	}
+
+	Active();
 }
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
 	if (error == QAbstractSocket::SocketError::RemoteHostClosedError)
-		close();
+		quit();
 	else
 	{
 		qCritical() << "Client" << m_Socket << "return socket error" << error;
-		close();
+		quit();
 	}
+
+	Active();
 }
 
-void TcpConnection::close()
+void TcpConnection::Active()
 {
-    if(!m_Socket)
-		return;
+	m_activity = QTime::currentTime();
+}
 
-	m_Socket->close();
+QSslSocket * TcpConnection::CreateSocket()
+{
+	qDebug() << "Creating socket for client";
+
+	QSslSocket *socket = new QSslSocket(this);
+	connect(socket, &QSslSocket::encrypted, this, &TcpConnection::connected, Qt::QueuedConnection);
+	connect(socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected, Qt::QueuedConnection);
+	connect(socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead, Qt::QueuedConnection);
+	connect(socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten, Qt::QueuedConnection);
+	connect(socket, &QSslSocket::stateChanged, this, &TcpConnection::stateChanged, Qt::QueuedConnection);
+	connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
+	connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &TcpConnection::socketError, Qt::QueuedConnection);
+
+	return socket;
 }

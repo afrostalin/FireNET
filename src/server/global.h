@@ -10,9 +10,15 @@ class QTimer;
 class RemoteServer;
 class SettingsManager;
 class Scripts;
+class MainWindow;
 
 #include <QSslSocket>
 #include <QDebug>
+
+// Safe deleting
+#define SAFE_DELETE(p) {if(p){delete p; p = nullptr;}}
+#define SAFE_RELEASE(p) {if(p){p->deleteLater(); p = nullptr;}}
+#define SAFE_CLEAR(p) {if(p) {p->Clear();}}
 
 // Need for authorization system
 struct SUser
@@ -86,13 +92,33 @@ struct SRemoteClient
 // Global environment instance
 struct SGlobalEnvironment
 {
+	SGlobalEnvironment()
+	{
+		pServer = nullptr;
+		pDBWorker = nullptr;
+		pTimer = nullptr;
+		pRemoteServer = nullptr;
+		pSettings = nullptr;
+		pScripts = nullptr;
+		pUI = nullptr;
+
+		isQuiting = false;
+		isReadyToClose = false;
+	}
+
 	TcpServer* pServer;
 	DBWorker* pDBWorker;
 	QTimer* pTimer;
 	RemoteServer* pRemoteServer;
 	SettingsManager* pSettings;
 	Scripts* pScripts;
+	MainWindow* pUI;
+
+
+	bool isQuiting;
+	bool isReadyToClose;
 };
 
 extern SGlobalEnvironment* gEnv;
+
 #endif // GLOBAL_H

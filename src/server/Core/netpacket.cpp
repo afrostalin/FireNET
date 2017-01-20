@@ -44,6 +44,17 @@ NetPacket::NetPacket(const char * data)
 	}
 }
 
+NetPacket::~NetPacket()
+{
+	qDebug() << "~NetPacket";
+
+	m_packet.clear();
+	m_data.clear();
+	m_separator.clear();
+	m_MagicHeader.clear();
+	m_MagicFooter.clear();
+}
+
 void NetPacket::WriteString(std::string value)
 {
 	m_data = m_data + value + m_separator;

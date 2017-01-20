@@ -10,54 +10,80 @@
       <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
     </Filter>
     <Filter Include="FireNET">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="FireNET\Tools">
-      <UniqueIdentifier>{a96cc6b6-c65c-4792-bfd6-9565833b12fc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FireNET\Workers">
-      <UniqueIdentifier>{63f4a793-d403-4415-9ff1-bf6cfb055e63}</UniqueIdentifier>
+      <UniqueIdentifier>{dd50f4cf-073a-40a8-9fe4-a1102316761b}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Core">
-      <UniqueIdentifier>{c0a1934c-7ac8-45a9-8e83-9cc1752f2dd3}</UniqueIdentifier>
+      <UniqueIdentifier>{c052d19d-dfb4-47bf-b796-eaf79d81d69a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Tools">
+      <UniqueIdentifier>{ad233d57-879b-4bf4-bec8-6aa9891a3d9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Workers">
+      <UniqueIdentifier>{94699333-738f-4357-a262-195c70c829a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\UI">
+      <UniqueIdentifier>{3d07327c-23c6-43db-af26-08690e1bdc37}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Core\MasterServer">
-      <UniqueIdentifier>{8434fa34-29af-4a54-8a2c-f48a2b044491}</UniqueIdentifier>
+      <UniqueIdentifier>{bef1d2d0-5a1b-4200-be89-416dfc9b32d3}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Core\RemoteServer">
-      <UniqueIdentifier>{acdd6f0f-70ae-44f1-a9d1-34ed4fb27045}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FireNET\Workers\Databases">
-      <UniqueIdentifier>{c61876d8-155c-4027-b4e0-f47d2784b82a}</UniqueIdentifier>
+      <UniqueIdentifier>{0986df03-dd13-49fb-9022-7372b07b4229}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Workers\Packets">
-      <UniqueIdentifier>{fe336f81-93b0-44ab-84ff-2e323e7b9c01}</UniqueIdentifier>
+      <UniqueIdentifier>{43970e1a-4a29-41d7-87c7-33e3dcafc93f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FireNET\Workers\Databases\Redis">
-      <UniqueIdentifier>{c1920bc7-08da-46a3-9d7e-cca49098ac70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FireNET\Workers\Databases\MySql">
-      <UniqueIdentifier>{4446a45b-9927-4d81-abe7-355afffb2f4c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FireNET\Workers\Databases\HTTP">
-      <UniqueIdentifier>{8af3b3c7-033d-46e1-9e67-0435b8a6c0a1}</UniqueIdentifier>
+    <Filter Include="FireNET\Workers\Databases">
+      <UniqueIdentifier>{5d25823e-7322-45f3-8466-b1f6f59a0de5}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Workers\Packets\MasterServer">
-      <UniqueIdentifier>{cec0b41e-3988-43be-a303-f89a0ef38b3a}</UniqueIdentifier>
+      <UniqueIdentifier>{19a469dd-771d-4c67-9746-2bbb81d82c06}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Workers\Packets\RemoteServer">
-      <UniqueIdentifier>{2882b73d-05a9-46f4-9de6-24e2e14aa1d4}</UniqueIdentifier>
+      <UniqueIdentifier>{979debbf-0110-4239-ac54-700a2304b5bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Workers\Databases\Redis">
+      <UniqueIdentifier>{7287a086-1009-4690-bff0-90012024ec08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Workers\Databases\MySQL">
+      <UniqueIdentifier>{d7496baf-b861-4e2c-815d-9d137e88d25b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Workers\Databases\HTTP">
+      <UniqueIdentifier>{dc3e9769-736d-415e-898d-2b0d7272495c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>FireNET</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_clientquerys.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_httpconnector.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_mainwindow.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_redisconnector.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_remoteclientquerys.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_remoteconnection.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_remoteserver.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_scripts.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_settings.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_tcpconnection.cpp">
@@ -69,126 +95,132 @@
     <ClCompile Include="..\..\temp\moc\server\moc_tcpthread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_dbworker.cpp">
-      <Filter>Generated Files</Filter>
+    <ClCompile Include="ui\mainwindow.cpp">
+      <Filter>FireNET\UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_mysqlconnector.cpp">
-      <Filter>Generated Files</Filter>
+    <ClCompile Include="main.cpp">
+      <Filter>FireNET</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_httpconnector.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_remoteserver.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_remoteconnection.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_remoteclientquerys.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_settings.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\temp\moc\server\moc_scripts.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core/global.cpp">
+    <ClCompile Include="core\global.cpp">
       <Filter>FireNET\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core/netpacket.cpp">
+    <ClCompile Include="core\netpacket.cpp">
       <Filter>FireNET\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Core/remoteconnection.cpp">
+    <ClCompile Include="core\tcpconnection.cpp">
+      <Filter>FireNET\Core\MasterServer</Filter>
+    </ClCompile>
+    <ClCompile Include="core\tcpthread.cpp">
+      <Filter>FireNET\Core\MasterServer</Filter>
+    </ClCompile>
+    <ClCompile Include="core\tcpserver.cpp">
+      <Filter>FireNET\Core\MasterServer</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\settings.cpp">
+      <Filter>FireNET\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\scripts.cpp">
+      <Filter>FireNET\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="core\remoteserver.cpp">
       <Filter>FireNET\Core\RemoteServer</Filter>
     </ClCompile>
-    <ClCompile Include="Workers/Databases/dbworker.cpp">
-      <Filter>FireNET\Workers\Databases</Filter>
+    <ClCompile Include="core\remoteconnection.cpp">
+      <Filter>FireNET\Core\RemoteServer</Filter>
     </ClCompile>
-    <ClCompile Include="Workers/packets/clientquerys.cpp">
-      <Filter>FireNET\Workers\Packets\MasterServer</Filter>
-    </ClCompile>
-    <ClCompile Include="Workers/packets/helper.cpp">
-      <Filter>FireNET\Workers\Packets\MasterServer</Filter>
-    </ClCompile>
-    <ClCompile Include="Workers/Databases/httpconnector.cpp">
-      <Filter>FireNET\Workers\Databases\HTTP</Filter>
-    </ClCompile>
-    <ClCompile Include="Workers/Databases/redisconnector.cpp">
-      <Filter>FireNET\Workers\Databases\Redis</Filter>
-    </ClCompile>
-    <ClCompile Include="Workers/Databases/mysqlconnector.cpp">
-      <Filter>FireNET\Workers\Databases\MySql</Filter>
-    </ClCompile>
-    <ClCompile Include="Workers/packets/remoteclientquerys.cpp">
+    <ClCompile Include="workers\packets\remoteclientquerys.cpp">
       <Filter>FireNET\Workers\Packets\RemoteServer</Filter>
     </ClCompile>
-    <ClCompile Include="Tools/scripts.cpp">
+    <ClCompile Include="workers\databases\dbworker.cpp">
+      <Filter>FireNET\Workers\Databases</Filter>
+    </ClCompile>
+    <ClCompile Include="workers\packets\clientquerys.cpp">
+      <Filter>FireNET\Workers\Packets\MasterServer</Filter>
+    </ClCompile>
+    <ClCompile Include="workers\databases\redisconnector.cpp">
+      <Filter>FireNET\Workers\Databases\Redis</Filter>
+    </ClCompile>
+    <ClCompile Include="workers\databases\mysqlconnector.cpp">
+      <Filter>FireNET\Workers\Databases\MySQL</Filter>
+    </ClCompile>
+    <ClCompile Include="workers\databases\httpconnector.cpp">
+      <Filter>FireNET\Workers\Databases\HTTP</Filter>
+    </ClCompile>
+    <ClCompile Include="Workers\Packets\helper.cpp">
+      <Filter>FireNET\Workers\Packets\MasterServer</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\UILogger.cpp">
       <Filter>FireNET\Tools</Filter>
     </ClCompile>
-    <ClCompile Include="Tools/settings.cpp">
-      <Filter>FireNET\Tools</Filter>
+    <ClCompile Include="..\..\temp\moc\server\moc_serverthread.cpp">
+      <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core/remoteserver.cpp">
-      <Filter>FireNET\Core\RemoteServer</Filter>
-    </ClCompile>
-    <ClCompile Include="Core/tcpthread.cpp">
-      <Filter>FireNET\Core\MasterServer</Filter>
-    </ClCompile>
-    <ClCompile Include="Core/tcpserver.cpp">
-      <Filter>FireNET\Core\MasterServer</Filter>
-    </ClCompile>
-    <ClCompile Include="Core/tcpconnection.cpp">
-      <Filter>FireNET\Core\MasterServer</Filter>
+    <ClCompile Include="core\serverthread.cpp">
+      <Filter>FireNET\Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Core/remoteconnection.h">
+    <CustomBuild Include="ui\mainwindow.ui">
+      <Filter>FireNET\UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\mainwindow.h">
+      <Filter>FireNET\UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="core\tcpthread.h">
+      <Filter>FireNET\Core\MasterServer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="core\tcpserver.h">
+      <Filter>FireNET\Core\MasterServer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="core\tcpconnection.h">
+      <Filter>FireNET\Core\MasterServer</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tools\settings.h">
+      <Filter>FireNET\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="tools\scripts.h">
+      <Filter>FireNET\Tools</Filter>
+    </CustomBuild>
+    <CustomBuild Include="core\remoteserver.h">
       <Filter>FireNET\Core\RemoteServer</Filter>
     </CustomBuild>
-    <CustomBuild Include="Workers/Databases/dbworker.h">
-      <Filter>FireNET\Workers\Databases</Filter>
+    <CustomBuild Include="core\remoteconnection.h">
+      <Filter>FireNET\Core\RemoteServer</Filter>
     </CustomBuild>
-    <CustomBuild Include="Workers/packets/clientquerys.h">
-      <Filter>FireNET\Workers\Packets\MasterServer</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Workers/Databases/httpconnector.h">
-      <Filter>FireNET\Workers\Databases\HTTP</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Workers/Databases/redisconnector.h">
-      <Filter>FireNET\Workers\Databases\Redis</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Workers/Databases/mysqlconnector.h">
-      <Filter>FireNET\Workers\Databases\MySql</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Workers/packets/remoteclientquerys.h">
+    <CustomBuild Include="workers\packets\remoteclientquerys.h">
       <Filter>FireNET\Workers\Packets\RemoteServer</Filter>
     </CustomBuild>
-    <CustomBuild Include="Tools/settings.h">
-      <Filter>FireNET\Tools</Filter>
+    <CustomBuild Include="workers\databases\dbworker.h">
+      <Filter>FireNET\Workers\Databases</Filter>
     </CustomBuild>
-    <CustomBuild Include="Tools/scripts.h">
-      <Filter>FireNET\Tools</Filter>
+    <CustomBuild Include="workers\packets\clientquerys.h">
+      <Filter>FireNET\Workers\Packets\MasterServer</Filter>
     </CustomBuild>
-    <CustomBuild Include="Core/remoteserver.h">
-      <Filter>FireNET\Core\RemoteServer</Filter>
+    <CustomBuild Include="workers\databases\redisconnector.h">
+      <Filter>FireNET\Workers\Databases\Redis</Filter>
     </CustomBuild>
-    <CustomBuild Include="Core/tcpthread.h">
-      <Filter>FireNET\Core\MasterServer</Filter>
+    <CustomBuild Include="workers\databases\mysqlconnector.h">
+      <Filter>FireNET\Workers\Databases\MySQL</Filter>
     </CustomBuild>
-    <CustomBuild Include="Core/tcpserver.h">
-      <Filter>FireNET\Core\MasterServer</Filter>
+    <CustomBuild Include="workers\databases\httpconnector.h">
+      <Filter>FireNET\Workers\Databases\HTTP</Filter>
     </CustomBuild>
-    <CustomBuild Include="Core/tcpconnection.h">
-      <Filter>FireNET\Core\MasterServer</Filter>
+    <CustomBuild Include="core\serverthread.h">
+      <Filter>FireNET\Core</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ui\ui_mainwindow.h">
+      <Filter>FireNET\UI</Filter>
+    </ClInclude>
     <ClInclude Include="global.h">
       <Filter>FireNET</Filter>
     </ClInclude>
-    <ClInclude Include="Core/netpacket.h">
+    <ClInclude Include="core\netpacket.h">
       <Filter>FireNET\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\UILogger.h">
+      <Filter>FireNET\Tools</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

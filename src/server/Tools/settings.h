@@ -20,6 +20,7 @@ class SettingsManager : public QObject
 	Q_OBJECT
 public:
     explicit SettingsManager(QObject *parent = 0);
+	~SettingsManager();
 public:
 	void Clear();
 public:

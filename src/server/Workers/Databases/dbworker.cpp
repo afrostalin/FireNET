@@ -13,11 +13,31 @@
 #include <QRegExp>
 #include <QSqlQuery>
 
-DBWorker::DBWorker(QObject *parent) : QObject(parent)
+DBWorker::DBWorker(QObject *parent) : QObject(parent),
+	pRedis(nullptr),
+	pMySql(nullptr),
+	pHTTP(nullptr)
 {
-	pRedis = nullptr;
-	pMySql = nullptr;
-	pHTTP = nullptr;
+}
+
+DBWorker::~DBWorker()
+{
+	qDebug() << "~DBWorker";
+	SAFE_RELEASE(pRedis);
+	SAFE_RELEASE(pMySql);
+	SAFE_RELEASE(pHTTP);
+}
+
+void DBWorker::Clear()
+{
+	if (pRedis != nullptr)
+	{
+		pRedis->Disconnect();
+	}
+	if (pMySql != nullptr)
+	{
+		pMySql->Disconnect();
+	}
 }
 
 void DBWorker::Update()
@@ -48,27 +68,6 @@ void DBWorker::Init()
 	{
 		qWarning() << "Authorization mode set to HTTP, this can slows server";
 		pHTTP = new HttpConnector;
-	}
-}
-
-void DBWorker::Clear()
-{
-	qInfo() << "~DBWorker";
-
-	if (pRedis != nullptr)
-	{
-		pRedis->Disconnect();
-		pRedis->deleteLater();
-	}
-	if (pMySql != nullptr)
-	{
-		pMySql->Disconnect();
-		pMySql->deleteLater();
-	}
-
-	if (pHTTP != nullptr)
-	{
-		pHTTP->deleteLater();
 	}
 }
 

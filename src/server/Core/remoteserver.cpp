@@ -8,21 +8,24 @@
 
 #include "Tools/settings.h"
 
-RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent)
+RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent),
+	m_Server(nullptr),
+	m_Thread(nullptr),
+	bHaveAdmin(false)
 {
-	m_Server = nullptr;
-	m_Thread = nullptr;
-	bHaveAdmin = false;
+}
+
+RemoteServer::~RemoteServer()
+{
+	qDebug() << "~RemoteServer";
+	SAFE_RELEASE(m_Server);
+	SAFE_RELEASE(m_Thread);
 }
 
 void RemoteServer::Clear()
 {
-	qInfo() << "~RemoteServer";
-
 	m_connections.clear();
 	m_Clients.clear();
-
-	m_Server->deleteLater();
 }
 
 void RemoteServer::Update()
@@ -164,7 +167,6 @@ bool RemoteServer::CheckGameServerExists(QString name, QString ip, int port)
 
 int RemoteServer::GetClientCount()
 {
-	QMutexLocker locker(&m_Mutex);
 	return m_Clients.size();
 }
 
@@ -234,5 +236,5 @@ void RemoteServer::CloseConnection()
 	}
 
 	m_connections.removeOne(connection);
-	connection->deleteLater();
+	SAFE_RELEASE(connection);
 }

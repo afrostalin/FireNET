@@ -14,13 +14,15 @@
 
 #include <QCoreApplication>
 
-RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent)
+RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent),
+	m_socket(nullptr)
 {
-	m_socket = nullptr;
 }
 
 RemoteClientQuerys::~RemoteClientQuerys()
 {
+	qDebug() << "~RemoteClientQuerys";
+	SAFE_DELETE(m_client->server);
 }
 
 void RemoteClientQuerys::SetClient(SRemoteClient * client)

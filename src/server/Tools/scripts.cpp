@@ -12,6 +12,11 @@ Scripts::Scripts(QObject *parent) : QObject(parent)
 
 }
 
+Scripts::~Scripts()
+{
+	qDebug() << "~Scripts";
+}
+
 void Scripts::Clear()
 {
 	// TODO

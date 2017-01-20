@@ -1,32 +1,35 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
+#include <QThread>
+
 #include "global.h"
 #include "redisconnector.h"
 #include "dbworker.h"
 
 #include "Tools/settings.h"
 
-RedisConnector::RedisConnector(QObject *parent) : QObject(parent)
+RedisConnector::RedisConnector(QObject *parent) : QObject(parent),
+	connection(nullptr),
+	connectStatus(false)
 {
-	connection = nullptr;
-    connectStatus = false;
-	m_thread = nullptr;
 }
 
 RedisConnector::~RedisConnector()
 {
+	qDebug() << "~RedisConnector";
+
+	if (connectStatus)
+		Disconnect();
+
+	SAFE_RELEASE(connection);
 }
 
 void RedisConnector::run()
 {
 	if (Connect())
 	{
-		qInfo() << "Redis connected!";
-
-		m_thread = QThread::currentThread();
-
-		qInfo() << "Redis work on " << m_thread;
+		qInfo() << "Redis connected. Work on" << QThread::currentThread();
 	}
 	else
 	{
@@ -37,11 +40,9 @@ void RedisConnector::run()
 
 void RedisConnector::Disconnect()
 {
-	if (connectStatus)
+	if (connectStatus && connection)
 	{
-		qInfo() << "Disconnecting...";
 		connection->disconnect();
-		connection->deleteLater();
 	}
 }
 

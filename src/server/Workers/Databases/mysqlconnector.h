@@ -5,7 +5,6 @@
 #define MYSQLCONNECTOR_H
 
 #include <QObject>
-#include <QThread>
 #include <QSqlDatabase>
 
 class MySqlConnector : public QObject
@@ -13,6 +12,7 @@ class MySqlConnector : public QObject
 	Q_OBJECT
 public:
 	explicit MySqlConnector(QObject *parent = 0);
+	~MySqlConnector();
 public:
 	void run();
 	void Disconnect();
@@ -22,7 +22,6 @@ public:
 	bool connectStatus;
 	QSqlDatabase GetDatabase();
 private:
-	QThread *m_thread;
 	QSqlDatabase m_db;
 };
 

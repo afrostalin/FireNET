@@ -4,75 +4,107 @@
 #include "tcpthread.h"
 #include "global.h"
 
-TcpThread::TcpThread(QObject *parent) : QObject(parent)
+TcpThread::TcpThread(QObject *parent) : QObject(parent),
+	m_loop(nullptr)
 {
-	m_thread = 0;
-	m_loop = 0;
+	Q_UNUSED(parent);
 }
 
 TcpThread::~TcpThread()
 {
-	qInfo() << "~TcpThread";
-}
-
-void TcpThread::Update()
-{
-	//qDebug() << "Update from" << m_thread;
+	qDebug() << "~TcpThread";
+	SAFE_RELEASE(m_loop);
 }
 
 void TcpThread::run()
 {
-	m_thread = QThread::currentThread();
-	qDebug() << "Starting" << m_thread;
-
+	//Make an event loop to keep this alive on the thread
 	m_loop = new QEventLoop();
+	connect(this, &TcpThread::quit, m_loop, &QEventLoop::quit);
 	m_loop->exec();
+
+	qDebug() << this << "finished on " << QThread::currentThread();
+	emit finished();
 }
 
-void TcpThread::accept(qint64 socketDescriptor, QThread *owner)
+int TcpThread::Count()
 {
-	qDebug() << "Accepting new connection in" << owner;
-
-	TcpConnection *connection = new TcpConnection();
-
-	connect(this, &TcpThread::close, connection, &TcpConnection::close);
-	connect(this, &TcpThread::close, m_loop,  &QEventLoop::quit);
-	connect(connection, &TcpConnection::finished, this, &TcpThread::finished);
-
-	m_connections.append(connection);
-	connection->accept(socketDescriptor);
-}
-
-int TcpThread::GetClientsCount()
-{
+	QReadLocker locker(&m_lock);
 	return m_connections.count();
 }
 
-QThread *TcpThread::runnableThread()
+void TcpThread::connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection)
 {
-	return m_thread;
-}
-
-void TcpThread::stop()
-{
-	emit close();
-}
-
-void TcpThread::finished()
-{
-	if (!QObject::sender())
-	{
-		qCritical() << "Sender is not a QObject*";
+	if (runnable != this) 
 		return;
-	}
 
-	TcpConnection *connection = qobject_cast<TcpConnection*>(QObject::sender());
+	qDebug() << "Connecting: " << handle << " on " << runnable << " with " << connection;
+
+	connection->moveToThread(QThread::currentThread());
+
+	m_connections.append(connection);
+	AddSignals(connection);
+	connection->accept(handle);
+}
+
+void TcpThread::idle(int value)
+{
+	foreach(TcpConnection* connection, m_connections)
+	{
+		if (!connection) 
+			continue;
+
+		int idle = connection->IdleTime();
+		qDebug() << this << connection << " idle for " << idle << " timeout is " << value;
+
+		if (idle >= value)
+		{
+			qDebug() << this << "Closing idle connection" << connection;
+			connection->quit();
+		}
+	}
+}
+
+void TcpThread::closing()
+{
+	emit quit();
+}
+
+void TcpThread::opened()
+{
+	TcpConnection *connection = static_cast<TcpConnection*>(sender());
 	if (!connection)
-	{
-		qCritical() << "Sender is not a TcpConnection*";
 		return;
-	}
 
-	m_connections.removeOne(connection);
+	qDebug() << connection << "opened";
+}
+
+void TcpThread::closed()
+{
+	qDebug() << this << "Attempting closed";
+	TcpConnection *connection = static_cast<TcpConnection*>(sender());
+	if (!connection) return;
+
+	qDebug() << connection << "closed";
+	m_connections.removeAll(connection);
+
+	qDebug() << this << "deleting" << connection;
+
 	connection->deleteLater();
+}
+
+TcpConnection* TcpThread::CreateConnection()
+{
+	TcpConnection *connection = new TcpConnection();
+
+	qDebug() << this << "created" << connection;
+
+	return connection;
+}
+
+void TcpThread::AddSignals(TcpConnection * connection)
+{
+	connect(connection, &TcpConnection::opened, this, &TcpThread::opened, Qt::QueuedConnection);
+	connect(connection, &TcpConnection::closed, this, &TcpThread::closed, Qt::QueuedConnection);
+	connect(this, &TcpThread::quit, connection, &TcpConnection::quit, Qt::QueuedConnection);
 }

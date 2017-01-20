@@ -1,17 +1,17 @@
 QT += core
+QT += gui
 QT += network
 QT += sql
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
 
 TARGET = FireNET
-CONFIG += console
-CONFIG -= app_bundle
+TEMPLATE = app
 
 MOC_DIR += $$PWD/temp/moc/server
 OBJECTS_DIR += $$PWD/temp/obj/server
-
-TEMPLATE = app
 
 SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/main.cpp \
@@ -29,7 +29,10 @@ SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/core/remoteconnection.cpp \
     src/server/tools/settings.cpp \
     src/server/core/netpacket.cpp \
-    src/server/tools/scripts.cpp
+    src/server/tools/scripts.cpp \
+	src/server/ui/mainwindow.cpp \
+    src/server/tools/logger.cpp \
+    src/server/core/serverthread.cpp
 
 HEADERS += \
     src/server/workers/packets/clientquerys.h \
@@ -46,7 +49,13 @@ HEADERS += \
     src/server/core/remoteconnection.h \
     src/server/tools/settings.h \
     src/server/core/netpacket.h \
-    src/server/tools/scripts.h
+    src/server/tools/scripts.h \
+	src/server/ui/mainwindow.h \
+    src/server/tools/logger.h \
+    src/server/core/serverthread.h
+
+FORMS += \
+	src/server/ui/mainwindow.ui
 
 INCLUDEPATH += $$PWD/src/server/
 INCLUDEPATH += $$PWD/3rd/includes

@@ -5,9 +5,8 @@
 #define TCPCONNECTION_H
 
 #include <QObject>
-#include <QThread>
 #include <QSslSocket>
-#include <QList>
+#include <QTime>
 
 #include "Workers/Packets/clientquerys.h"
 
@@ -17,22 +16,30 @@ class TcpConnection : public QObject
 public:
     explicit TcpConnection(QObject *parent = 0);
     ~TcpConnection();
+
+	int IdleTime();
+
 signals:
-    void finished();
-
+	void opened();
+	void closed();
 public slots:
+	virtual void quit();
     virtual void accept(qint64 socketDescriptor);
-    virtual void close();
+	virtual void connected();
+	virtual void disconnected();
+	virtual void readyRead();
+	virtual void bytesWritten(qint64 bytes);
+	virtual void stateChanged(QAbstractSocket::SocketState socketState);
 
-	void connected();
-	void disconnected();
-	void readyRead();
-	void bytesWritten(qint64 bytes);
-	void stateChanged(QAbstractSocket::SocketState socketState);
+	virtual void socketSslErrors(const QList<QSslError> list);
+	virtual void socketError(QAbstractSocket::SocketError error);
+protected:
+	void Active();
+	QSslSocket* CreateSocket();
 
-	void socketSslErrors(const QList<QSslError> list);
-	void socketError(QAbstractSocket::SocketError error);
-private:
+	QTime m_activity;
+	QList<QSslSocket*> m_sockets;
+
     ClientQuerys* pQuery;
 	QSslSocket* m_Socket;
 	SClient m_Client;

@@ -25,6 +25,11 @@ HttpConnector::HttpConnector(QObject *parent) : QObject(parent)
 	m_uid = 0;
 }
 
+HttpConnector::~HttpConnector()
+{
+	qDebug() << "~HttpConnector";
+}
+
 void HttpConnector::SendPostRequest(QUrl url, QByteArray requestData)
 {
 	qDebug() << "Send POST http request to " << url.toString();
@@ -49,6 +54,13 @@ void HttpConnector::SendPostRequest(QUrl url, QByteArray requestData)
 
 void HttpConnector::replyFinished(QNetworkReply* reply)
 {
+	if (!reply)
+	{
+		qWarning() << "Can't get HTTP reply";
+		bHaveResult = true;
+		m_lastError = 4;
+	}
+
 	if (reply->error() == QNetworkReply::NoError)
 	{
 		QString rawReply = reply->readAll();
@@ -100,7 +112,7 @@ void HttpConnector::replyFinished(QNetworkReply* reply)
 	}
 
 	bHaveResult = true;
-	reply->deleteLater();
+	SAFE_RELEASE(reply);
 }
 
 bool HttpConnector::Login(QString login, QString password)

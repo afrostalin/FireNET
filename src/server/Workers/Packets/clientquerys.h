@@ -16,7 +16,7 @@ class ClientQuerys : public QObject
     Q_OBJECT
 public:
     explicit ClientQuerys(QObject *parent = 0);
-
+	~ClientQuerys();
 public:
 	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
 	void SetClient(SClient* client);
