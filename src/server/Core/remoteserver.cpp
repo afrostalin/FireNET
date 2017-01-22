@@ -172,7 +172,7 @@ bool RemoteServer::CheckGameServerExists(QString name, QString ip, int port)
 
 int RemoteServer::GetClientCount()
 {
-	return m_Clients.size();
+	return bHaveAdmin ? m_Clients.size() - 1 : m_Clients.size();
 }
 
 QStringList RemoteServer::GetServerList()

@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "v.2.1.0";
-	int buildNumber = 88;
+	int buildNumber = 123;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 	
 	pApp->addLibraryPath("plugins");
@@ -247,18 +247,17 @@ int main(int argc, char *argv[])
 			gEnv->pSettings->SetVariable("bUseRedis", true);
 			gEnv->pSettings->SetVariable("bUseMySQL", false);
 		}
-		if (gEnv->pSettings->GetVariable("db_mode").toString() == "MySql")
+		else if (gEnv->pSettings->GetVariable("db_mode").toString() == "MySql")
 		{
 			gEnv->pSettings->SetVariable("bUseRedis", false);
 			gEnv->pSettings->SetVariable("bUseMySQL", true);
 		}
-		if (gEnv->pSettings->GetVariable("db_mode").toString() == "Redis+MySql")
+		else if (gEnv->pSettings->GetVariable("db_mode").toString() == "Redis+MySql")
 		{
 			gEnv->pSettings->SetVariable("bUseRedis", true);
 			gEnv->pSettings->SetVariable("bUseMySQL", true);
 		}
-
-		if (gEnv->pSettings->GetVariable("auth_mode").toString() == "HTTP")
+		else if (gEnv->pSettings->GetVariable("auth_mode").toString() == "HTTP")
 			gEnv->pSettings->SetVariable("bUseHttpAuth", true);
 
 		qInfo() << "Start server on" << gEnv->pSettings->GetVariable("sv_ip").toString();

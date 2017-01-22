@@ -154,9 +154,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="ui\mainwindow.ui">
-      <Filter>FireNET\UI</Filter>
-    </CustomBuild>
     <CustomBuild Include="ui\mainwindow.h">
       <Filter>FireNET\UI</Filter>
     </CustomBuild>
@@ -198,6 +195,9 @@
     </CustomBuild>
     <CustomBuild Include="workers\databases\httpconnector.h">
       <Filter>FireNET\Workers\Databases\HTTP</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ui\mainwindow.ui">
+      <Filter>FireNET\UI</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

@@ -26,6 +26,7 @@ public:
 public:
 	QVariant GetVariable(QString key);
 	QStringList GetVariablesList();
+	bool CheckVariableExists(QString key);
 public:
 	void SetVariable(QString key, QVariant value);
 public:

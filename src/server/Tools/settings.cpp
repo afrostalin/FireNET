@@ -20,6 +20,8 @@ void SettingsManager::Clear()
 
 QVariant SettingsManager::GetVariable(QString key)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
 	{
 		if (it->key == key)
@@ -32,6 +34,8 @@ QVariant SettingsManager::GetVariable(QString key)
 
 QStringList SettingsManager::GetVariablesList()
 {
+	QMutexLocker locker(&m_Mutex);
+
 	QStringList varList;
 
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
@@ -42,15 +46,32 @@ QStringList SettingsManager::GetVariablesList()
 	return varList;
 }
 
+bool SettingsManager::CheckVariableExists(QString key)
+{
+	QMutexLocker locker(&m_Mutex);
+
+	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
+	{
+		if (it->key == key)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void SettingsManager::SetVariable(QString key, QVariant value)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
 	{
 		if (it->key == key)
 		{
 			if (it->value != value)
 			{
-				qDebug() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
+				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
 				return;
 			}
@@ -67,6 +88,8 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 
 void SettingsManager::RegisterVariable(QString key, QVariant value)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
 	{
 		if (it->key == key)

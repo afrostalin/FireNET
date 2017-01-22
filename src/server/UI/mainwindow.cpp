@@ -234,8 +234,190 @@ void MainWindow::on_Input_returnPressed()
 	QString input = ui->Input->text();
 	ui->Input->clear();
 
-	if (input == "quit")
+	if (input == "status")
+	{
+		if (gEnv->m_LogLevel < 2)
+		{
+			qWarning() << "Before get full server status change log level to 2";
+			return;
+		}
+
+		qInfo() << "***FULL SERVER STATUS***";
+
+		// Server status
+		QString serverStatus = "offline";
+		if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Online)
+			serverStatus = "online";
+		else if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Offline)
+			serverStatus = "offline";
+
+		qInfo() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << serverStatus.toStdString().c_str();
+		qInfo() << "Clients :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
+		qInfo() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
+		qInfo() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
+
+		// Remote server status
+		QString remoteServerStatus = "offline";
+		if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Online)
+			remoteServerStatus = "online";
+		else if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Offline)
+			remoteServerStatus = "offline";
+
+		QString remoteAdminStatus = gEnv->pRemoteServer->bHaveAdmin ? "online" : "offline";
+
+		qInfo() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << remoteServerStatus.toStdString().c_str();
+		qInfo() << "Remote admin - " << remoteAdminStatus.toStdString().c_str();
+		qInfo() << "Game servers :" << gEnv->pRemoteServer->GetClientCount() << "/" << gEnv->pRemoteServer->GetMaxClientCount();
+		
+		// Databases mode
+		QString dbMode = "None";
+		if (gEnv->pSettings)
+			dbMode = gEnv->pSettings->GetVariable("db_mode").toString();
+
+		qInfo() << "Database mode :" << dbMode.toStdString().c_str();
+
+		// Databases status
+		QString dbStatus = "not init";
+		if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Init)
+			dbStatus = "init";
+		else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_StartConnecting)
+			dbStatus = "connecting";
+		else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Connected)
+			dbStatus = "connected";
+		else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_NoConnection)
+			dbStatus = "offline";
+
+		qInfo() << "Database status :" << dbStatus.toStdString().c_str();
+
+		// Authorization type
+		qInfo() << "Authorization type :" << gEnv->pSettings->GetVariable("auth_mode").toString().toStdString().c_str();
+	}
+	else if (input.contains("send_message")) // TODO
+	{
+		QString message = input.remove("send_message ");
+
+		qInfo() << "Try send message to all clients <" << message.toStdString().c_str() << ">";		
+	}
+	else if (input.contains("send_command")) // TODO
+	{
+		QString command = input.remove("send_command ");
+
+		qInfo() << "Try send command to all clients <" << command.toStdString().c_str() << ">";
+	}
+	else if (input == "players")
+	{
+		QStringList players = gEnv->pServer->GetPlayersList();
+
+		if (players.size() <= 0)
+		{
+			qWarning() << "No available  players for display";
+			return;
+		}
+
+		for (int i = 0; i < players.size(); i++)
+		{
+			qInfo() << players[i];
+		}
+	}
+	else if (input == "servers")
+	{
+		QStringList servers = gEnv->pRemoteServer->GetServerList();
+
+		if (servers.size() <= 0)
+		{
+			qWarning() << "No available  server for display";
+			return;
+		}
+
+		for (int i = 0; i < servers.size(); i++)
+		{
+			qInfo() << servers[i];
+		}
+	}
+	else if (input == "clear")
+	{
+		ClearOutput();
+	}
+	else if (input == "quit")
 	{
 		CleanUp();
+	}
+	else
+	{
+		QStringList keys = input.split(" ");
+
+		if (keys.size() > 0 && gEnv->pSettings->CheckVariableExists(keys[0]))
+		{
+			if (keys.size() == 1)
+			{
+				QVariant::Type var_type = gEnv->pSettings->GetVariable(keys[0]).type();
+
+				switch (var_type)
+				{
+				case QVariant::Bool:
+				{
+					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toBool();
+					break;
+				}
+				case QVariant::Int:
+				{
+					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toInt();
+					break;
+				}
+				case QVariant::Double:
+				{
+					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toDouble();
+					break;
+				}
+				case QVariant::String:
+				{
+					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toString().toStdString().c_str();
+					break;
+				}
+				default:
+					break;
+				}
+			}
+			else if (keys.size() == 2)
+			{
+				qInfo() << keys[0].toStdString().c_str() << "=" << keys[1].toStdString().c_str();
+
+				QVariant::Type var_type = gEnv->pSettings->GetVariable(keys[0]).type();
+
+				switch (var_type)
+				{
+				case QVariant::Bool:
+				{
+					bool value = keys[1].toInt() == 1 ? true : false;
+					gEnv->pSettings->SetVariable(keys[0], value);
+					break;
+				}
+				case QVariant::Int:
+				{
+					int value = keys[1].toInt();
+					gEnv->pSettings->SetVariable(keys[0], value);
+					break;
+				}
+				case QVariant::Double:
+				{
+					double value = keys[1].toDouble();
+					gEnv->pSettings->SetVariable(keys[0], value);
+					break;
+				}
+				case QVariant::String:
+				{
+					QString value = keys[1];
+					gEnv->pSettings->SetVariable(keys[0], value);
+					break;
+				}
+				default:
+					break;
+				}
+			}
+		}
+		else 
+		{
+			qWarning() << "Unknown console command or variable" << input;
+		}		
 	}
 }
