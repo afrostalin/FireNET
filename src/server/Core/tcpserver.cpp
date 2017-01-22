@@ -219,6 +219,8 @@ void TcpServer::started()
 
 void TcpServer::AddNewClient(SClient client)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	if (client.socket == nullptr)
 	{
 		qWarning() << "Can't add client. Client socket = nullptr";
@@ -240,6 +242,8 @@ void TcpServer::AddNewClient(SClient client)
 
 void TcpServer::RemoveClient(SClient client)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	if (!client.socket)
 	{
 		qWarning() << "Can't remove client. Client socket = nullptr";
@@ -265,6 +269,8 @@ void TcpServer::RemoveClient(SClient client)
 
 void TcpServer::UpdateClient(SClient* client)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	if (client->socket == nullptr)
 	{
 		qWarning() << "Can't update client. Client socket = nullptr";
@@ -296,6 +302,8 @@ void TcpServer::UpdateClient(SClient* client)
 
 bool TcpServer::UpdateProfile(SProfile * profile)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
 		if (it->profile != nullptr)
@@ -324,6 +332,8 @@ bool TcpServer::UpdateProfile(SProfile * profile)
 
 QStringList TcpServer::GetPlayersList()
 {
+	QMutexLocker locker(&m_Mutex);
+
 	QStringList playerList;
 
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
@@ -345,11 +355,14 @@ QStringList TcpServer::GetPlayersList()
 
 int TcpServer::GetClientCount()
 {
+	QMutexLocker locker(&m_Mutex);
 	return m_Clients.size();
 }
 
 QSslSocket * TcpServer::GetSocketByUid(int uid)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	if (uid <= 0)
 		return nullptr;
 
@@ -371,6 +384,8 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 
 SProfile * TcpServer::GetProfileByUid(int uid)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	if (uid <= 0)
 		return nullptr;
 

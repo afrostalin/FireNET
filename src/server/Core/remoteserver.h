@@ -58,12 +58,9 @@ public:
 	bool bHaveAdmin;
 	ERemoteServerStatus m_Status;
 private:
-	QThread* m_Thread;
 	QTcpServer* m_Server;
-	QList<RemoteConnection*> m_connections;
-private:
 	QVector<SRemoteClient> m_Clients;
-	QMutex m_Mutex;
+	QList<RemoteConnection*> m_connections;
 
 	int m_MaxClinetCount;
 };

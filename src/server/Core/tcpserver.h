@@ -73,6 +73,7 @@ private:
 
 	QVector<SClient>  m_Clients;
 	QList<TcpThread*> m_threads;
+	QMutex            m_Mutex;
 public:
 	EServerStatus m_Status;
 };
