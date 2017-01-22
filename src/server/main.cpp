@@ -81,10 +81,19 @@ void start_logging(QString logName, int level)
 	}
 	}
 
-	fileAppender->setDetailsLevel(logLevel);
+	fileAppender->setDetailsLevel(logLevel);	
+#ifdef QT_NO_DEBUG
+	fileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
+#else
+	fileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+#endif
 
 	uiAppender->setDetailsLevel(logLevel);
+#ifdef QT_NO_DEBUG
+	uiAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
+#else
 	uiAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
+#endif
 
 	logger->registerAppender((AbstractAppender*)fileAppender);
 	logger->registerAppender((AbstractAppender*)uiAppender);
@@ -189,15 +198,13 @@ int main(int argc, char *argv[])
 	// Connect pTimer with Update functions
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pServer, &TcpServer::Update);
 	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pRemoteServer, &RemoteServer::Update);
-	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pDBWorker, &DBWorker::Update);
-	QObject::connect(gEnv->pTimer, &QTimer::timeout, gEnv->pUI, &MainWindow::UpdateServerStatus);
 
 	// Connect quit with clean up function
 	QObject::connect(pApp, &QApplication::aboutToQuit, gEnv->pUI, &MainWindow::CleanUp);
 	
 	// Build version and number
 	QString buildVersion = "2.1.0";
-	int buildNumber = 39;
+	int buildNumber = 65;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 
 	pApp->addLibraryPath("plugins");
@@ -213,7 +220,7 @@ int main(int argc, char *argv[])
 #endif 
 		qInfo() << "FireNET" << buildVersion << " Build" << buildNumber;
 		qInfo() << "Created by Ilya Chernetsov";
-		qInfo() << "Copyright (c) All rights reserved";
+		qInfo() << "Copyright (c) 2014-2017. All rights reserved";
 
 		RegisterVariables();
 		ReadServerCFG();
@@ -253,7 +260,7 @@ int main(int argc, char *argv[])
 			qInfo() << "Server started. Main thread " << QThread::currentThread();			
 
      		// Start remote server
-			//gEnv->pRemoteServer->run();
+			gEnv->pRemoteServer->run();
 
 			// Calculate and set server tick rate
 			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();

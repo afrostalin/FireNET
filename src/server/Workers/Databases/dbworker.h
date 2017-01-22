@@ -28,8 +28,6 @@ public:
 public:
 	void Init();
 	void Clear();
-public slots:
-	void Update();
 public:
 	// Check if login is there in database
 	bool UserExists(QString login);

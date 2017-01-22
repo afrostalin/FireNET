@@ -15,6 +15,12 @@
 class RemoteConnection;
 class NetPacket;
 
+enum ERemoteServerStatus
+{
+	ERServer_Online,
+	ERServer_Offline,
+};
+
 class RemoteServer : public QTcpServer
 {
     Q_OBJECT
@@ -30,7 +36,7 @@ signals:
 	void close();
 public:
 	void run();
-	int GetClientCount();
+	
 	QStringList GetServerList();
 	SGameServer* GetGameServer(QString name, QString map, QString gamerules);
 
@@ -39,13 +45,18 @@ public:
 	void UpdateClient(SRemoteClient* client);
 
 	bool CheckGameServerExists(QString name, QString ip, int port);
+
+	int GetClientCount();
+	int GetMaxClientCount() { return m_MaxClinetCount; }
 private:
 	bool CreateServer();
+	void SetMaxClientCount(int max) { m_MaxClinetCount = max; }
 public:
     virtual void incomingConnection(qintptr socketDescriptor);
 	void sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
 public:
 	bool bHaveAdmin;
+	ERemoteServerStatus m_Status;
 private:
 	QThread* m_Thread;
 	QTcpServer* m_Server;
@@ -53,6 +64,8 @@ private:
 private:
 	QVector<SRemoteClient> m_Clients;
 	QMutex m_Mutex;
+
+	int m_MaxClinetCount;
 };
 
 #endif // REMOTESERVER_H

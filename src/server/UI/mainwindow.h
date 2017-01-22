@@ -5,6 +5,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 namespace Ui
 {
@@ -39,6 +40,7 @@ private:
 private:
     Ui::MainWindow *ui;
     int m_OutputItemID;
+	QTimer m_UpdateTimer;
 };
 
 #endif // MAINWINDOW_H

@@ -38,11 +38,10 @@ protected:
 	QSslSocket* CreateSocket();
 
 	QTime m_activity;
-	QList<QSslSocket*> m_sockets;
-
     ClientQuerys* pQuery;
 	QSslSocket* m_Socket;
 	SClient m_Client;
+
 	bool bConnected;
 };
 

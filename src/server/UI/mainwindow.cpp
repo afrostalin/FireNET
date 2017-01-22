@@ -26,7 +26,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->Output->setResizeMode(QListView::Adjust);
 
 	m_OutputItemID = -1;
-	emit UpdateServerStatus();
+
+	connect(&m_UpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateServerStatus);
+	m_UpdateTimer.start(500);
 }
 
 MainWindow::~MainWindow()
@@ -36,6 +38,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::LogToOutput(ELogType type, const QString& msg)
 {
+	if (m_OutputItemID >= 23)
+	{
+		auto pItem = ui->Output->item(0);
+
+		if (pItem)
+		{
+			pItem->~QListWidgetItem();
+			m_OutputItemID--;
+		}
+	}
+
 	ui->Output->addItem(msg);
 	m_OutputItemID++;
 
@@ -47,7 +60,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 
 		if (pItem)
 		{
-			pItem->setForeground(Qt::green);
+			pItem->setForeground(Qt::darkGreen);
 		}
 
 		break;
@@ -69,7 +82,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 
 		if (pItem)
 		{
-			pItem->setForeground(Qt::yellow);
+			pItem->setForeground(Qt::darkYellow);
 		}
 
 		break;
@@ -88,13 +101,13 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	default:
 		break;
 	};
-
-	if (!gEnv->isQuiting)
-		ui->Output->scrollToBottom();
 }
 
 void MainWindow::UpdateServerStatus()
 {
+	if (gEnv->isQuiting)
+		return;
+
 	ui->Status->clear();
 
 	// Server status
@@ -106,10 +119,13 @@ void MainWindow::UpdateServerStatus()
 
 	// Remote server status
 	QString remoteServerStatus = "offline";
+	if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Online)
+		remoteServerStatus = "online";
+	else if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Offline)
+		remoteServerStatus = "offline";
 
 	// Databases mode
 	QString dbMode = "None";
-
 	if (gEnv->pSettings)
 		dbMode = gEnv->pSettings->GetVariable("db_mode").toString();
 
@@ -128,17 +144,27 @@ void MainWindow::UpdateServerStatus()
 	int clientCount = 0;
 	int maxClientCount = 0;
 
+	int gsCount = 0;
+	int maxGsCount = 0;
+
 	if (gEnv->pServer)
 	{
 		clientCount = gEnv->pServer->GetClientCount();
-		maxClientCount = gEnv->pServer->GetMaximumClients();
+		maxClientCount = gEnv->pServer->GetMaxClientCount();
+	}
+
+	if (gEnv->pRemoteServer)
+	{
+		gsCount = gEnv->pRemoteServer->GetClientCount();
+		maxGsCount = gEnv->pRemoteServer->GetMaxClientCount();
 	}
 
 	QString status = "MainServer : " + serverStatus +
 		" | RemoteServer : " + remoteServerStatus +
 		" | DB mode : " + dbMode +
 		" | DB status : " + dbStatus +
-		" | Clients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount);
+		" | Clients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount) + 
+		" | GameServers : " + QString::number(gsCount) + "/" + QString::number(maxGsCount) ;
 
 	ui->Status->addItem(status);
 
@@ -157,6 +183,7 @@ void MainWindow::CleanUp()
 
 	qInfo() << "FireNET quiting...";
 
+	m_UpdateTimer.stop();
 
 	if (gEnv->pTimer)
 		gEnv->pTimer->stop();

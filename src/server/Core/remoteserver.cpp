@@ -13,6 +13,8 @@ RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent),
 	m_Thread(nullptr),
 	bHaveAdmin(false)
 {
+	m_MaxClinetCount = 0;
+	m_Status = ERServer_Offline;
 }
 
 RemoteServer::~RemoteServer()
@@ -24,6 +26,9 @@ RemoteServer::~RemoteServer()
 
 void RemoteServer::Clear()
 {
+	emit close();
+	QTcpServer::close();
+
 	m_connections.clear();
 	m_Clients.clear();
 }
@@ -37,6 +42,9 @@ void RemoteServer::run()
 	if (CreateServer())
 	{
 		m_Thread = QThread::currentThread();
+		m_Status = ERServer_Online;
+		SetMaxClientCount(gEnv->pSettings->GetVariable("sv_max_servers").toInt());
+
 
 		qInfo() << "Remote server started on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 		qInfo() << "Remote server thread " << m_Thread;

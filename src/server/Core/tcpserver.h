@@ -48,7 +48,7 @@ public:
 	SProfile* GetProfileByUid(int uid);
 
 	int GetClientCount();
-	int GetMaximumClients() { return maxConnections; }
+	int GetMaxClientCount() { return m_maxConnections; }
 public slots:
 	void started();
 	void finished();
@@ -67,9 +67,9 @@ private:
 	virtual void Accept(qintptr handle, TcpThread *runnable);
 	virtual void Start();
 
-	int maxThreads = 0;
-	int maxConnections = 0;
-	int connectionTimeout = 0;
+	int m_maxThreads;
+	int m_maxConnections;
+	int m_connectionTimeout;
 
 	QVector<SClient>  m_Clients;
 	QList<TcpThread*> m_threads;

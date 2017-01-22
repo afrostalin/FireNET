@@ -40,10 +40,6 @@ void DBWorker::Clear()
 	}
 }
 
-void DBWorker::Update()
-{
-}
-
 void DBWorker::Init()
 {
 	m_Status = EDB_Init;

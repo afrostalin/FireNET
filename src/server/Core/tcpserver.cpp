@@ -10,6 +10,9 @@
 
 TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
 {
+	m_maxThreads = 0;
+	m_maxConnections = 0;
+	m_connectionTimeout = 0;
 	m_Status = EServer_Offline;
 }
 
@@ -26,33 +29,33 @@ void TcpServer::Clear()
 
 void TcpServer::Update()
 {
-	if (connectionTimeout > 0)
+	if (m_connectionTimeout > 0)
 	{
-		emit idle(connectionTimeout);
+		emit idle(m_connectionTimeout);
 	}
 }
 
 void TcpServer::SetMaxThreads(int maximum)
 {
 	qDebug() << "Setting max threads to: " << maximum;
-	maxThreads = maximum;
+	m_maxThreads = maximum;
 }
 
 void TcpServer::SetMaxConnections(int value)
 {
 	qDebug() << "Setting max connections to: " << value;
-	maxConnections = value;
+	m_maxConnections = value;
 }
 
 void TcpServer::SetConnectionTimeout(int value)
 {
 	qDebug() << "Setting the connection timeout to: " << value;
-	connectionTimeout = value;
+	m_connectionTimeout = value;
 }
 
 bool TcpServer::Listen(const QHostAddress & address, quint16 port)
 {
-	if (maxThreads <= 0)
+	if (m_maxThreads <= 0)
 	{
 		qCritical() << "Execute SetMaxThreads function before listen!";
 		m_Status = EServer_Offline;
@@ -77,7 +80,7 @@ bool TcpServer::Listen(const QHostAddress & address, quint16 port)
 
 void TcpServer::Start()
 {
-	for (int i = 0; i < maxThreads; i++)
+	for (int i = 0; i < m_maxThreads; i++)
 	{
 		TcpThread *runnable = CreateRunnable();
 		if (!runnable)
@@ -125,7 +128,13 @@ void TcpServer::StartRunnable(TcpThread * runnable)
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-	qDebug() << "Accepting in pooled mode:" << socketDescriptor;
+	qDebug() << "Accepting " << socketDescriptor;
+
+	if (GetClientCount() >= m_maxConnections)
+	{
+		qCritical() << "Can't accept new client, because server have limit" << m_maxConnections;
+		Reject(socketDescriptor);
+	}
 
 	int previous = 0;
 	TcpThread *runnable = m_threads.at(0);
