@@ -65,12 +65,12 @@ void start_logging(QString logName, int level)
 
 	switch (level)
 	{
-	case 1:
+	case 0:
 	{
 		logLevel = Logger::Info;
 		break;
 	}
-	case 2:
+	case 1:
 	{
 		logLevel = Logger::Debug;
 	}
@@ -81,7 +81,7 @@ void start_logging(QString logName, int level)
 	}
 	}
 
-	fileAppender->setDetailsLevel(logLevel);	
+	fileAppender->setDetailsLevel(logLevel);
 #ifdef QT_NO_DEBUG
 	fileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
 #else
@@ -95,6 +95,8 @@ void start_logging(QString logName, int level)
 	uiAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
 #endif
 
+	gEnv->m_LogLevel = level;
+
 	logger->registerAppender((AbstractAppender*)fileAppender);
 	logger->registerAppender((AbstractAppender*)uiAppender);
 }
@@ -105,12 +107,12 @@ void UpdateLogLevel(int lvl)
 
 	switch (lvl)
 	{
-	case 1:
+	case 0:
 	{
 		logLevel = Logger::Info;
 		break;
 	}
-	case 2:
+	case 1:
 	{
 		logLevel = Logger::Debug;
 	}
@@ -121,6 +123,7 @@ void UpdateLogLevel(int lvl)
 	}
 	}
 
+	gEnv->m_LogLevel = lvl;
 	fileAppender->setDetailsLevel(logLevel);
 	uiAppender->setDetailsLevel(logLevel);
 }
@@ -132,7 +135,11 @@ void RegisterVariables()
 	gEnv->pSettings->RegisterVariable("sv_port", 3322);
 	gEnv->pSettings->RegisterVariable("sv_root_user", "administrator");
 	gEnv->pSettings->RegisterVariable("sv_root_password", "qwerty");
+#ifdef QT_NO_DEBUG
+	gEnv->pSettings->RegisterVariable("sv_log_level", 0);
+#else
 	gEnv->pSettings->RegisterVariable("sv_log_level", 2);
+#endif
 	gEnv->pSettings->RegisterVariable("sv_thread_count", 1);
 	gEnv->pSettings->RegisterVariable("sv_max_players", 1);
 	gEnv->pSettings->RegisterVariable("sv_max_servers", 1);
@@ -203,10 +210,10 @@ int main(int argc, char *argv[])
 	QObject::connect(pApp, &QApplication::aboutToQuit, gEnv->pUI, &MainWindow::CleanUp);
 	
 	// Build version and number
-	QString buildVersion = "2.1.0";
-	int buildNumber = 65;
+	QString buildVersion = "v.2.1.0";
+	int buildNumber = 88;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
-
+	
 	pApp->addLibraryPath("plugins");
 	pApp->setApplicationName("FireNET");
 	pApp->setApplicationVersion(appVersion);
@@ -214,11 +221,15 @@ int main(int argc, char *argv[])
 	if (init())
 	{
 #ifdef QT_NO_DEBUG
-		start_logging("FireNET.log", 1);
+		start_logging("FireNET.log", 0);
+		QString buildType = ". Release profile";
 #else
 		start_logging("FireNET.log", 2);
+		QString buildType = ". Debug profile";
 #endif 
-		qInfo() << "FireNET" << buildVersion << " Build" << buildNumber;
+		QString fullName = "FireNET " + buildVersion  + ". Build " + QString::number(buildNumber) + buildType;
+
+		qInfo() << fullName.toStdString().c_str();
 		qInfo() << "Created by Ilya Chernetsov";
 		qInfo() << "Copyright (c) 2014-2017. All rights reserved";
 

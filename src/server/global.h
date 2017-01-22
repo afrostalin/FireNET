@@ -102,6 +102,8 @@ struct SGlobalEnvironment
 		pScripts = nullptr;
 		pUI = nullptr;
 
+		m_LogLevel = 0;
+
 		isQuiting = false;
 		isReadyToClose = false;
 	}
@@ -114,6 +116,7 @@ struct SGlobalEnvironment
 	Scripts* pScripts;
 	MainWindow* pUI;
 
+	int m_LogLevel;
 
 	bool isQuiting;
 	bool isReadyToClose;

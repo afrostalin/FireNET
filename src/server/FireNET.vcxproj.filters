@@ -18,9 +18,6 @@
     <Filter Include="FireNET\Tools">
       <UniqueIdentifier>{ad233d57-879b-4bf4-bec8-6aa9891a3d9f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FireNET\Workers">
-      <UniqueIdentifier>{94699333-738f-4357-a262-195c70c829a3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="FireNET\UI">
       <UniqueIdentifier>{3d07327c-23c6-43db-af26-08690e1bdc37}</UniqueIdentifier>
     </Filter>
@@ -30,17 +27,20 @@
     <Filter Include="FireNET\Core\RemoteServer">
       <UniqueIdentifier>{0986df03-dd13-49fb-9022-7372b07b4229}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FireNET\Workers">
+      <UniqueIdentifier>{94699333-738f-4357-a262-195c70c829a3}</UniqueIdentifier>
+    </Filter>
     <Filter Include="FireNET\Workers\Packets">
       <UniqueIdentifier>{43970e1a-4a29-41d7-87c7-33e3dcafc93f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="FireNET\Workers\Databases">
-      <UniqueIdentifier>{5d25823e-7322-45f3-8466-b1f6f59a0de5}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Workers\Packets\MasterServer">
       <UniqueIdentifier>{19a469dd-771d-4c67-9746-2bbb81d82c06}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Workers\Packets\RemoteServer">
       <UniqueIdentifier>{979debbf-0110-4239-ac54-700a2304b5bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FireNET\Workers\Databases">
+      <UniqueIdentifier>{5d25823e-7322-45f3-8466-b1f6f59a0de5}</UniqueIdentifier>
     </Filter>
     <Filter Include="FireNET\Workers\Databases\Redis">
       <UniqueIdentifier>{7287a086-1009-4690-bff0-90012024ec08}</UniqueIdentifier>

@@ -38,7 +38,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::LogToOutput(ELogType type, const QString& msg)
 {
-	if (m_OutputItemID >= 23)
+	// If log level 0 or 1 - We not need use scroll and save all lines
+	if (m_OutputItemID >= 23 && gEnv->m_LogLevel < 2)
 	{
 		auto pItem = ui->Output->item(0);
 
@@ -101,6 +102,9 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	default:
 		break;
 	};
+
+	if (!gEnv->isQuiting && gEnv->m_LogLevel == 2)
+		ui->Output->scrollToBottom();
 }
 
 void MainWindow::UpdateServerStatus()
