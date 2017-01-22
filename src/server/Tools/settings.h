@@ -13,6 +13,8 @@ struct SVariable
 {
 	QString key;
 	QVariant value;
+	QString description;
+	bool bCanChangeOnline;
 };
 
 class SettingsManager : public QObject
@@ -26,14 +28,18 @@ public:
 public:
 	QVariant GetVariable(QString key);
 	QStringList GetVariablesList();
+	QString GetDescription(QString key);
+
 	bool CheckVariableExists(QString key);
 public:
 	void SetVariable(QString key, QVariant value);
+	void BlockOnlineUpdate() { bBlockOnlineUpdate = true; }
 public:
-	void RegisterVariable(QString key, QVariant value);
+	void RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline);
 private:
 	QVector<SVariable> m_Variables;
 	QMutex m_Mutex;
+	bool bBlockOnlineUpdate;
 };
 
 #endif // SETTINGS_H

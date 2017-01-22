@@ -4,7 +4,8 @@
 #include "settings.h"
 #include "global.h"
 
-SettingsManager::SettingsManager(QObject *parent) : QObject(parent)
+SettingsManager::SettingsManager(QObject *parent) : QObject(parent),
+	bBlockOnlineUpdate(false)
 {
 }
 
@@ -46,6 +47,23 @@ QStringList SettingsManager::GetVariablesList()
 	return varList;
 }
 
+QString SettingsManager::GetDescription(QString key)
+{
+	QMutexLocker locker(&m_Mutex);
+
+	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
+	{
+		if (it->key == key)
+		{
+			return it->description;
+		}
+	}
+
+	qWarning() << "Can't get description for" << key << "variable";
+
+	return QString();
+}
+
 bool SettingsManager::CheckVariableExists(QString key)
 {
 	QMutexLocker locker(&m_Mutex);
@@ -69,6 +87,12 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 	{
 		if (it->key == key)
 		{
+			if (bBlockOnlineUpdate && !it->bCanChangeOnline)
+			{
+				qWarning() << "Can't change variable" << key << ". Blocked for online update. For change this variable use config file";
+				return;
+			}
+
 			if (it->value != value)
 			{
 				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
@@ -86,7 +110,7 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 	qWarning() << "Can't set variable " << key << ". Variable not found!";
 }
 
-void SettingsManager::RegisterVariable(QString key, QVariant value)
+void SettingsManager::RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -102,6 +126,8 @@ void SettingsManager::RegisterVariable(QString key, QVariant value)
 	SVariable newKey;
 	newKey.key = key;
 	newKey.value = value;
+	newKey.description = description;
+	newKey.bCanChangeOnline = bCanChangeOnline;
 
 	m_Variables.push_back(newKey);
 

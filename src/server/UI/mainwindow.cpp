@@ -346,10 +346,25 @@ void MainWindow::on_Input_returnPressed()
 	{
 		QStringList keys = input.split(" ");
 
+		// Get variable description
+		if (keys.size() > 0 && keys[0].contains("?"))
+		{
+			qInfo() << keys[0].toStdString().c_str();
+			QString key = keys[0].remove("?");
+			QString description = gEnv->pSettings->GetDescription(key);
+
+			if (!description.isEmpty())
+				qInfo() << key.toStdString().c_str() << "-" << description.toStdString().c_str();
+
+			return;
+		}
+
+		// Find variable and get type, value or set new value
 		if (keys.size() > 0 && gEnv->pSettings->CheckVariableExists(keys[0]))
 		{
 			if (keys.size() == 1)
 			{
+				// Get variable type and value
 				QVariant::Type var_type = gEnv->pSettings->GetVariable(keys[0]).type();
 
 				switch (var_type)
@@ -378,7 +393,7 @@ void MainWindow::on_Input_returnPressed()
 					break;
 				}
 			}
-			else if (keys.size() == 2)
+			else if (keys.size() == 2) // Set new value for variable
 			{
 				qInfo() << keys[0].toStdString().c_str() << "=" << keys[1].toStdString().c_str();
 
@@ -388,7 +403,7 @@ void MainWindow::on_Input_returnPressed()
 				{
 				case QVariant::Bool:
 				{
-					bool value = keys[1].toInt() == 1 ? true : false;
+					bool value = (keys[1].toInt() == 1) ? true : false;
 					gEnv->pSettings->SetVariable(keys[0], value);
 					break;
 				}

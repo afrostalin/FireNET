@@ -131,46 +131,46 @@ void UpdateLogLevel(int lvl)
 void RegisterVariables()
 {
 	// Server vars
-	gEnv->pSettings->RegisterVariable("sv_ip", "127.0.0.1");
-	gEnv->pSettings->RegisterVariable("sv_port", 3322);
-	gEnv->pSettings->RegisterVariable("sv_root_user", "administrator");
-	gEnv->pSettings->RegisterVariable("sv_root_password", "qwerty");
+	gEnv->pSettings->RegisterVariable("sv_ip", "127.0.0.1", "Main server ip address", false);
+	gEnv->pSettings->RegisterVariable("sv_port", 3322, "Main server port", false);
+	gEnv->pSettings->RegisterVariable("sv_root_user", "administrator", "Remote admin login", true);
+	gEnv->pSettings->RegisterVariable("sv_root_password", "qwerty", "Remote admin password", true);
 #ifdef QT_NO_DEBUG
-	gEnv->pSettings->RegisterVariable("sv_log_level", 0);
+	gEnv->pSettings->RegisterVariable("sv_log_level", 0, "Log level for control debugging messages in output [0-2]", true);
 #else
-	gEnv->pSettings->RegisterVariable("sv_log_level", 2);
+	gEnv->pSettings->RegisterVariable("sv_log_level", 2, "Log level for control debugging messages in output [0-2]", true);
 #endif
-	gEnv->pSettings->RegisterVariable("sv_thread_count", 1);
-	gEnv->pSettings->RegisterVariable("sv_max_players", 1);
-	gEnv->pSettings->RegisterVariable("sv_max_servers", 1);
-	gEnv->pSettings->RegisterVariable("sv_tickrate", 30);
+	gEnv->pSettings->RegisterVariable("sv_thread_count", 1, "Main server thread count for thread pooling", false);
+	gEnv->pSettings->RegisterVariable("sv_max_players", 1, "Maximum players count for connection", true);
+	gEnv->pSettings->RegisterVariable("sv_max_servers", 1, "Maximum game servers count for connection", true);
+	gEnv->pSettings->RegisterVariable("sv_tickrate", 30, "Main server tick rate speed (30 by Default)", true);
 	// Remote server vars
-	gEnv->pSettings->RegisterVariable("remote_server_port", 64000);
+	gEnv->pSettings->RegisterVariable("remote_server_port", 64000, "Remote server port", false);
 	// Database vars
-	gEnv->pSettings->RegisterVariable("db_mode", "Redis");
-	gEnv->pSettings->RegisterVariable("auth_mode", "Default");
+	gEnv->pSettings->RegisterVariable("db_mode", "Redis", "Database mode [Redis, MySql, Redis+MySql]", false);
+	gEnv->pSettings->RegisterVariable("auth_mode", "Default", "Authorization mode [Default, HTTP]", false);
 	// Redis vars
-	gEnv->pSettings->RegisterVariable("redis_ip", "127.0.0.1");
-	gEnv->pSettings->RegisterVariable("redis_bg_saving", false);
+	gEnv->pSettings->RegisterVariable("redis_ip", "127.0.0.1", "Redis database ip address", false);
+	gEnv->pSettings->RegisterVariable("redis_bg_saving", false, "Use redis background saving", true);
 	// MySQL vars
-	gEnv->pSettings->RegisterVariable("mysql_host", "127.0.0.1");
-	gEnv->pSettings->RegisterVariable("mysql_port", 3306);
-	gEnv->pSettings->RegisterVariable("mysql_db_name", "FireNET");
-	gEnv->pSettings->RegisterVariable("mysql_username", "admin");
-	gEnv->pSettings->RegisterVariable("mysql_password", "password");
+	gEnv->pSettings->RegisterVariable("mysql_host", "127.0.0.1", "MySql database ip address", false);
+	gEnv->pSettings->RegisterVariable("mysql_port", 3306, "MySql database port", false);
+	gEnv->pSettings->RegisterVariable("mysql_db_name", "FireNET", "MySql database name", false);
+	gEnv->pSettings->RegisterVariable("mysql_username", "admin", "MySql username", false);
+	gEnv->pSettings->RegisterVariable("mysql_password", "password", "MySql password", false);
 	// HTTP authorization vars
-	gEnv->pSettings->RegisterVariable("http_login_page", "http://127.0.0.1/login.php");
-	gEnv->pSettings->RegisterVariable("http_register_page", "http://127.0.0.1/reg.php");
+	gEnv->pSettings->RegisterVariable("http_login_page", "http://127.0.0.1/login.php", "Login page address for HTTP authorization", false);
+	gEnv->pSettings->RegisterVariable("http_register_page", "http://127.0.0.1/reg.php", "Register page address for HTTP authorization", false);
 	// Network vars
-	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false);
-	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3);
-	gEnv->pSettings->RegisterVariable("net_magic_key", 2016207);
-	gEnv->pSettings->RegisterVariable("bUsePacketDebug", false);
+	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);
+	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3, "Network timeout for new connection", true);
+	gEnv->pSettings->RegisterVariable("net_magic_key", 2016207, "Network magic key for check packets for validations", true);
+	gEnv->pSettings->RegisterVariable("bUsePacketDebug", false, "Enable/Disable packet debugging", true);
 
 	// Gloval vars (This variables not need read from server.cfg)
-	gEnv->pSettings->RegisterVariable("bUseRedis", true);
-	gEnv->pSettings->RegisterVariable("bUseMySQL", false);
-	gEnv->pSettings->RegisterVariable("bUseHttpAuth", false);
+	gEnv->pSettings->RegisterVariable("bUseRedis", true, "Enable/Disable using Redis database", false);
+	gEnv->pSettings->RegisterVariable("bUseMySQL", false, "Enable/Disable using MySql database", false);
+	gEnv->pSettings->RegisterVariable("bUseHttpAuth", false, "Enable/Disable using HTTP authorization", false);
 }
 
 void ReadServerCFG()
@@ -179,11 +179,41 @@ void ReadServerCFG()
 
 	QStringList serverCFG = settings.allKeys();
 
+	// Read server.cfg and try set new variable values
 	for (int i = 0; i < serverCFG.size(); ++i)
 	{
-		// Read server.cfg and try set new variable values
-		gEnv->pSettings->SetVariable(serverCFG[i], settings.value(serverCFG[i], gEnv->pSettings->GetVariable(serverCFG[i])));
-	}
+		QVariant::Type var_type = gEnv->pSettings->GetVariable(serverCFG[i]).type();
+
+		switch (var_type)
+		{
+		case QVariant::Bool:
+		{
+			bool value = (settings.value(serverCFG[i], gEnv->pSettings->GetVariable(serverCFG[i])).toInt() == 1) ? true : false;
+			gEnv->pSettings->SetVariable(serverCFG[i], value);
+			break;
+		}
+		case QVariant::Int:
+		{
+			int value = settings.value(serverCFG[i], gEnv->pSettings->GetVariable(serverCFG[i])).toInt();
+			gEnv->pSettings->SetVariable(serverCFG[i], value);
+			break;
+		}
+		case QVariant::Double:
+		{
+			double value = settings.value(serverCFG[i], gEnv->pSettings->GetVariable(serverCFG[i])).toDouble();
+			gEnv->pSettings->SetVariable(serverCFG[i], value);
+			break;
+		}
+		case QVariant::String:
+		{
+			QString value = settings.value(serverCFG[i], gEnv->pSettings->GetVariable(serverCFG[i])).toString();
+			gEnv->pSettings->SetVariable(serverCFG[i], value);
+			break;
+		}
+		default:
+			break;
+		}
+	}	
 }
 
 int main(int argc, char *argv[])
@@ -210,8 +240,8 @@ int main(int argc, char *argv[])
 	QObject::connect(pApp, &QApplication::aboutToQuit, gEnv->pUI, &MainWindow::CleanUp);
 	
 	// Build version and number
-	QString buildVersion = "v.2.1.0";
-	int buildNumber = 123;
+	QString buildVersion = "v.2.1.1";
+	int buildNumber = 17;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 	
 	pApp->addLibraryPath("plugins");
@@ -259,6 +289,9 @@ int main(int argc, char *argv[])
 		}
 		else if (gEnv->pSettings->GetVariable("auth_mode").toString() == "HTTP")
 			gEnv->pSettings->SetVariable("bUseHttpAuth", true);
+
+		// Block online update for some variables
+		gEnv->pSettings->BlockOnlineUpdate();
 
 		qInfo() << "Start server on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 
