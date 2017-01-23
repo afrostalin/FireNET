@@ -26,8 +26,6 @@
 #include "UI/mainwindow.h"
 
 QApplication *pApp;
-FileAppender *fileAppender;
-UILogger    *uiAppender;
 
 bool init()
 {
@@ -58,8 +56,8 @@ void start_logging(QString logName, int level)
 	QFile::remove(logName);
 
 	// Init logging tool
-	fileAppender = new FileAppender(logName);
-	uiAppender = new UILogger();
+	gEnv->pLogFileAppender = new FileAppender(logName);
+	gEnv->pLogUIAppender = new UILogger();
 
 	Logger::LogLevel logLevel;
 
@@ -81,51 +79,24 @@ void start_logging(QString logName, int level)
 	}
 	}
 
-	fileAppender->setDetailsLevel(logLevel);
+	gEnv->pLogFileAppender->setDetailsLevel(logLevel);
 #ifdef QT_NO_DEBUG
-	fileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
+	gEnv->pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
 #else
-	fileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+	gEnv->pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
 #endif
 
-	uiAppender->setDetailsLevel(logLevel);
+	gEnv->pLogUIAppender->setDetailsLevel(logLevel);
 #ifdef QT_NO_DEBUG
-	uiAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
+	gEnv->pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
 #else
-	uiAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
+	gEnv->pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
 #endif
 
 	gEnv->m_LogLevel = level;
 
-	logger->registerAppender((AbstractAppender*)fileAppender);
-	logger->registerAppender((AbstractAppender*)uiAppender);
-}
-
-void UpdateLogLevel(int lvl)
-{
-	Logger::LogLevel logLevel;
-
-	switch (lvl)
-	{
-	case 0:
-	{
-		logLevel = Logger::Info;
-		break;
-	}
-	case 1:
-	{
-		logLevel = Logger::Debug;
-	}
-	default:
-	{
-		logLevel = Logger::Debug;
-		break;
-	}
-	}
-
-	gEnv->m_LogLevel = lvl;
-	fileAppender->setDetailsLevel(logLevel);
-	uiAppender->setDetailsLevel(logLevel);
+	logger->registerAppender((AbstractAppender*)gEnv->pLogFileAppender);
+	logger->registerAppender((AbstractAppender*)gEnv->pLogUIAppender);
 }
 
 void RegisterVariables()
@@ -241,7 +212,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "v.2.1.1";
-	int buildNumber = 17;
+	int buildNumber = 21;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 	
 	pApp->addLibraryPath("plugins");

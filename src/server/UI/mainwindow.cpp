@@ -411,6 +411,13 @@ void MainWindow::on_Input_returnPressed()
 				{
 					int value = keys[1].toInt();
 					gEnv->pSettings->SetVariable(keys[0], value);
+
+					//If we need update log level execute UpdateLogLevel function
+					if (keys[0] == "sv_log_level")
+					{
+						UpdateLogLevel(value);
+					}
+
 					break;
 				}
 				case QVariant::Double:

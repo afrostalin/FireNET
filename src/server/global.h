@@ -15,6 +15,10 @@ class MainWindow;
 #include <QSslSocket>
 #include <QDebug>
 
+#include <Logger.h>
+#include <FileAppender.h>
+#include "Tools/UILogger.h"
+
 // Safe deleting
 #define SAFE_DELETE(p) {if(p){delete p; p = nullptr;}}
 #define SAFE_RELEASE(p) {if(p){p->deleteLater(); p = nullptr;}}
@@ -102,6 +106,9 @@ struct SGlobalEnvironment
 		pScripts = nullptr;
 		pUI = nullptr;
 
+		pLogFileAppender = nullptr;
+		pLogUIAppender = nullptr;
+
 		m_LogLevel = 0;
 
 		isQuiting = false;
@@ -114,7 +121,10 @@ struct SGlobalEnvironment
 	RemoteServer* pRemoteServer;
 	SettingsManager* pSettings;
 	Scripts* pScripts;
+
 	MainWindow* pUI;
+	FileAppender* pLogFileAppender;
+	UILogger* pLogUIAppender;
 
 	int m_LogLevel;
 
@@ -123,5 +133,32 @@ struct SGlobalEnvironment
 };
 
 extern SGlobalEnvironment* gEnv;
+
+inline void UpdateLogLevel(int lvl)
+{
+	Logger::LogLevel logLevel;
+
+	switch (lvl)
+	{
+	case 0:
+	{
+		logLevel = Logger::Info;
+		break;
+	}
+	case 1:
+	{
+		logLevel = Logger::Debug;
+	}
+	default:
+	{
+		logLevel = Logger::Debug;
+		break;
+	}
+	}
+
+	gEnv->m_LogLevel = lvl;
+	gEnv->pLogFileAppender->setDetailsLevel(logLevel);
+	gEnv->pLogUIAppender->setDetailsLevel(logLevel);
+}
 
 #endif // GLOBAL_H
