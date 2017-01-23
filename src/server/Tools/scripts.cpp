@@ -19,7 +19,8 @@ Scripts::~Scripts()
 
 void Scripts::Clear()
 {
-	// TODO
+	m_shop.clear();
+	m_trustedServers.clear();
 }
 
 void Scripts::LoadShopScript()

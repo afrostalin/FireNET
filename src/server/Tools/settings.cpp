@@ -97,6 +97,13 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 			{
 				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
+
+				// Update log level if sv_log_level changed
+				if (key == "sv_log_level")
+				{
+					UpdateLogLevel(value.toInt());
+				}
+
 				return;
 			}
 			else

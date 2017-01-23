@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 	
 	// Build version and number
 	QString buildVersion = "v.2.1.1";
-	int buildNumber = 21;
+	int buildNumber = 24;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 	
 	pApp->addLibraryPath("plugins");
@@ -236,8 +236,6 @@ int main(int argc, char *argv[])
 
 		RegisterVariables();
 		ReadServerCFG();
-
-		UpdateLogLevel(gEnv->pSettings->GetVariable("sv_log_level").toInt());
 
 		// Load scripts 
 		gEnv->pScripts->LoadShopScript();

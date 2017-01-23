@@ -141,7 +141,7 @@ bool NetPacket::ReadBool()
 	std::string m_value = ReadString();
 	bool result;
 
-	m_value == "true" ? result = true : result = false;
+	m_value == "t" ? result = true : result = false;
 	return result;
 }
 

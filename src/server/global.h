@@ -15,7 +15,6 @@ class MainWindow;
 #include <QSslSocket>
 #include <QDebug>
 
-#include <Logger.h>
 #include <FileAppender.h>
 #include "Tools/UILogger.h"
 
