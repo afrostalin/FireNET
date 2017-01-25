@@ -141,9 +141,11 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("http_login_page", "http://127.0.0.1/login.php", "Login page address for HTTP authorization", false);
 	gEnv->pSettings->RegisterVariable("http_register_page", "http://127.0.0.1/reg.php", "Register page address for HTTP authorization", false);
 	// Network vars
-	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);
 	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3, "Network timeout for new connection", true);
 	gEnv->pSettings->RegisterVariable("net_magic_key", 2016207, "Network magic key for check packets for validations", true);
+	gEnv->pSettings->RegisterVariable("net_max_packet_size_for_read", 512 , "Maximum packet size for reading", true);
+	gEnv->pSettings->RegisterVariable("net_max_bad_packet_count", 10, "Maximum bad packets count from client", true);
+	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);
 	gEnv->pSettings->RegisterVariable("bUsePacketDebug", false, "Enable/Disable packet debugging", true);
 
 	// Gloval vars (This variables not need read from server.cfg)

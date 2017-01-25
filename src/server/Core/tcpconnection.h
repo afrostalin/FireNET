@@ -43,6 +43,13 @@ protected:
 	SClient m_Client;
 
 	bool bConnected;
+private:
+	int m_maxPacketSize;
+	int m_maxBadPacketsCount;
+
+	int m_BadPacketsCount;
+
+	bool bIsQuiting;
 };
 
 #endif // TCPCONNECTION_H

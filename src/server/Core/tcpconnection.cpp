@@ -14,10 +14,15 @@
 TcpConnection::TcpConnection(QObject *parent) : QObject(parent),
 	pQuery(nullptr),
 	m_Socket(nullptr),
-	bConnected(nullptr)
+	bConnected(false),
+	bIsQuiting(false)
 {
 	Q_UNUSED(parent);
 	Active();
+
+	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_size_for_read").toInt();
+	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packet_count").toInt();
+	m_BadPacketsCount = 0;
 }
 
 TcpConnection::~TcpConnection()
@@ -36,8 +41,8 @@ void TcpConnection::quit()
 {
 	qDebug() << "Quit called, closing client";
 
+	bIsQuiting = true;
 	m_Socket->close();
-	emit closed();
 }
 
 void TcpConnection::accept(qint64 socketDescriptor)
@@ -120,11 +125,33 @@ void TcpConnection::disconnected()
 
 void TcpConnection::readyRead()
 {
-    if(!m_Socket)
+    if(!m_Socket || bIsQuiting)
 		return;
+
+	// If client send a lot bad packet we need disconnect him
+	if (m_BadPacketsCount >= m_maxBadPacketsCount)
+	{
+		qWarning() << "Exceeded the number of bad packets from a client. Connection will be closed" << m_Socket;
+		quit();
+		return;
+	}
 
     qDebug() << "Read message from client" << m_Socket;
 	qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
+
+	// Check bytes count before reading
+	if (m_Socket->bytesAvailable() > m_maxPacketSize)
+	{
+		qWarning() << "Very big packet from client" << m_Socket;
+		m_BadPacketsCount++;
+		return;
+	}
+	else if (m_Socket->bytesAvailable() <= 0)
+	{
+		qDebug() << "Very small packet from client" << m_Socket;
+		m_BadPacketsCount++;
+		return;
+	}
 
 	NetPacket packet(m_Socket->readAll());
 
