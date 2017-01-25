@@ -6,6 +6,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QMutex>
 
 namespace Ui
 {
@@ -34,6 +35,8 @@ public slots:
 	void UpdateServerStatus();
 private slots:
     void on_Input_returnPressed();
+signals:
+	void stop();
 private:
 	void ClearOutput();
 	void ClearStatus();
@@ -41,6 +44,7 @@ private:
     Ui::MainWindow *ui;
     int m_OutputItemID;
 	QTimer m_UpdateTimer;
+	QMutex m_Mutex;
 };
 
 #endif // MAINWINDOW_H

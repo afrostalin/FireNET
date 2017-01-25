@@ -39,15 +39,13 @@ NetPacket::NetPacket(const char * data)
 	}
 	else
 	{
-		qCritical() << "Empty packet!";
+		qCritical() << "Can create packet. Empty data!";
 		m_type = net_Empty;
 	}
 }
 
 NetPacket::~NetPacket()
 {
-	qDebug() << "~NetPacket";
-
 	m_packet.clear();
 	m_data.clear();
 	m_separator.clear();

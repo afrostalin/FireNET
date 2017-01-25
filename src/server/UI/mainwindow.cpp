@@ -33,11 +33,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-	delete ui;
+	SAFE_DELETE(ui);
 }
 
 void MainWindow::LogToOutput(ELogType type, const QString& msg)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	// If log level 0 or 1 - We not need use scroll and save all lines
 	if (m_OutputItemID >= 23 && gEnv->m_LogLevel < 2)
 	{
@@ -45,7 +47,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 
 		if (pItem)
 		{
-			pItem->~QListWidgetItem();
+			SAFE_DELETE(pItem);
 			m_OutputItemID--;
 		}
 	}
@@ -103,8 +105,10 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 		break;
 	};
 
-	if (!gEnv->isQuiting && gEnv->m_LogLevel == 2)
-		ui->Output->scrollToBottom();
+	if (ui && ui->Output && gEnv && !gEnv->isQuiting && gEnv->m_LogLevel == 2)
+	{
+//		ui->Output->scrollToBottom();
+	}
 }
 
 void MainWindow::UpdateServerStatus()
@@ -180,25 +184,10 @@ void MainWindow::UpdateServerStatus()
 
 void MainWindow::CleanUp()
 {
-	if (gEnv->isQuiting)
-		return;
-	else
-		gEnv->isQuiting = true;
-
-	qInfo() << "FireNET quiting...";
-
+	emit stop();
 	m_UpdateTimer.stop();
-
-	if (gEnv->pTimer)
-		gEnv->pTimer->stop();
-
-
-	SAFE_CLEAR(gEnv->pServer);
-	SAFE_CLEAR(gEnv->pRemoteServer);
-	SAFE_CLEAR(gEnv->pSettings);
-	SAFE_CLEAR(gEnv->pScripts);
-	SAFE_CLEAR(gEnv->pDBWorker);
-
+	
+	// Wait server thread here
 	while (!gEnv->isReadyToClose)
 	{
 		QEventLoop loop;
@@ -206,14 +195,8 @@ void MainWindow::CleanUp()
 		loop.exec();
 	}
 
-	SAFE_RELEASE(gEnv->pTimer);
-	SAFE_RELEASE(gEnv->pServer);
-	SAFE_RELEASE(gEnv->pRemoteServer);
-	SAFE_RELEASE(gEnv->pSettings);
-	SAFE_RELEASE(gEnv->pScripts);
-	SAFE_RELEASE(gEnv->pDBWorker);
-
-	QThreadPool::globalInstance()->waitForDone(1000);
+	ClearOutput();
+	ClearStatus();
 
 	QCoreApplication::quit();
 }

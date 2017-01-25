@@ -124,6 +124,7 @@ void TcpConnection::readyRead()
 		return;
 
     qDebug() << "Read message from client" << m_Socket;
+	qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
 
 	NetPacket packet(m_Socket->readAll());
 

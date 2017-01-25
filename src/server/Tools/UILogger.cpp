@@ -15,6 +15,9 @@ UILogger::~UILogger()
 
 void UILogger::append(const QDateTime & timeStamp, Logger::LogLevel logLevel, const char * file, int line, const char * function, const QString & category, const QString & message)
 {
+	if (!gEnv->pUI)
+		return;
+
 	switch (logLevel)
 	{
 	case Logger::Trace:

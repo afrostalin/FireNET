@@ -11,9 +11,8 @@
 #include <QMutex>
 
 #include "global.h"
-
-class RemoteConnection;
-class NetPacket;
+#include "remoteconnection.h"
+#include "netpacket.h"
 
 enum ERemoteServerStatus
 {

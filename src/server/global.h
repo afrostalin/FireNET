@@ -112,6 +112,8 @@ struct SGlobalEnvironment
 
 		isQuiting = false;
 		isReadyToClose = false;
+
+		m_serverFullName = "FireNET";
 	}
 
 	TcpServer* pServer;
@@ -129,6 +131,8 @@ struct SGlobalEnvironment
 
 	bool isQuiting;
 	bool isReadyToClose;
+
+	QString m_serverFullName;
 };
 
 extern SGlobalEnvironment* gEnv;

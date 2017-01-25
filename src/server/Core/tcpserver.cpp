@@ -8,7 +8,8 @@
 #include "Workers/Databases/dbworker.h"
 #include "Tools/settings.h"
 
-TcpServer::TcpServer(QObject *parent) : QTcpServer(parent)
+TcpServer::TcpServer(QObject *parent) : QTcpServer(parent),
+	bClosed(false)
 {
 	m_maxThreads = 0;
 	m_maxConnections = 0;
@@ -199,7 +200,10 @@ void TcpServer::finished()
 	runnable->deleteLater();
 
 	if (m_threads.size() <= 0)
-		gEnv->isReadyToClose = true;
+	{
+		bClosed = true;
+		//gEnv->isReadyToClose = true;
+	}
 }
 
 void TcpServer::stop()
@@ -405,7 +409,7 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 	return nullptr;
 }
 
-void TcpServer::sendMessageToClient(QSslSocket * socket, NetPacket &packet)
+void TcpServer::sendMessageToClient(QSslSocket* socket, NetPacket &packet)
 {
 	if (socket != nullptr)
 	{

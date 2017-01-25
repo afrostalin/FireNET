@@ -66,7 +66,7 @@ private:
 	virtual void Reject(qintptr handle);
 	virtual void Accept(qintptr handle, TcpThread *runnable);
 	virtual void Start();
-
+private:
 	int m_maxThreads;
 	int m_maxConnections;
 	int m_connectionTimeout;
@@ -76,5 +76,6 @@ private:
 	QMutex            m_Mutex;
 public:
 	EServerStatus m_Status;
+	bool bClosed;
 };
 #endif // TCPSERVER_H

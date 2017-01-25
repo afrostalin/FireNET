@@ -152,6 +152,12 @@
     <ClCompile Include="tools\UILogger.cpp">
       <Filter>FireNET\Tools</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\temp\moc\server\moc_serverThread.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="serverThread.cpp">
+      <Filter>FireNET</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ui\mainwindow.h">
@@ -198,6 +204,9 @@
     </CustomBuild>
     <CustomBuild Include="ui\mainwindow.ui">
       <Filter>FireNET\UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="serverThread.h">
+      <Filter>FireNET</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
