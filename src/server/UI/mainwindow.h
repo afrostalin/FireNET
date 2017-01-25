@@ -37,6 +37,7 @@ private slots:
     void on_Input_returnPressed();
 signals:
 	void stop();
+	void scroll();
 private:
 	void ClearOutput();
 	void ClearStatus();

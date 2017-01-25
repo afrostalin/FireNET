@@ -31,7 +31,8 @@ SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/core/netpacket.cpp \
     src/server/tools/scripts.cpp \
     src/server/ui/mainwindow.cpp \
-    src/server/tools/UILogger.cpp
+    src/server/tools/UILogger.cpp \
+    src/server/serverThread.cpp
 
 HEADERS += \
     src/server/workers/packets/clientquerys.h \
@@ -50,7 +51,8 @@ HEADERS += \
     src/server/core/netpacket.h \
     src/server/tools/scripts.h \
     src/server/ui/mainwindow.h \
-    src/server/tools/UILogger.h
+    src/server/tools/UILogger.h \
+    src/server/serverThread.h
 
 FORMS += \
 	src/server/ui/mainwindow.ui

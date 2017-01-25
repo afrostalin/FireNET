@@ -28,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	m_OutputItemID = -1;
 
 	connect(&m_UpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateServerStatus);
+	connect(this, &MainWindow::scroll, ui->Output, &QListWidget::scrollToBottom);
+
 	m_UpdateTimer.start(500);
 }
 
@@ -107,7 +109,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 
 	if (ui && ui->Output && gEnv && !gEnv->isQuiting && gEnv->m_LogLevel == 2)
 	{
-//		ui->Output->scrollToBottom();
+		emit scroll();
 	}
 }
 
