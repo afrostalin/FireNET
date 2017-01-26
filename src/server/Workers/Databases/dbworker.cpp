@@ -42,7 +42,7 @@ void DBWorker::Clear()
 
 void DBWorker::Init()
 {
-	m_Status = EDB_Init;
+	gEnv->m_ServerStatus.m_DBStatus = "init";
 
 	// Create Redis connection
 	if (gEnv->pSettings->GetVariable("bUseRedis").toBool())

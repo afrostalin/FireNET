@@ -85,9 +85,9 @@ void RemoteConnection::disconnected()
 	}
 		
 
-	if (gEnv->pRemoteServer->bHaveAdmin && m_Client.isAdmin)
+	if (gEnv->pRemoteServer->IsHaveAdmin() && m_Client.isAdmin)
 	{
-		gEnv->pRemoteServer->bHaveAdmin = false;
+		gEnv->pRemoteServer->SetAdmin (false);
 		qWarning() << "Remote administrator disconnected!";
 	}
 

@@ -14,12 +14,6 @@
 #include "remoteconnection.h"
 #include "netpacket.h"
 
-enum ERemoteServerStatus
-{
-	ERServer_Online,
-	ERServer_Offline,
-};
-
 class RemoteServer : public QTcpServer
 {
     Q_OBJECT
@@ -35,6 +29,8 @@ signals:
 	void close();
 public:
 	void run();
+
+	void sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
 	
 	QStringList GetServerList();
 	SGameServer* GetGameServer(QString name, QString map, QString gamerules);
@@ -47,21 +43,20 @@ public:
 
 	int GetClientCount();
 	int GetMaxClientCount() { return m_MaxClinetCount; }
+
+	bool IsHaveAdmin() { return bHaveAdmin; }
+	void SetAdmin(bool bAmin) { bHaveAdmin = bAmin; }
 private:
 	bool CreateServer();
 	void SetMaxClientCount(int max) { m_MaxClinetCount = max; }
-public:
     virtual void incomingConnection(qintptr socketDescriptor);
-	void sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
-public:
-	bool bHaveAdmin;
-	ERemoteServerStatus m_Status;
 private:
 	QTcpServer* m_Server;
 	QVector<SRemoteClient> m_Clients;
 	QList<RemoteConnection*> m_connections;
 
 	int m_MaxClinetCount;
+	bool bHaveAdmin;
 };
 
 #endif // REMOTESERVER_H

@@ -14,7 +14,6 @@ TcpServer::TcpServer(QObject *parent) : QTcpServer(parent),
 	m_maxThreads = 0;
 	m_maxConnections = 0;
 	m_connectionTimeout = 0;
-	m_Status = EServer_Offline;
 }
 
 TcpServer::~TcpServer()
@@ -59,14 +58,12 @@ bool TcpServer::Listen(const QHostAddress & address, quint16 port)
 	if (m_maxThreads <= 0)
 	{
 		qCritical() << "Execute SetMaxThreads function before listen!";
-		m_Status = EServer_Offline;
 		return false;
 	}
 
 	if (!QTcpServer::listen(address, port))
 	{
 		qCritical() << errorString();
-		m_Status = EServer_Offline;
 		return false;
 	}
 
@@ -74,7 +71,7 @@ bool TcpServer::Listen(const QHostAddress & address, quint16 port)
 
 	Start();
 
-	m_Status = EServer_Online;
+	gEnv->m_ServerStatus.m_MainServerStatus = "online";
 
 	return true;
 }

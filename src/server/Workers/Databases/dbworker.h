@@ -11,14 +11,6 @@ class RedisConnector;
 class MySqlConnector;
 class HttpConnector;
 
-enum EDataBasesStatus 
-{
-	EDB_Init,
-	EDB_StartConnecting,
-	EDB_Connected,
-	EDB_NoConnection,
-};
-
 class DBWorker : public QObject
 {
     Q_OBJECT
@@ -62,8 +54,6 @@ public:
 	RedisConnector* pRedis;
 	MySqlConnector* pMySql;
 	HttpConnector* pHTTP;
-
-	EDataBasesStatus m_Status;
 };
 
 #endif // DBWORKER_H

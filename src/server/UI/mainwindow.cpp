@@ -120,35 +120,6 @@ void MainWindow::UpdateServerStatus()
 
 	ui->Status->clear();
 
-	// Server status
-	QString serverStatus = "offline";
-	if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Online)
-		serverStatus = "online";
-	else if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Offline)
-		serverStatus = "offline";
-
-	// Remote server status
-	QString remoteServerStatus = "offline";
-	if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Online)
-		remoteServerStatus = "online";
-	else if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Offline)
-		remoteServerStatus = "offline";
-
-	// Databases mode
-	QString dbMode = "None";
-	if (gEnv->pSettings)
-		dbMode = gEnv->pSettings->GetVariable("db_mode").toString();
-
-	// Databases status
-	QString dbStatus = "not init";
-	if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Init)
-		dbStatus = "init";
-	else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_StartConnecting)
-		dbStatus = "connecting";
-	else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Connected)
-		dbStatus = "connected";
-	else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_NoConnection)
-		dbStatus = "offline";
 
 	// Global status
 	int clientCount = 0;
@@ -169,10 +140,10 @@ void MainWindow::UpdateServerStatus()
 		maxGsCount = gEnv->pRemoteServer->GetMaxClientCount();
 	}
 
-	QString status = "MainServer : " + serverStatus +
-		" | RemoteServer : " + remoteServerStatus +
-		" | DB mode : " + dbMode +
-		" | DB status : " + dbStatus +
+	QString status = "MainServer : " + gEnv->m_ServerStatus.m_MainServerStatus +
+		" | RemoteServer : " + gEnv->m_ServerStatus.m_RemoteServerStatus +
+		" | DB mode : " + gEnv->m_ServerStatus.m_DBMode +
+		" | DB status : " + gEnv->m_ServerStatus.m_DBStatus +
 		" | Clients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount) + 
 		" | GameServers : " + QString::number(gsCount) + "/" + QString::number(maxGsCount) ;
 
@@ -229,50 +200,24 @@ void MainWindow::on_Input_returnPressed()
 
 		qInfo() << "***FULL SERVER STATUS***";
 
-		// Server status
-		QString serverStatus = "offline";
-		if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Online)
-			serverStatus = "online";
-		else if (gEnv->pServer && gEnv->pServer->m_Status == EServer_Offline)
-			serverStatus = "offline";
-
-		qInfo() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << serverStatus.toStdString().c_str();
+		// Main server status
+		qInfo() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
 		qInfo() << "Clients :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
 		qInfo() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
 		qInfo() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
 
 		// Remote server status
-		QString remoteServerStatus = "offline";
-		if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Online)
-			remoteServerStatus = "online";
-		else if (gEnv->pRemoteServer && gEnv->pRemoteServer->m_Status == ERServer_Offline)
-			remoteServerStatus = "offline";
+		QString remoteAdminStatus = gEnv->pRemoteServer->IsHaveAdmin() ? "online" : "offline";
 
-		QString remoteAdminStatus = gEnv->pRemoteServer->bHaveAdmin ? "online" : "offline";
-
-		qInfo() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << remoteServerStatus.toStdString().c_str();
+		qInfo() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << gEnv->m_ServerStatus.m_RemoteServerStatus.toStdString().c_str();
 		qInfo() << "Remote admin - " << remoteAdminStatus.toStdString().c_str();
 		qInfo() << "Game servers :" << gEnv->pRemoteServer->GetClientCount() << "/" << gEnv->pRemoteServer->GetMaxClientCount();
 		
 		// Databases mode
-		QString dbMode = "None";
-		if (gEnv->pSettings)
-			dbMode = gEnv->pSettings->GetVariable("db_mode").toString();
-
-		qInfo() << "Database mode :" << dbMode.toStdString().c_str();
+		qInfo() << "Database mode :" << gEnv->m_ServerStatus.m_DBMode.toStdString().c_str();
 
 		// Databases status
-		QString dbStatus = "not init";
-		if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Init)
-			dbStatus = "init";
-		else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_StartConnecting)
-			dbStatus = "connecting";
-		else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_Connected)
-			dbStatus = "connected";
-		else if (gEnv->pDBWorker && gEnv->pDBWorker->m_Status == EDB_NoConnection)
-			dbStatus = "offline";
-
-		qInfo() << "Database status :" << dbStatus.toStdString().c_str();
+		qInfo() << "Database status :" << gEnv->m_ServerStatus.m_DBStatus.toStdString().c_str();
 
 		// Authorization type
 		qInfo() << "Authorization type :" << gEnv->pSettings->GetVariable("auth_mode").toString().toStdString().c_str();

@@ -1185,7 +1185,7 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 	TcpServer* pServer = gEnv->pServer;
 
 	int gameServersCount = 0;
-	gEnv->pRemoteServer->bHaveAdmin ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+	gEnv->pRemoteServer->IsHaveAdmin() ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
 
 	if (gameServersCount <= 0)
 	{

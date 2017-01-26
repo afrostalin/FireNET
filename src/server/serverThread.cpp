@@ -250,6 +250,8 @@ void CServerThread::start()
 		else if (gEnv->pSettings->GetVariable("auth_mode").toString() == "HTTP")
 			gEnv->pSettings->SetVariable("bUseHttpAuth", true);
 
+		gEnv->m_ServerStatus.m_DBMode = gEnv->pSettings->GetVariable("db_mode").toString();
+
 		// Block online update for some variables
 		gEnv->pSettings->BlockOnlineUpdate();
 
@@ -300,7 +302,7 @@ void CServerThread::stop()
 	SAFE_CLEAR(gEnv->pScripts);
 	SAFE_CLEAR(gEnv->pDBWorker);
 
-	while (!gEnv->pServer->bClosed)
+	while (!gEnv->pServer->IsClosed())
 	{
 		QEventLoop loop;
 		QTimer::singleShot(33, &loop, &QEventLoop::quit);

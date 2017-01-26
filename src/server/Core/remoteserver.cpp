@@ -13,7 +13,6 @@ RemoteServer::RemoteServer(QObject *parent) : QTcpServer(parent),
 	bHaveAdmin(false)
 {
 	m_MaxClinetCount = 0;
-	m_Status = ERServer_Offline;
 }
 
 RemoteServer::~RemoteServer()
@@ -39,7 +38,7 @@ void RemoteServer::run()
 {
 	if (CreateServer())
 	{
-		m_Status = ERServer_Online;
+		gEnv->m_ServerStatus.m_RemoteServerStatus = "online";
 		SetMaxClientCount(gEnv->pSettings->GetVariable("sv_max_servers").toInt());
 
 

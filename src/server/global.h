@@ -92,6 +92,15 @@ struct SRemoteClient
 	bool isGameServer;
 };
 
+// Server status structure
+struct SServerStatus
+{
+	QString m_MainServerStatus;
+	QString m_RemoteServerStatus;
+	QString m_DBMode;
+	QString m_DBStatus;
+};
+
 // Global environment instance
 struct SGlobalEnvironment
 {
@@ -104,9 +113,16 @@ struct SGlobalEnvironment
 		pSettings = nullptr;
 		pScripts = nullptr;
 		pUI = nullptr;
-
+		
 		pLogFileAppender = nullptr;
 		pLogUIAppender = nullptr;
+
+		// Server statisctic
+		m_ServerStatus.m_DBMode = "none";
+		m_ServerStatus.m_DBStatus = "none";
+		m_ServerStatus.m_MainServerStatus = "offline";
+		m_ServerStatus.m_RemoteServerStatus = "offline";
+		//
 
 		m_LogLevel = 0;
 
@@ -116,27 +132,31 @@ struct SGlobalEnvironment
 		m_serverFullName = "FireNET";
 	}
 
-	TcpServer* pServer;
-	DBWorker* pDBWorker;
-	QTimer* pTimer;
-	RemoteServer* pRemoteServer;
-	SettingsManager* pSettings;
-	Scripts* pScripts;
+	TcpServer*			 pServer;
+	DBWorker*			 pDBWorker;
+	QTimer*				 pTimer;
+	RemoteServer*		 pRemoteServer;
+	SettingsManager*	 pSettings;
+	Scripts*			 pScripts;
+	MainWindow*			 pUI;
 
-	MainWindow* pUI;
+	// Log appenders
 	FileAppender* pLogFileAppender;
 	UILogger* pLogUIAppender;
+	
+	// Server statistic
+	SServerStatus		 m_ServerStatus;
+	int					 m_LogLevel;
+	QString				 m_serverFullName;
 
-	int m_LogLevel;
-
-	bool isQuiting;
-	bool isReadyToClose;
-
-	QString m_serverFullName;
+	// Need for clearing server before quit
+	bool			     isQuiting;
+	bool			     isReadyToClose;
 };
 
 extern SGlobalEnvironment* gEnv;
 
+// Update log level
 inline void UpdateLogLevel(int lvl)
 {
 	Logger::LogLevel logLevel;

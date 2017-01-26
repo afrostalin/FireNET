@@ -16,12 +16,6 @@
 #include "tcpthread.h"
 #include "netpacket.h"
 
-enum EServerStatus
-{
-	EServer_Online,
-	EServer_Offline,
-};
-
 class TcpServer : public QTcpServer
 {
     Q_OBJECT
@@ -49,6 +43,8 @@ public:
 
 	int GetClientCount();
 	int GetMaxClientCount() { return m_maxConnections; }
+
+	bool IsClosed() { return bClosed; }
 public slots:
 	void started();
 	void finished();
@@ -74,8 +70,7 @@ private:
 	QVector<SClient>  m_Clients;
 	QList<TcpThread*> m_threads;
 	QMutex            m_Mutex;
-public:
-	EServerStatus m_Status;
+
 	bool bClosed;
 };
 #endif // TCPSERVER_H

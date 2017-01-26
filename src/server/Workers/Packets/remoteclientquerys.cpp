@@ -44,7 +44,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 {
 	qWarning() << "Client (" << m_socket << ") trying login in administrator mode!";
 
-	if (gEnv->pRemoteServer->bHaveAdmin)
+	if (gEnv->pRemoteServer->IsHaveAdmin())
 	{
 		qCritical() << "Error authorization in administator mode! Reason = Administrator alredy has entered";
 
@@ -71,7 +71,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 		if (password == gEnv->pSettings->GetVariable("sv_root_password").toString())
 		{
 			qWarning() << "Client (" << m_socket << ") success login in administator mode!";
-			gEnv->pRemoteServer->bHaveAdmin = true;
+			gEnv->pRemoteServer->SetAdmin(true);
 
 			m_client->isAdmin = true;
 			gEnv->pRemoteServer->UpdateClient(m_client);
@@ -124,7 +124,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 	if (command == "status")
 	{
 		int gameServersCount = 0;
-		gEnv->pRemoteServer->bHaveAdmin ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+		gEnv->pRemoteServer->IsHaveAdmin() ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
 
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_command_complete);
@@ -263,7 +263,7 @@ void RemoteClientQuerys::onGameServerRegister(NetPacket &packet)
 		gEnv->pRemoteServer->UpdateClient(m_client);
 
 		int gameServersCount = 0;
-		gEnv->pRemoteServer->bHaveAdmin ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+		gEnv->pRemoteServer->IsHaveAdmin() ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
 
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_register_server_complete);
