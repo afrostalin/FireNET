@@ -41,6 +41,8 @@ public:
 
 	bool CheckGameServerExists(QString name, QString ip, int port);
 
+	void SetMaxClientCount(int count) { m_MaxClinetCount = count; }
+
 	int GetClientCount();
 	int GetMaxClientCount() { return m_MaxClinetCount; }
 
@@ -48,7 +50,6 @@ public:
 	void SetAdmin(bool bAmin) { bHaveAdmin = bAmin; }
 private:
 	bool CreateServer();
-	void SetMaxClientCount(int max) { m_MaxClinetCount = max; }
     virtual void incomingConnection(qintptr socketDescriptor);
 private:
 	QTcpServer* m_Server;

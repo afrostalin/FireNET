@@ -110,7 +110,8 @@ void CServerThread::StartLogging(QString logName, int level)
 	logger->registerAppender((AbstractAppender*)pLogUIAppender);
 }
 
-// Callback
+// !Callbacks
+
 void UpdateLogLevel(QVariant variable)
 {
 	Logger::LogLevel logLevel;
@@ -140,6 +141,20 @@ void UpdateLogLevel(QVariant variable)
 	pLogUIAppender->setDetailsLevel(logLevel);
 }
 
+void UpdateMaxClientCount(QVariant variable)
+{
+	if (gEnv->pServer)
+		gEnv->pServer->SetMaxConnections(variable.toInt());
+}
+
+void UpdateMaxRemoteClienCount(QVariant variable)
+{
+	if (gEnv->pRemoteServer)
+		gEnv->pRemoteServer->SetMaxClientCount(variable.toInt());
+}
+
+// ~Callbacks
+
 void CServerThread::RegisterVariables()
 {
 	// Server vars
@@ -153,9 +168,9 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("sv_log_level", 2, "Log level for control debugging messages in output [0-2]", true, &UpdateLogLevel);
 #endif
 	gEnv->pSettings->RegisterVariable("sv_thread_count", 1, "Main server thread count for thread pooling", false);
-	gEnv->pSettings->RegisterVariable("sv_max_players", 1, "Maximum players count for connection", true);
-	gEnv->pSettings->RegisterVariable("sv_max_servers", 1, "Maximum game servers count for connection", true);
-	gEnv->pSettings->RegisterVariable("sv_tickrate", 30, "Main server tick rate speed (30 by Default)", true);
+	gEnv->pSettings->RegisterVariable("sv_max_players", 1, "Maximum players count for connection", true, &UpdateMaxClientCount);
+	gEnv->pSettings->RegisterVariable("sv_max_servers", 1, "Maximum game servers count for connection", true, &UpdateMaxRemoteClienCount);
+	gEnv->pSettings->RegisterVariable("sv_tickrate", 30, "Main server tick rate speed (30 by Default)", false);
 	// Remote server vars
 	gEnv->pSettings->RegisterVariable("remote_server_port", 64000, "Remote server port", false);
 	// Database vars
@@ -291,18 +306,17 @@ void CServerThread::start()
 		qInfo() << "Start server on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 
 		gEnv->pServer->SetMaxThreads(gEnv->pSettings->GetVariable("sv_thread_count").toInt());
-		gEnv->pServer->SetMaxConnections(gEnv->pSettings->GetVariable("sv_max_players").toInt());
 
 		if (gEnv->pServer->Listen(QHostAddress(gEnv->pSettings->GetVariable("sv_ip").toString()), gEnv->pSettings->GetVariable("sv_port").toInt()))
 		{
 			qInfo() << "Server started. Main thread " << QThread::currentThread();
 
 			// Start remote server
-			gEnv->pRemoteServer->run();
+			gEnv->pRemoteServer->run();		
 
-			// Calculate and set server tick rate
-			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();
+			// Set server tickrate
 			qInfo() << "Server tickrate set to" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
+			int tick = 1000 / gEnv->pSettings->GetVariable("sv_tickrate").toInt();
 			gEnv->pTimer->start(tick);
 
 			// Init connection to databases

@@ -39,8 +39,6 @@ void RemoteServer::run()
 	if (CreateServer())
 	{
 		gEnv->m_ServerStatus.m_RemoteServerStatus = "online";
-		SetMaxClientCount(gEnv->pSettings->GetVariable("sv_max_servers").toInt());
-
 
 		qInfo() << "Remote server started on" << gEnv->pSettings->GetVariable("sv_ip").toString();
 		qInfo() << "Remote server thread " << QThread::currentThread();

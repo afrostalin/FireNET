@@ -135,9 +135,7 @@ void SettingsManager::RegisterVariable(QString key, QVariant value, QString desc
 	newKey.value = value;
 	newKey.description = description;
 	newKey.bCanChangeOnline = bCanChangeOnline;
-
-	if (pCallback)
-		newKey.pCallback = pCallback;
+	newKey.pCallback = pCallback;
 
 	m_Variables.push_back(newKey);
 
