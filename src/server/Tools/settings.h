@@ -15,6 +15,7 @@ struct SVariable
 	QVariant value;
 	QString description;
 	bool bCanChangeOnline;
+	void(*pCallback)(QVariant);
 };
 
 class SettingsManager : public QObject
@@ -35,7 +36,7 @@ public:
 	void SetVariable(QString key, QVariant value);
 	void BlockOnlineUpdate() { bBlockOnlineUpdate = true; }
 public:
-	void RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline);
+	void RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline, void (*pCallback)(QVariant) = nullptr);
 private:
 	QVector<SVariable> m_Variables;
 	QMutex m_Mutex;

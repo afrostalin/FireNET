@@ -25,6 +25,9 @@
 
 #include "UI/mainwindow.h"
 
+FileAppender* pLogFileAppender;
+UILogger* pLogUIAppender;
+
 CServerThread::CServerThread(QObject *parent) : QObject(parent),
 	m_loop(nullptr)
 {
@@ -64,8 +67,8 @@ void CServerThread::StartLogging(QString logName, int level)
 	QFile::remove(logName);
 
 	// Init logging tool
-	gEnv->pLogFileAppender = new FileAppender(logName);
-	gEnv->pLogUIAppender = new UILogger();
+	pLogFileAppender = new FileAppender(logName);
+	pLogUIAppender = new UILogger();
 
 	Logger::LogLevel logLevel;
 
@@ -87,24 +90,54 @@ void CServerThread::StartLogging(QString logName, int level)
 	}
 	}
 
-	gEnv->pLogFileAppender->setDetailsLevel(logLevel);
+	pLogFileAppender->setDetailsLevel(logLevel);
 #ifdef QT_NO_DEBUG
-	gEnv->pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
+	pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
 #else
-	gEnv->pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+	pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
 #endif
 
-	gEnv->pLogUIAppender->setDetailsLevel(logLevel);
+	pLogUIAppender->setDetailsLevel(logLevel);
 #ifdef QT_NO_DEBUG
-	gEnv->pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
+	pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
 #else
-	gEnv->pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
+	pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
 #endif
 
 	gEnv->m_LogLevel = level;
 
-	logger->registerAppender((AbstractAppender*)gEnv->pLogFileAppender);
-	logger->registerAppender((AbstractAppender*)gEnv->pLogUIAppender);
+	logger->registerAppender((AbstractAppender*)pLogFileAppender);
+	logger->registerAppender((AbstractAppender*)pLogUIAppender);
+}
+
+// Callback
+void UpdateLogLevel(QVariant variable)
+{
+	Logger::LogLevel logLevel;
+
+	int lvl = variable.toInt();
+
+	switch (lvl)
+	{
+	case 0:
+	{
+		logLevel = Logger::Info;
+		break;
+	}
+	case 1:
+	{
+		logLevel = Logger::Debug;
+	}
+	default:
+	{
+		logLevel = Logger::Debug;
+		break;
+	}
+	}
+
+	gEnv->m_LogLevel = lvl;
+	pLogFileAppender->setDetailsLevel(logLevel);
+	pLogUIAppender->setDetailsLevel(logLevel);
 }
 
 void CServerThread::RegisterVariables()
@@ -115,9 +148,9 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("sv_root_user", "administrator", "Remote admin login", true);
 	gEnv->pSettings->RegisterVariable("sv_root_password", "qwerty", "Remote admin password", true);
 #ifdef QT_NO_DEBUG
-	gEnv->pSettings->RegisterVariable("sv_log_level", 0, "Log level for control debugging messages in output [0-2]", true);
+	gEnv->pSettings->RegisterVariable("sv_log_level", 0, "Log level for control debugging messages in output [0-2]", true, &UpdateLogLevel);
 #else
-	gEnv->pSettings->RegisterVariable("sv_log_level", 2, "Log level for control debugging messages in output [0-2]", true);
+	gEnv->pSettings->RegisterVariable("sv_log_level", 2, "Log level for control debugging messages in output [0-2]", true, &UpdateLogLevel);
 #endif
 	gEnv->pSettings->RegisterVariable("sv_thread_count", 1, "Main server thread count for thread pooling", false);
 	gEnv->pSettings->RegisterVariable("sv_max_players", 1, "Maximum players count for connection", true);

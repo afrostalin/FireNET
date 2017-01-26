@@ -98,17 +98,17 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
 
-				// Update log level if sv_log_level changed
-				if (key == "sv_log_level")
+				// If variable have callback - execute 
+				if (it->pCallback)
 				{
-					UpdateLogLevel(value.toInt());
+					it->pCallback(it->value);
 				}
 
 				return;
 			}
 			else
 			{
-				//qWarning() << "Variable" << key << "not changed, return.";
+				qDebug() << "Variable" << key << "not changed, return.";
 				return;
 			}
 		}
@@ -117,7 +117,7 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 	qWarning() << "Can't set variable " << key << ". Variable not found!";
 }
 
-void SettingsManager::RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline)
+void SettingsManager::RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline, void(*pCallback)(QVariant))
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -135,6 +135,9 @@ void SettingsManager::RegisterVariable(QString key, QVariant value, QString desc
 	newKey.value = value;
 	newKey.description = description;
 	newKey.bCanChangeOnline = bCanChangeOnline;
+
+	if (pCallback)
+		newKey.pCallback = pCallback;
 
 	m_Variables.push_back(newKey);
 
