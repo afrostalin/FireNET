@@ -149,14 +149,14 @@
     <ClCompile Include="Workers\Packets\helper.cpp">
       <Filter>FireNET\Workers\Packets\MasterServer</Filter>
     </ClCompile>
-    <ClCompile Include="tools\UILogger.cpp">
-      <Filter>FireNET\Tools</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\temp\moc\server\moc_serverThread.cpp">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="serverThread.cpp">
       <Filter>FireNET</Filter>
+    </ClCompile>
+    <ClCompile Include="tools\UILogger.cpp">
+      <Filter>FireNET\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -216,11 +216,11 @@
     <ClInclude Include="core\netpacket.h">
       <Filter>FireNET\Core</Filter>
     </ClInclude>
-    <ClInclude Include="tools\UILogger.h">
-      <Filter>FireNET\Tools</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\temp\UI\ui_mainwindow.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tools\UILogger.h">
+      <Filter>FireNET\UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

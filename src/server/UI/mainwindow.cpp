@@ -43,7 +43,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	QMutexLocker locker(&m_Mutex);
 
 	// If log level 0 or 1 - We not need use scroll and save all lines
-	if (m_OutputItemID >= 23 && gEnv->m_LogLevel < 2)
+	if (m_OutputItemID >= 23 && gEnv->m_UILogLevel < 2)
 	{
 		auto pItem = ui->Output->item(0);
 
@@ -107,7 +107,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 		break;
 	};
 
-	if (ui && ui->Output && gEnv && !gEnv->isQuiting && gEnv->m_LogLevel == 2)
+	if (ui && ui->Output && gEnv && !gEnv->isQuiting && gEnv->m_UILogLevel == 2)
 	{
 		emit scroll();
 	}
@@ -196,7 +196,7 @@ void MainWindow::on_Input_returnPressed()
 
 	if (input == "status")
 	{
-		if (gEnv->m_LogLevel < 2)
+		if (gEnv->m_UILogLevel < 2)
 		{
 			qWarning() << "Before get full server status change log level to 2";
 			return;
@@ -229,6 +229,11 @@ void MainWindow::on_Input_returnPressed()
 
 		// Authorization type
 		qInfo() << "Authorization type :" << gEnv->pSettings->GetVariable("auth_mode").toString().toStdString().c_str();
+
+		// Debug messages
+		qInfo() << "Debug messages :" << gEnv->m_DebugsCount;
+		qInfo() << "Warning messages :" << gEnv->m_WarningsCount;
+		qInfo() << "Error messages :" << gEnv->m_ErrorsCount;
 	}
 	else if (input.contains("send_message")) // TODO
 	{

@@ -116,35 +116,51 @@ struct SGlobalEnvironment
 		m_ServerStatus.m_DBStatus = "none";
 		m_ServerStatus.m_MainServerStatus = "offline";
 		m_ServerStatus.m_RemoteServerStatus = "offline";
-		//
-
-		m_LogLevel = 0;
-		m_serverFullName = "FireNET";
 		m_InputPacketsCount = 0;
 		m_InputSpeed = 0;
 		m_OutputPacketsCount = 0;
 		m_OutputSpeed = 0;
 
+		m_DebugsCount = 0;
+		m_WarningsCount = 0;
+		m_ErrorsCount = 0;
+		//
+
+		m_serverFullName = "FireNET";
+
+		m_FileLogLevel = 0;
+		m_UILogLevel = 0;
+		
 		isQuiting = false;
 		isReadyToClose = false;
 	}
 
+	// Pointers to main server systems
 	TcpServer*			 pServer;
+	RemoteServer*		 pRemoteServer;
 	DBWorker*			 pDBWorker;
 	QTimer*				 pTimer;
-	RemoteServer*		 pRemoteServer;
 	SettingsManager*	 pSettings;
 	Scripts*			 pScripts;
 	MainWindow*			 pUI;
 
 	// Server statistic
-	SServerStatus		 m_ServerStatus;
-	int					 m_LogLevel;
-	QString				 m_serverFullName;
+	SServerStatus		 m_ServerStatus;	
 	int                  m_InputPacketsCount;
 	int                  m_InputSpeed;
 	int                  m_OutputPacketsCount;
 	int                  m_OutputSpeed;
+
+	int                  m_DebugsCount;
+	int                  m_WarningsCount;
+	int                  m_ErrorsCount;
+
+	// Log level for file and UI
+	int					 m_FileLogLevel;
+	int                  m_UILogLevel;
+
+	// Server full name
+	QString				 m_serverFullName;
 
 	// Need for clearing server before quit
 	bool			     isQuiting;

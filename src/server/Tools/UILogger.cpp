@@ -28,6 +28,7 @@ void UILogger::append(const QDateTime & timeStamp, Logger::LogLevel logLevel, co
 	case Logger::Debug:
 	{
 		gEnv->pUI->LogToOutput(ELog_Debug, formattedString(timeStamp, logLevel, file, line, function, category, message));
+		gEnv->m_DebugsCount++;
 		break;
 	}
 	case Logger::Info:
@@ -38,11 +39,13 @@ void UILogger::append(const QDateTime & timeStamp, Logger::LogLevel logLevel, co
 	case Logger::Warning:
 	{
 		gEnv->pUI->LogToOutput(ELog_Warning, formattedString(timeStamp, logLevel, file, line, function, category, message));
+		gEnv->m_WarningsCount++;
 		break;
 	}
 	case Logger::Error:
 	{
 		gEnv->pUI->LogToOutput(ELog_Error, formattedString(timeStamp, logLevel, file, line, function, category, message));
+		gEnv->m_ErrorsCount++;
 		break;
 	}
 	case Logger::Fatal:

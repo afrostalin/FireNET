@@ -38,6 +38,84 @@ CServerThread::~CServerThread()
 	SAFE_RELEASE(m_loop);
 }
 
+// !Callbacks
+
+void UpdateFileLogLevel(QVariant variable)
+{
+	Logger::LogLevel logLevel;
+
+	int lvl = variable.toInt();
+
+	switch (lvl)
+	{
+	case 0:
+	{
+		logLevel = Logger::Info;
+		pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
+		break;
+	}
+	case 1:
+	{
+		logLevel = Logger::Debug;
+		pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+	}
+	default:
+	{
+		logLevel = Logger::Debug;
+		pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+		break;
+	}
+	}
+
+	pLogFileAppender->setDetailsLevel(logLevel);
+	gEnv->m_FileLogLevel = lvl;
+}
+
+void UpdateUILogLevel(QVariant variable)
+{
+	Logger::LogLevel logLevel;
+
+	int lvl = variable.toInt();
+
+	switch (lvl)
+	{
+	case 0:
+	{
+		logLevel = Logger::Info;
+		pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
+		break;
+	}
+	case 1:
+	{
+		logLevel = Logger::Debug;
+		pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
+	}
+	default:
+	{
+		logLevel = Logger::Debug;
+		pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
+		break;
+	}
+	}
+
+	pLogUIAppender->setDetailsLevel(logLevel);
+	gEnv->m_UILogLevel = lvl;
+}
+
+void UpdateMaxClientCount(QVariant variable)
+{
+	if (gEnv->pServer)
+		gEnv->pServer->SetMaxConnections(variable.toInt());
+}
+
+void UpdateMaxRemoteClienCount(QVariant variable)
+{
+	if (gEnv->pRemoteServer)
+		gEnv->pRemoteServer->SetMaxClientCount(variable.toInt());
+}
+
+// ~Callbacks
+
 bool CServerThread::Init()
 {
 	if (!QFile::exists("key.key") || !QFile::exists("key.pem"))
@@ -70,90 +148,12 @@ void CServerThread::StartLogging(QString logName, int level)
 	pLogFileAppender = new FileAppender(logName);
 	pLogUIAppender = new UILogger();
 
-	Logger::LogLevel logLevel;
-
-	switch (level)
-	{
-	case 0:
-	{
-		logLevel = Logger::Info;
-		break;
-	}
-	case 1:
-	{
-		logLevel = Logger::Debug;
-	}
-	default:
-	{
-		logLevel = Logger::Debug;
-		break;
-	}
-	}
-
-	pLogFileAppender->setDetailsLevel(logLevel);
-#ifdef QT_NO_DEBUG
-	pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
-#else
-	pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
-#endif
-
-	pLogUIAppender->setDetailsLevel(logLevel);
-#ifdef QT_NO_DEBUG
-	pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] %{message}"));
-#else
-	pLogUIAppender->setFormat(QLatin1String("[%{type:-7}] <%{function}> %{message}"));
-#endif
-
-	gEnv->m_LogLevel = level;
-
+	UpdateFileLogLevel(level);
+	UpdateUILogLevel(level);
+	
 	logger->registerAppender((AbstractAppender*)pLogFileAppender);
 	logger->registerAppender((AbstractAppender*)pLogUIAppender);
 }
-
-// !Callbacks
-
-void UpdateLogLevel(QVariant variable)
-{
-	Logger::LogLevel logLevel;
-
-	int lvl = variable.toInt();
-
-	switch (lvl)
-	{
-	case 0:
-	{
-		logLevel = Logger::Info;
-		break;
-	}
-	case 1:
-	{
-		logLevel = Logger::Debug;
-	}
-	default:
-	{
-		logLevel = Logger::Debug;
-		break;
-	}
-	}
-
-	gEnv->m_LogLevel = lvl;
-	pLogFileAppender->setDetailsLevel(logLevel);
-	pLogUIAppender->setDetailsLevel(logLevel);
-}
-
-void UpdateMaxClientCount(QVariant variable)
-{
-	if (gEnv->pServer)
-		gEnv->pServer->SetMaxConnections(variable.toInt());
-}
-
-void UpdateMaxRemoteClienCount(QVariant variable)
-{
-	if (gEnv->pRemoteServer)
-		gEnv->pRemoteServer->SetMaxClientCount(variable.toInt());
-}
-
-// ~Callbacks
 
 void CServerThread::RegisterVariables()
 {
@@ -163,9 +163,11 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("sv_root_user", "administrator", "Remote admin login", true);
 	gEnv->pSettings->RegisterVariable("sv_root_password", "qwerty", "Remote admin password", true);
 #ifdef QT_NO_DEBUG
-	gEnv->pSettings->RegisterVariable("sv_log_level", 0, "Log level for control debugging messages in output [0-2]", true, &UpdateLogLevel);
+	gEnv->pSettings->RegisterVariable("sv_file_log_level", 0, "Log level for control debugging messages in log file [0-1]", true, &UpdateFileLogLevel);
+	gEnv->pSettings->RegisterVariable("sv_ui_log_level", 0, "Log level for control debugging messages in UI [0-2]", true, &UpdateUILogLevel);
 #else
-	gEnv->pSettings->RegisterVariable("sv_log_level", 2, "Log level for control debugging messages in output [0-2]", true, &UpdateLogLevel);
+	gEnv->pSettings->RegisterVariable("sv_file_log_level", 2, "Log level for control debugging messages in log file [0-1]", true, &UpdateFileLogLevel);
+	gEnv->pSettings->RegisterVariable("sv_ui_log_level", 1, "Log level for control debugging messages in UI [0-2]", true, &UpdateUILogLevel);
 #endif
 	gEnv->pSettings->RegisterVariable("sv_thread_count", 1, "Main server thread count for thread pooling", false);
 	gEnv->pSettings->RegisterVariable("sv_max_players", 1, "Maximum players count for connection", true, &UpdateMaxClientCount);
@@ -266,7 +268,7 @@ void CServerThread::start()
 #ifdef QT_NO_DEBUG
 		StartLogging("FireNET.log", 0);
 #else
-		StartLogging("FireNET.log", 2);
+		StartLogging("FireNET.log", 1);
 #endif 
 
 		qInfo() << gEnv->m_serverFullName.toStdString().c_str();
