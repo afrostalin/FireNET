@@ -33,14 +33,14 @@ void RedisConnector::run()
 	{
 		qInfo() << "Redis connected. Work on" << QThread::currentThread();
 
-		gEnv->m_ServerStatus.m_DBStatus = "connected";
+		gEnv->m_ServerStatus.m_DBStatus = "online";
 
 		connectStatus = true;
 	}
 	else
 	{
         qCritical() << "Failed connect to Redis! Database functions not be work!";
-		gEnv->m_ServerStatus.m_DBStatus = "disconnected";
+		gEnv->m_ServerStatus.m_DBStatus = "offline";
 		return;
 	}
 }
@@ -49,18 +49,17 @@ void RedisConnector::disconnected()
 {
 	qCritical() << "Redis server disconnected. Database functions not be work!";
 
-	gEnv->m_ServerStatus.m_DBStatus = "disconnected";
+	gEnv->m_ServerStatus.m_DBStatus = "offline";
 	connectStatus = false;
 }
 
 void RedisConnector::Disconnect()
 {
-	gEnv->m_ServerStatus.m_DBStatus = "disconnected";
+	gEnv->m_ServerStatus.m_DBStatus = "offline";
 
 	if (connectStatus && connection)
 	{
 		connection->disconnect();
-		gEnv->m_ServerStatus.m_DBStatus = "disconnected";
 		connectStatus = false;
 	}
 }

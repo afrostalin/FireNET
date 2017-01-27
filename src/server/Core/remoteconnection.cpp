@@ -14,6 +14,10 @@ RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent),
 	pQuerys(nullptr),
 	bConnected(false)
 {
+
+	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_size_for_read").toInt();
+	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packet_count").toInt();
+	m_BadPacketsCount = 0;
 }
 
 RemoteConnection::~RemoteConnection()
@@ -105,6 +109,33 @@ void RemoteConnection::readyRead()
 	if (!m_socket)
 		return;
 
+	gEnv->m_InputPacketsCount++;
+
+	// If client send a lot bad packet we need disconnect him
+	if (m_BadPacketsCount >= m_maxBadPacketsCount)
+	{
+		qWarning() << "Exceeded the number of bad packets from a client. Connection will be closed" << m_socket;
+		close();
+		return;
+	}
+
+	qDebug() << "Read message from client" << m_socket;
+	qDebug() << "Available bytes for read" << m_socket->bytesAvailable();
+
+	// Check bytes count before reading
+	if (m_socket->bytesAvailable() > m_maxPacketSize)
+	{
+		qWarning() << "Very big packet from client" << m_socket;
+		m_BadPacketsCount++;
+		return;
+	}
+	else if (m_socket->bytesAvailable() <= 0)
+	{
+		qDebug() << "Very small packet from client" << m_socket;
+		m_BadPacketsCount++;
+		return;
+	}
+
 	qDebug() << "Read message from remote client" << m_socket;
 
 	NetPacket packet(m_socket->readAll());
@@ -160,6 +191,8 @@ void RemoteConnection::bytesWritten(qint64 bytes)
 {
 	if (!m_socket)
 		return;
+
+	gEnv->m_OutputPacketsCount++;
 
 	qDebug() << "Message to remote client" << m_socket << "sended! Size =" << bytes;
 }

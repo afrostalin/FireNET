@@ -33,6 +33,11 @@ private:
 	RemoteClientQuerys* pQuerys;
 	SRemoteClient m_Client;
 	bool bConnected;
+
+	int m_maxPacketSize;
+	int m_maxBadPacketsCount;
+
+	int m_BadPacketsCount;
 };
 
 #endif // REMOTECONNECTION_H

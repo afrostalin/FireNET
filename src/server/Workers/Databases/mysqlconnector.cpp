@@ -27,19 +27,19 @@ void MySqlConnector::run()
 	{
 		qInfo() << "MySQL connected. Work on" << QThread::currentThread();
 		connectStatus = true;
-		gEnv->m_ServerStatus.m_DBStatus = "connected";
+		gEnv->m_ServerStatus.m_DBStatus = "online";
 	}
 	else
 	{
 		qCritical() << "Failed connect to MySQL! MySQL functions not be work!";
-		gEnv->m_ServerStatus.m_DBStatus = "disconnected";
+		gEnv->m_ServerStatus.m_DBStatus = "offline";
 		return;
 	}
 }
 
 void MySqlConnector::Disconnect()
 {
-	gEnv->m_ServerStatus.m_DBStatus = "disconnected";
+	gEnv->m_ServerStatus.m_DBStatus = "offline";
 
 	if (connectStatus)
 	{

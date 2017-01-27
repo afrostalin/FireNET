@@ -128,6 +128,8 @@ void TcpConnection::readyRead()
     if(!m_Socket || bIsQuiting)
 		return;
 
+	gEnv->m_InputPacketsCount++;
+
 	// If client send a lot bad packet we need disconnect him
 	if (m_BadPacketsCount >= m_maxBadPacketsCount)
 	{
@@ -243,6 +245,8 @@ void TcpConnection::bytesWritten(qint64 bytes)
 {
     if(!m_Socket)
 		return;
+
+	gEnv->m_OutputPacketsCount++;
 
     qDebug() << "Message to client" << m_Socket << "sended! Size =" << bytes;
 

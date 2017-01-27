@@ -140,12 +140,16 @@ void MainWindow::UpdateServerStatus()
 		maxGsCount = gEnv->pRemoteServer->GetMaxClientCount();
 	}
 
-	QString status = "MainServer : " + gEnv->m_ServerStatus.m_MainServerStatus +
-		" | RemoteServer : " + gEnv->m_ServerStatus.m_RemoteServerStatus +
-		" | DB mode : " + gEnv->m_ServerStatus.m_DBMode +
-		" | DB status : " + gEnv->m_ServerStatus.m_DBStatus +
-		" | Clients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount) + 
-		" | GameServers : " + QString::number(gsCount) + "/" + QString::number(maxGsCount) ;
+	QString status = "MServer : " + gEnv->m_ServerStatus.m_MainServerStatus +
+		" | MClients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount) +
+		" | RServer : " + gEnv->m_ServerStatus.m_RemoteServerStatus +
+		" | RClients : " + QString::number(gsCount) + "/" + QString::number(maxGsCount) +
+		" | DBMode : " + gEnv->m_ServerStatus.m_DBMode +
+		" | DBStatus : " + gEnv->m_ServerStatus.m_DBStatus +	
+		" | IPackets : " + QString::number(gEnv->m_InputPacketsCount) +
+		" | OPackets : " + QString::number(gEnv->m_OutputPacketsCount) + 
+		" | ISpeed : " + QString::number(gEnv->m_InputSpeed) + 
+		" | OSpeed : " + QString::number(gEnv->m_OutputSpeed);
 
 	ui->Status->addItem(status);
 

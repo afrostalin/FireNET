@@ -119,11 +119,14 @@ struct SGlobalEnvironment
 		//
 
 		m_LogLevel = 0;
+		m_serverFullName = "FireNET";
+		m_InputPacketsCount = 0;
+		m_InputSpeed = 0;
+		m_OutputPacketsCount = 0;
+		m_OutputSpeed = 0;
 
 		isQuiting = false;
 		isReadyToClose = false;
-
-		m_serverFullName = "FireNET";
 	}
 
 	TcpServer*			 pServer;
@@ -138,6 +141,10 @@ struct SGlobalEnvironment
 	SServerStatus		 m_ServerStatus;
 	int					 m_LogLevel;
 	QString				 m_serverFullName;
+	int                  m_InputPacketsCount;
+	int                  m_InputSpeed;
+	int                  m_OutputPacketsCount;
+	int                  m_OutputSpeed;
 
 	// Need for clearing server before quit
 	bool			     isQuiting;
