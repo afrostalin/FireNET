@@ -18,7 +18,6 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent),
 	bIsQuiting(false)
 {
 	Q_UNUSED(parent);
-	Active();
 
 	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_size_for_read").toInt();
 	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packet_count").toInt();
@@ -30,11 +29,6 @@ TcpConnection::~TcpConnection()
 	qDebug() << "~TcpConnection";
 	SAFE_RELEASE(m_Socket);
 	SAFE_RELEASE(pQuery);
-}
-
-int TcpConnection::IdleTime()
-{
-	return m_activity.secsTo(QTime::currentTime());
 }
 
 void TcpConnection::quit()
@@ -76,7 +70,6 @@ void TcpConnection::accept(qint64 socketDescriptor)
 	}
 
 	qDebug() << "Client accepted. Socket " << m_Socket;
-	m_activity = QTime::currentTime();
 }
 
 void TcpConnection::connected()
@@ -102,7 +95,6 @@ void TcpConnection::connected()
 
 	qInfo() << "Client" << m_Socket << "connected.";
 
-	m_activity = QTime::currentTime();
 	emit opened();
 }
 
@@ -119,7 +111,6 @@ void TcpConnection::disconnected()
 
 	qInfo() << "Client" << m_Socket << "disconnected.";
 
-	m_activity = QTime::currentTime();
 	emit closed();
 }
 
@@ -128,7 +119,7 @@ void TcpConnection::readyRead()
     if(!m_Socket || bIsQuiting)
 		return;
 
-	gEnv->m_InputPacketsCount++;
+	emit received();
 
 	// If client send a lot bad packet we need disconnect him
 	if (m_BadPacketsCount >= m_maxBadPacketsCount)
@@ -229,6 +220,7 @@ void TcpConnection::readyRead()
 		default:
 		{
 			qCritical() << "Error reading query. Can't get query type!";
+			m_BadPacketsCount++;
 			break;
 		}
 		}
@@ -236,9 +228,8 @@ void TcpConnection::readyRead()
 	else
 	{
 		qCritical() << "Error reading packet. Can't get packet type!";
+		m_BadPacketsCount++;
 	}
-
-	Active();
 }
 
 void TcpConnection::bytesWritten(qint64 bytes)
@@ -246,11 +237,9 @@ void TcpConnection::bytesWritten(qint64 bytes)
     if(!m_Socket)
 		return;
 
-	gEnv->m_OutputPacketsCount++;
+	emit sended();
 
     qDebug() << "Message to client" << m_Socket << "sended! Size =" << bytes;
-
-	Active();
 }
 
 void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
@@ -259,8 +248,6 @@ void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
 		return;
 
     qDebug() << "Client" << m_Socket << "changed socket state to " << socketState;
-
-	Active();
 }
 
 void TcpConnection::socketSslErrors(const QList<QSslError> list)
@@ -269,8 +256,6 @@ void TcpConnection::socketSslErrors(const QList<QSslError> list)
 	{
 		qCritical() << "Client" << m_Socket << "return socket error" << item.errorString();
 	}
-
-	Active();
 }
 
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
@@ -282,13 +267,6 @@ void TcpConnection::socketError(QAbstractSocket::SocketError error)
 		qCritical() << "Client" << m_Socket << "return socket error" << error;
 		quit();
 	}
-
-	Active();
-}
-
-void TcpConnection::Active()
-{
-	m_activity = QTime::currentTime();
 }
 
 QSslSocket * TcpConnection::CreateSocket()

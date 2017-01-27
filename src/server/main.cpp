@@ -9,15 +9,13 @@
 
 #include "UI/mainwindow.h"
 
-QApplication *pApp;
-
 int main(int argc, char *argv[])
 {
-    pApp = new QApplication(argc, argv);
+	QApplication* pApp = new QApplication(argc, argv);
 
 	// Server buid version, number and type
 	QString buildVersion = "v.2.1.2";
-	int buildNumber = 2;
+	int buildNumber = 16;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 #ifdef QT_NO_DEBUG
 	QString buildType = ". Release profile";

@@ -16,12 +16,12 @@ class TcpConnection : public QObject
 public:
     explicit TcpConnection(QObject *parent = 0);
     ~TcpConnection();
-
-	int IdleTime();
-
 signals:
 	void opened();
 	void closed();
+
+	void received();
+	void sended();
 public slots:
 	virtual void quit();
     virtual void accept(qint64 socketDescriptor);
@@ -33,22 +33,18 @@ public slots:
 
 	virtual void socketSslErrors(const QList<QSslError> list);
 	virtual void socketError(QAbstractSocket::SocketError error);
-protected:
-	void Active();
+private:
 	QSslSocket* CreateSocket();
-
-	QTime m_activity;
+private:
     ClientQuerys* pQuery;
 	QSslSocket* m_Socket;
 	SClient m_Client;
-
-	bool bConnected;
 private:
 	int m_maxPacketSize;
 	int m_maxBadPacketsCount;
-
 	int m_BadPacketsCount;
 
+	bool bConnected;
 	bool bIsQuiting;
 };
 

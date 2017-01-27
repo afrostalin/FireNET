@@ -34,7 +34,6 @@ signals:
 
 public slots:
 	void connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
-	void idle(int value);
 	void closing();
 	void opened();
 	void closed();

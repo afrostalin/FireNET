@@ -14,6 +14,10 @@ TcpServer::TcpServer(QObject *parent) : QTcpServer(parent),
 	m_maxThreads = 0;
 	m_maxConnections = 0;
 	m_connectionTimeout = 0;
+
+	m_Time = QTime::currentTime();
+	m_InputPacketsCount = 0;
+	m_OutputPacketsCount = 0;
 }
 
 TcpServer::~TcpServer()
@@ -29,10 +33,24 @@ void TcpServer::Clear()
 
 void TcpServer::Update()
 {
-	if (m_connectionTimeout > 0)
+	// Every one second - calculate server statisctic;
+	if (m_Time.elapsed() >= 1000)
 	{
-		emit idle(m_connectionTimeout);
+		m_Time = QTime::currentTime();
+		CalculateStatistic();
 	}
+}
+
+void TcpServer::MessageReceived()
+{
+	//gEnv->m_InputPacketsCount++;
+	m_InputPacketsCount++;
+}
+
+void TcpServer::MessageSended()
+{
+	//gEnv->m_OutputPacketsCount++;
+	m_OutputPacketsCount++;
 }
 
 void TcpServer::SetMaxThreads(int maximum)
@@ -91,6 +109,18 @@ void TcpServer::Start()
 	}
 }
 
+void TcpServer::CalculateStatistic()
+{
+	gEnv->m_InputPacketsCount += m_InputPacketsCount;
+	gEnv->m_InputSpeed = m_InputPacketsCount;
+
+	gEnv->m_OutputPacketsCount += m_OutputPacketsCount;
+	gEnv->m_OutputSpeed = m_OutputPacketsCount;
+
+	m_InputPacketsCount = 0;
+	m_OutputPacketsCount = 0;
+}
+
 TcpThread * TcpServer::CreateRunnable()
 {
 	qDebug() << "Creating runnable...";
@@ -119,7 +149,6 @@ void TcpServer::StartRunnable(TcpThread * runnable)
 	connect(runnable, &TcpThread::started, this, &TcpServer::started, Qt::QueuedConnection);
 	connect(runnable, &TcpThread::finished, this, &TcpServer::finished, Qt::QueuedConnection);
 	connect(this, &TcpServer::connecting, runnable, &TcpThread::connecting, Qt::QueuedConnection);
-	connect(this, &TcpServer::idle, runnable, &TcpThread::idle, Qt::QueuedConnection);
 
 	QThreadPool::globalInstance()->start(runnable);
 }
@@ -408,7 +437,7 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 
 void TcpServer::sendMessageToClient(QSslSocket* socket, NetPacket &packet)
 {
-	if (socket != nullptr)
+	if (socket)
 	{
 		socket->write(packet.toString());
 		socket->waitForBytesWritten(10);

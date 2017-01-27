@@ -109,7 +109,7 @@ void RemoteConnection::readyRead()
 	if (!m_socket)
 		return;
 
-	gEnv->m_InputPacketsCount++;
+	emit received();
 
 	// If client send a lot bad packet we need disconnect him
 	if (m_BadPacketsCount >= m_maxBadPacketsCount)
@@ -192,7 +192,7 @@ void RemoteConnection::bytesWritten(qint64 bytes)
 	if (!m_socket)
 		return;
 
-	gEnv->m_OutputPacketsCount++;
+	emit sended();
 
 	qDebug() << "Message to remote client" << m_socket << "sended! Size =" << bytes;
 }

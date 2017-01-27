@@ -39,7 +39,7 @@ NetPacket::NetPacket(const char * data)
 	}
 	else
 	{
-		qCritical() << "Can create packet. Empty data!";
+		qWarning() << "Can create packet. Empty data!";
 		m_type = net_Empty;
 	}
 }
@@ -92,13 +92,13 @@ const char* NetPacket::ReadString()
 		}
 		else
 		{
-			qCritical() << "Error reading string from packet. Last index wrong";
+			qWarning() << "Error reading string from packet. Last index wrong";
 			return nullptr;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading string from packet. Bad packet.";
+		qWarning() << "Error reading string from packet. Bad packet.";
 		return nullptr;
 	}
 }
@@ -117,19 +117,19 @@ int NetPacket::ReadInt()
 			}
 			catch (std::invalid_argument &)
 			{
-				qCritical() << "Error reading int from packet. Can't convert string to int";
+				qWarning() << "Error reading int from packet. Can't convert string to int";
 				return 0;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading int from packet. Last index wrong";
+			qWarning() << "Error reading int from packet. Last index wrong";
 			return 0;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading int from packet. Bad packet.";
+		qWarning() << "Error reading int from packet. Bad packet.";
 		return 0;
 	}
 }
@@ -157,19 +157,19 @@ float NetPacket::ReadFloat()
 			}
 			catch (std::invalid_argument &)
 			{
-				qCritical() << "Error reading float from packet. Can't convert string to float";
+				qWarning() << "Error reading float from packet. Can't convert string to float";
 				return 0.0f;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading float from packet. Last index wrong";
+			qWarning() << "Error reading float from packet. Last index wrong";
 			return 0.0f;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading float from packet. Bad packet.";
+		qWarning() << "Error reading float from packet. Bad packet.";
 		return 0.0f;
 	}
 }
@@ -188,19 +188,19 @@ double NetPacket::ReadDouble()
 			}
 			catch (std::invalid_argument &)
 			{
-				qCritical() << "Error reading double from packet. Can't convert string to double";
+				qWarning() << "Error reading double from packet. Can't convert string to double";
 				return 0.0;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading double from packet. Last index wrong";
+			qWarning() << "Error reading double from packet. Last index wrong";
 			return 0.0;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading double from packet. Bad packet.";
+		qWarning() << "Error reading double from packet. Bad packet.";
 		return 0.0;
 	}
 }
@@ -281,13 +281,13 @@ void NetPacket::ReadPacket()
 				}
 				else
 				{
-					qCritical() << "Error reading packet. Empty packet type";
+					qWarning() << "Error reading packet. Empty packet type";
 					bIsGoodPacket = false;
 				}
 			}
 			else
 			{
-				qCritical() << "Error reading packet. Wrong magic key!";
+				qWarning() << "Error reading packet. Wrong magic key!";
 				qDebug() << "Header" << packet_header.c_str();
 				qDebug() << "Footer" << packet_footer.c_str();
 				bIsGoodPacket = false;
@@ -295,13 +295,13 @@ void NetPacket::ReadPacket()
 		}
 		else
 		{
-			qCritical() << "Error reading packet. Packet soo small!";
+			qWarning() << "Error reading packet. Packet soo small!";
 			bIsGoodPacket = false;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading packet. Packet empty!";
+		qWarning() << "Error reading packet. Packet empty!";
 		bIsGoodPacket = false;
 	}
 }

@@ -1,8 +1,9 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#include "tcpthread.h"
 #include "global.h"
+#include "tcpthread.h"
+#include "tcpserver.h"
 
 TcpThread::TcpThread(QObject *parent) : QObject(parent),
 	m_loop(nullptr)
@@ -47,24 +48,6 @@ void TcpThread::connecting(qintptr handle, TcpThread *runnable, TcpConnection* c
 	connection->accept(handle);
 }
 
-void TcpThread::idle(int value)
-{
-	foreach(TcpConnection* connection, m_connections)
-	{
-		if (!connection) 
-			continue;
-
-		int idle = connection->IdleTime();
-		qDebug() << this << connection << " idle for " << idle << " timeout is " << value;
-
-		if (idle >= value)
-		{
-			qDebug() << this << "Closing idle connection" << connection;
-			connection->quit();
-		}
-	}
-}
-
 void TcpThread::closing()
 {
 	emit quit();
@@ -107,4 +90,7 @@ void TcpThread::AddSignals(TcpConnection * connection)
 	connect(connection, &TcpConnection::opened, this, &TcpThread::opened, Qt::QueuedConnection);
 	connect(connection, &TcpConnection::closed, this, &TcpThread::closed, Qt::QueuedConnection);
 	connect(this, &TcpThread::quit, connection, &TcpConnection::quit, Qt::QueuedConnection);
+
+	connect(connection, &TcpConnection::received, gEnv->pServer, &TcpServer::MessageReceived, Qt::QueuedConnection);
+	connect(connection, &TcpConnection::sended, gEnv->pServer, &TcpServer::MessageSended, Qt::QueuedConnection);
 }

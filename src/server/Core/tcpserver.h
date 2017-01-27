@@ -50,11 +50,13 @@ public slots:
 	void finished();
 	void stop();
 	void Update();
+
+	// Calculate server statisctic
+	void MessageReceived();
+	void MessageSended();
 signals:
 	void connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
 	void closing();
-	void idle(int value);
-
 private:
 	virtual void incomingConnection(qintptr socketDescriptor);
 	virtual TcpThread* CreateRunnable();
@@ -63,6 +65,8 @@ private:
 	virtual void Accept(qintptr handle, TcpThread *runnable);
 	virtual void Start();
 private:
+	void CalculateStatistic();
+private:
 	int m_maxThreads;
 	int m_maxConnections;
 	int m_connectionTimeout;
@@ -70,6 +74,11 @@ private:
 	QVector<SClient>  m_Clients;
 	QList<TcpThread*> m_threads;
 	QMutex            m_Mutex;
+
+	// Statisctic
+	QTime             m_Time;
+	int               m_InputPacketsCount;
+	int               m_OutputPacketsCount;
 
 	bool bClosed;
 };

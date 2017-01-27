@@ -5,6 +5,7 @@
 #include "remoteserver.h"
 #include "remoteconnection.h"
 #include "netpacket.h"
+#include "tcpserver.h"
 
 #include "Tools/settings.h"
 
@@ -64,6 +65,9 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 	RemoteConnection* m_remoteConnection = new RemoteConnection();
 	connect(this, &RemoteServer::close, m_remoteConnection, &RemoteConnection::close);
 	connect(m_remoteConnection, &RemoteConnection::finished, this, &RemoteServer::CloseConnection);
+
+	connect(m_remoteConnection, &RemoteConnection::received, gEnv->pServer, &TcpServer::MessageReceived);
+	connect(m_remoteConnection, &RemoteConnection::sended, gEnv->pServer, &TcpServer::MessageSended);
 
 	m_connections.append(m_remoteConnection);
 	m_remoteConnection->accept(socketDescriptor);

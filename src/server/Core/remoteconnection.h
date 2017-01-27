@@ -28,6 +28,9 @@ public slots:
 	void socketError(QAbstractSocket::SocketError error);
 signals:
 	void finished();
+
+	void received();
+	void sended();
 private:
 	QSslSocket* m_socket;
 	RemoteClientQuerys* pQuerys;

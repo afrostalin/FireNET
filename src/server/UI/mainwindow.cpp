@@ -210,6 +210,10 @@ void MainWindow::on_Input_returnPressed()
 		qInfo() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
 		qInfo() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
 
+		// Packets info
+		qInfo() << "Input packets :" << gEnv->m_InputPacketsCount;
+		qInfo() << "Output packets :" << gEnv->m_OutputPacketsCount;
+
 		// Remote server status
 		QString remoteAdminStatus = gEnv->pRemoteServer->IsHaveAdmin() ? "online" : "offline";
 
