@@ -5,6 +5,7 @@
 #define REDISCONNECTOR_H
 
 #include <QObject>
+
 #include "qredisclient/redisclient.h"
 
 class RedisConnector : public QObject

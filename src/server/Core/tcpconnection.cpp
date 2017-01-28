@@ -130,7 +130,7 @@ void TcpConnection::readyRead()
 	}
 
     qDebug() << "Read message from client" << m_Socket;
-	qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
+ 	qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
 
 	// Check bytes count before reading
 	if (m_Socket->bytesAvailable() > m_maxPacketSize)

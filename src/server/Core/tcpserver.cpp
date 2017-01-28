@@ -206,7 +206,7 @@ void TcpServer::Reject(qintptr handle)
 {
 	qDebug() << "Rejecting connection: " << handle;
 
-	QTcpSocket *socket = new QTcpSocket(this);
+	QSslSocket *socket = new QSslSocket(this);
 	socket->setSocketDescriptor(handle);
 	socket->close();
 	socket->deleteLater();

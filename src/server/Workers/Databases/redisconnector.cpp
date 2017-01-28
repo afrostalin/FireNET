@@ -81,11 +81,9 @@ bool RedisConnector::Connect()
 
 QString RedisConnector::SendSyncQuery(QString command)
 {
-	RedisClient::Response r;
-
 	if (connectStatus && connection != nullptr)
 	{
-		r = connection->commandSync(command);
+		RedisClient::Response r = connection->commandSync(command);
 		return r.getValue().toString();
 	}
 	else
@@ -96,11 +94,9 @@ QString RedisConnector::SendSyncQuery(QString command)
 
 QString RedisConnector::SendSyncQuery(QString command, QString key)
 {
-	RedisClient::Response r;
-
-	if (connectStatus && connection != nullptr)
+	if (connectStatus && connection)
 	{
-		r = connection->commandSync(command, key);
+		RedisClient::Response r = connection->commandSync(command, key);
 		return r.getValue().toString();
 	}
 	else
@@ -111,11 +107,9 @@ QString RedisConnector::SendSyncQuery(QString command, QString key)
 
 QString RedisConnector::SendSyncQuery(QString command, QString key, QString value)
 {
-	RedisClient::Response r;
-
-	if (connectStatus && connection != nullptr)
+	if (connectStatus && connection)
 	{
-		r = connection->commandSync(command, key, value);
+		RedisClient::Response r = connection->commandSync(command, key, value);
 		return r.getValue().toString();
 	}
 	else
@@ -126,11 +120,9 @@ QString RedisConnector::SendSyncQuery(QString command, QString key, QString valu
 
 QString RedisConnector::SendSyncQuery(QList<QByteArray>& rawCmd)
 {
-	RedisClient::Response r;
-
-	if (connectStatus && connection != nullptr)
+	if (connectStatus && connection)
 	{
-		r = connection->commandSync(rawCmd);
+		RedisClient::Response r = connection->commandSync(rawCmd);
 
 		if (r.isArray())
 			return r.toRawString();
