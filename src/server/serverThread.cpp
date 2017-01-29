@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QSettings>
+#include <QDir>
 #include <QFile>
 #include <QTimer>
 #include <Logger.h>
@@ -51,18 +52,18 @@ void UpdateFileLogLevel(QVariant variable)
 	case 0:
 	{
 		logLevel = Logger::Info;
-		pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] %{message}\n"));
+		pLogFileAppender->setFormat(QLatin1String("%{time}{dd.MM.yy <HH:mm:ss.zzz>} [%{type:-7}] %{message}\n"));
 		break;
 	}
 	case 1:
 	{
 		logLevel = Logger::Debug;
-		pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+		pLogFileAppender->setFormat(QLatin1String("%{time}{dd.MM.yy <HH:mm:ss.zzz>} [%{type:-7}] <%{function}> %{message}\n"));
 	}
 	default:
 	{
 		logLevel = Logger::Debug;
-		pLogFileAppender->setFormat(QLatin1String("%{time}{dd-MM-yyyyTHH:mm:ss.zzz} [%{type:-7}] <%{function}> %{message}\n"));
+		pLogFileAppender->setFormat(QLatin1String("%{time}{dd.MM.yy <HH:mm:ss.zzz>} [%{type:-7}] <%{function}> %{message}\n"));
 		break;
 	}
 	}
@@ -137,19 +138,35 @@ bool CServerThread::Init()
 	return true;
 }
 
-void CServerThread::StartLogging(QString logName, int level)
+void CServerThread::StartLogging()
 {
+	// Check exists logs folder
+	if (!QDir("logs").exists())
+		QDir().mkdir("logs");
+
+	QDateTime* pDate = new QDateTime();
+	QString m_Date = pDate->currentDateTime().toString("dd.MM.yyyy");
+	SAFE_DELETE(pDate);
+
+	QString m_LogFileName = "logs/FireNET["+ m_Date + "].log";
+
 	// Backup old log file
-	QFile::remove(logName + ".bak");
-	QFile::rename(logName, logName + ".bak");
-	QFile::remove(logName);
+	QFile::remove(m_LogFileName + ".bak");
+	QFile::rename(m_LogFileName, m_LogFileName + ".bak");
+	QFile::remove(m_LogFileName);
+
+#ifdef QT_NO_DEBUG
+	int m_LogLevel = 0;
+#else
+	int m_LogLevel = 1;
+#endif
 
 	// Init logging tool
-	pLogFileAppender = new FileAppender(logName);
+	pLogFileAppender = new FileAppender(m_LogFileName);
 	pLogUIAppender = new UILogger();
 
-	UpdateFileLogLevel(level);
-	UpdateUILogLevel(level);
+	UpdateFileLogLevel(m_LogLevel);
+	UpdateUILogLevel(m_LogLevel);
 	
 	logger->registerAppender((AbstractAppender*)pLogFileAppender);
 	logger->registerAppender((AbstractAppender*)pLogUIAppender);
@@ -267,11 +284,7 @@ void CServerThread::start()
 
 	if (Init())
 	{
-#ifdef QT_NO_DEBUG
-		StartLogging("FireNET.log", 0);
-#else
-		StartLogging("FireNET.log", 1);
-#endif 
+		StartLogging();
 
 		qInfo() << gEnv->m_serverFullName.toStdString().c_str();
 		qInfo() << "Created by Ilya Chernetsov";

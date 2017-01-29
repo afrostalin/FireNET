@@ -292,6 +292,15 @@ void MainWindow::on_Input_returnPressed()
 	{
 		CleanUp();
 	}
+	else if (input == "list")
+	{
+		qInfo() << "status - get full server status";
+		qInfo() << "send_message ... - send server message to all connected clients";
+		qInfo() << "send_command ... - send console command to all connected clients";
+		qInfo() << "servers - get connected game servers list";
+		qInfo() << "players - get connected players list";
+		qInfo() << "quit - full server shutdown";
+	}
 	else
 	{
 		QStringList keys = input.split(" ");

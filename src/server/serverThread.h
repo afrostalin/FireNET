@@ -18,7 +18,7 @@ public slots:
 	void stop();
 private:
 	bool Init();
-	void StartLogging(QString logName, int level);
+	void StartLogging();
 	void RegisterVariables();
 	void ReadServerCFG();
 private:
