@@ -26,7 +26,8 @@ public:
 
     void run();
 	int Count();
-
+public:
+	void SendGlobalMessage(NetPacket &packet);
 signals:
 	void started();
 	void finished();

@@ -43,13 +43,11 @@ void TcpServer::Update()
 
 void TcpServer::MessageReceived()
 {
-	//gEnv->m_InputPacketsCount++;
 	m_InputPacketsCount++;
 }
 
 void TcpServer::MessageSended()
 {
-	//gEnv->m_OutputPacketsCount++;
 	m_OutputPacketsCount++;
 }
 
@@ -191,14 +189,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 void TcpServer::Accept(qintptr handle, TcpThread * runnable)
 {
 	qDebug() << "Accepting" << handle << "on" << runnable;
-
 	TcpConnection *connection = new TcpConnection;
-	if (!connection)
-	{
-		qCritical() << this << "could not find connection to accept connection: " << handle;
-		return;
-	}
-
 	emit connecting(handle, runnable, connection);
 }
 
@@ -437,22 +428,15 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 
 void TcpServer::sendMessageToClient(QSslSocket* socket, NetPacket &packet)
 {
+	// DEPRICATED
 	if (socket)
-	{
 		socket->write(packet.toString());
-		socket->waitForBytesWritten(10);
-	}
 }
 
 void TcpServer::sendGlobalMessage(NetPacket &packet)
 {
-	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
+	for (auto it = m_threads.begin(); it != m_threads.end(); ++it)
 	{
-		// Send message only for authorizated clients
-		if (it->profile != nullptr && it->socket != nullptr)
-		{
-			it->socket->write(packet.toString());
-			it->socket->waitForBytesWritten(10);
-		}
+		(*it)->SendGlobalMessage(packet);
 	}
 }

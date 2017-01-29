@@ -15,13 +15,19 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent),
 	pQuery(nullptr),
 	m_Socket(nullptr),
 	bConnected(false),
-	bIsQuiting(false)
+	bIsQuiting(false),
+	bLastMsgSended(true)
 {
 	Q_UNUSED(parent);
 
-	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_size_for_read").toInt();
+	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_read_size").toInt();
 	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packet_count").toInt();
 	m_BadPacketsCount = 0;
+
+	m_Time = QTime::currentTime();
+	m_InputPacketsCount = 0;
+	m_PacketsSpeed = 0;
+	m_maxPacketSpeed = gEnv->pSettings->GetVariable("net_max_packets_speed").toInt();
 }
 
 TcpConnection::~TcpConnection()
@@ -29,6 +35,28 @@ TcpConnection::~TcpConnection()
 	qDebug() << "~TcpConnection";
 	SAFE_RELEASE(m_Socket);
 	SAFE_RELEASE(pQuery);
+}
+
+void TcpConnection::Update()
+{
+	if (!m_Packets.empty() && m_Socket && bConnected && bLastMsgSended)
+	{
+		bLastMsgSended = false;
+		NetPacket packet = m_Packets.front();
+		m_Packets.pop();
+		m_Socket->write(packet.toString());
+	}
+
+	if (m_Time.elapsed() >= 1000)
+	{
+		m_Time = QTime::currentTime();
+		CalculateStatistic();
+	}
+}
+
+void TcpConnection::SendMessage(NetPacket& packet)
+{
+	m_Packets.push(packet);
 }
 
 void TcpConnection::quit()
@@ -90,6 +118,8 @@ void TcpConnection::connected()
 	pQuery->SetSocket(m_Socket);
 	// Set client
 	pQuery->SetClient(&m_Client);
+	// Set connection
+	pQuery->SetConnection(this);
 
 	bConnected = true;
 
@@ -119,6 +149,8 @@ void TcpConnection::readyRead()
     if(!m_Socket || bIsQuiting)
 		return;
 
+	m_InputPacketsCount++;
+
 	emit received();
 
 	// If client send a lot bad packet we need disconnect him
@@ -129,8 +161,9 @@ void TcpConnection::readyRead()
 		return;
 	}
 
-    qDebug() << "Read message from client" << m_Socket;
- 	qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
+	// STACK OVERFLOW HERE !!!
+    //qDebug() << "Read message from client" << m_Socket;
+ 	//qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
 
 	// Check bytes count before reading
 	if (m_Socket->bytesAvailable() > m_maxPacketSize)
@@ -239,6 +272,8 @@ void TcpConnection::bytesWritten(qint64 bytes)
 
 	emit sended();
 
+	bLastMsgSended = true;
+
     qDebug() << "Message to client" << m_Socket << "sended! Size =" << bytes;
 }
 
@@ -283,4 +318,17 @@ QSslSocket * TcpConnection::CreateSocket()
 	connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &TcpConnection::socketError, Qt::QueuedConnection);
 
 	return socket;
+}
+
+void TcpConnection::CalculateStatistic()
+{
+	m_PacketsSpeed = m_InputPacketsCount;
+
+	if (m_PacketsSpeed >= m_maxPacketSpeed)
+	{
+		qWarning() << "Client" << m_Socket << "exceeded the limit of the number of packets per second. Speed:" << m_PacketsSpeed << ". Maximum speed :" << m_maxPacketSpeed;
+		quit();
+	}
+
+	m_InputPacketsCount = 0;
 }

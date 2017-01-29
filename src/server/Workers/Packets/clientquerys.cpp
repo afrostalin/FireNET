@@ -28,7 +28,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_auth_fail);
 		m_packet.WriteInt(3);
-		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage(m_packet);
 
 		return;
 	}
@@ -68,7 +68,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 				// Auth complete
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete_with_profile);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 			else
@@ -80,7 +80,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete);
 
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 
 				bAuthorizated = true;
 				m_Client->profile->uid = uid;
@@ -96,7 +96,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_auth_fail);
 			m_packet.WriteInt(pDataBase->pHTTP->GetError());
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 
 			return;
 		}
@@ -112,7 +112,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_auth_fail);
 		m_packet.WriteInt(0);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 
 		return;
 	}
@@ -132,7 +132,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_auth_fail);
 			m_packet.WriteInt(1);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 
@@ -153,7 +153,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete_with_profile);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 
 				return;
 			}
@@ -164,7 +164,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 
 				bAuthorizated = true;
 				m_Client->profile->uid = userData->uid;
@@ -183,7 +183,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_auth_fail);
 			m_packet.WriteInt(2);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 	}
@@ -199,7 +199,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_register_fail);
 		m_packet.WriteInt(2);
-		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 
@@ -213,7 +213,6 @@ void ClientQuerys::onRegister(NetPacket &packet)
 		return;
 	}
 
-	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDBWorker;
 
 	// Login by HTTP
@@ -226,7 +225,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 
 			NetPacket m_packet(net_Result);
 			m_packet.WriteInt(net_result_register_complete);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 		else
@@ -234,7 +233,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_register_fail);
 			m_packet.WriteInt(pDataBase->pHTTP->GetError());
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 	}
@@ -254,7 +253,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_register_complete);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 			else
@@ -265,7 +264,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_register_fail);
 				m_packet.WriteInt(1);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 		}
@@ -277,7 +276,7 @@ void ClientQuerys::onRegister(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_register_fail);
 		m_packet.WriteInt(0);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 }
@@ -292,7 +291,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_profile_creation_fail);
 		m_packet.WriteInt(3);
-		gEnv->pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage(m_packet);
 
 		return;
 	}
@@ -324,7 +323,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		NetPacket m_paket(net_Error);
 		m_paket.WriteInt(net_error_profile_creation_fail);
 		m_paket.WriteInt(0);
-		pServer->sendMessageToClient(m_socket, m_paket);
+		m_Connection->SendMessage( m_paket);
 
 		return;
 	}
@@ -354,7 +353,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 			m_paket.WriteString(m_Client->profile->items.toStdString());
 			m_paket.WriteString(m_Client->profile->friends.toStdString());
 
-			pServer->sendMessageToClient(m_socket, m_paket);
+			m_Connection->SendMessage( m_paket);
 
 			bProfileCreated = true;
 			m_Client->status = 1;
@@ -370,7 +369,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 			NetPacket m_paket(net_Error);
 			m_paket.WriteInt(net_error_profile_creation_fail);
 			m_paket.WriteInt(2);
-			pServer->sendMessageToClient(m_socket, m_paket);
+			m_Connection->SendMessage( m_paket);
 			return;
 		}
 	}
@@ -382,7 +381,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		NetPacket m_paket(net_Error);
 		m_paket.WriteInt(net_error_profile_creation_fail);
 		m_paket.WriteInt(1);
-		pServer->sendMessageToClient(m_socket, m_paket);
+		m_Connection->SendMessage( m_paket);
 		return;
 	}
 }
@@ -395,8 +394,6 @@ void ClientQuerys::onGetProfile()
 		qWarning() << "Client can't get profile without authorization!!!";
 		return;
 	}
-
-	TcpServer* pServer = gEnv->pServer;
 
 	if (!m_Client->profile->nickname.isEmpty())
 	{
@@ -413,7 +410,7 @@ void ClientQuerys::onGetProfile()
 		profile.WriteInt(m_Client->profile->money);
 		profile.WriteString(m_Client->profile->items.toStdString());
 		profile.WriteString(m_Client->profile->friends.toStdString());
-		pServer->sendMessageToClient(m_socket, profile);
+		m_Connection->SendMessage( profile);
 		return;
 	}
 	else
@@ -424,7 +421,7 @@ void ClientQuerys::onGetProfile()
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_get_profile_fail);
 		m_packet.WriteInt(1);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 	}
 }
 
@@ -437,7 +434,6 @@ void ClientQuerys::onGetShopItems()
 		return;
 	}
 
-	TcpServer* pServer = gEnv->pServer;
 	QVector<SShopItem> m_shop = gEnv->pScripts->GetShop();
 
 	if (m_shop.size() > 0)
@@ -446,17 +442,20 @@ void ClientQuerys::onGetShopItems()
 
 		for (auto it = m_shop.begin(); it != m_shop.end(); ++it)
 		{
+			int bCanbay;
+			it->canBuy ? bCanbay = 1 : bCanbay = 0;
+
 			// name-cost-minLvl-canBuy
 			m_shopList.append(it->name + "-" + 
 				QString::number(it->cost) + "-" + 
 				QString::number(it->minLnl) + "-" + 
-			    QString::number(it->canBuy));
+			    QString::number(bCanbay));
 		}
 
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_get_shop_complete);
 		m_packet.WriteString(m_shopList.join(",").toStdString());
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 	}
 	else
 	{
@@ -487,7 +486,6 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 		return;
 	}
 
-	TcpServer* pServer = gEnv->pServer;
 	SShopItem item = GetShopItemByName(itemName);
 
 	if (!m_Client->profile->nickname.isEmpty())
@@ -505,7 +503,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_buy_item_fail);
 				m_packet.WriteInt(0);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 
@@ -518,7 +516,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_buy_item_fail);
 				m_packet.WriteInt(1);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 
@@ -547,7 +545,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 					profile.WriteInt(m_Client->profile->money);
 					profile.WriteString(m_Client->profile->items.toStdString());
 					profile.WriteString(m_Client->profile->friends.toStdString());
-					pServer->sendMessageToClient(m_socket, profile);
+					m_Connection->SendMessage( profile);
 					return;
 				}
 				else
@@ -558,7 +556,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 					NetPacket m_packet(net_Error);
 					m_packet.WriteInt(net_error_buy_item_fail);
 					m_packet.WriteInt(5);
-					pServer->sendMessageToClient(m_socket, m_packet);
+					m_Connection->SendMessage( m_packet);
 					return;
 				}
 			}
@@ -570,7 +568,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_buy_item_fail);
 				m_packet.WriteInt(2);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 		}
@@ -582,7 +580,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_buy_item_fail);
 			m_packet.WriteInt(3);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 	}
@@ -594,7 +592,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_buy_item_fail);
 		m_packet.WriteInt(4);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 
 		return;
 	}
@@ -618,8 +616,6 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 		return;
 	}
 
-	TcpServer* pServer = gEnv->pServer;
-
 	if (!m_Client->profile->nickname.isEmpty())
 	{
 		// Search item in shop list
@@ -632,7 +628,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_remove_item_fail);
 			m_packet.WriteInt(0);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 
@@ -647,7 +643,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_remove_item_fail);
 			m_packet.WriteInt(1);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 		else
@@ -672,7 +668,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 				profile.WriteInt(m_Client->profile->money);
 				profile.WriteString(m_Client->profile->items.toStdString());
 				profile.WriteString(m_Client->profile->friends.toStdString());
-				pServer->sendMessageToClient(m_socket, profile);
+				m_Connection->SendMessage( profile);
 				return;
 			}
 			else
@@ -683,7 +679,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_remove_item_fail);
 				m_packet.WriteInt(3);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 		}
@@ -696,7 +692,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remove_item_fail);
 		m_packet.WriteInt(2);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 }
@@ -736,7 +732,7 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_send_invite_fail);
 			m_packet.WriteInt(0);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 
@@ -747,7 +743,7 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			// Send result to client
 			NetPacket m_packet(net_Result);
 			m_packet.WriteInt(net_result_send_invite_complete);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 
 			// Send invite to user
 			NetPacket invite(net_Query);
@@ -765,7 +761,7 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_send_invite_fail);
 			m_packet.WriteInt(1);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 	}
@@ -814,7 +810,7 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_decline_invite_fail);
 		m_packet.WriteInt(1);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 
@@ -836,7 +832,7 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_decline_invite_fail);
 		m_packet.WriteInt(1);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 }
@@ -882,7 +878,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_accept_invite_fail);
 				m_packet.WriteInt(0);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			} else if (m_Client->profile->uid == friendUID) // Block add yourself in friends
 			{
@@ -892,7 +888,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_accept_invite_fail);
 				m_packet.WriteInt(1);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 
@@ -920,7 +916,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				profile.WriteString(m_Client->profile->items.toStdString());
 				profile.WriteString(m_Client->profile->friends.toStdString());
 
-				pServer->sendMessageToClient(m_socket, profile);
+				m_Connection->SendMessage( profile);
 
 				//Send new info to friend here
 				if (friendSocket != nullptr)
@@ -949,7 +945,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_accept_invite_fail);
 				m_packet.WriteInt(4);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 		}
@@ -961,7 +957,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_accept_invite_fail);
 			m_packet.WriteInt(3);
-			pServer->sendMessageToClient(m_socket, packet);
+			m_Connection->SendMessage( packet);
 			return;
 		}
 	}
@@ -973,7 +969,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_accept_invite_fail);
 		m_packet.WriteInt(2);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 }
@@ -1013,7 +1009,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_remove_friend_fail);
 			m_packet.WriteInt(0);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 		else
@@ -1045,7 +1041,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				profile.WriteString(m_Client->profile->items.toStdString());
 				profile.WriteString(m_Client->profile->friends.toStdString());
 
-				pServer->sendMessageToClient(m_socket, profile);
+				m_Connection->SendMessage( profile);
 
 				//Send new info to friend here
 				if (friendSocket != nullptr)
@@ -1074,7 +1070,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				NetPacket m_packet(net_Error);
 				m_packet.WriteInt(net_error_remove_friend_fail);
 				m_packet.WriteInt(2);
-				pServer->sendMessageToClient(m_socket, m_packet);
+				m_Connection->SendMessage( m_packet);
 				return;
 			}
 		}
@@ -1087,7 +1083,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remove_friend_fail);
 		m_packet.WriteInt(1);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 }
@@ -1122,7 +1118,7 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_send_chat_msg_fail);
 		m_packet.WriteInt(0);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 		return;
 	}
 
@@ -1168,7 +1164,7 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_send_chat_msg_fail);
 			m_packet.WriteInt(1);
-			pServer->sendMessageToClient(m_socket, m_packet);
+			m_Connection->SendMessage( m_packet);
 			return;
 		}
 	}
@@ -1182,7 +1178,6 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		qWarning() << "Client can't get game server without authorization!!!";
 		return;
 	}
-	TcpServer* pServer = gEnv->pServer;
 
 	int gameServersCount = 0;
 	gEnv->pRemoteServer->IsHaveAdmin() ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
@@ -1195,7 +1190,7 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_get_server_fail);
 		m_packet.WriteInt(0);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 
 		return;
 	}
@@ -1218,7 +1213,7 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		gameServer.WriteInt(pGameServer->online);
 		gameServer.WriteInt(pGameServer->maxPlayers);
 
-		pServer->sendMessageToClient(m_socket, gameServer);
+		m_Connection->SendMessage( gameServer);
 
 		return;
 	}
@@ -1230,6 +1225,6 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_get_server_fail);
 		m_packet.WriteInt(1);
-		pServer->sendMessageToClient(m_socket, m_packet);
+		m_Connection->SendMessage( m_packet);
 	}
 }

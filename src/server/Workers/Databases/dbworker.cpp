@@ -71,11 +71,10 @@ void DBWorker::Init()
 
 bool DBWorker::UserExists(QString login)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	bool result = false;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -99,10 +98,10 @@ bool DBWorker::UserExists(QString login)
 			qCritical() << "Failed found user" << login << "in Redis DB because Redis DB not connected!";
 			return false;
 		}
-	}
+	}	
 
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -113,7 +112,7 @@ bool DBWorker::UserExists(QString login)
 			if (query->exec())
 			{
 				if (query->next())
-				{ 
+				{
 					qDebug() << "Login" << login << "finded in MySql DB";
 					result = true;
 				}
@@ -134,18 +133,18 @@ bool DBWorker::UserExists(QString login)
 			qCritical() << "Failed found user" << login << "in MySql DB because MySql DB not opened!";
 			return false;
 		}
-	}
 
+	}
+	
 	return result;
 }
 
 bool DBWorker::ProfileExists(int uid)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	bool result = false;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -166,13 +165,13 @@ bool DBWorker::ProfileExists(int uid)
 		}
 		else
 		{
-			qCritical() << "Failed found profile" << uid << "in Redis DB because Redis DB not opened!";
+			qCritical() << "Failed found profile" << uid << "in Redis DB because Redis DB not connected!";
 			return false;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -205,17 +204,16 @@ bool DBWorker::ProfileExists(int uid)
 			return false;
 		}
 	}
-
+	
 	return result;
 }
 
 bool DBWorker::NicknameExists(QString nickname)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	bool result = false;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -239,9 +237,9 @@ bool DBWorker::NicknameExists(QString nickname)
 			return false;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -280,10 +278,10 @@ bool DBWorker::NicknameExists(QString nickname)
 
 int DBWorker::GetFreeUID()
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	int uid = -1;
 
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	// Redis
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -306,8 +304,6 @@ int DBWorker::GetFreeUID()
 					qCritical() << "Error creating key 'uids'!!!";
 					return uid;
 				}
-
-				buff.clear();
 			}
 			else
 			{
@@ -332,12 +328,12 @@ int DBWorker::GetFreeUID()
 		else
 		{
 			qCritical() << "Failed found free uid in Redis DB because Redis DB not opened!";
-			return false;
+			return uid;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -347,7 +343,7 @@ int DBWorker::GetFreeUID()
 			if (query->exec())
 			{
 				if (query->next())
-				{			
+				{
 					int last_uid = query->value(0).toInt();
 
 					qDebug() << "Last uid from table = " << last_uid;
@@ -364,25 +360,25 @@ int DBWorker::GetFreeUID()
 			else
 			{
 				qWarning() << "Failed send query to MySql DB";
-				return false;
+				return uid;
 			}
 		}
 		else
 		{
 			qCritical() << "Failed found free uid in MySql DB because MySql DB not opened!";
-			return false;
+			return uid;
 		}
 	}
-
+	
 	return uid;
 }
 
 int DBWorker::GetUIDbyNick(QString nickname)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	int uid = -1;
 
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	// Redis
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -408,9 +404,9 @@ int DBWorker::GetUIDbyNick(QString nickname)
 			return uid;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -450,11 +446,10 @@ int DBWorker::GetUIDbyNick(QString nickname)
 
 SUser* DBWorker::GetUserData(QString login)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	SUser *dbUser = new SUser;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -491,12 +486,12 @@ SUser* DBWorker::GetUserData(QString login)
 		else
 		{
 			qCritical() << "Failed found login" << login << "in Redis DB because Redis DB not opened!";
-			return false;
+			return nullptr;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -510,8 +505,8 @@ SUser* DBWorker::GetUserData(QString login)
 				{
 					qDebug() << "User data for" << login << "is found in MySql DB";
 					dbUser->uid = query->value("uid").toInt(); // uid
-					dbUser->login =  query->value("login").toString(); // login
-					dbUser->password =  query->value("password").toString(); // password
+					dbUser->login = query->value("login").toString(); // login
+					dbUser->password = query->value("password").toString(); // password
 					int dbBanStatus = query->value("ban").toInt(); // ban status
 
 					if (dbBanStatus > 0)
@@ -530,25 +525,25 @@ SUser* DBWorker::GetUserData(QString login)
 			else
 			{
 				qWarning() << "Failed send query to MySql DB";
-				return false;
+				return nullptr;
 			}
 		}
 		else
 		{
 			qCritical() << "Failed found login" << login << "in MySql DB because MySql DB not opened!";
-			return false;
+			return nullptr;
 		}
 	}
-
+	
 	return nullptr;
 }
 
 SProfile* DBWorker::GetUserProfile(int uid)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
 	SProfile *dbProfile = new SProfile;
+
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -589,12 +584,12 @@ SProfile* DBWorker::GetUserProfile(int uid)
 		else
 		{
 			qCritical() << "Failed found profile" << uid << "in Redis DB because Redis DB not connected!";
-			return false;
+			return nullptr;
 		}
 	}
 
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -628,16 +623,16 @@ SProfile* DBWorker::GetUserProfile(int uid)
 			else
 			{
 				qWarning() << "Failed send query to MySql DB";
-				return false;
+				return nullptr;
 			}
 		}
 		else
 		{
 			qCritical() << "Failed found profile" << uid << "in MySql DB because MySql DB not opened!";
-			return false;
+			return nullptr;
 		}
 	}
-
+	
 	return nullptr;
 }
 
@@ -647,7 +642,7 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	bool result = false;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -673,9 +668,8 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 		}
 	}
 	
-
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -703,9 +697,9 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 			return false;
 		}
 	}
-
+	
 	// Redis background saving
-	if (pSettings->GetVariable("bUseRedis").toBool() && pSettings->GetVariable("redis_bg_saving").toBool() && result && pRedis != nullptr)
+	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
 	{
 		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
 		if (!save_buff.isEmpty())
@@ -729,7 +723,7 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	bool result = false;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -765,9 +759,9 @@ bool DBWorker::CreateProfile(SProfile *profile)
 			return false;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -801,9 +795,9 @@ bool DBWorker::CreateProfile(SProfile *profile)
 			return false;
 		}
 	}
-
+	
 	// Redis background saving
-	if (pSettings->GetVariable("bUseRedis").toBool() && pSettings->GetVariable("redis_bg_saving").toBool() && result && pRedis != nullptr)
+	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
 	{
 		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
 		if (!save_buff.isEmpty())
@@ -827,7 +821,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	bool result = false;
 
 	// Redis
-	if (pSettings->GetVariable("bUseRedis").toBool() && pRedis != nullptr)
+	if (pRedis)
 	{
 		if (pRedis->connectStatus)
 		{
@@ -859,13 +853,13 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 		}
 		else
 		{
-			qCritical() << "Failed update profile" << profile->nickname << "in Redis DB because Redis DB not opened!";
+			qCritical() << "Failed update profile" << profile->nickname << "in Redis DB because Redis DB not connected!";
 			return false;
 		}
 	}
-
+	
 	// MySql
-	if (pSettings->GetVariable("bUseMySQL").toBool() && pMySql != nullptr)
+	if (pMySql)
 	{
 		if (pMySql->connectStatus)
 		{
@@ -897,9 +891,9 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 			return false;
 		}
 	}
-
+	
 	// Redis background saving
-	if (pSettings->GetVariable("bUseRedis").toBool() && pSettings->GetVariable("redis_bg_saving").toBool() && result && pRedis != nullptr)
+	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
 	{
 		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
 		if (!save_buff.isEmpty())

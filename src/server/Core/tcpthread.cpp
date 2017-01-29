@@ -34,6 +34,14 @@ int TcpThread::Count()
 	return m_connections.count();
 }
 
+void TcpThread::SendGlobalMessage(NetPacket & packet)
+{
+	for (auto it = m_connections.begin(); it != m_connections.end(); ++it)
+	{
+		(*it)->SendMessage(packet);
+	}
+}
+
 void TcpThread::connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection)
 {
 	if (runnable != this) 
@@ -93,4 +101,6 @@ void TcpThread::AddSignals(TcpConnection * connection)
 
 	connect(connection, &TcpConnection::received, gEnv->pServer, &TcpServer::MessageReceived, Qt::QueuedConnection);
 	connect(connection, &TcpConnection::sended, gEnv->pServer, &TcpServer::MessageSended, Qt::QueuedConnection);
+
+	connect(gEnv->pTimer, &QTimer::timeout, connection, &TcpConnection::Update, Qt::QueuedConnection);
 }

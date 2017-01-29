@@ -8,8 +8,8 @@
 
 #include "global.h"
 
-#include "Core/netpacket.h"
-#include "Workers/Databases/redisconnector.h"
+class NetPacket;
+class TcpConnection;
 
 class ClientQuerys : public QObject
 {
@@ -20,6 +20,7 @@ public:
 public:
 	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
 	void SetClient(SClient* client);
+	void SetConnection(TcpConnection* connection) { this->m_Connection = connection; }
     // Auth system
     void onLogin(NetPacket &packet);
     void onRegister(NetPacket &packet);
@@ -48,6 +49,7 @@ private:
 private:
 	QSslSocket* m_socket;
 	SClient* m_Client;
+	TcpConnection* m_Connection;
 
 	int startMoney;
 private:
