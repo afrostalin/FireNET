@@ -11,6 +11,8 @@
 
 ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent),
 	m_socket(nullptr),
+	m_Client(nullptr),
+	m_Connection(nullptr),
 	bAuthorizated(false),
 	bRegistered(false),
 	bProfileCreated(false)

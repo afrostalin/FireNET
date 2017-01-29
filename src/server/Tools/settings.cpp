@@ -95,7 +95,7 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 
 			if (it->value != value)
 			{
-				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
+				qDebug() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
 
 				// If variable have callback - execute 

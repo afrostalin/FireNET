@@ -15,7 +15,8 @@
 #include <QCoreApplication>
 
 RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent),
-	m_socket(nullptr)
+	m_socket(nullptr),
+	m_client(nullptr)
 {
 }
 

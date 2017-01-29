@@ -11,6 +11,7 @@
 
 RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent),
 	m_socket(nullptr),
+	m_Client(),
 	pQuerys(nullptr),
 	bConnected(false)
 {

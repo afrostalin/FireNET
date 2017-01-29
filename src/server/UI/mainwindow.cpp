@@ -40,6 +40,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::LogToOutput(ELogType type, const QString& msg)
 {
+	if (!ui || !ui->Output)
+		return;
+
 	QMutexLocker locker(&m_Mutex);
 
 	// If log level 0 or 1 - We not need use scroll and save all lines
@@ -107,7 +110,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 		break;
 	};
 
-	if (ui && ui->Output && gEnv && !gEnv->isQuiting && gEnv->m_UILogLevel == 2)
+	if (gEnv && !gEnv->isQuiting && gEnv->m_UILogLevel == 2)
 	{
 		emit scroll();
 	}
@@ -115,7 +118,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 
 void MainWindow::UpdateServerStatus()
 {
-	if (gEnv->isQuiting)
+	if (gEnv->isQuiting || !ui || !ui->Status)
 		return;
 
 	ui->Status->clear();
@@ -180,13 +183,17 @@ void MainWindow::CleanUp()
 
 void MainWindow::ClearOutput()
 {
-	ui->Output->clear();
-	m_OutputItemID = -1;
+	if (ui && ui->Output)
+	{
+		ui->Output->clear();
+		m_OutputItemID = -1;
+	}
 }
 
 void MainWindow::ClearStatus()
 {
-	ui->Status->clear();
+	if (ui && ui->Status)
+		ui->Status->clear();
 }
 
 void MainWindow::on_Input_returnPressed()
