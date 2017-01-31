@@ -19,7 +19,7 @@ void SettingsManager::Clear()
 	m_Variables.clear();
 }
 
-QVariant SettingsManager::GetVariable(QString key)
+QVariant SettingsManager::GetVariable(const QString &key)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -47,7 +47,7 @@ QStringList SettingsManager::GetVariablesList()
 	return varList;
 }
 
-QString SettingsManager::GetDescription(QString key)
+QString SettingsManager::GetDescription(const QString &key)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -59,12 +59,29 @@ QString SettingsManager::GetDescription(QString key)
 		}
 	}
 
-	qWarning() << "Can't get description for" << key << "variable";
-
 	return QString();
 }
 
-bool SettingsManager::CheckVariableExists(QString key)
+bool SettingsManager::FindVariabelMatches(const QString & key)
+{
+	QMutexLocker locker(&m_Mutex);
+
+	bool result = false;
+
+	for (auto it = m_Variables.begin(); it != m_Variables.end(); ++it)
+	{
+		if (it->key.contains(key))
+		{
+			qInfo() << it->key.toStdString().c_str() << "-" << it->description;
+
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+bool SettingsManager::CheckVariableExists(const QString &key)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -79,7 +96,7 @@ bool SettingsManager::CheckVariableExists(QString key)
 	return false;
 }
 
-void SettingsManager::SetVariable(QString key, QVariant value)
+void SettingsManager::SetVariable(const QString &key, const QVariant &value)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -117,7 +134,7 @@ void SettingsManager::SetVariable(QString key, QVariant value)
 	qWarning() << "Can't set variable " << key << ". Variable not found!";
 }
 
-void SettingsManager::RegisterVariable(QString key, QVariant value, QString description, bool bCanChangeOnline, void(*pCallback)(QVariant))
+void SettingsManager::RegisterVariable(const QString &key, const QVariant &value, const QString &description, bool bCanChangeOnline, void(*pCallback)(QVariant))
 {
 	QMutexLocker locker(&m_Mutex);
 

@@ -46,7 +46,7 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	QMutexLocker locker(&m_Mutex);
 
 	// If log level 0 or 1 - We not need use scroll and save all lines
-	if (m_OutputItemID >= 23 && gEnv->m_UILogLevel < 2)
+	if (m_OutputItemID >= 24 && gEnv->m_UILogLevel < 2)
 	{
 		auto pItem = ui->Output->item(0);
 
@@ -314,6 +314,8 @@ void MainWindow::on_Input_returnPressed()
 
 			if (!description.isEmpty())
 				qInfo() << key.toStdString().c_str() << "-" << description.toStdString().c_str();
+			else if (!gEnv->pSettings->FindVariabelMatches(key))
+				qWarning() << "No one similar variable is found";
 
 			return;
 		}
