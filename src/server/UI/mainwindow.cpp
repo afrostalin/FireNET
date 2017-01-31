@@ -203,29 +203,29 @@ void MainWindow::on_Input_returnPressed()
 
 	if (input == "status")
 	{
-		if (gEnv->m_UILogLevel < 2)
-		{
-			qWarning() << "Before get full server status change log level to 2";
-			return;
-		}
-
 		qInfo() << "***FULL SERVER STATUS***";
 
 		// Main server status
 		qInfo() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
-		qInfo() << "Clients :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
+		qInfo() << "Clients count :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
+		qInfo() << "Maximum active clients count :" << gEnv->m_MaxClientCount;
 		qInfo() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
 		qInfo() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
 
 		// Packets info
-		qInfo() << "Input packets :" << gEnv->m_InputPacketsCount;
+		qInfo() << "Input packets count :" << gEnv->m_InputPacketsCount;
+		qInfo() << "Input packets current speed :" << gEnv->m_InputSpeed;
+		qInfo() << "Input packets max speed :" << gEnv->m_InputMaxSpeed;
+
 		qInfo() << "Output packets :" << gEnv->m_OutputPacketsCount;
+		qInfo() << "Output packets current speed :" << gEnv->m_OutputSpeed;
+		qInfo() << "Output packets max speed :" << gEnv->m_OutputMaxSpeed;
 
 		// Remote server status
 		QString remoteAdminStatus = gEnv->pRemoteServer->IsHaveAdmin() ? "online" : "offline";
 
 		qInfo() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << gEnv->m_ServerStatus.m_RemoteServerStatus.toStdString().c_str();
-		qInfo() << "Remote admin - " << remoteAdminStatus.toStdString().c_str();
+		qInfo() << "Remote admin :" << remoteAdminStatus.toStdString().c_str();
 		qInfo() << "Game servers :" << gEnv->pRemoteServer->GetClientCount() << "/" << gEnv->pRemoteServer->GetMaxClientCount();
 		
 		// Databases mode

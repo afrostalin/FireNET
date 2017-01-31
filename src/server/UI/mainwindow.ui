@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>500</height>
+    <width>950</width>
+    <height>530</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,14 +18,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>900</width>
-    <height>500</height>
+    <width>950</width>
+    <height>530</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>900</width>
-    <height>500</height>
+    <width>1000</width>
+    <height>600</height>
    </size>
   </property>
   <property name="mouseTracking">
@@ -46,22 +46,22 @@
   <widget class="QWidget" name="centralWidget">
    <property name="minimumSize">
     <size>
-     <width>900</width>
-     <height>500</height>
+     <width>1000</width>
+     <height>600</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>900</width>
-     <height>500</height>
+     <width>1000</width>
+     <height>600</height>
     </size>
    </property>
    <widget class="QLineEdit" name="Input">
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>480</y>
-      <width>901</width>
+      <y>510</y>
+      <width>951</width>
       <height>21</height>
      </rect>
     </property>
@@ -497,8 +497,8 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>460</y>
-      <width>901</width>
+      <y>490</y>
+      <width>951</width>
       <height>20</height>
      </rect>
     </property>
@@ -964,8 +964,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>901</width>
-      <height>461</height>
+      <width>951</width>
+      <height>491</height>
      </rect>
     </property>
     <property name="palette">
