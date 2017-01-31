@@ -109,12 +109,28 @@ void TcpServer::Start()
 
 void TcpServer::CalculateStatistic()
 {
+	// Update input packet count + speed
 	gEnv->m_InputPacketsCount += m_InputPacketsCount;
 	gEnv->m_InputSpeed = m_InputPacketsCount;
 
+	// Update max input speed
+	if (m_InputPacketsCount > gEnv->m_InputMaxSpeed)
+		gEnv->m_InputMaxSpeed = m_InputPacketsCount;
+
+	// Update output packet count + speed
 	gEnv->m_OutputPacketsCount += m_OutputPacketsCount;
 	gEnv->m_OutputSpeed = m_OutputPacketsCount;
 
+	// Update max output speed
+	if (m_OutputPacketsCount > gEnv->m_OutputMaxSpeed)
+		gEnv->m_OutputMaxSpeed = m_OutputPacketsCount;
+
+	// Update max clients count
+	int m_ClientCount = GetClientCount();
+	if (m_ClientCount > gEnv->m_MaxClientCount)
+		gEnv->m_MaxClientCount = m_ClientCount;
+
+	// Refresh local counters
 	m_InputPacketsCount = 0;
 	m_OutputPacketsCount = 0;
 }

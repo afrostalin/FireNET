@@ -21,7 +21,7 @@ TcpConnection::TcpConnection(QObject *parent) : QObject(parent),
 	Q_UNUSED(parent);
 
 	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_read_size").toInt();
-	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packet_count").toInt();
+	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packets_count").toInt();
 	m_BadPacketsCount = 0;
 
 	m_Time = QTime::currentTime();

@@ -212,7 +212,7 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3, "Network timeout for new connection", true);
 	gEnv->pSettings->RegisterVariable("net_magic_key", 2016207, "Network magic key for check packets for validations", true);
 	gEnv->pSettings->RegisterVariable("net_max_packet_read_size", 512 , "Maximum packet size for reading", true);
-	gEnv->pSettings->RegisterVariable("net_max_bad_packet_count", 10, "Maximum bad packets count from client", true);
+	gEnv->pSettings->RegisterVariable("net_max_bad_packets_count", 10, "Maximum bad packets count from client", true);
 	gEnv->pSettings->RegisterVariable("net_max_packets_speed", 4, "Maximum packets per second count by client", true);
 
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);

@@ -118,12 +118,16 @@ struct SGlobalEnvironment
 		m_ServerStatus.m_RemoteServerStatus = "offline";
 		m_InputPacketsCount = 0;
 		m_InputSpeed = 0;
+		m_InputMaxSpeed = 0;
 		m_OutputPacketsCount = 0;
 		m_OutputSpeed = 0;
+		m_OutputMaxSpeed = 0;
 
 		m_DebugsCount = 0;
 		m_WarningsCount = 0;
 		m_ErrorsCount = 0;
+
+		m_MaxClientCount = 0;
 		//
 
 		m_serverFullName = "FireNET";
@@ -148,12 +152,16 @@ struct SGlobalEnvironment
 	SServerStatus		 m_ServerStatus;	
 	int                  m_InputPacketsCount;
 	int                  m_InputSpeed;
+	int                  m_InputMaxSpeed;
 	int                  m_OutputPacketsCount;
 	int                  m_OutputSpeed;
+	int                  m_OutputMaxSpeed;
 
 	int                  m_DebugsCount;
 	int                  m_WarningsCount;
 	int                  m_ErrorsCount;
+
+	int                  m_MaxClientCount;
 
 	// Log level for file and UI
 	int					 m_FileLogLevel;
