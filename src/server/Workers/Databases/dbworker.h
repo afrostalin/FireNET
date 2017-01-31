@@ -5,6 +5,7 @@
 #define DBWORKER_H
 
 #include <QObject>
+
 #include "global.h"
 
 class RedisConnector;
@@ -47,9 +48,6 @@ public:
 public:
 	// Update profile
 	bool UpdateProfile(SProfile *profile);
-
-private:
-	QString GetValueFromRawString(const char* valuename, QString rawString);
 public:
 	RedisConnector* pRedis;
 	MySqlConnector* pMySql;

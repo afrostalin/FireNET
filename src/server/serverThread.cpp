@@ -197,6 +197,7 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("auth_mode", "Default", "Authorization mode [Default, HTTP]", false);
 	// Redis vars
 	gEnv->pSettings->RegisterVariable("redis_ip", "127.0.0.1", "Redis database ip address", false);
+	gEnv->pSettings->RegisterVariable("redis_port", 6379, "Redis database port", false);
 	gEnv->pSettings->RegisterVariable("redis_bg_saving", false, "Use redis background saving", true);
 	// MySQL vars
 	gEnv->pSettings->RegisterVariable("mysql_host", "127.0.0.1", "MySql database ip address", false);

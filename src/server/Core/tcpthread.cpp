@@ -5,6 +5,8 @@
 #include "tcpthread.h"
 #include "tcpserver.h"
 
+#include <QTimer>
+
 TcpThread::TcpThread(QObject *parent) : QObject(parent),
 	m_loop(nullptr)
 {

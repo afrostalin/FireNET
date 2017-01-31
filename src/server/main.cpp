@@ -14,8 +14,8 @@ int main(int argc, char *argv[])
 	QApplication* pApp = new QApplication(argc, argv);
 
 	// Server buid version, number and type
-	QString buildVersion = "v.2.1.2";
-	int buildNumber = 96;
+	QString buildVersion = "v.2.1.3";
+	int buildNumber = 4;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 #ifdef QT_NO_DEBUG
 	QString buildType = ". Release profile";

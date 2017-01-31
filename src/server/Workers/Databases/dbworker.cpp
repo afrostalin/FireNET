@@ -76,22 +76,10 @@ bool DBWorker::UserExists(QString login)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			QString key = "users:" + login;
-			QList<QByteArray> rawCmd = { "HEXISTS", key.toUtf8(), "password" };
-			QString buff = pRedis->SendSyncQuery(rawCmd);
-
-			if (buff.toInt() > 0)
-			{
-				qDebug() << "Login" << login << "finded in Redis DB";
-				result = true;
-			}
-			else
-			{
-				qDebug() << "Login" << login << "not found in Redis DB";
-				return false;
-			}
+			result = pRedis->HEXISTS(key, "password");
 		}
 		else
 		{
@@ -146,22 +134,10 @@ bool DBWorker::ProfileExists(int uid)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			QString key = "profiles:" + QString::number(uid);
-			QList<QByteArray> rawCmd = { "HEXISTS", key.toUtf8(), "nickname" };
-			QString buff = pRedis->SendSyncQuery(rawCmd);
-
-			if (buff.toInt() > 0)
-			{
-				qDebug() << "Profile" << uid << "finded in Redis DB";
-				result = true;
-			}
-			else
-			{
-				qDebug() << "Profile" << uid << "not found in Redis DB";
-				return false;
-			}
+			result = pRedis->HEXISTS(key, "nickname");
 		}
 		else
 		{
@@ -215,10 +191,10 @@ bool DBWorker::NicknameExists(QString nickname)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			QString key = "nicknames:" + nickname;
-			QString buff = pRedis->SendSyncQuery("GET", key);
+			QString buff = pRedis->GET(key);
 
 			if (!buff.isEmpty())
 			{
@@ -283,18 +259,16 @@ int DBWorker::GetFreeUID()
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			// Get uids row and create new uid if uids row are empty
-			QString buff = pRedis->SendSyncQuery("GET", "uids");
+			QString buff = pRedis->GET("uids");
 
 			if (buff.isEmpty())
 			{
 				qDebug() << "Key 'uids' not found! Creating key 'uids'...";
 
-				buff = pRedis->SendSyncQuery("SET", "uids", "100001");
-
-				if (buff == "OK")
+				if (pRedis->SET("uids", "100001"))
 				{
 					uid = 100001;
 					return uid;
@@ -310,9 +284,8 @@ int DBWorker::GetFreeUID()
 				int tmp = buff.toInt() + 1;
 
 				qDebug() << "Key 'uids' found! Creating new uid = " << tmp;
-				buff = pRedis->SendSyncQuery("SET", "uids", QString::number(tmp));
 
-				if (buff == "OK")
+				if (pRedis->SET("uids", QString::number(tmp)))
 				{
 					uid = tmp;
 					qDebug() << "New uid created =" << uid;
@@ -380,10 +353,10 @@ int DBWorker::GetUIDbyNick(QString nickname)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
-			// Get uids row and create new uid if uids row are empty
-			QString buff = pRedis->SendSyncQuery("GET", "nicknames:" + nickname);
+			QString key = "nicknames:" + nickname;		
+			QString buff = pRedis->GET(key);
 
 			if (!buff.isEmpty())
 			{
@@ -451,37 +424,59 @@ SUser* DBWorker::GetUserData(QString login)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			QString key = "users:" + login;
-			QList<QByteArray> rawCmd = { "HGETALL", key.toUtf8() };
-			QString buff = pRedis->SendSyncQuery(rawCmd);
+			QVector<std::pair<std::string, std::string>> result = pRedis->HGETALL(key);
 
-			int dbUid = GetValueFromRawString("uid", buff).toInt();
-			QString dbLogin = GetValueFromRawString("login", buff);
-			QString dbPassword = GetValueFromRawString("password", buff);
-			int dbBanStatus = GetValueFromRawString("ban", buff).toInt();
+			int dbUid = 0;
+			QString dbLogin = QString();
+			QString dbPassword = QString();
+			int dbBanStatus = 0;
 
-			if (dbUid > 0 && !dbLogin.isEmpty() && !dbPassword.isEmpty())
+			if (result.size() > 0)
 			{
-				qDebug() << "User data for" << login << "is found in Redis DB";
+				for (auto it = result.begin(); it!= result.end(); ++it)
+				{
+					if (it->first == "uid")
+						dbUid = std::atoi(it->second.c_str());
+					else if (it->first == "login")
+						dbLogin = it->second.c_str();
+					else if (it->first == "password")
+						dbPassword = it->second.c_str();
+					else if (it->first == "ban")
+					{
+						dbBanStatus = std::atoi(it->second.c_str());
+						break;
+					}
+				}
 
-				dbUser->uid = dbUid;
-				dbUser->login = dbLogin;
-				dbUser->password = dbPassword;
+				if (dbUid > 0 && !dbLogin.isEmpty() && !dbPassword.isEmpty())
+				{
+					qDebug() << "User data for" << login << "is found in Redis DB";
 
-				if (dbBanStatus > 0)
-					dbUser->bBanStatus = true;
+					dbUser->uid = dbUid;
+					dbUser->login = dbLogin;
+					dbUser->password = dbPassword;
+
+					if (dbBanStatus > 0)
+						dbUser->bBanStatus = true;
+					else
+						dbUser->bBanStatus = false;
+
+					return dbUser;
+				}
 				else
-					dbUser->bBanStatus = false;
-
-				return dbUser;
+				{
+					qWarning() << "Wrong user data for" << login;
+					return nullptr;
+				}
 			}
 			else
 			{
 				qDebug() << "User data for" << login << "not found in Redis DB";
 				return nullptr;
-			}
+			}		
 		}
 		else
 		{
@@ -545,41 +540,72 @@ SProfile* DBWorker::GetUserProfile(int uid)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			QString key = "profiles:" + QString::number(uid);
-			QList<QByteArray> rawCmd = { "HGETALL", key.toUtf8() };
-			QString buff = pRedis->SendSyncQuery(rawCmd);
+			QVector<std::pair<std::string, std::string>> result = pRedis->HGETALL(key);
 
-			int dbUid = GetValueFromRawString("uid", buff).toInt();
-			QString dbNickname = GetValueFromRawString("nickname", buff);
-			QString dbModel = GetValueFromRawString("fileModel", buff);
-			int dbLvl = GetValueFromRawString("lvl", buff).toInt();
-			int dbXp = GetValueFromRawString("xp", buff).toInt();
-			int dbMoney = GetValueFromRawString("money", buff).toInt();
-			QString dbItems = GetValueFromRawString("items", buff);
-			QString dbFriends = GetValueFromRawString("friends", buff);
+			int dbUid = 0;
+			QString dbNickname = QString();
+			QString dbModel = QString();
+			int dbLvl = 0;
+			int dbXp = 0;
+			int dbMoney = 0;
+			QString dbItems = QString();
+			QString dbFriends = QString();
 
-			if (dbUid > 0 && !dbNickname.isEmpty() && !dbModel.isEmpty())
+
+			if (result.size() > 0)
 			{
-				qDebug() << "Profile" << uid << "is found in Redis DB";
+				for (auto it = result.begin(); it != result.end(); ++it)
+				{
+					if (it->first == "uid")
+						dbUid = std::atoi(it->second.c_str());
+					else if (it->first == "nickname")
+						dbNickname = it->second.c_str();
+					else if (it->first == "fileModel")
+						dbModel = it->second.c_str();
+					else if (it->first == "lvl")
+						dbLvl = std::atoi(it->second.c_str());
+					else if (it->first == "xp")
+						dbXp = std::atoi(it->second.c_str());
+					else if (it->first == "money")
+						dbMoney = std::atoi(it->second.c_str());
+					else if (it->first == "items")
+						dbItems = it->second.c_str();
+					else if (it->first == "friends")
+					{
+						dbFriends = it->second.c_str();
+						break;
+					}
+				}
 
-				dbProfile->uid = dbUid;
-				dbProfile->nickname = dbNickname;
-				dbProfile->fileModel = dbModel;
-				dbProfile->lvl = dbLvl;
-				dbProfile->xp = dbXp;
-				dbProfile->money = dbMoney;
-				dbProfile->items = dbItems;
-				dbProfile->friends = dbFriends;
+				if (dbUid > 0 && !dbNickname.isEmpty() && !dbModel.isEmpty())
+				{
+					qDebug() << "Profile" << uid << "is found in Redis DB";
 
-				return dbProfile;
+					dbProfile->uid = dbUid;
+					dbProfile->nickname = dbNickname;
+					dbProfile->fileModel = dbModel;
+					dbProfile->lvl = dbLvl;
+					dbProfile->xp = dbXp;
+					dbProfile->money = dbMoney;
+					dbProfile->items = dbItems;
+					dbProfile->friends = dbFriends;
+
+					return dbProfile;
+				}
+				else
+				{
+					qWarning() << "Wrong profile data for" << uid;
+					return nullptr;
+				}
 			}
 			else
 			{
 				qDebug() << "Profile" << uid << "not found in Redis DB";
 				return nullptr;
-			}
+			}		
 		}
 		else
 		{
@@ -644,22 +670,33 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
 			QString key = "users:" + login;
-			QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(), "uid", QString::number(uid).toUtf8(), "login", login.toUtf8(), "password", password.toUtf8(), "ban", "0" };
-			QString buff = pRedis->SendSyncQuery(rawCmd);
+			std::vector<std::pair<std::string, std::string>> field;
 
-			if (buff == "OK")
-			{
-				qDebug() << "User" << login << "created in Redis DB";
-				result = true;
-			}
-			else
-			{
-				qDebug() << "Failed create user" << login << " in Redis DB";
-				return false;
-			}
+			std::pair<std::string, std::string> row_uid;
+			row_uid.first = "uid";
+			row_uid.second = std::to_string(uid);
+
+			std::pair<std::string, std::string> row_login;
+			row_login.first = "login";
+			row_login.second = login.toStdString();
+			
+			std::pair<std::string, std::string> row_password;
+			row_password.first = "password";
+			row_password.second = password.toStdString();
+
+			std::pair<std::string, std::string> row_ban;
+			row_ban.first = "ban";
+			row_ban.second = "0";
+
+			field.push_back(row_uid);
+			field.push_back(row_login);
+			field.push_back(row_password);
+			field.push_back(row_ban);
+
+			result = pRedis->HMSET(key, field);
 		}
 		else
 		{
@@ -700,19 +737,7 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	
 	// Redis background saving
 	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
-	{
-		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
-		if (!save_buff.isEmpty())
-		{
-			qDebug() << "Redis background saving complete";
-			result = true;
-		}
-		else
-		{
-			qDebug() << "Redis background saving failed";
-			return false;
-		}
-	}
+		pRedis->BGSAVE();
 
 	return result;
 }
@@ -725,24 +750,55 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
+			std::pair<std::string, std::string> row_uid;
+			row_uid.first = "uid";
+			row_uid.second = std::to_string(profile->uid);
+
+			std::pair<std::string, std::string> row_nickname;
+			row_nickname.first = "nickname";
+			row_nickname.second = profile->nickname.toStdString();
+
+			std::pair<std::string, std::string> row_filemodel;
+			row_filemodel.first = "fileModel";
+			row_filemodel.second = profile->fileModel.toStdString();
+
+			std::pair<std::string, std::string> row_lvl;
+			row_lvl.first = "lvl";
+			row_lvl.second = std::to_string(profile->lvl);
+
+			std::pair<std::string, std::string> row_xp;
+			row_xp.first = "xp";
+			row_xp.second = std::to_string(profile->xp);
+
+			std::pair<std::string, std::string> row_money;
+			row_money.first = "money";
+			row_money.second = std::to_string(profile->money);
+
+			std::pair<std::string, std::string> row_items;
+			row_items.first = "items";
+			row_items.second = profile->items.toStdString();
+
+			std::pair<std::string, std::string> row_friends;
+			row_friends.first = "friends";
+			row_friends.second = profile->friends.toStdString();
+
 			QString key = "profiles:" + QString::number(profile->uid);
+			QString key2 = "nicknames:" + profile->nickname;
 
-			QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(),
-			"uid", QString::number(profile->uid).toUtf8(),
-			"nickname", profile->nickname.toUtf8(),
-			"fileModel", profile->fileModel.toUtf8(),
-			"lvl", QString::number(profile->lvl).toUtf8(),
-			"xp", QString::number(profile->xp).toUtf8(),
-			"money", QString::number(profile->money).toUtf8(),
-			"items", profile->items.toUtf8(),
-			"friends", profile->friends.toUtf8() };
+			std::vector<std::pair<std::string, std::string>> field;
 
-			QString buff = pRedis->SendSyncQuery(rawCmd);
-			QString buff2 = pRedis->SendSyncQuery("SET", "nicknames:" + profile->nickname, QString::number(profile->uid));
+			field.push_back(row_uid);
+			field.push_back(row_nickname);
+			field.push_back(row_filemodel);
+			field.push_back(row_lvl);
+			field.push_back(row_xp);
+			field.push_back(row_money);
+			field.push_back(row_items);
+			field.push_back(row_friends);
 
-			if (buff == "OK" && buff2 == "OK")
+			if (pRedis->HMSET(key, field) && pRedis->SET(key2, QString::number(profile->uid)))
 			{
 				qDebug() << "Profile" << profile->nickname << "created in Redis DB";
 				result = true;
@@ -798,19 +854,7 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	
 	// Redis background saving
 	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
-	{
-		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
-		if (!save_buff.isEmpty())
-		{
-			qDebug() << "Redis background saving complete";
-			result = true;
-		}
-		else
-		{
-			qDebug() << "Redis background saving failed";
-			return false;
-		}
-	}
+		pRedis->BGSAVE();
 
 	return result;
 }
@@ -823,23 +867,55 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	// Redis
 	if (pRedis)
 	{
-		if (pRedis->connectStatus)
+		if (pRedis->IsConnected())
 		{
+			std::pair<std::string, std::string> row_uid;
+			row_uid.first = "uid";
+			row_uid.second = std::to_string(profile->uid);
+
+			std::pair<std::string, std::string> row_nickname;
+			row_nickname.first = "nickname";
+			row_nickname.second = profile->nickname.toStdString();
+
+			std::pair<std::string, std::string> row_filemodel;
+			row_filemodel.first = "fileModel";
+			row_filemodel.second = profile->fileModel.toStdString();
+
+			std::pair<std::string, std::string> row_lvl;
+			row_lvl.first = "lvl";
+			row_lvl.second = std::to_string(profile->lvl);
+
+			std::pair<std::string, std::string> row_xp;
+			row_xp.first = "xp";
+			row_xp.second = std::to_string(profile->xp);
+
+			std::pair<std::string, std::string> row_money;
+			row_money.first = "money";
+			row_money.second = std::to_string(profile->money);
+
+			std::pair<std::string, std::string> row_items;
+			row_items.first = "items";
+			row_items.second = profile->items.toStdString();
+
+			std::pair<std::string, std::string> row_friends;
+			row_friends.first = "friends";
+			row_friends.second = profile->friends.toStdString();
+
 			QString key = "profiles:" + QString::number(profile->uid);
+			QString key2 = "nicknames:" + profile->nickname;
 
-			QList<QByteArray> rawCmd = { "HMSET", key.toUtf8(),
-				"uid", QString::number(profile->uid).toUtf8(),
-				"nickname", profile->nickname.toUtf8(),
-				"fileModel", profile->fileModel.toUtf8(),
-				"lvl", QString::number(profile->lvl).toUtf8(),
-				"xp", QString::number(profile->xp).toUtf8(),
-				"money", QString::number(profile->money).toUtf8(),
-				"items", profile->items.toUtf8(),
-				"friends", profile->friends.toUtf8() };
+			std::vector<std::pair<std::string, std::string>> field;
 
-			QString buff = pRedis->SendSyncQuery(rawCmd);
+			field.push_back(row_uid);
+			field.push_back(row_nickname);
+			field.push_back(row_filemodel);
+			field.push_back(row_lvl);
+			field.push_back(row_xp);
+			field.push_back(row_money);
+			field.push_back(row_items);
+			field.push_back(row_friends);
 
-			if (buff == "OK")
+			if (pRedis->HMSET(key, field))
 			{
 				qDebug() << "Profile" << profile->nickname << "updated in Redis DB";
 				result = true;
@@ -847,7 +923,6 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 			else
 			{
 				qDebug() << "Failed update profile" << profile->nickname << " in Redis DB";
-
 				return false;
 			}
 		}
@@ -894,42 +969,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	
 	// Redis background saving
 	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
-	{
-		QString save_buff = pRedis->SendSyncQuery("BGSAVE");
-		if (!save_buff.isEmpty())
-		{
-			qDebug() << "Redis background saving complete";
-			result = true;
-		}
-		else
-		{
-			qDebug() << "Redis background saving failed";
-			return false;
-		}
-	}
+		pRedis->BGSAVE();
 
 	return result;
-}
-
-QString DBWorker::GetValueFromRawString(const char * valuename, QString rawString)
-{
-	if (rawString.isEmpty())
-		return QString();
-
-	QRegExp RN("\r\n");
-	QStringList strList;
-	strList = rawString.split(RN);
-
-	for (int i = 0; i < strList.size(); ++i)
-	{
-		QString value =  strList[i];
-
-		if (value == valuename)
-		{
-			QString result = strList[i + 2];
-			return result;
-		}
-	}
-
-	return QString();
 }

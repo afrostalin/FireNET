@@ -6,7 +6,10 @@
 
 #include <QObject>
 
-#include "qredisclient/redisclient.h"
+namespace cpp_redis
+{
+	class redis_client;
+}
 
 class RedisConnector : public QObject
 {
@@ -16,19 +19,23 @@ public:
 	~RedisConnector();
 public:
 	void run();
-	void Disconnect();
-	QString SendSyncQuery(QString command);
-	QString SendSyncQuery(QString command, QString key);
-    QString SendSyncQuery(QString command, QString key, QString value);
-	QString SendSyncQuery(QList<QByteArray> &rawCmd);
-public slots:
-	void disconnected();
-private:
 	bool Connect();
-public:
-	bool connectStatus;
+	bool IsConnected();
+	void Disconnect();
+
+	// Redis functionality
+	bool HEXISTS(const QString &key, const QString &field);
+	bool HMSET(const QString &key, const std::vector<std::pair<std::string, std::string>>& field_val);
+	QVector<std::pair<std::string, std::string>> HGETALL(const QString &key);
+	bool SET(const QString &key, const QString &value);
+	QString GET(const QString &key);	
+	void BGSAVE();
+
+public slots:
+    // DEPRICATED
+	void disconnected();	
 private:
-	RedisClient::Connection* connection;
+	cpp_redis::redis_client* pClient;
 };
 
 #endif // REDISCONNECTOR_H

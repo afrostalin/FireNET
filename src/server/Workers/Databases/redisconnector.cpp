@@ -2,6 +2,8 @@
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QThread>
+#include <QEventLoop>
+#include <QTimer>
 
 #include "global.h"
 #include "redisconnector.h"
@@ -9,9 +11,25 @@
 
 #include "Tools/settings.h"
 
+#include <cpp_redis/cpp_redis>
+
+/*cpp_redis::reply::type type = reply.get_type();
+
+if (type == cpp_redis::reply::type::array)
+qDebug() << "ARRAY";
+else if (type == cpp_redis::reply::type::bulk_string)
+qDebug() << "BULK STRING";
+else if (type == cpp_redis::reply::type::error)
+qDebug() << "ERROR : " << reply.as_string().c_str();
+else if (type == cpp_redis::reply::type::integer)
+qDebug() << "INTEGER" << reply.as_integer();
+else if (type == cpp_redis::reply::type::null)
+qDebug() << "NULL";
+else if (type == cpp_redis::reply::type::simple_string)
+qDebug() << "SIMPLE STRING" << reply.as_string().c_str();*/
+
 RedisConnector::RedisConnector(QObject *parent) : QObject(parent),
-	connection(nullptr),
-	connectStatus(false)
+	pClient(nullptr)
 {
 }
 
@@ -19,10 +37,8 @@ RedisConnector::~RedisConnector()
 {
 	qDebug() << "~RedisConnector";
 
-	if (connectStatus)
+	if (IsConnected())
 		Disconnect();
-
-	SAFE_RELEASE(connection);
 }
 
 void RedisConnector::run()
@@ -32,10 +48,7 @@ void RedisConnector::run()
 	if (Connect())
 	{
 		qInfo() << "Redis connected. Work on" << QThread::currentThread();
-
 		gEnv->m_ServerStatus.m_DBStatus = "online";
-
-		connectStatus = true;
 	}
 	else
 	{
@@ -45,93 +58,236 @@ void RedisConnector::run()
 	}
 }
 
-void RedisConnector::disconnected()
+bool RedisConnector::Connect()
 {
-	qCritical() << "Redis server disconnected. Database functions not be work!";
+	pClient = new cpp_redis::redis_client();
 
-	gEnv->m_ServerStatus.m_DBStatus = "offline";
-	connectStatus = false;
+	std::string ip = gEnv->pSettings->GetVariable("redis_ip").toString().toStdString();
+	int port = gEnv->pSettings->GetVariable("redis_port").toInt();
+
+	try
+	{
+		qDebug() << "Connecting to redis...";
+
+		pClient->connect(ip, port);
+	}
+	catch (const cpp_redis::redis_error& error)
+	{
+		qDebug() << "ERROR" << error.what();
+		return false;
+	}
+
+	qDebug() << "Redis connected";
+
+	return true;
+}
+
+bool RedisConnector::IsConnected()
+{
+	if (pClient && pClient->is_connected())
+		return true;
+	else
+		return false;
 }
 
 void RedisConnector::Disconnect()
 {
 	gEnv->m_ServerStatus.m_DBStatus = "offline";
 
-	if (connectStatus && connection)
-	{
-		connection->disconnect();
-		connectStatus = false;
-	}
+	if (IsConnected())
+		pClient->disconnect();
 }
 
-bool RedisConnector::Connect()
+bool RedisConnector::HEXISTS(const QString & key, const QString & field)
 {
-	qInfo()<< "Init qredisclient...";
-    initRedisClient();
+	bool result = false;
 
-	qInfo()<< "Create connection to Redis... ("<< gEnv->pSettings->GetVariable("redis_ip").toString() <<")";
-    RedisClient::ConnectionConfig config(gEnv->pSettings->GetVariable("redis_ip").toString());
-    connection = new RedisClient::Connection(config);
-    connection->connect(false);
-
-	connect(connection, &RedisClient::Connection::error, this, &RedisConnector::disconnected);
-
-    return connection->isConnected();
-}
-
-QString RedisConnector::SendSyncQuery(QString command)
-{
-	if (connectStatus && connection != nullptr)
+	if (pClient->is_connected())
 	{
-		RedisClient::Response r = connection->commandSync(command);
-		return r.getValue().toString();
+		try
+		{			
+			pClient->hexists(key.toStdString(), field.toStdString(), [&](cpp_redis::reply& reply)
+			{
+				qDebug() << "HEXISTS success. Result" << reply.as_integer();			
+
+				result = reply.as_integer() == 1 ? true : false;
+			});		
+
+			pClient->sync_commit();
+		}
+		catch (const cpp_redis::redis_error& error)
+		{
+			qWarning() << "HEXISTS error - " << error.what();
+			result = false;
+		}
 	}
 	else
-		qCritical() << "Error send sync query to Redis DB";
+		qCritical() << "Redis not connected";
 
-	return QString();
+	return result;
 }
 
-QString RedisConnector::SendSyncQuery(QString command, QString key)
+bool RedisConnector::HMSET(const QString & key, const std::vector<std::pair<std::string, std::string>>& field_val)
 {
-	if (connectStatus && connection)
+	bool result = false;
+
+	if (pClient->is_connected())
 	{
-		RedisClient::Response r = connection->commandSync(command, key);
-		return r.getValue().toString();
+		try
+		{
+			pClient->hmset(key.toStdString(), field_val, [&](cpp_redis::reply & reply)
+			{
+				qDebug() << "HMSET success. Result" << reply.as_string().c_str();
+
+				result = reply.as_string() == "OK" ? true : false;
+			});
+
+			pClient->sync_commit();
+		}
+		catch (const cpp_redis::redis_error& error)
+		{
+			qWarning() << "HMSET error - " << error.what();
+		}
 	}
 	else
-		qCritical() << "Error send sync query to Redis DB";
+		qWarning() << "Redis not connected";
 
-	return QString();
+	return result;
 }
 
-QString RedisConnector::SendSyncQuery(QString command, QString key, QString value)
+QVector<std::pair<std::string, std::string>> RedisConnector::HGETALL(const QString & key)
 {
-	if (connectStatus && connection)
+	QVector<std::pair<std::string, std::string>> m_Result;
+
+	if (pClient->is_connected())
 	{
-		RedisClient::Response r = connection->commandSync(command, key, value);
-		return r.getValue().toString();
+		try
+		{
+			pClient->hgetall(key.toStdString(), [&](cpp_redis::reply & reply)
+			{
+				if (reply.is_array())
+				{
+					std::vector<cpp_redis::reply> replyArray = reply.as_array();
+					qDebug() << "HGETALL success. Array size" << replyArray.size();
+
+					if (replyArray.size() > 0)
+					{
+						for (int i = 0; i < replyArray.size() - 1; i++)
+						{
+							std::pair<std::string, std::string> m_KeyValue;
+							m_KeyValue.first = replyArray[i].as_string();
+							m_KeyValue.second = replyArray[++i].as_string();
+
+							qDebug() << "Key (" << m_KeyValue.first.c_str() << ") Value (" << m_KeyValue.second.c_str() << ")";
+
+							m_Result.push_back(m_KeyValue);
+						}
+					}
+				}
+			});
+
+			pClient->sync_commit();
+
+		}
+		catch (const cpp_redis::redis_error& error)
+		{
+			qWarning() << "HGETALL error - " << error.what();
+		}
 	}
 	else
-		qCritical() << "Error send sync query to Redis DB";
+		qWarning() << "Redis not connected";
 
-	return QString();
+	return m_Result;
 }
 
-QString RedisConnector::SendSyncQuery(QList<QByteArray>& rawCmd)
+bool RedisConnector::SET(const QString & key, const QString & value)
 {
-	if (connectStatus && connection)
+	bool result = false;
+
+	if (pClient->is_connected())
 	{
-		RedisClient::Response r = connection->commandSync(rawCmd);
+		try
+		{
+			pClient->set(key.toStdString(), value.toStdString(), [&](cpp_redis::reply & reply)
+			{
+				qDebug() << "SET success. Result" << reply.as_string().c_str();
 
-		if (r.isArray())
-			return r.toRawString();
+				result = reply.as_string() == "OK" ? true : false;
+			});
 
-		return r.getValue().toString();
+			pClient->sync_commit();
+
+		}
+		catch (const cpp_redis::redis_error& error)
+		{
+			qWarning() << "SET error - " << error.what();
+		}
 	}
 	else
-		qCritical() << "Error send sync query to Redis DB";
+		qWarning() << "Redis not connected";
 
-	return QString();
+	return result;
 }
 
+QString RedisConnector::GET(const QString & key)
+{
+	QString result;
+
+	if (pClient->is_connected())
+	{
+		try
+		{
+			pClient->get (key.toStdString(), [&](cpp_redis::reply & reply)
+			{
+				if (reply.is_bulk_string())
+				{
+					result = reply.as_string().c_str();
+					qDebug() << "GET success. Result" << result;
+				}
+				else if (reply.is_null())
+				{
+					result = QString();
+					qDebug() << "GET success. Result NULL";
+				}
+			});
+
+			pClient->sync_commit();
+		}
+		catch (const cpp_redis::redis_error& error)
+		{
+			qWarning() << "GET error - " << error.what();
+		}
+	}
+	else
+		qWarning() << "Redis not connected";
+
+	return result;
+}
+
+void RedisConnector::BGSAVE()
+{
+	if (pClient->is_connected())
+	{
+		try
+		{
+			pClient->bgsave([](cpp_redis::reply & reply)
+			{
+				qDebug() << "BGSAVE success";
+			});
+			pClient->sync_commit();
+		}
+		catch (const cpp_redis::redis_error& error)
+		{
+			qWarning() << "BGSAVE error - " << error.what();
+		}
+	}
+	else
+		qWarning() << "Redis not connected";
+}
+
+// TODO - DEPRICATED
+void RedisConnector::disconnected()
+{
+	qCritical() << "Redis server disconnected. Database functions not be work!";
+	gEnv->m_ServerStatus.m_DBStatus = "offline";
+}

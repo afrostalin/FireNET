@@ -53,34 +53,39 @@ void ClientQuerys::onLogin(NetPacket &packet)
 		{
 			int uid = pDataBase->pHTTP->GetUID();
 
-			SProfile *dbProfile = pDataBase->GetUserProfile(uid);
-
-			if (dbProfile != nullptr)
+			if (pDataBase->ProfileExists(uid))
 			{
-				bAuthorizated = true;
-				m_Client->profile = dbProfile;
-				m_Client->status = 1;
-				pServer->UpdateClient(m_Client);
+				SProfile *dbProfile = pDataBase->GetUserProfile(uid);
+				if (dbProfile)
+				{
+					bAuthorizated = true;
+					m_Client->profile = dbProfile;
+					m_Client->status = 1;
+					pServer->UpdateClient(m_Client);
 
-				qDebug() << "-------------------------Profile found--------------------------";
-				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
+					qDebug() << "-------------------------Profile found--------------------------";
+					qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				// Auth complete
-				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_auth_complete_with_profile);
-				m_Connection->SendMessage( m_packet);
-				return;
+					NetPacket m_packet(net_Result);
+					m_packet.WriteInt(net_result_auth_complete_with_profile);
+					m_Connection->SendMessage(m_packet);
+
+					return;
+				}
+				else
+				{
+					qWarning() << "Profile finded, but can't get it from database!";
+					return;
+				}
 			}
 			else
 			{
 				qDebug() << "-----------------------Profile not found------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				// Auth complete
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete);
-
-				m_Connection->SendMessage( m_packet);
+				m_Connection->SendMessage(m_packet);
 
 				bAuthorizated = true;
 				m_Client->profile->uid = uid;
@@ -139,23 +144,30 @@ void ClientQuerys::onLogin(NetPacket &packet)
 		// Check passwords
 		if (password == userData->password)
 		{
-			SProfile *dbProfile = pDataBase->GetUserProfile(userData->uid);
-
-			if (dbProfile != nullptr)
+			if (pDataBase->ProfileExists(userData->uid))
 			{
-				bAuthorizated = true;
-				m_Client->profile = dbProfile;
-				m_Client->status = 1;
-				pServer->UpdateClient(m_Client);
+				SProfile *dbProfile = pDataBase->GetUserProfile(userData->uid);
+				if (dbProfile)
+				{
+					bAuthorizated = true;
+					m_Client->profile = dbProfile;
+					m_Client->status = 1;
+					pServer->UpdateClient(m_Client);
 
-				qDebug() << "-------------------------Profile found--------------------------";
-				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
+					qDebug() << "-------------------------Profile found--------------------------";
+					qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_auth_complete_with_profile);
-				m_Connection->SendMessage( m_packet);
+					NetPacket m_packet(net_Result);
+					m_packet.WriteInt(net_result_auth_complete_with_profile);
+					m_Connection->SendMessage(m_packet);
 
-				return;
+					return;
+				}
+				else
+				{
+					qWarning() << "Profile finded, but can't get it from database!";
+					return;
+				}
 			}
 			else
 			{
@@ -164,7 +176,7 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 				NetPacket m_packet(net_Result);
 				m_packet.WriteInt(net_result_auth_complete);
-				m_Connection->SendMessage( m_packet);
+				m_Connection->SendMessage(m_packet);
 
 				bAuthorizated = true;
 				m_Client->profile->uid = userData->uid;
@@ -173,7 +185,6 @@ void ClientQuerys::onLogin(NetPacket &packet)
 
 				return;
 			}
-
 		}
 		else
 		{
