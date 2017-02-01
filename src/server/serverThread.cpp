@@ -22,8 +22,8 @@
 
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
-#include "Tools/UILogger.h"
 
+#include "UI/UILogger.h"
 #include "UI/mainwindow.h"
 
 FileAppender* pLogFileAppender;

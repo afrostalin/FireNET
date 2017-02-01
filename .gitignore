@@ -1,6 +1,7 @@
 # Temporary directories.
 /temp/*
 /.vs/*
+/build/
 
 # Solution temp files
 *.db

@@ -3,7 +3,7 @@
 
 #include "global.h"
 #include "UILogger.h"
-#include "UI/mainwindow.h"
+#include "mainwindow.h"
 
 UILogger::UILogger()
 {

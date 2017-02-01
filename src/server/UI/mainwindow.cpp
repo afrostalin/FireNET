@@ -4,6 +4,7 @@
 #include "global.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "UILogger.h"
 
 #include "Core/tcpserver.h"
 #include "Core/remoteserver.h"
@@ -14,7 +15,6 @@
 
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
-#include "Tools/UILogger.h"
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),

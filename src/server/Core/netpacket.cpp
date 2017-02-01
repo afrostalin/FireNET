@@ -247,8 +247,8 @@ void NetPacket::GenerateMagic()
 	int m_MagicValue = gEnv->pSettings->GetVariable("net_magic_key").toInt();
 	char m_MagicKeyH[10] = ""; // Header
 	char m_MagicKeyF[10] = ""; // Footer
-	itoa(m_MagicValue, m_MagicKeyH, 16);
-	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
+	_itoa_s(m_MagicValue, m_MagicKeyH, 16);
+	_itoa_s((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
 	m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
 	m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
 }
