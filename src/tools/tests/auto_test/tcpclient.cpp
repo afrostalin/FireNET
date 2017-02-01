@@ -76,7 +76,7 @@ void tcpclient::CreateClient()
 
 void tcpclient::CreateTestList()
 {
-    qDebug() << this << "Creating test list...";
+    //qDebug() << this << "Creating test list...";
 
 	NetPacket reg_packet(net_Query);
 	reg_packet.WriteInt(net_query_register);
@@ -100,12 +100,12 @@ void tcpclient::onConnectedToServer()
 
 void tcpclient::onReadyRead()
 {
-    qDebug() << this << "Server answer :" << m_socket->readAll();
+    //qDebug() << this << "Server answer :" << m_socket->readAll();
 }
 
 void tcpclient::onBytesWritten(qint64 bytes)
 {
-    qDebug() << this << "Message sended" << bytes;
+    //qDebug() << this << "Message sended" << bytes;
     bLastMsgSended = true;
 }
 

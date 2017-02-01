@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
         m_clients.push_back(pClient);
     }
 
-    pTimer->start(33);
+    pTimer->start(10);
 
     return a.exec();
 }
