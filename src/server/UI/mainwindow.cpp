@@ -162,6 +162,12 @@ void MainWindow::UpdateServerStatus()
 		pItem->setForeground(Qt::darkCyan);
 }
 
+void MainWindow::EnableStressMode()
+{
+	ClearOutput();
+	qWarning() << "YOU ENABLED STRESS TEST MODE, RESTART SERVER IF YOU NEED DISABLE IT";
+}
+
 void MainWindow::CleanUp()
 {
 	emit stop();
@@ -203,44 +209,44 @@ void MainWindow::on_Input_returnPressed()
 
 	if (input == "status")
 	{
-		qInfo() << "***FULL SERVER STATUS***";
+		qWarning() << "***FULL SERVER STATUS***";
 
 		// Main server status
-		qInfo() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
-		qInfo() << "Clients count :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
-		qInfo() << "Maximum active clients count :" << gEnv->m_MaxClientCount;
-		qInfo() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
-		qInfo() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
+		qWarning() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
+		qWarning() << "Clients count :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
+		qWarning() << "Maximum active clients count :" << gEnv->m_MaxClientCount;
+		qWarning() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
+		qWarning() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
 
 		// Packets info
-		qInfo() << "Input packets count :" << gEnv->m_InputPacketsCount;
-		qInfo() << "Input packets current speed :" << gEnv->m_InputSpeed;
-		qInfo() << "Input packets max speed :" << gEnv->m_InputMaxSpeed;
+		qWarning() << "Input packets count :" << gEnv->m_InputPacketsCount;
+		qWarning() << "Input packets current speed :" << gEnv->m_InputSpeed << "packets/sec.";
+		qWarning() << "Input packets max speed :" << gEnv->m_InputMaxSpeed << "packets/sec.";
 
-		qInfo() << "Output packets :" << gEnv->m_OutputPacketsCount;
-		qInfo() << "Output packets current speed :" << gEnv->m_OutputSpeed;
-		qInfo() << "Output packets max speed :" << gEnv->m_OutputMaxSpeed;
+		qWarning() << "Output packets :" << gEnv->m_OutputPacketsCount;
+		qWarning() << "Output packets current speed :" << gEnv->m_OutputSpeed << "packets/sec.";
+		qWarning() << "Output packets max speed :" << gEnv->m_OutputMaxSpeed << "packets/sec.";
 
 		// Remote server status
 		QString remoteAdminStatus = gEnv->pRemoteServer->IsHaveAdmin() ? "online" : "offline";
 
-		qInfo() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << gEnv->m_ServerStatus.m_RemoteServerStatus.toStdString().c_str();
-		qInfo() << "Remote admin :" << remoteAdminStatus.toStdString().c_str();
-		qInfo() << "Game servers :" << gEnv->pRemoteServer->GetClientCount() << "/" << gEnv->pRemoteServer->GetMaxClientCount();
+		qWarning() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << gEnv->m_ServerStatus.m_RemoteServerStatus.toStdString().c_str();
+		qWarning() << "Remote admin :" << remoteAdminStatus.toStdString().c_str();
+		qWarning() << "Game servers :" << gEnv->pRemoteServer->GetClientCount() << "/" << gEnv->pRemoteServer->GetMaxClientCount();
 		
 		// Databases mode
-		qInfo() << "Database mode :" << gEnv->m_ServerStatus.m_DBMode.toStdString().c_str();
+		qWarning() << "Database mode :" << gEnv->m_ServerStatus.m_DBMode.toStdString().c_str();
 
 		// Databases status
-		qInfo() << "Database status :" << gEnv->m_ServerStatus.m_DBStatus.toStdString().c_str();
+		qWarning() << "Database status :" << gEnv->m_ServerStatus.m_DBStatus.toStdString().c_str();
 
 		// Authorization type
-		qInfo() << "Authorization type :" << gEnv->pSettings->GetVariable("auth_mode").toString().toStdString().c_str();
+		qWarning() << "Authorization type :" << gEnv->pSettings->GetVariable("auth_mode").toString().toStdString().c_str();
 
 		// Debug messages
-		qInfo() << "Debug messages :" << gEnv->m_DebugsCount;
-		qInfo() << "Warning messages :" << gEnv->m_WarningsCount;
-		qInfo() << "Error messages :" << gEnv->m_ErrorsCount;
+		qWarning() << "Debug messages :" << gEnv->m_DebugsCount;
+		qWarning() << "Warning messages :" << gEnv->m_WarningsCount;
+		qWarning() << "Error messages :" << gEnv->m_ErrorsCount;
 	}
 	else if (input.contains("send_message")) // TODO
 	{

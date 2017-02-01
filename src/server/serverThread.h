@@ -16,11 +16,14 @@ public:
 public slots:
 	void start();
 	void stop();
+signals:
+	void EnableStressMode();
 private:
 	bool Init();
 	void StartLogging();
 	void RegisterVariables();
 	void ReadServerCFG();
+	void EnableStressTest();
 private:
 	QEventLoop* m_loop;
 };

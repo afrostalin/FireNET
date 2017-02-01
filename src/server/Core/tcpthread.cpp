@@ -1,11 +1,12 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
+#include <QTimer>
+
 #include "global.h"
 #include "tcpthread.h"
 #include "tcpserver.h"
-
-#include <QTimer>
+#include "Tools/settings.h"
 
 TcpThread::TcpThread(QObject *parent) : QObject(parent),
 	m_loop(nullptr)
@@ -68,6 +69,12 @@ void TcpThread::opened()
 	TcpConnection *connection = static_cast<TcpConnection*>(sender());
 	if (!connection)
 		return;
+
+	// Block very fast connection
+	if (!gEnv->pSettings->GetVariable("bEnableStressTest").toBool() && gEnv->pServer->GetClientCount() > gEnv->pSettings->GetVariable("sv_max_players").toInt())
+	{
+		connection->quit();
+	}
 
 	qDebug() << connection << "opened";
 }

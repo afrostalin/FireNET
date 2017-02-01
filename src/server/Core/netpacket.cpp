@@ -211,7 +211,7 @@ const char* NetPacket::toString()
 	{
 		SetMagicFooter();
 
-		if (gEnv->pSettings->GetVariable("bUsePacketDebug").toBool())
+		if (gEnv->pSettings->GetVariable("net_packet_debug").toBool())
 		{
 			qDebug() << "Packet : " << m_data.c_str();
 		}
@@ -271,7 +271,7 @@ void NetPacket::ReadPacket()
 
 				if (m_type > 0)
 				{
-					if (gEnv->pSettings->GetVariable("bUsePacketDebug").toBool())
+					if (gEnv->pSettings->GetVariable("net_packet_debug").toBool())
 					{
 						qDebug() << "Packet : " << m_data.c_str();
 					}

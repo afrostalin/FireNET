@@ -72,7 +72,7 @@ bool SettingsManager::FindVariabelMatches(const QString & key)
 	{
 		if (it->key.contains(key))
 		{
-			qInfo() << it->key.toStdString().c_str() << "-" << it->description;
+			qWarning() << it->key.toStdString().c_str() << "-" << it->description;
 
 			result = true;
 		}
@@ -112,7 +112,7 @@ void SettingsManager::SetVariable(const QString &key, const QVariant &value)
 
 			if (it->value != value)
 			{
-				qDebug() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
+				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
 
 				// If variable have callback - execute 

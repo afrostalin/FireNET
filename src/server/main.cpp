@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
 	// Server buid version, number and type
 	QString buildVersion = "v.2.1.3";
-	int buildNumber = 13;
+	int buildNumber = 34;
 	QString appVersion = buildVersion + "." + QString::number(buildNumber);
 #ifdef QT_NO_DEBUG
 	QString buildType = ". Release profile";
@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 	QThread* m_Thread = new QThread();
 	CServerThread* pServerThread = new CServerThread();
 	pServerThread->moveToThread(m_Thread);
+	QObject::connect(pServerThread, &CServerThread::EnableStressMode, gEnv->pUI, &MainWindow::EnableStressMode);
 	QObject::connect(m_Thread, &QThread::started, pServerThread, &CServerThread::start);
 	QObject::connect(gEnv->pUI, &MainWindow::stop, pServerThread, &CServerThread::stop);
 	QObject::connect(m_Thread, &QThread::finished, pServerThread, &CServerThread::deleteLater);

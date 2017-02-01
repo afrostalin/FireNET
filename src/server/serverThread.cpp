@@ -158,7 +158,7 @@ void CServerThread::StartLogging()
 #ifdef QT_NO_DEBUG
 	int m_LogLevel = 0;
 #else
-	int m_LogLevel = 1;
+	int m_LogLevel = 2;
 #endif
 
 	// Init logging tool
@@ -214,10 +214,10 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("net_max_packet_read_size", 512 , "Maximum packet size for reading", true);
 	gEnv->pSettings->RegisterVariable("net_max_bad_packets_count", 10, "Maximum bad packets count from client", true);
 	gEnv->pSettings->RegisterVariable("net_max_packets_speed", 4, "Maximum packets per second count by client", true);
-
+	gEnv->pSettings->RegisterVariable("net_packet_debug", false, "Enable/Disable packet debugging", true);
+	// Utils
+	gEnv->pSettings->RegisterVariable("bEnableStressTest", false, "Changes server settings to work with stress test", true);
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);
-	gEnv->pSettings->RegisterVariable("bUsePacketDebug", false, "Enable/Disable packet debugging", true);
-
 	// Gloval vars (This variables not need read from server.cfg)
 	gEnv->pSettings->RegisterVariable("bUseRedis", true, "Enable/Disable using Redis database", false);
 	gEnv->pSettings->RegisterVariable("bUseMySQL", false, "Enable/Disable using MySql database", false);
@@ -233,6 +233,9 @@ void CServerThread::ReadServerCFG()
 	// Read server.cfg and try set new variable values
 	for (int i = 0; i < serverCFG.size(); ++i)
 	{
+		if (serverCFG[i].contains("#") || serverCFG[i].contains("//"))
+			continue;
+
 		QVariant::Type var_type = gEnv->pSettings->GetVariable(serverCFG[i]).type();
 
 		switch (var_type)
@@ -265,6 +268,21 @@ void CServerThread::ReadServerCFG()
 			break;
 		}
 	}
+
+	if (gEnv->pSettings->GetVariable("bEnableStressTest").toBool())
+		EnableStressTest();
+}
+
+void CServerThread::EnableStressTest()
+{
+	gEnv->pSettings->SetVariable("sv_ui_log_level", 0);
+	gEnv->pSettings->SetVariable("sv_file_log_level", 0);
+	gEnv->pSettings->SetVariable("sv_max_players", 1000);
+	gEnv->pSettings->SetVariable("net_max_bad_packets_count", 1000);
+	gEnv->pSettings->SetVariable("net_max_packets_speed", 100);
+	gEnv->pSettings->SetVariable("net_packet_debug", false);
+
+	emit EnableStressMode();
 }
 
 void CServerThread::start()

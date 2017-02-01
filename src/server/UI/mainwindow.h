@@ -33,6 +33,7 @@ public:
 public slots:
     void CleanUp();
 	void UpdateServerStatus();
+	void EnableStressMode();
 private slots:
     void on_Input_returnPressed();
 signals:

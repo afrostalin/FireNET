@@ -75,12 +75,13 @@ void TcpConnection::accept(qint64 socketDescriptor)
 
 	if (!m_Socket)
 	{
-		qWarning() << "Could not find created socket!";
+		qDebug() << "Could not find created socket!";
+		return;
 	}
 
 	if (!m_Socket->setSocketDescriptor(socketDescriptor))
 	{
-		qCritical() << "Can't accept socket!";
+		qDebug() << "Can't accept socket!";
 		return;
 	}
 
@@ -92,7 +93,7 @@ void TcpConnection::accept(qint64 socketDescriptor)
 
 	if (!m_Socket->waitForEncrypted(timeout * 1000))
 	{
-		qCritical() << "Can't accept socket! Encryption timeout!";
+		qDebug() << "Can't accept socket! Encryption timeout!";
 		emit quit();
 		return;
 	}
