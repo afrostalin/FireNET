@@ -71,7 +71,7 @@ void TcpThread::opened()
 		return;
 
 	// Block very fast connection
-	if (!gEnv->pSettings->GetVariable("bEnableStressTest").toBool() && gEnv->pServer->GetClientCount() > gEnv->pSettings->GetVariable("sv_max_players").toInt())
+	if (!gEnv->pSettings->GetVariable("stress_mode").toBool() && gEnv->pServer->GetClientCount() > gEnv->pSettings->GetVariable("sv_max_players").toInt())
 	{
 		connection->quit();
 	}

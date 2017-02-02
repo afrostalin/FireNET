@@ -177,20 +177,20 @@ void CServerThread::RegisterVariables()
 	// Server vars
 	gEnv->pSettings->RegisterVariable("sv_ip", "127.0.0.1", "Main server ip address", false);
 	gEnv->pSettings->RegisterVariable("sv_port", 3322, "Main server port", false);
-	gEnv->pSettings->RegisterVariable("sv_root_user", "administrator", "Remote admin login", true);
-	gEnv->pSettings->RegisterVariable("sv_root_password", "qwerty", "Remote admin password", true);
 #ifdef QT_NO_DEBUG
 	gEnv->pSettings->RegisterVariable("sv_file_log_level", 0, "Log level for control debugging messages in log file [0-1]", true, &UpdateFileLogLevel);
 	gEnv->pSettings->RegisterVariable("sv_ui_log_level", 0, "Log level for control debugging messages in UI [0-2]", true, &UpdateUILogLevel);
 #else
-	gEnv->pSettings->RegisterVariable("sv_file_log_level", 2, "Log level for control debugging messages in log file [0-1]", true, &UpdateFileLogLevel);
-	gEnv->pSettings->RegisterVariable("sv_ui_log_level", 1, "Log level for control debugging messages in UI [0-2]", true, &UpdateUILogLevel);
+	gEnv->pSettings->RegisterVariable("sv_file_log_level", 1, "Log level for control debugging messages in log file [0-1]", true, &UpdateFileLogLevel);
+	gEnv->pSettings->RegisterVariable("sv_ui_log_level", 2, "Log level for control debugging messages in UI [0-2]", true, &UpdateUILogLevel);
 #endif
 	gEnv->pSettings->RegisterVariable("sv_thread_count", 1, "Main server thread count for thread pooling", false);
-	gEnv->pSettings->RegisterVariable("sv_max_players", 1, "Maximum players count for connection", true, &UpdateMaxClientCount);
-	gEnv->pSettings->RegisterVariable("sv_max_servers", 1, "Maximum game servers count for connection", true, &UpdateMaxRemoteClienCount);
+	gEnv->pSettings->RegisterVariable("sv_max_players", 1000, "Maximum players count for connection", true, &UpdateMaxClientCount);
+	gEnv->pSettings->RegisterVariable("sv_max_servers", 10, "Maximum game servers count for connection", true, &UpdateMaxRemoteClienCount);
 	gEnv->pSettings->RegisterVariable("sv_tickrate", 30, "Main server tick rate speed (30 by Default)", false);
 	// Remote server vars
+	gEnv->pSettings->RegisterVariable("remote_root_user", "administrator", "Remote admin login", true);
+	gEnv->pSettings->RegisterVariable("remote_root_password", "qwerty", "Remote admin password", true);
 	gEnv->pSettings->RegisterVariable("remote_server_port", 64000, "Remote server port", false);
 	// Database vars
 	gEnv->pSettings->RegisterVariable("db_mode", "Redis", "Database mode [Redis, MySql, Redis+MySql]", false);
@@ -216,7 +216,7 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("net_max_packets_speed", 4, "Maximum packets per second count by client", true);
 	gEnv->pSettings->RegisterVariable("net_packet_debug", false, "Enable/Disable packet debugging", true);
 	// Utils
-	gEnv->pSettings->RegisterVariable("bEnableStressTest", false, "Changes server settings to work with stress test", true);
+	gEnv->pSettings->RegisterVariable("stress_mode", false, "Changes server settings to work with stress test", true);
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);
 	// Gloval vars (This variables not need read from server.cfg)
 	gEnv->pSettings->RegisterVariable("bUseRedis", true, "Enable/Disable using Redis database", false);
@@ -269,7 +269,7 @@ void CServerThread::ReadServerCFG()
 		}
 	}
 
-	if (gEnv->pSettings->GetVariable("bEnableStressTest").toBool())
+	if (gEnv->pSettings->GetVariable("stress_mode").toBool())
 		EnableStressTest();
 }
 

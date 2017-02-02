@@ -152,12 +152,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Network)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Sql)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinMain)
 target_link_libraries(${PROJECT_NAME} PRIVATE Logger cpp_redis tacopie)
 
 if(WIN32)
-  target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+	target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
 else()
-  target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
+	target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
 endif()
 
 set_target_properties (${PROJECT_NAME} PROPERTIES

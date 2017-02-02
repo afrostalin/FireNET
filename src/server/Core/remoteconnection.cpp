@@ -16,8 +16,8 @@ RemoteConnection::RemoteConnection(QObject *parent) : QObject(parent),
 	bConnected(false)
 {
 
-	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_size_for_read").toInt();
-	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packet_count").toInt();
+	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_read_size").toInt();
+	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packets_count").toInt();
 	m_BadPacketsCount = 0;
 }
 
