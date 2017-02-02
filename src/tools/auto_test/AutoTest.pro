@@ -3,10 +3,14 @@ QT += network
 QT -= gui
 
 CONFIG += c++11
-
-TARGET = auto_test
 CONFIG += console
 CONFIG -= app_bundle
+
+TARGET = AutoTest
+MOC_DIR += $$PWD/../../../build/moc/AutoTest
+OBJECTS_DIR += $$PWD/../../../build/obj/AutoTest
+
+INCLUDEPATH += $$PWD/../../server/
 
 TEMPLATE = app
 

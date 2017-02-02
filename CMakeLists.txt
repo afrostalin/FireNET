@@ -6,6 +6,9 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Enable using folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Includes
 set(3RD_DIR ${PROJECT_SOURCE_DIR}/3rd)
 set(LOGGER_INCLUDES ${3RD_DIR}/cutelogger/includes)
@@ -129,18 +132,19 @@ set (SOURCE
 
 # Set output folder
 if(WIN32)
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/windows)
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/Windows/server")
 else()
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin/unix)
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/Unix/server")
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 
+# Update build number
 if(WIN32)
-add_custom_command(TARGET ${PROJECT_NAME} 
+	add_custom_command(TARGET ${PROJECT_NAME} 
 		PRE_BUILD 
-		COMMAND ../tools/build_update
-		)
+		COMMAND ../tools/BuildUpdater
+		)	
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
@@ -155,3 +159,14 @@ if(WIN32)
 else()
   target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
 endif()
+
+set_target_properties (${PROJECT_NAME} PROPERTIES
+    FOLDER Server
+)
+
+# Tools - Remote administration panel
+add_subdirectory("src/tools/remote_admin_panel" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/remote_admin")
+# Tools - Build updater
+add_subdirectory("src/tools/build_update" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/build_update")
+# Tools - Auto test
+add_subdirectory("src/tools/auto_test" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/auto_test")

@@ -6,7 +6,7 @@
 
 #include <queue>
 
-#include "netpacket.h"
+#include "Core/netpacket.h"
 
 class tcpclient : public QObject
 {

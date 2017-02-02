@@ -1,7 +1,7 @@
 #include "inputlistener.h"
 #include "global.h"
 #include "client.h"
-#include "src/server/netpacket.h"
+#include "Core/netpacket.h"
 
 #include <QTextStream>
 #include <QDebug>

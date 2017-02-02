@@ -1,9 +1,11 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#include "netpacket.h"
-
 #include <QDebug>
+
+#include "global.h"
+#include "Core/netpacket.h"
+
 
 NetPacket::NetPacket(ENetPacketType type)
 {
@@ -237,11 +239,11 @@ void NetPacket::SetMagicFooter()
 
 void NetPacket::GenerateMagic()
 {
-    int m_MagicValue = 2016207;
+	int m_MagicValue = gEnv->magicKey;
 	char m_MagicKeyH[10] = ""; // Header
 	char m_MagicKeyF[10] = ""; // Footer
-	itoa(m_MagicValue, m_MagicKeyH, 16);
-	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
+	_itoa_s(m_MagicValue, m_MagicKeyH, 16);
+	_itoa_s((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
 	m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
 	m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
 }
@@ -301,7 +303,7 @@ std::vector<std::string> NetPacket::Split(const std::string & s, char delim)
 	std::string item;
 	std::vector<std::string> m_vector;
 
-	while (std::getline(ss, item, delim)) 
+	while (std::getline(ss, item, delim))
 	{
 		m_vector.push_back(item);
 	}

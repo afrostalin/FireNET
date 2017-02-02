@@ -10,8 +10,8 @@ CONFIG += c++11
 TARGET = FireNET
 TEMPLATE = app
 
-MOC_DIR += $$PWD/temp/moc/server
-OBJECTS_DIR += $$PWD/temp/obj/server
+MOC_DIR += $$PWD/build/moc/server
+OBJECTS_DIR += $$PWD/build/obj/server
 
 SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/main.cpp \
@@ -31,7 +31,7 @@ SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/core/netpacket.cpp \
     src/server/tools/scripts.cpp \
     src/server/ui/mainwindow.cpp \
-    src/server/tools/UILogger.cpp \
+    src/server/ui/UILogger.cpp \
     src/server/serverThread.cpp
 
 HEADERS += \
@@ -51,32 +51,39 @@ HEADERS += \
     src/server/core/netpacket.h \
     src/server/tools/scripts.h \
     src/server/ui/mainwindow.h \
-    src/server/tools/UILogger.h \
+    src/server/ui/UILogger.h \
     src/server/serverThread.h
 
 FORMS += \
 	src/server/ui/mainwindow.ui
 
 INCLUDEPATH += $$PWD/src/server/
-INCLUDEPATH += $$PWD/3rd/includes
-INCLUDEPATH += $$PWD/3rd/includes/cutelogger/includes
-INCLUDEPATH += $$PWD/3rd/includes/cpp_redis
-INCLUDEPATH += $$PWD/3rd/includes/tacopie
+INCLUDEPATH += $$PWD/3rd/cutelogger/includes
+INCLUDEPATH += $$PWD/3rd/cpp_redis/includes
+INCLUDEPATH += $$PWD/3rd/tacopie/includes
 
 win32 {
 CONFIG(debug, debug|release) {
-    LIBS += -L$$PWD/3rd/libs/windows/Debug -lws2_32 -lLogger -lcpp_redis -ltacopie
+	LIBS += -L$$PWD/3rd/cutelogger/lib/Debug -lLogger
+	LIBS += -L$$PWD/3rd/cpp_redis/lib/Debug -lcpp_redis
+	LIBS += -L$$PWD/3rd/tacopie/lib/Debug -ltacopie -lws2_32
 }
 CONFIG(release, debug|release) {
-    LIBS += -L$$PWD/3rd/libs/windows/Release -lws2_32 -lLogger -lcpp_redis -ltacopie
+    LIBS += -L$$PWD/3rd/cutelogger/lib/Release -lLogger
+	LIBS += -L$$PWD/3rd/cpp_redis/lib/Release -lcpp_redis
+	LIBS += -L$$PWD/3rd/tacopie/lib/Release -ltacopie -lws2_32
 }
 }
 
 unix {
 CONFIG(debug, debug|release) {
-    LIBS += -L$$PWD/3rd/libs/linux/Debug -lLogger -lcpp_redis -ltacopie
+    LIBS += -L$$PWD/3rd/cutelogger/lib/Debug -lLogger
+	LIBS += -L$$PWD/3rd/cpp_redis/lib/Debug -lcpp_redis
+	LIBS += -L$$PWD/3rd/tacopie/lib/Debug -ltacopie -lpthread
 }
 CONFIG(release, debug|release) {
-    LIBS += -L$$PWD/3rd/libs/linux/Release -lLogger -lcpp_redis -ltacopie
+    LIBS += -L$$PWD/3rd/cutelogger/lib/Release -lLogger
+	LIBS += -L$$PWD/3rd/cpp_redis/lib/Release -lcpp_redis
+	LIBS += -L$$PWD/3rd/tacopie/lib/Release -ltacopie -lpthread
 }
 }

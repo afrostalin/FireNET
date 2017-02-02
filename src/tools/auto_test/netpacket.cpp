@@ -1,38 +1,21 @@
-// Copyright © 2016 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
-// License: http://opensource.org/licenses/MIT
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#include "src/server/netpacket.h"
-#include "global.h"
+#include "Core/netpacket.h"
 #include <QDebug>
-
-/* Simple packet
-* // Create packet
-* NetPacket packet(net_query);
-* packet.WriteInt(net_query_auth);
-* packet.WriteString("login");
-* packet.WriteSrting("password");
-* // Read packet
-* NetPacket packet("recived_packet_data");
-* packet.getType();
-* packet.ReadInt();
-* packet.ReadString();
-* packet.ReadString();
-*/
 
 NetPacket::NetPacket(ENetPacketType type)
 {
-	m_data = "";
 	m_separator = "|";
 	m_type = net_Empty;
-	m_MagicHeader = "";
-	m_MagicFooter = "";
 
 	// Only for reading
 	bInitFromData = false;
 	bIsGoodPacket = false;
 	lastIndex = 0;
-	//
 
+	// First generate magic keys
+	GenerateMagic();
 	SetMagicHeader();
 	SetPacketType(type);
 }
@@ -44,22 +27,28 @@ NetPacket::NetPacket(const char * data)
 		m_data = data;
 		m_type = net_Empty;
 		m_separator = "|";
-		m_MagicHeader = "";
-		m_MagicFooter = "";
 
 		bInitFromData = true;
 		bIsGoodPacket = false;
 		lastIndex = 0;
 
+		GenerateMagic();
 		ReadPacket();
 	}
 	else
 	{
-		qCritical() << "Empty packet!";
-		m_data = "";
+		qWarning() << "Can create packet. Empty data!";
 		m_type = net_Empty;
-		m_separator = "";
 	}
+}
+
+NetPacket::~NetPacket()
+{
+	m_packet.clear();
+	m_data.clear();
+	m_separator.clear();
+	m_MagicHeader.clear();
+	m_MagicFooter.clear();
 }
 
 void NetPacket::WriteString(std::string value)
@@ -75,7 +64,7 @@ void NetPacket::WriteInt(int value)
 void NetPacket::WriteBool(bool value)
 {
 	std::string m_value;
-	value ? m_value = "true" : m_value = "false";
+	value ? m_value = "t" : m_value = "f";
 
 	m_data = m_data + m_value + m_separator;
 }
@@ -101,13 +90,13 @@ const char* NetPacket::ReadString()
 		}
 		else
 		{
-			qCritical() << "Error reading string from packet. Last index wrong";
+			qWarning() << "Error reading string from packet. Last index wrong";
 			return nullptr;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading string from packet. Bad packet.";
+		qWarning() << "Error reading string from packet. Bad packet.";
 		return nullptr;
 	}
 }
@@ -126,19 +115,19 @@ int NetPacket::ReadInt()
 			}
 			catch (std::invalid_argument &)
 			{
-				qCritical() << "Error reading int from packet. Can't convert string to int";
+				qWarning() << "Error reading int from packet. Can't convert string to int";
 				return 0;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading int from packet. Last index wrong";
+			qWarning() << "Error reading int from packet. Last index wrong";
 			return 0;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading int from packet. Bad packet.";
+		qWarning() << "Error reading int from packet. Bad packet.";
 		return 0;
 	}
 }
@@ -148,7 +137,7 @@ bool NetPacket::ReadBool()
 	std::string m_value = ReadString();
 	bool result;
 
-	m_value == "true" ? result = true : result = false;
+	m_value == "t" ? result = true : result = false;
 	return result;
 }
 
@@ -166,19 +155,19 @@ float NetPacket::ReadFloat()
 			}
 			catch (std::invalid_argument &)
 			{
-				qCritical() << "Error reading float from packet. Can't convert string to float";
+				qWarning() << "Error reading float from packet. Can't convert string to float";
 				return 0.0f;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading float from packet. Last index wrong";
+			qWarning() << "Error reading float from packet. Last index wrong";
 			return 0.0f;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading float from packet. Bad packet.";
+		qWarning() << "Error reading float from packet. Bad packet.";
 		return 0.0f;
 	}
 }
@@ -197,19 +186,19 @@ double NetPacket::ReadDouble()
 			}
 			catch (std::invalid_argument &)
 			{
-				qCritical() << "Error reading double from packet. Can't convert string to double";
+				qWarning() << "Error reading double from packet. Can't convert string to double";
 				return 0.0;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading double from packet. Last index wrong";
+			qWarning() << "Error reading double from packet. Last index wrong";
 			return 0.0;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading double from packet. Bad packet.";
+		qWarning() << "Error reading double from packet. Bad packet.";
 		return 0.0;
 	}
 }
@@ -219,12 +208,6 @@ const char* NetPacket::toString()
 	if (!bInitFromData)
 	{
 		SetMagicFooter();
-
-        if (gEnv->bUsePacketDebug)
-		{
-			qDebug() << "Packet : " << m_data.c_str();
-		}
-
 		return m_data.c_str();
 	}
 	else
@@ -238,11 +221,6 @@ ENetPacketType NetPacket::getType()
 
 void NetPacket::SetMagicHeader()
 {
-    int m_MagicValue = gEnv->magicKey;
-	char m_MagicKey[10] = "";
-	itoa(m_MagicValue, m_MagicKey, 16);
-	m_MagicHeader = "!0x" + std::string(m_MagicKey);
-
 	WriteString(m_MagicHeader);
 }
 
@@ -253,28 +231,24 @@ void NetPacket::SetPacketType(ENetPacketType type)
 
 void NetPacket::SetMagicFooter()
 {
-    int m_MagicValue = gEnv->magicKey;
-	char m_MagicKey[10] = "";
-	// Abracadabra
-	itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKey, 16);
-	m_MagicFooter = "0x" + std::string(m_MagicKey) + "!";
-
 	m_data = m_data + m_MagicFooter;
+}
+
+void NetPacket::GenerateMagic()
+{
+	int m_MagicValue = 2016207;
+	char m_MagicKeyH[10] = ""; // Header
+	char m_MagicKeyF[10] = ""; // Footer
+	_itoa_s(m_MagicValue, m_MagicKeyH, 16);
+	_itoa_s((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
+	m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
+	m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
 }
 
 void NetPacket::ReadPacket()
 {
 	if (!m_data.empty())
 	{
-		// First generate header and footer
-        int m_MagicValue = gEnv->magicKey;
-		char m_MagicKeyH[10] = "";
-		itoa(m_MagicValue, m_MagicKeyH, 16);
-		char m_MagicKeyF[10] = "";
-		itoa((m_MagicValue * 2.5) / 0.7 + 1945, m_MagicKeyF, 16);
-		m_MagicHeader = "!0x" + std::string(m_MagicKeyH);
-		m_MagicFooter = "0x" + std::string(m_MagicKeyF) + "!";
-		//
 		m_packet = Split(m_data, m_separator.at(0));
 
 		if (m_packet.size() >= 3)
@@ -289,37 +263,32 @@ void NetPacket::ReadPacket()
 
 				if (m_type > 0)
 				{
-                    if (gEnv->bUsePacketDebug)
-					{
-						qDebug() << "Packet : " << m_data.c_str();
-					}
-
 					bIsGoodPacket = true;
 					lastIndex = 2; // 0 - header, 1 - type, 2 - start data
 				}
 				else
 				{
-					qCritical() << "Error reading packet. Empty packet type";
+					qWarning() << "Error reading packet. Empty packet type";
 					bIsGoodPacket = false;
 				}
 			}
 			else
 			{
-				qCritical() << "Error reading packet. Wrong magic key!";
-				qCritical() << "Header" << packet_header.c_str();
-				qCritical() << "Footer" << packet_footer.c_str();
+				qWarning() << "Error reading packet. Wrong magic key!";
+				qDebug() << "Header" << packet_header.c_str();
+				qDebug() << "Footer" << packet_footer.c_str();
 				bIsGoodPacket = false;
 			}
 		}
 		else
 		{
-			qCritical() << "Error reading packet. Packet soo small!";
+			qWarning() << "Error reading packet. Packet soo small!";
 			bIsGoodPacket = false;
 		}
 	}
 	else
 	{
-		qCritical() << "Error reading packet. Packet empty!";
+		qWarning() << "Error reading packet. Packet empty!";
 		bIsGoodPacket = false;
 	}
 }
@@ -331,7 +300,7 @@ std::vector<std::string> NetPacket::Split(const std::string & s, char delim)
 	std::string item;
 	std::vector<std::string> m_vector;
 
-	while (std::getline(ss, item, delim)) 
+	while (std::getline(ss, item, delim))
 	{
 		m_vector.push_back(item);
 	}

@@ -101,7 +101,7 @@ void RemoteClient::onReadyRead()
        {
            switch (packet.ReadInt())
            {
-           case net_result_remote_admin_login_fail:
+           case net_error_remote_admin_login_fail:
            {
                int reason = packet.ReadInt();
 
@@ -118,7 +118,7 @@ void RemoteClient::onReadyRead()
 
                break;
            }
-           case net_result_remote_command_fail:
+           case net_error_remote_command_fail:
            {
                qWarning() << "Command not found in FireNET!";
                break;

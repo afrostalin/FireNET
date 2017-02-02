@@ -5,7 +5,7 @@
 #include <QDebug>
 #include <QSslSocket>
 
-#include "src/server/netpacket.h"
+#include "Core/netpacket.h"
 
 class RemoteClient : public QObject
 {
