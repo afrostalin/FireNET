@@ -16,11 +16,8 @@ WARNING : FIRENET NOT COMPATIBLE WITH CRYENGINE VERSION < 5.3
 
 # Building
 
-[Building on Windows (VS2015)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(Visual-Studio-2015))
-
-[Building on Windows (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows-(QT-Creator))
-
-[Building on Linux (QT-Creator)] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Linux-(QT-Creator))
+* [Windows](https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Windows)
+* [Linux](https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Building-on-Linux)
 
 # Using
 
