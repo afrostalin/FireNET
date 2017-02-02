@@ -8,10 +8,12 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    qInfo() << "Build number updater v.1.0";
+    qInfo() << "Build number updater v.1.1";
     qInfo() << "Copyright (c) 2016 Ilya Chernetsov. All rights reserved";
 
-    QFile mainCPP ("main.cpp");
+	QString folderToFile = "../src/server/";
+	QString fileName = folderToFile + "main.cpp";
+    QFile mainCPP (fileName);
 
     bool line0Finded = false;
 
@@ -57,12 +59,12 @@ int main(int argc, char *argv[])
 
             if(!textBuffer.isEmpty() && line0Finded)
             {
-                QFile::remove("main.cpp.bak");
+                QFile::remove(fileName + ".bak");
 
                 mainCPP.close();
-                mainCPP.rename("main.cpp.bak");
+                mainCPP.rename(fileName + ".bak");
 
-                QFile newFile("main.cpp");
+                QFile newFile(fileName);
                 if(newFile.open(QIODevice::Append))
                 {
                     newFile.write(textBuffer);
@@ -72,25 +74,29 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    qCritical() << "Can't save main.cpp !!!";
+                    qDebug() << "Can't save main.cpp !!!";
+					return -2;
                 }
             }
             else
             {
-                qCritical() << "Can't update main.cpp !!!";
+				qDebug() << "Can't update main.cpp !!!";
                 mainCPP.close();
+				return -3;
             }
 
         }
         else
         {
-            qCritical() << "Can't open main.cpp";
+			qDebug() << "Can't open main.cpp";
+			return -4;
         }
 
     }
     else
     {
-        qCritical() << "Can't find main.cpp!!!";
+		qDebug() << "Can't find main.cpp!!!";
+		return -5;
     }
 
     return a.exec();
