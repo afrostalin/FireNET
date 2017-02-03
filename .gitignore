@@ -2,6 +2,7 @@
 /temp/*
 /.vs/*
 /build/*
+/bin/*
 
 # 3rd projects
 /3rd/cpp_redis/*

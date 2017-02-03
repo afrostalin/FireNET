@@ -36,8 +36,6 @@ QStringList m_WinFileList = {
 	m_qt_folder + "bin/Qt5Sql.dll",
 	m_qt_folder + "bin/Qt5Widgetsd.dll",
 	m_qt_folder + "bin/Qt5Widgets.dll",
-	m_3rd_folder + "cutelogger/bin/Debug/Logger.dll",
-	m_3rd_folder + "cutelogger/bin/Release/Logger.dll",
 	m_3rd_folder + "openssl/bin/libeay32.dll",
 	m_3rd_folder + "openssl/bin/ssleay32.dll",
 	m_3rd_folder + "mysql/bin/libmySQL.dll"
@@ -145,8 +143,6 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/Qt5Sqld.dll";
 			else if (fileName.contains("Qt5Widgetsd.dll"))
 				path = m_bin_folder + "/Qt5Widgetsd.dll";
-			else if (fileName.contains("Debug/Logger.dll"))
-				path = m_bin_folder + "/Logger.dll";
 			else if (fileName.contains("libeay32.dll"))
 				path = m_bin_folder + "/libeay32.dll";
 			else if (fileName.contains("ssleay32.dll"))
@@ -260,8 +256,6 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/Qt5Sql.dll";
 			else if (fileName.contains("Qt5Widgets.dll"))
 				path = m_bin_folder + "/Qt5Widgets.dll";
-			else if (fileName.contains("Release/Logger.dll"))
-				path = m_bin_folder + "/Logger.dll";
 			else if (fileName.contains("libeay32.dll"))
 				path = m_bin_folder + "/libeay32.dll";
 			else if (fileName.contains("ssleay32.dll"))
