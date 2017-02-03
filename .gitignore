@@ -3,6 +3,14 @@
 /.vs/*
 /build/*
 
+# 3rd projects
+/3rd/cpp_redis/*
+/3rd/cutelogger/*
+/3rd/mysql/*
+/3rd/openssl/*
+/3rd/qt/*
+/3rd/tacopie/*
+
 # Solution temp files
 *.db
 *.opendb
