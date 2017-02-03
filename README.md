@@ -21,20 +21,8 @@ WARNING : FIRENET NOT COMPATIBLE WITH CRYENGINE VERSION < 5.3
 
 # Using
 
-On Windows :
-
-* [Download redis for Windows] (https://github.com/MSOpenTech/redis)
-* Start Redis-Server.exe
-* Go to bin/win64/release/
-* Start FireNET.exe
-* Start SimpleClient.exe
-
-On Linux :
-
-* Instal redis-server `$ sudo apt-get install redis-server`
-* Start redis server `$ redis-server`
-* Go to bin/linux/release folder `$ cd path_to_firenet/bin/linux/release`
-* Start FireNET.sh `$ ./FireNET.sh`
+* [Windows] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Using-on-Windows)
+* [Linux] (https://github.com/afrostalin/FireNET/wiki/%5BFireNET%5D-Using-on-Linux)
 
 # WIKI
 
