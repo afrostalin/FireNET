@@ -170,5 +170,7 @@ set_target_properties (${PROJECT_NAME} PROPERTIES
 add_subdirectory("src/tools/remote_admin_panel" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/remote_admin")
 # Tools - Build updater
 add_subdirectory("src/tools/build_update" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/build_update")
+# Tools - Build deployer
+add_subdirectory("src/tools/build_deployer" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/build_deployer")
 # Tools - Auto test
 add_subdirectory("src/tools/auto_test" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/auto_test")

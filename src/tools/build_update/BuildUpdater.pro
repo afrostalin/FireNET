@@ -9,8 +9,6 @@ TARGET = BuildUpdater
 MOC_DIR += $$PWD/../../../build/moc/BuildUpdater
 OBJECTS_DIR += $$PWD/../../../build/obj/BuildUpdater
 
-INCLUDEPATH += $$PWD/../../server/
-
 
 TEMPLATE = app
 
