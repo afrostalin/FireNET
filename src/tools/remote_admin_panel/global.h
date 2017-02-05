@@ -8,6 +8,9 @@ struct SGlobalEnvironment
 {
     SGlobalEnvironment()
     {
+		pClient = nullptr;
+		pListener = nullptr;
+
         magicKey = 2016207;
         bUsePacketDebug = false;
     }

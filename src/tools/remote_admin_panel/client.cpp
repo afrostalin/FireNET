@@ -66,25 +66,40 @@ void RemoteClient::onReadyRead()
 
                if(type == 0)
                {
+				   QString version = packet.ReadString();
+				   QString ip = packet.ReadString();
+				   int port = packet.ReadInt();
+				   int tickrate = packet.ReadInt();
+				   QString databaseMode = packet.ReadString();
+				   QString authMode = packet.ReadString();
+				   int playersCount = packet.ReadInt();
+				   int maxPlayers = packet.ReadInt();
+				   int gameServersCount = packet.ReadInt();
+				   int maxGameServers = packet.ReadInt();
+
                    qInfo() << "Server status";
-                   qInfo() << "Version " << packet.ReadString();
-                   qInfo() << "IP " << packet.ReadString();
-                   qInfo() << "Port " << packet.ReadInt();
-                   qInfo() << "Tick rate " << packet.ReadInt() << " per/sec.";
-                   qInfo() << "Database mode " << packet.ReadString();
-                   qInfo() << "Authorization mode " << packet.ReadString();
-                   qInfo() << "Players amount " << packet.ReadInt();
-                   qInfo() << "Game servers amount " << packet.ReadInt();
-               } else if(type == 1)
+                   qInfo() << "Version " << version;
+                   qInfo() << "IP " << ip;
+                   qInfo() << "Port " << port;
+                   qInfo() << "Tick rate " << tickrate << " per/sec.";
+                   qInfo() << "Database mode " << databaseMode;
+                   qInfo() << "Authorization mode " << authMode;
+                   qInfo() << "Players amount " << playersCount << "/" << maxPlayers;
+                   qInfo() << "Game servers amount " << gameServersCount << "/" << maxGameServers;
+               } 
+			   else if(type == 1)
                {
                    qInfo() << "Message sended";
-               } else if(type == 2)
+               } 
+			   else if(type == 2)
                {
                    qInfo() << "Command sended";
-               } else if(type == 3)
+               } 
+			   else if(type == 3)
                {
                    qInfo() << "Players : " << packet.ReadString();
-               } else if(type == 4)
+               } 
+			   else if(type == 4)
                {
                    qInfo() << "Servers : " << packet.ReadString();
                }
@@ -97,7 +112,8 @@ void RemoteClient::onReadyRead()
                break;
            }
            }
-       } else if(packet.getType() == net_Error)
+       } 
+	   else if(packet.getType() == net_Error)
        {
            switch (packet.ReadInt())
            {

@@ -20,9 +20,9 @@ source_group("Main" FILES ${SourceGroup_Main})
 set (SOURCE ${SourceGroup_Main})
 
 if(WIN32)
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Windows/tools")
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Windows/Server")
 else()
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Unix/tools")
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Unix/Server")
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE})

@@ -47,14 +47,14 @@ bool DeployWindows(const QString &buildType)
 	{
 		QDir().mkdir(m_bin_folder);
 		QDir().mkdir(m_bin_folder + "/Windows");
-		QDir().mkdir(m_bin_folder + "/Windows/server");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Debug");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Debug/plugins");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Debug/plugins/sqldrivers");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Debug/platforms");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Debug/scripts");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Debug");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Debug/plugins");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Debug/plugins/sqldrivers");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Debug/platforms");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Debug/scripts");
 
-		m_bin_folder += "/Windows/server/Debug";
+		m_bin_folder += "/Windows/Server/Debug";
 
 		qInfo() << "Step 1 - Check server files exists :";
 		for (int i = 0; i < m_ServerFileList.size(); i++)
@@ -160,14 +160,14 @@ bool DeployWindows(const QString &buildType)
 	{
 		QDir().mkdir(m_bin_folder);
 		QDir().mkdir(m_bin_folder + "/Windows");
-		QDir().mkdir(m_bin_folder + "/Windows/server");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Release");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Release/plugins");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Release/plugins/sqldrivers");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Release/platforms");
-		QDir().mkdir(m_bin_folder + "/Windows/server/Release/scripts");
+		QDir().mkdir(m_bin_folder + "/Windows/Server");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Release");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Release/plugins");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Release/plugins/sqldrivers");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Release/platforms");
+		QDir().mkdir(m_bin_folder + "/Windows/Server/Release/scripts");
 
-		m_bin_folder += "/Windows/server/Release";
+		m_bin_folder += "/Windows/Server/Release";
 
 		qInfo() << "Step 1 - Check server files exists :";
 		for (int i = 0; i < m_ServerFileList.size(); i++)

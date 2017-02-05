@@ -11,11 +11,10 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-
-    qDebug() << "Remote administration panel for FireNET";
-    qDebug() << "Created by Ilya Chernetsov";
-    qDebug() << "Copyright (c) All rights reserved";
-    qDebug() << "Use 'list' command to get full command list";
+	qDebug() << "***************************************************";
+    qDebug() << "***   Remote administration panel for FireNET   ***";
+    qDebug() << "*** Use 'list' command to get full command list ***";
+	qDebug() << "***************************************************";
 
     QThread *pListenerThread = new QThread();
     gEnv->pListener = new InputListener();
