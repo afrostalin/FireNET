@@ -104,30 +104,28 @@ void SettingsManager::SetVariable(const QString &key, const QVariant &value)
 	{
 		if (it->key == key)
 		{
+			// If variable have callback - execute 
+			if (it->pCallback)
+			{
+				it->pCallback(value);
+			}
+
 			if (bBlockOnlineUpdate && !it->bCanChangeOnline)
 			{
 				qWarning() << "Can't change variable" << key << ". Blocked for online update. For change this variable use config file";
 				return;
 			}
-
-			if (it->value != value)
+			else if (it->value != value)
 			{
 				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
-
-				// If variable have callback - execute 
-				if (it->pCallback)
-				{
-					it->pCallback(it->value);
-				}
-
 				return;
 			}
 			else
 			{
 				qDebug() << "Variable" << key << "not changed, return.";
 				return;
-			}
+			}			
 		}
 	}
 
