@@ -212,6 +212,7 @@ void MainWindow::on_Input_returnPressed()
 		qWarning() << "***FULL SERVER STATUS***";
 
 		// Main server status
+		qWarning() << "Server version :" << qApp->applicationVersion().toStdString().c_str();
 		qWarning() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
 		qWarning() << "Clients count :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
 		qWarning() << "Maximum active clients count :" << gEnv->m_MaxClientCount;
@@ -252,13 +253,23 @@ void MainWindow::on_Input_returnPressed()
 	{
 		QString message = input.remove("send_message ");
 
-		qInfo() << "Try send message to all clients <" << message.toStdString().c_str() << ">";		
+		qInfo() << "Try send message to all clients <" << message.toStdString().c_str() << ">";
+
+		NetPacket msg(net_Server);
+		msg.WriteInt(net_server_message);
+		msg.WriteString(message.toStdString());
+		gEnv->pServer->sendGlobalMessage(msg);
 	}
 	else if (input.contains("send_command")) // TODO
 	{
 		QString command = input.remove("send_command ");
 
 		qInfo() << "Try send command to all clients <" << command.toStdString().c_str() << ">";
+
+		NetPacket msg(net_Server);
+		msg.WriteInt(net_server_command);
+		msg.WriteString(command.toStdString());
+		gEnv->pServer->sendGlobalMessage(msg);
 	}
 	else if (input == "players")
 	{
