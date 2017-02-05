@@ -6,8 +6,12 @@
 
 #include <QObject>
 #include <QSslSocket>
+#include <queue>
 
-#include "Workers/Packets/remoteclientquerys.h"
+#include "global.h"
+#include "netpacket.h"
+
+class RemoteClientQuerys;
 
 class RemoteConnection : public QObject
 {
@@ -15,10 +19,11 @@ class RemoteConnection : public QObject
 public:
     explicit RemoteConnection(QObject *parent = 0);
 	~RemoteConnection();
+public:
+	void SendMessage(NetPacket &packet);
 public slots:
 	void accept(qint64 socketDescriptor);
 	void close();
-	//
 	void connected();
 	void disconnected();
 	void readyRead();
@@ -26,6 +31,8 @@ public slots:
 
 	void socketSslErrors(const QList<QSslError> list);
 	void socketError(QAbstractSocket::SocketError error);
+
+	void Update();
 signals:
 	void finished();
 
@@ -35,12 +42,20 @@ private:
 	QSslSocket* m_socket;
 	RemoteClientQuerys* pQuerys;
 	SRemoteClient m_Client;
-	bool bConnected;
-
+	std::queue<NetPacket> m_Packets;
+	void CalculateStatistic();
+private:
 	int m_maxPacketSize;
 	int m_maxBadPacketsCount;
-
 	int m_BadPacketsCount;
+
+	QTime m_Time;
+	int   m_InputPacketsCount;
+	int   m_PacketsSpeed;
+	int   m_maxPacketSpeed;
+
+	bool bConnected;
+	bool bLastMsgSended;
 };
 
 #endif // REMOTECONNECTION_H

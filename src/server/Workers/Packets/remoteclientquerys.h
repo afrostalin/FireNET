@@ -10,6 +10,8 @@
 
 #include "Core/netpacket.h"
 
+class RemoteConnection;
+
 class RemoteClientQuerys : public QObject
 {
     Q_OBJECT
@@ -18,6 +20,7 @@ public:
 	~RemoteClientQuerys();
 	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
 	void SetClient(SRemoteClient* client);
+	void SetConnection(RemoteConnection* connection) { this->m_connection = connection; }
 public:
 	// Administration functional
 	void onAdminLogining(NetPacket &packet);
@@ -33,6 +36,7 @@ private:
 private:
 	QSslSocket* m_socket;
 	SRemoteClient* m_client;
+	RemoteConnection* m_connection;
 };
 
 #endif // REMOTECLIENTQUERYS_H

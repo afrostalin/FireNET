@@ -444,7 +444,6 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 
 void TcpServer::sendMessageToClient(QSslSocket* socket, NetPacket &packet)
 {
-	// DEPRICATED
 	if (socket)
 		socket->write(packet.toString());
 }

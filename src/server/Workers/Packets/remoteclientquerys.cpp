@@ -15,8 +15,9 @@
 #include <QCoreApplication>
 
 RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent),
-	m_socket(nullptr),
-	m_client(nullptr)
+m_socket(nullptr),
+m_client(nullptr),
+m_connection(nullptr)
 {
 }
 
@@ -52,7 +53,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remote_admin_login_fail);
 		m_packet.WriteInt(2);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		return;
 	}
@@ -67,9 +68,9 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 		return;
 	}
 
-	if (login == gEnv->pSettings->GetVariable("sv_root_user").toString())
+	if (login == gEnv->pSettings->GetVariable("remote_root_user").toString())
 	{
-		if (password == gEnv->pSettings->GetVariable("sv_root_password").toString())
+		if (password == gEnv->pSettings->GetVariable("remote_root_password").toString())
 		{
 			qWarning() << "Client (" << m_socket << ") success login in administator mode!";
 			gEnv->pRemoteServer->SetAdmin(true);
@@ -79,7 +80,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 
 			NetPacket m_packet(net_Result);
 			m_packet.WriteInt(net_result_remote_admin_login_complete);
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 
 			return;
 		}
@@ -90,7 +91,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_remote_admin_login_fail);
 			m_packet.WriteInt(1);
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 
 			return;
 		}
@@ -103,7 +104,7 @@ void RemoteClientQuerys::onAdminLogining(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remote_admin_login_fail);
 		m_packet.WriteInt(0);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		return;
 	}
@@ -124,9 +125,6 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 
 	if (command == "status")
 	{
-		int gameServersCount = 0;
-		gEnv->pRemoteServer->IsHaveAdmin() ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
-
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_command_complete);
 		m_packet.WriteInt(0);
@@ -138,12 +136,13 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 		m_packet.WriteString(gEnv->pSettings->GetVariable("auth_mode").toString().toStdString()); // Authorization mode
 		m_packet.WriteInt(gEnv->pServer->GetClientCount()); // Players ammount
 		m_packet.WriteInt(gEnv->pSettings->GetVariable("sv_max_players").toInt()); // Max players count
-		m_packet.WriteInt(gameServersCount); // Game servers count
+		m_packet.WriteInt(gEnv->pRemoteServer->GetClientCount()); // Game servers count
 		m_packet.WriteInt(gEnv->pSettings->GetVariable("sv_max_servers").toInt()); // Max game servers count
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		return;
-	}else if(command == "send_message")
+	}
+	else if (command == "send_message")
 	{
 		NetPacket msg(net_Server);
 		msg.WriteInt(net_server_message);
@@ -153,10 +152,11 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_command_complete);
 		m_packet.WriteInt(1);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		return;
-	}else if (command == "send_command")
+	}
+	else if (command == "send_command")
 	{
 		NetPacket msg(net_Server);
 		msg.WriteInt(net_server_command);
@@ -166,10 +166,11 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_command_complete);
 		m_packet.WriteInt(2);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		return;
-	}else if (command == "players")
+	}
+	else if (command == "players")
 	{
 		QStringList players = gEnv->pServer->GetPlayersList();
 
@@ -179,7 +180,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 			m_packet.WriteInt(net_result_remote_command_complete);
 			m_packet.WriteInt(3);
 			m_packet.WriteString(players.join(",").toStdString());
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 		}
 		else
 		{
@@ -187,11 +188,12 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 			m_packet.WriteInt(net_result_remote_command_complete);
 			m_packet.WriteInt(3);
 			m_packet.WriteString("No any players");
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 		}
 
 		return;
-	}else if(command == "servers")
+	}
+	else if (command == "servers")
 	{
 		QStringList servers = gEnv->pRemoteServer->GetServerList();
 
@@ -201,7 +203,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 			m_packet.WriteInt(net_result_remote_command_complete);
 			m_packet.WriteInt(4);
 			m_packet.WriteString(servers.join(",").toStdString());
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 		}
 		else
 		{
@@ -209,7 +211,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 			m_packet.WriteInt(net_result_remote_command_complete);
 			m_packet.WriteInt(4);
 			m_packet.WriteString("No any game servers");
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 		}
 
 		return;
@@ -218,7 +220,7 @@ void RemoteClientQuerys::onConsoleCommandRecived(NetPacket &packet)
 	NetPacket m_packet(net_Error);
 	m_packet.WriteInt(net_error_remote_command_fail);
 	m_packet.WriteInt(0);
-	gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+	m_connection->SendMessage(m_packet);
 }
 
 // Error types : 0 - Game server not found in trusted list, 1 - Server alredy registered
@@ -246,7 +248,7 @@ void RemoteClientQuerys::onGameServerRegister(NetPacket &packet)
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_error_remote_register_server_fail);
 		m_packet.WriteInt(0);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 		return;
 	}
 
@@ -268,7 +270,7 @@ void RemoteClientQuerys::onGameServerRegister(NetPacket &packet)
 
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_register_server_complete);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		qDebug() << "Game server [" << serverName << "] registered!";
 		qDebug() << "Connected game servers count = " << gameServersCount;
@@ -281,7 +283,7 @@ void RemoteClientQuerys::onGameServerRegister(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remote_register_server_fail);
 		m_packet.WriteInt(1);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 	}
 }
 
@@ -323,7 +325,7 @@ void RemoteClientQuerys::onGameServerUpdateInfo(NetPacket &packet)
 
 		NetPacket m_packet(net_Result);
 		m_packet.WriteInt(net_result_remote_update_server_complete);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 
 		qDebug() << "Game server [" << serverName << "] updated info";
 	}
@@ -335,7 +337,7 @@ void RemoteClientQuerys::onGameServerUpdateInfo(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remote_update_server_fail);
 		m_packet.WriteInt(0);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 	}
 }
 
@@ -365,7 +367,7 @@ void RemoteClientQuerys::onGameServerGetOnlineProfile(NetPacket &packet)
 		profile.WriteString(pProfile->items.toStdString());
 		profile.WriteString(pProfile->friends.toStdString());
 
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, profile);
+		m_connection->SendMessage(profile);
 		return;
 	}
 	else
@@ -375,7 +377,7 @@ void RemoteClientQuerys::onGameServerGetOnlineProfile(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remote_get_profile_fail);
 		m_packet.WriteInt(0);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 	}
 }
 
@@ -397,7 +399,7 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 	QString items = packet.ReadString();
 	QString friends = packet.ReadString();
 
-	SProfile* pOldProfile = gEnv->pServer->GetProfileByUid(uid);	
+	SProfile* pOldProfile = gEnv->pServer->GetProfileByUid(uid);
 
 	if (pOldProfile != nullptr)
 	{
@@ -416,7 +418,7 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 		{
 			NetPacket m_packet(net_Result);
 			m_packet.WriteInt(net_result_remote_update_profile_complete);
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+			m_connection->SendMessage(m_packet);
 		}
 		else
 		{
@@ -425,8 +427,8 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 			NetPacket m_packet(net_Error);
 			m_packet.WriteInt(net_error_remote_update_profile_fail);
 			m_packet.WriteInt(1);
-			gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
-		}	
+			m_connection->SendMessage(m_packet);
+		}
 	}
 	else
 	{
@@ -435,7 +437,7 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 		NetPacket m_packet(net_Error);
 		m_packet.WriteInt(net_error_remote_update_profile_fail);
 		m_packet.WriteInt(0);
-		gEnv->pRemoteServer->sendMessageToRemoteClient(m_socket, m_packet);
+		m_connection->SendMessage(m_packet);
 	}
 }
 

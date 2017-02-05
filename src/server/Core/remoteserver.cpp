@@ -1,6 +1,8 @@
 // Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
+#include <QTimer>
+
 #include "global.h"
 #include "remoteserver.h"
 #include "remoteconnection.h"
@@ -68,6 +70,7 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 
 	connect(m_remoteConnection, &RemoteConnection::received, gEnv->pServer, &TcpServer::MessageReceived);
 	connect(m_remoteConnection, &RemoteConnection::sended, gEnv->pServer, &TcpServer::MessageSended);
+	connect(gEnv->pTimer, &QTimer::timeout, m_remoteConnection, &RemoteConnection::Update);
 
 	m_connections.append(m_remoteConnection);
 	m_remoteConnection->accept(socketDescriptor);
@@ -75,16 +78,17 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 
 void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, NetPacket &paket)
 {
-	if (socket != nullptr)
+	if (socket)
 	{
 		socket->write(paket.toString());
-		socket->waitForBytesWritten(10);
 	}
 }
 
 void RemoteServer::AddNewClient(SRemoteClient client)
 {
-	if (client.socket == nullptr)
+	QMutexLocker locker(&m_Mutex);
+
+	if (!client.socket)
 	{
 		qWarning() << "Can't add remote client. Remote client socket = nullptr";
 		return;
@@ -105,7 +109,9 @@ void RemoteServer::AddNewClient(SRemoteClient client)
 
 void RemoteServer::RemoveClient(SRemoteClient client)
 {
-	if (client.socket == nullptr)
+	QMutexLocker locker(&m_Mutex);
+
+	if (!client.socket)
 	{
 		qWarning() << "Can't remove  remove client. Remove client socket = nullptr";
 		return;
@@ -129,7 +135,9 @@ void RemoteServer::RemoveClient(SRemoteClient client)
 
 void RemoteServer::UpdateClient(SRemoteClient* client)
 {
-	if (client->socket == nullptr)
+	QMutexLocker locker(&m_Mutex);
+
+	if (!client->socket)
 	{
 		qWarning() << "Can't update client. Client socket = nullptr";
 		return;
@@ -157,9 +165,11 @@ void RemoteServer::UpdateClient(SRemoteClient* client)
 
 bool RemoteServer::CheckGameServerExists(QString name, QString ip, int port)
 {
+	QMutexLocker locker(&m_Mutex);
+
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
-		if (it->server != nullptr)
+		if (it->server)
 		{
 			if ((it->server->ip == ip && it->server->port == port) || it->server->name == name)
 			{
@@ -173,6 +183,7 @@ bool RemoteServer::CheckGameServerExists(QString name, QString ip, int port)
 
 int RemoteServer::GetClientCount()
 {
+	QMutexLocker locker(&m_Mutex);
 	return bHaveAdmin ? m_Clients.size() - 1 : m_Clients.size();
 }
 

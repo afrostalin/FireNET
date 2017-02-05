@@ -55,6 +55,7 @@ private:
 	QTcpServer* m_Server;
 	QVector<SRemoteClient> m_Clients;
 	QList<RemoteConnection*> m_connections;
+	QMutex m_Mutex;
 
 	int m_MaxClinetCount;
 	bool bHaveAdmin;
