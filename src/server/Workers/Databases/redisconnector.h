@@ -5,6 +5,7 @@
 #define REDISCONNECTOR_H
 
 #include <QObject>
+#include <QTimer>
 
 namespace cpp_redis
 {
@@ -30,9 +31,11 @@ public:
 	QString                                      GET(const QString &key);	
 	void                                         BGSAVE();
 public slots:
-	void                                         disconnected();	
+	void                                         disconnected();
+	void                                         update();
 private:
 	cpp_redis::redis_client*                     pClient;
+	QTimer                                       m_Timer;
 };
 
 #endif // REDISCONNECTOR_H

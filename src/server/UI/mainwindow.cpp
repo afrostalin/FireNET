@@ -212,7 +212,7 @@ void MainWindow::on_Input_returnPressed()
 		qWarning() << "***FULL SERVER STATUS***";
 
 		// Main server status
-		qWarning() << "Server version :" << qApp->applicationVersion().toStdString().c_str();
+		qWarning() << "Server version :" << gEnv->m_serverFullName.toStdString().c_str();
 		qWarning() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
 		qWarning() << "Clients count :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
 		qWarning() << "Maximum active clients count :" << gEnv->m_MaxClientCount;

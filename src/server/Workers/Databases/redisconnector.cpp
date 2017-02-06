@@ -15,11 +15,14 @@
 RedisConnector::RedisConnector(QObject *parent) : QObject(parent),
 	pClient(nullptr)
 {
+	connect(&m_Timer, &QTimer::timeout, this, &RedisConnector::update);
 }
 
 RedisConnector::~RedisConnector()
 {
 	qDebug() << "~RedisConnector";
+
+	m_Timer.stop();
 
 	if (IsConnected())
 		Disconnect();
@@ -64,16 +67,14 @@ bool RedisConnector::Connect()
 	}
 
 	qDebug() << "Redis connected";
+	m_Timer.start(1000);
 
 	return true;
 }
 
 bool RedisConnector::IsConnected()
 {
-	if (pClient && pClient->is_connected())
-		return true;
-	else
-		return false;
+	return pClient && pClient->is_connected() ? true : false;
 }
 
 void RedisConnector::Disconnect()
@@ -271,9 +272,15 @@ void RedisConnector::BGSAVE()
 		qWarning() << "Redis not connected";
 }
 
-// TODO - DEPRICATED
+void RedisConnector::update()
+{
+	if (!IsConnected())
+		emit disconnected();
+}
+
 void RedisConnector::disconnected()
 {
 	qCritical() << "Redis server disconnected. Database functions not be work!";
 	gEnv->m_ServerStatus.m_DBStatus = "offline";
+	m_Timer.stop();
 }
