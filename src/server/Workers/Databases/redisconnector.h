@@ -21,18 +21,18 @@ public:
 	void                                         run();
 	bool                                         Connect();
 	bool                                         IsConnected();
-	void										 Disconnect();
+	void                                         Disconnect();
 public:
 	bool                                         HEXISTS(const QString &key, const QString &field);
-	bool										 HMSET(const QString &key, const std::vector<std::pair<std::string, std::string>>& field_val);
+	bool                                         HMSET(const QString &key, const std::vector<std::pair<std::string, std::string>>& field_val);
 	QVector<std::pair<std::string, std::string>> HGETALL(const QString &key);
-	bool										 SET(const QString &key, const QString &value);
-	QString										 GET(const QString &key);	
-	void										 BGSAVE();
+	bool                                         SET(const QString &key, const QString &value);
+	QString                                      GET(const QString &key);	
+	void                                         BGSAVE();
 public slots:
-	void										 disconnected();	
+	void                                         disconnected();	
 private:
-	cpp_redis::redis_client*					 pClient;
+	cpp_redis::redis_client*                     pClient;
 };
 
 #endif // REDISCONNECTOR_H

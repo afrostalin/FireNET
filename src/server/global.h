@@ -139,16 +139,16 @@ struct SGlobalEnvironment
 	}
 
 	// Pointers to main server systems
-	TcpServer*			 pServer;
-	RemoteServer*		 pRemoteServer;
-	DBWorker*			 pDBWorker;
-	QTimer*				 pTimer;
-	SettingsManager*	 pSettings;
-	Scripts*			 pScripts;
-	MainWindow*			 pUI;
+	TcpServer*           pServer;
+	RemoteServer*        pRemoteServer;
+	DBWorker*            pDBWorker;
+	QTimer*              pTimer;
+	SettingsManager*     pSettings;
+	Scripts*             pScripts;
+	MainWindow*          pUI;
 
 	// Server statistic
-	SServerStatus		 m_ServerStatus;	
+	SServerStatus        m_ServerStatus;	
 	int                  m_InputPacketsCount;
 	int                  m_InputSpeed;
 	int                  m_InputMaxSpeed;
@@ -163,15 +163,15 @@ struct SGlobalEnvironment
 	int                  m_MaxClientCount;
 
 	// Log level for file and UI
-	int					 m_FileLogLevel;
+	int                  m_FileLogLevel;
 	int                  m_UILogLevel;
 
 	// Server full name
-	QString				 m_serverFullName;
+	QString              m_serverFullName;
 
 	// Need for clearing server before quit
-	bool			     isQuiting;
-	bool			     isReadyToClose;
+	bool                 isQuiting;
+	bool                 isReadyToClose;
 };
 
 extern SGlobalEnvironment* gEnv;

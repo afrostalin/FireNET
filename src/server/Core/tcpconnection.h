@@ -43,9 +43,9 @@ signals:
 	void                  received();
 	void                  sended();
 private:
-    ClientQuerys*         pQuery;
+	ClientQuerys*         pQuery;
 	QSslSocket*           m_Socket;
-	SClient				  m_Client;
+	SClient               m_Client;
 	std::queue<NetPacket> m_Packets;
 private:
 	int                   m_maxPacketSize;

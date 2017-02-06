@@ -19,21 +19,21 @@ public:
     explicit DBWorker(QObject *parent = 0);
 	~DBWorker();
 public:
-	void			Init();
-	void			Clear();
+	void            Init();
+	void            Clear();
 public:
-	bool			UserExists(const QString &login);
-	bool			ProfileExists(int uid);
-	bool			NicknameExists(const QString &nickname);
+	bool            UserExists(const QString &login);
+	bool            ProfileExists(int uid);
+	bool            NicknameExists(const QString &nickname);
 public:
-	int				GetFreeUID();
-	int				GetUIDbyNick(const QString &nickname);
-	SUser*			GetUserData(const QString &login);
-	SProfile*		GetUserProfile(int uid);
+	int             GetFreeUID();
+	int             GetUIDbyNick(const QString &nickname);
+	SUser*          GetUserData(const QString &login);
+	SProfile*       GetUserProfile(int uid);
 public:
-	bool			CreateUser(int uid, const QString &login, const QString &password);
-	bool			CreateProfile(SProfile *profile);
-	bool			UpdateProfile(SProfile *profile);
+	bool            CreateUser(int uid, const QString &login, const QString &password);
+	bool            CreateProfile(SProfile *profile);
+	bool            UpdateProfile(SProfile *profile);
 public:
 	RedisConnector* pRedis;
 	MySqlConnector* pMySql;

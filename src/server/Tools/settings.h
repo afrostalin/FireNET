@@ -28,17 +28,17 @@ public:
 	void               Clear();
 	QVariant           GetVariable(const QString &key);	
 	QString            GetDescription(const QString &key);
-	bool			   FindVariabelMatches(const QString &key);
-	bool			   CheckVariableExists(const QString &key);
+	bool               FindVariabelMatches(const QString &key);
+	bool               CheckVariableExists(const QString &key);
 	QStringList        GetVariablesList();
 public:
 	void               SetVariable(const QString &key, const QVariant &value);
-	void			   BlockOnlineUpdate() { bBlockOnlineUpdate = true; }
+	void               BlockOnlineUpdate() { bBlockOnlineUpdate = true; }
 public:
-	void			   RegisterVariable(const QString &key, const QVariant &value, const QString &description, bool bCanChangeOnline, void (*pCallback)(QVariant) = nullptr);
+	void               RegisterVariable(const QString &key, const QVariant &value, const QString &description, bool bCanChangeOnline, void (*pCallback)(QVariant) = nullptr);
 private:
 	QVector<SVariable> m_Variables;
-	QMutex			   m_Mutex;
+	QMutex             m_Mutex;
 	bool               bBlockOnlineUpdate;
 };
 

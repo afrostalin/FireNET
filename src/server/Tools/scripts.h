@@ -14,9 +14,9 @@ public:
     explicit Scripts(QObject *parent = nullptr);
 	~Scripts();
 public:
-	void					Clear();
-	void					LoadShopScript();
-	void					LoadTrustedServerList();
+	void                    Clear();
+	void                    LoadShopScript();
+	void                    LoadTrustedServerList();
 public:
 	QVector<SShopItem>      GetShop();
 	QVector<STrustedServer> GetTrustedList();

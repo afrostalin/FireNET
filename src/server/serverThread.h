@@ -14,16 +14,16 @@ public:
 	explicit CServerThread(QObject *parent = nullptr);
 	~CServerThread();
 private:
-	bool		Init();
-	void		StartLogging();
-	void		RegisterVariables();
-	void		ReadServerCFG();
-	void		EnableStressTest();
+	bool        Init();
+	void        StartLogging();
+	void        RegisterVariables();
+	void        ReadServerCFG();
+	void        EnableStressTest();
 public slots:
-	void		start();
-	void		stop();
+	void        start();
+	void        stop();
 signals:
-	void		EnableStressMode();
+	void        EnableStressMode();
 private:
 	QEventLoop* m_loop;
 };

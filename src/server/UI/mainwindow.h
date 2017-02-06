@@ -28,24 +28,24 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 public:
-    void LogToOutput(ELogType type, const QString& msg);
+	void            LogToOutput(ELogType type, const QString& msg);
 private:
-	void			ClearOutput();
-	void			ClearStatus();
+	void            ClearOutput();
+	void            ClearStatus();
 public slots:
-	void			CleanUp();
-	void			UpdateServerStatus();
-	void			EnableStressMode();
+	void            CleanUp();
+	void            UpdateServerStatus();
+	void            EnableStressMode();
 private slots:
-	void			on_Input_returnPressed();
+	void            on_Input_returnPressed();
 signals:
-	void			stop();
-	void			scroll();
+	void            stop();
+	void            scroll();
 private:
     Ui::MainWindow* ui;
-    int			    m_OutputItemID;
-	QTimer		    m_UpdateTimer;
-	QMutex			m_Mutex;
+    int             m_OutputItemID;
+	QTimer          m_UpdateTimer;
+	QMutex          m_Mutex;
 };	
 
 #endif // MAINWINDOW_H

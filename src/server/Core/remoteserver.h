@@ -39,7 +39,7 @@ public:
 	
 private:
 	bool                     CreateServer();
-    virtual void             incomingConnection(qintptr socketDescriptor);
+	virtual void             incomingConnection(qintptr socketDescriptor);
 public slots:
 	void                     Update();
 	void                     CloseConnection();

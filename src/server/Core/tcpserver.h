@@ -23,7 +23,7 @@ public:
     explicit TcpServer(QObject *parent = nullptr);
 	~TcpServer();
 public:
-    void              SetMaxThreads(int maximum);
+	void              SetMaxThreads(int maximum);
 	void              SetMaxConnections(int value);
 	void              SetConnectionTimeout(int value);
 	bool              Listen(const QHostAddress &address, quint16 port);
@@ -63,7 +63,7 @@ public slots:
 	void              MessageSended();
 signals:
 	void              connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
-	void			  closing();
+	void              closing();
 private:
 	int               m_maxThreads;
 	int               m_maxConnections;

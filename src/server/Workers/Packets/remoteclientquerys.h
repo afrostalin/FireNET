@@ -31,9 +31,9 @@ public:
 	void              onGameServerRegister(NetPacket &packet);
 	void              onGameServerUpdateInfo(NetPacket &packet);
 	void              onGameServerGetOnlineProfile(NetPacket &packet);
-	void			  onGameServerUpdateOnlineProfile(NetPacket &packet);
+	void              onGameServerUpdateOnlineProfile(NetPacket &packet);
 private:
-	bool			  CheckInTrustedList(const QString &name, const QString &ip, int port);
+	bool              CheckInTrustedList(const QString &name, const QString &ip, int port);
 private:
 	QSslSocket*       m_socket;
 	SRemoteClient*	  m_client;

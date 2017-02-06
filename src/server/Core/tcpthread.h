@@ -24,21 +24,21 @@ public:
     explicit TcpThread(QObject *parent = nullptr);
     ~TcpThread();
 public:
-    void           run();
-	int            Count();
-	void           SendGlobalMessage(NetPacket &packet);
+	void                  run();
+	int                   Count();
+	void                  SendGlobalMessage(NetPacket &packet);
 private:
-	TcpConnection* CreateConnection();
-	void           AddSignals(TcpConnection* connection);
+	TcpConnection*        CreateConnection();
+	void                  AddSignals(TcpConnection* connection);
 public slots:
-	void		   connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
-	void           closing();
-	void           opened();
-	void           closed();
+	void                  connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
+	void                  closing();
+	void                  opened();
+	void                  closed();
 signals:
-	void           started();
-	void           finished();
-	void           quit();
+	void                  started();
+	void                  finished();
+	void                  quit();
 private:
 	QEventLoop*           m_loop;
 	QReadWriteLock        m_lock;
