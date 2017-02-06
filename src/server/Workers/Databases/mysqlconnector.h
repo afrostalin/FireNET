@@ -11,18 +11,18 @@ class MySqlConnector : public QObject
 {
 	Q_OBJECT
 public:
-	explicit MySqlConnector(QObject *parent = 0);
+	explicit MySqlConnector(QObject *parent = nullptr);
 	~MySqlConnector();
 public:
-	void run();
-	void Disconnect();
-private:
-	bool Connect();
-public:
-	bool connectStatus;
+	void         run();
+	void         Disconnect();
 	QSqlDatabase GetDatabase();
+	bool         IsConnected() { return bConnectStatus; }
+private:
+	bool	     Connect();
 private:
 	QSqlDatabase m_db;
+	bool         bConnectStatus;
 };
 
 #endif // MYSQLCONNECTOR_H

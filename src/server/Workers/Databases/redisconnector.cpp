@@ -4,29 +4,13 @@
 #include <QThread>
 #include <QEventLoop>
 #include <QTimer>
+#include <cpp_redis/cpp_redis>
 
 #include "global.h"
 #include "redisconnector.h"
 #include "dbworker.h"
 
 #include "Tools/settings.h"
-
-#include <cpp_redis/cpp_redis>
-
-/*cpp_redis::reply::type type = reply.get_type();
-
-if (type == cpp_redis::reply::type::array)
-qDebug() << "ARRAY";
-else if (type == cpp_redis::reply::type::bulk_string)
-qDebug() << "BULK STRING";
-else if (type == cpp_redis::reply::type::error)
-qDebug() << "ERROR : " << reply.as_string().c_str();
-else if (type == cpp_redis::reply::type::integer)
-qDebug() << "INTEGER" << reply.as_integer();
-else if (type == cpp_redis::reply::type::null)
-qDebug() << "NULL";
-else if (type == cpp_redis::reply::type::simple_string)
-qDebug() << "SIMPLE STRING" << reply.as_string().c_str();*/
 
 RedisConnector::RedisConnector(QObject *parent) : QObject(parent),
 	pClient(nullptr)
@@ -39,6 +23,8 @@ RedisConnector::~RedisConnector()
 
 	if (IsConnected())
 		Disconnect();
+
+	SAFE_DELETE(pClient);
 }
 
 void RedisConnector::run()

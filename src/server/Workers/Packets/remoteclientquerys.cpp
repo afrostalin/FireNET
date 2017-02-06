@@ -441,7 +441,7 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(NetPacket &packet)
 	}
 }
 
-bool RemoteClientQuerys::CheckInTrustedList(QString name, QString ip, int port)
+bool RemoteClientQuerys::CheckInTrustedList(const QString &name, const QString &ip, int port)
 {
 	QVector<STrustedServer> m_server = gEnv->pScripts->GetTrustedList();
 

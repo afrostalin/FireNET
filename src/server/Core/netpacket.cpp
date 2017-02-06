@@ -53,7 +53,7 @@ NetPacket::~NetPacket()
 	m_MagicFooter.clear();
 }
 
-void NetPacket::WriteString(std::string value)
+void NetPacket::WriteString(const std::string &value)
 {
 	m_data = m_data + value + m_separator;
 }
@@ -81,7 +81,7 @@ void NetPacket::WriteDouble(double value)
 	m_data = m_data + std::to_string(value) + m_separator;
 }
 
-const char* NetPacket::ReadString()
+const char * NetPacket::ReadString()
 {
 	if (bInitFromData && bIsGoodPacket)
 	{

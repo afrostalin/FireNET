@@ -115,7 +115,7 @@ void HttpConnector::replyFinished(QNetworkReply* reply)
 	SAFE_RELEASE(reply);
 }
 
-bool HttpConnector::Login(QString login, QString password)
+bool HttpConnector::Login(const QString &login, const QString &password)
 {
 	QUrl loginUrl = gEnv->pSettings->GetVariable("http_login_page").toString();
 	QByteArray data;
@@ -139,7 +139,7 @@ bool HttpConnector::Login(QString login, QString password)
 	return false;
 }
 
-bool HttpConnector::Register(QString login, QString password)
+bool HttpConnector::Register(const QString &login, const QString &password)
 {
 	QUrl registerUrl = gEnv->pSettings->GetVariable("http_register_page").toString();
 	QByteArray data;

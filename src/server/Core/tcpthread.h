@@ -21,29 +21,27 @@ class TcpThread : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    explicit TcpThread(QObject *parent = 0);
+    explicit TcpThread(QObject *parent = nullptr);
     ~TcpThread();
-
-    void run();
-	int Count();
 public:
-	void SendGlobalMessage(NetPacket &packet);
-signals:
-	void started();
-	void finished();
-	void quit();
-
-public slots:
-	void connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
-	void closing();
-	void opened();
-	void closed();
-protected:
+    void           run();
+	int            Count();
+	void           SendGlobalMessage(NetPacket &packet);
+private:
 	TcpConnection* CreateConnection();
-	void AddSignals(TcpConnection* connection);
-
-	QEventLoop *m_loop;
-	QReadWriteLock m_lock;
+	void           AddSignals(TcpConnection* connection);
+public slots:
+	void		   connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
+	void           closing();
+	void           opened();
+	void           closed();
+signals:
+	void           started();
+	void           finished();
+	void           quit();
+private:
+	QEventLoop*           m_loop;
+	QReadWriteLock        m_lock;
 	QList<TcpConnection*> m_connections;
 };
 

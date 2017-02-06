@@ -18,47 +18,41 @@ class RemoteServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit RemoteServer(QObject *parent = 0);
+    explicit RemoteServer(QObject *parent = nullptr);
 	~RemoteServer();
 public:
-	void Clear();
-public slots:
-	void Update();
-	void CloseConnection();
-signals:
-	void close();
-public:
-	void run();
+	void                     Clear();
+	void                     run();
+	void                     sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
+	void                     AddNewClient(SRemoteClient &client);
+	void                     RemoveClient(SRemoteClient &client);
+	void                     UpdateClient(SRemoteClient* client);
+	bool                     CheckGameServerExists(const QString &name, const QString &ip, int port);
+	void                     SetMaxClientCount(int count) { m_MaxClinetCount = count; }
+	int                      GetClientCount();
+	int                      GetMaxClientCount() { return m_MaxClinetCount; }
+	bool                     IsHaveAdmin() { return bHaveAdmin; }
+	void                     SetAdmin(bool bAmin) { bHaveAdmin = bAmin; }
 
-	void sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
+	QStringList              GetServerList();
+	SGameServer*             GetGameServer(const QString &name, const QString &map, const QString &gamerules);
 	
-	QStringList GetServerList();
-	SGameServer* GetGameServer(QString name, QString map, QString gamerules);
-
-	void AddNewClient(SRemoteClient client);
-	void RemoveClient(SRemoteClient client);
-	void UpdateClient(SRemoteClient* client);
-
-	bool CheckGameServerExists(QString name, QString ip, int port);
-
-	void SetMaxClientCount(int count) { m_MaxClinetCount = count; }
-
-	int GetClientCount();
-	int GetMaxClientCount() { return m_MaxClinetCount; }
-
-	bool IsHaveAdmin() { return bHaveAdmin; }
-	void SetAdmin(bool bAmin) { bHaveAdmin = bAmin; }
 private:
-	bool CreateServer();
-    virtual void incomingConnection(qintptr socketDescriptor);
+	bool                     CreateServer();
+    virtual void             incomingConnection(qintptr socketDescriptor);
+public slots:
+	void                     Update();
+	void                     CloseConnection();
+signals:
+	void                     close();
 private:
-	QTcpServer* m_Server;
-	QVector<SRemoteClient> m_Clients;
+	QTcpServer*              m_Server;
+	QVector<SRemoteClient>   m_Clients;
 	QList<RemoteConnection*> m_connections;
-	QMutex m_Mutex;
+	QMutex                   m_Mutex;
 
-	int m_MaxClinetCount;
-	bool bHaveAdmin;
+	int                      m_MaxClinetCount;
+	bool                     bHaveAdmin;
 };
 
 #endif // REMOTESERVER_H

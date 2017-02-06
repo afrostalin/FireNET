@@ -20,56 +20,54 @@ class TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer(QObject *parent = 0);
+    explicit TcpServer(QObject *parent = nullptr);
 	~TcpServer();
 public:
-    void SetMaxThreads(int maximum);
-	void SetMaxConnections(int value);
-	void SetConnectionTimeout(int value);
-	bool Listen(const QHostAddress &address, quint16 port);
-	void Clear();
+    void              SetMaxThreads(int maximum);
+	void              SetMaxConnections(int value);
+	void              SetConnectionTimeout(int value);
+	bool              Listen(const QHostAddress &address, quint16 port);
+	void              Clear();
 public:
-	void sendMessageToClient(QSslSocket* socket, NetPacket &packet);
-	void sendGlobalMessage(NetPacket &packet);
+	void              sendMessageToClient(QSslSocket* socket, NetPacket &packet);
+	void              sendGlobalMessage(NetPacket &packet);
 
-	void AddNewClient(SClient client);
-	void RemoveClient(SClient client);
-	void UpdateClient(SClient* client);
-	bool UpdateProfile(SProfile* profile);
+	void              AddNewClient(SClient &client);
+	void              RemoveClient(SClient &client);
+	void              UpdateClient(SClient* client);
+	bool              UpdateProfile(SProfile* profile);
 
-	QStringList GetPlayersList();
-	QSslSocket* GetSocketByUid(int uid);
-	SProfile* GetProfileByUid(int uid);
+	QStringList       GetPlayersList();
+	QSslSocket*       GetSocketByUid(int uid);
+	SProfile*         GetProfileByUid(int uid);
 
-	int GetClientCount();
-	int GetMaxClientCount() { return m_maxConnections; }
+	int               GetClientCount();
+	int               GetMaxClientCount() { return m_maxConnections; }
 
-	bool IsClosed() { return bClosed; }
+	bool              IsClosed() { return bClosed; }
+private:
+	virtual void      incomingConnection(qintptr socketDescriptor);
+	TcpThread*        CreateRunnable();
+	void              StartRunnable(TcpThread *runnable);
+	void              Reject(qintptr handle);
+	void              Accept(qintptr handle, TcpThread *runnable);
+	void              Start();
+private:
+	void              CalculateStatistic();
 public slots:
-	void started();
-	void finished();
-	void stop();
-	void Update();
-
-	// Calculate server statisctic
-	void MessageReceived();
-	void MessageSended();
+	void              started();
+	void              finished();
+	void              stop();
+	void              Update();
+	void              MessageReceived();
+	void              MessageSended();
 signals:
-	void connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
-	void closing();
+	void              connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
+	void			  closing();
 private:
-	virtual void incomingConnection(qintptr socketDescriptor);
-	virtual TcpThread* CreateRunnable();
-	virtual void StartRunnable(TcpThread *runnable);
-	virtual void Reject(qintptr handle);
-	virtual void Accept(qintptr handle, TcpThread *runnable);
-	virtual void Start();
-private:
-	void CalculateStatistic();
-private:
-	int m_maxThreads;
-	int m_maxConnections;
-	int m_connectionTimeout;
+	int               m_maxThreads;
+	int               m_maxConnections;
+	int               m_connectionTimeout;
 
 	QVector<SClient>  m_Clients;
 	QList<TcpThread*> m_threads;
@@ -80,6 +78,6 @@ private:
 	int               m_InputPacketsCount;
 	int               m_OutputPacketsCount;
 
-	bool bClosed;
+	bool			  bClosed;
 };
 #endif // TCPSERVER_H

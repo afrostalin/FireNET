@@ -63,8 +63,7 @@ void RemoteConnection::accept(qint64 socketDescriptor)
 	connect(m_socket, &QSslSocket::disconnected, this, &RemoteConnection::disconnected);
 	connect(m_socket, &QSslSocket::readyRead, this, &RemoteConnection::readyRead);
 	connect(m_socket, &QSslSocket::bytesWritten, this, &RemoteConnection::bytesWritten);
-	connect(m_socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
-	connect(m_socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+	connect(m_socket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), this, &RemoteConnection::socketError);
 	
 	if (!m_socket->setSocketDescriptor(socketDescriptor))
 	{
@@ -232,14 +231,6 @@ void RemoteConnection::bytesWritten(qint64 bytes)
 	bLastMsgSended = true;
 
 	qDebug() << "Message to remote client" << m_socket << "sended! Size =" << bytes;
-}
-
-void RemoteConnection::socketSslErrors(const QList<QSslError> list)
-{
-	foreach(QSslError item, list)
-	{
-		qCritical() << "Client" << m_socket << "return socket error" << item.errorString();
-	}
 }
 
 void RemoteConnection::socketError(QAbstractSocket::SocketError error)

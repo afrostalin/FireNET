@@ -69,7 +69,7 @@ void DBWorker::Init()
 	}
 }
 
-bool DBWorker::UserExists(QString login)
+bool DBWorker::UserExists(const QString &login)
 {
 	bool result = false;
 
@@ -91,7 +91,7 @@ bool DBWorker::UserExists(QString login)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM users WHERE login=:login");
@@ -149,7 +149,7 @@ bool DBWorker::ProfileExists(int uid)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE uid=:uid");
@@ -184,7 +184,7 @@ bool DBWorker::ProfileExists(int uid)
 	return result;
 }
 
-bool DBWorker::NicknameExists(QString nickname)
+bool DBWorker::NicknameExists(const QString &nickname)
 {
 	bool result = false;
 
@@ -217,7 +217,7 @@ bool DBWorker::NicknameExists(QString nickname)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE nickname=:nickname");
@@ -308,7 +308,7 @@ int DBWorker::GetFreeUID()
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM users WHERE uid=(SELECT MAX(uid) FROM users)");
@@ -346,7 +346,7 @@ int DBWorker::GetFreeUID()
 	return uid;
 }
 
-int DBWorker::GetUIDbyNick(QString nickname)
+int DBWorker::GetUIDbyNick(const QString &nickname)
 {
 	int uid = -1;
 
@@ -381,7 +381,7 @@ int DBWorker::GetUIDbyNick(QString nickname)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE nickname=:nickname");
@@ -417,7 +417,7 @@ int DBWorker::GetUIDbyNick(QString nickname)
 	return uid;
 }
 
-SUser* DBWorker::GetUserData(QString login)
+SUser* DBWorker::GetUserData(const QString &login)
 {
 	SUser *dbUser = new SUser;
 
@@ -488,7 +488,7 @@ SUser* DBWorker::GetUserData(QString login)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM users WHERE login=:login");
@@ -617,7 +617,7 @@ SProfile* DBWorker::GetUserProfile(int uid)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("SELECT * FROM profiles WHERE uid=:uid");
@@ -662,7 +662,7 @@ SProfile* DBWorker::GetUserProfile(int uid)
 	return nullptr;
 }
 
-bool DBWorker::CreateUser(int uid, QString login, QString password)
+bool DBWorker::CreateUser(int uid, const QString &login, const QString &password)
 {
 	SettingsManager* pSettings = gEnv->pSettings;
 	bool result = false;
@@ -708,7 +708,7 @@ bool DBWorker::CreateUser(int uid, QString login, QString password)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("INSERT INTO users (uid, login, password, ban) VALUES (:uid, :login, :password, :ban)");
@@ -819,7 +819,7 @@ bool DBWorker::CreateProfile(SProfile *profile)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("INSERT INTO profiles (uid, nickname, fileModel, lvl, xp, money, items, friends) "
@@ -936,7 +936,7 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 	// MySql
 	if (pMySql)
 	{
-		if (pMySql->connectStatus)
+		if (pMySql->IsConnected())
 		{
 			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
 			query->prepare("UPDATE profiles SET nickname=:nickname, fileModel=:fileModel, lvl=:lvl, xp=:xp, money=:money, items=:items, friends=:friends WHERE uid=:uid");

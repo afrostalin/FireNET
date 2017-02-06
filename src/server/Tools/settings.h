@@ -22,26 +22,24 @@ class SettingsManager : public QObject
 {
 	Q_OBJECT
 public:
-    explicit SettingsManager(QObject *parent = 0);
+    explicit SettingsManager(QObject *parent = nullptr);
 	~SettingsManager();
 public:
-	void Clear();
+	void               Clear();
+	QVariant           GetVariable(const QString &key);	
+	QString            GetDescription(const QString &key);
+	bool			   FindVariabelMatches(const QString &key);
+	bool			   CheckVariableExists(const QString &key);
+	QStringList        GetVariablesList();
 public:
-	QVariant GetVariable(const QString &key);	
-	QString GetDescription(const QString &key);
-	bool FindVariabelMatches(const QString &key);
-	bool CheckVariableExists(const QString &key);
-
-	QStringList GetVariablesList();
+	void               SetVariable(const QString &key, const QVariant &value);
+	void			   BlockOnlineUpdate() { bBlockOnlineUpdate = true; }
 public:
-	void SetVariable(const QString &key, const QVariant &value);
-	void BlockOnlineUpdate() { bBlockOnlineUpdate = true; }
-public:
-	void RegisterVariable(const QString &key, const QVariant &value, const QString &description, bool bCanChangeOnline, void (*pCallback)(QVariant) = nullptr);
+	void			   RegisterVariable(const QString &key, const QVariant &value, const QString &description, bool bCanChangeOnline, void (*pCallback)(QVariant) = nullptr);
 private:
 	QVector<SVariable> m_Variables;
-	QMutex m_Mutex;
-	bool bBlockOnlineUpdate;
+	QMutex			   m_Mutex;
+	bool               bBlockOnlineUpdate;
 };
 
 #endif // SETTINGS_H

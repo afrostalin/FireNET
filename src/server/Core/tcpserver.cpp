@@ -254,7 +254,7 @@ void TcpServer::started()
 	qDebug() << runnable << "has started";
 }
 
-void TcpServer::AddNewClient(SClient client)
+void TcpServer::AddNewClient(SClient &client)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -277,7 +277,7 @@ void TcpServer::AddNewClient(SClient client)
 	m_Clients.push_back(client);
 }
 
-void TcpServer::RemoveClient(SClient client)
+void TcpServer::RemoveClient(SClient &client)
 {
 	QMutexLocker locker(&m_Mutex);
 

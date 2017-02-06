@@ -18,24 +18,25 @@ class RemoteClientQuerys : public QObject
 public:
     explicit RemoteClientQuerys(QObject *parent = 0);
 	~RemoteClientQuerys();
-	void SetSocket(QSslSocket* socket) { this->m_socket = socket; }
-	void SetClient(SRemoteClient* client);
-	void SetConnection(RemoteConnection* connection) { this->m_connection = connection; }
+public:
+	void              SetSocket(QSslSocket* socket) { this->m_socket = socket; }
+	void              SetClient(SRemoteClient* client);
+	void              SetConnection(RemoteConnection* connection) { this->m_connection = connection; }
 public:
 	// Administration functional
-	void onAdminLogining(NetPacket &packet);
-	void onConsoleCommandRecived(NetPacket &packet);
-	// Game server functionality
-	void onGameServerRegister(NetPacket &packet);
-	void onGameServerUpdateInfo(NetPacket &packet);
+	void              onAdminLogining(NetPacket &packet);
+	void              onConsoleCommandRecived(NetPacket &packet);
 
-	void onGameServerGetOnlineProfile(NetPacket &packet);
-	void onGameServerUpdateOnlineProfile(NetPacket &packet);
+	// Game server functionality
+	void              onGameServerRegister(NetPacket &packet);
+	void              onGameServerUpdateInfo(NetPacket &packet);
+	void              onGameServerGetOnlineProfile(NetPacket &packet);
+	void			  onGameServerUpdateOnlineProfile(NetPacket &packet);
 private:
-	bool CheckInTrustedList(QString name, QString ip, int port);
+	bool			  CheckInTrustedList(const QString &name, const QString &ip, int port);
 private:
-	QSslSocket* m_socket;
-	SRemoteClient* m_client;
+	QSslSocket*       m_socket;
+	SRemoteClient*	  m_client;
 	RemoteConnection* m_connection;
 };
 

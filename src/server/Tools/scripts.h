@@ -11,17 +11,17 @@ class Scripts : public QObject
 {
     Q_OBJECT
 public:
-    explicit Scripts(QObject *parent = 0);
+    explicit Scripts(QObject *parent = nullptr);
 	~Scripts();
-	void Clear();
 public:
-	void LoadShopScript();
-	void LoadTrustedServerList();
+	void					Clear();
+	void					LoadShopScript();
+	void					LoadTrustedServerList();
 public:
-	QVector<SShopItem> GetShop();
+	QVector<SShopItem>      GetShop();
 	QVector<STrustedServer> GetTrustedList();
 private:
-	QVector<SShopItem> m_shop;
+	QVector<SShopItem>      m_shop;
 	QVector<STrustedServer> m_trustedServers;
 };
 

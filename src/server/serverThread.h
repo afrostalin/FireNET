@@ -13,17 +13,17 @@ class CServerThread : public QObject
 public:
 	explicit CServerThread(QObject *parent = nullptr);
 	~CServerThread();
-public slots:
-	void start();
-	void stop();
-signals:
-	void EnableStressMode();
 private:
-	bool Init();
-	void StartLogging();
-	void RegisterVariables();
-	void ReadServerCFG();
-	void EnableStressTest();
+	bool		Init();
+	void		StartLogging();
+	void		RegisterVariables();
+	void		ReadServerCFG();
+	void		EnableStressTest();
+public slots:
+	void		start();
+	void		stop();
+signals:
+	void		EnableStressMode();
 private:
 	QEventLoop* m_loop;
 };

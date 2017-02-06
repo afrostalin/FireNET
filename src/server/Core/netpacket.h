@@ -107,7 +107,7 @@ public:
 	NetPacket::NetPacket(const char* data);
 	~NetPacket();
 public:
-	void                       WriteString(std::string value);
+	void                       WriteString(const std::string &value);
 	void                       WriteInt(int value);
 	void                       WriteBool(bool value);
 	void                       WriteFloat(float value);

@@ -343,7 +343,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 	{
 		m_Client->profile->nickname = nickname;
 		m_Client->profile->fileModel = fileModel;
-		m_Client->profile->money = startMoney;
+		m_Client->profile->money = 10000; // TODO
 		m_Client->profile->xp = 0;
 		m_Client->profile->lvl = 0;
 		m_Client->profile->items = "";

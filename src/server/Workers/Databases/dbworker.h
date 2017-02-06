@@ -19,39 +19,25 @@ public:
     explicit DBWorker(QObject *parent = 0);
 	~DBWorker();
 public:
-	void Init();
-	void Clear();
+	void			Init();
+	void			Clear();
 public:
-	// Check if login is there in database
-	bool UserExists(QString login);
-	// Check if profile is there in database
-	bool ProfileExists(int uid);
-	// Check if nickname is there in database
-	bool NicknameExists(QString nickname);
-
+	bool			UserExists(const QString &login);
+	bool			ProfileExists(int uid);
+	bool			NicknameExists(const QString &nickname);
 public:
-	// Get unique id for new user
-	int GetFreeUID();
-	// Get user uid by nickname
-	int GetUIDbyNick(QString nickname);
-	// Get user data
-	SUser* GetUserData(QString login);
-	// Get user profile
-	SProfile* GetUserProfile(int uid);
-
+	int				GetFreeUID();
+	int				GetUIDbyNick(const QString &nickname);
+	SUser*			GetUserData(const QString &login);
+	SProfile*		GetUserProfile(int uid);
 public:
-	// Create new user
-	bool CreateUser(int uid, QString login, QString password);
-	// Create new profile
-	bool CreateProfile(SProfile *profile);
-
-public:
-	// Update profile
-	bool UpdateProfile(SProfile *profile);
+	bool			CreateUser(int uid, const QString &login, const QString &password);
+	bool			CreateProfile(SProfile *profile);
+	bool			UpdateProfile(SProfile *profile);
 public:
 	RedisConnector* pRedis;
 	MySqlConnector* pMySql;
-	HttpConnector* pHTTP;
+	HttpConnector*	pHTTP;
 };
 
 #endif // DBWORKER_H

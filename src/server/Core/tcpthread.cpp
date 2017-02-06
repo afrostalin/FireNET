@@ -18,6 +18,7 @@ TcpThread::~TcpThread()
 {
 	qDebug() << "~TcpThread";
 	SAFE_RELEASE(m_loop);
+	m_connections.clear();
 }
 
 void TcpThread::run()
@@ -27,7 +28,7 @@ void TcpThread::run()
 	connect(this, &TcpThread::quit, m_loop, &QEventLoop::quit);
 	m_loop->exec();
 
-	qDebug() << this << "finished on " << QThread::currentThread();
+	qDebug() << this << "finished on" << QThread::currentThread();
 	emit finished();
 }
 

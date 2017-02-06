@@ -17,7 +17,6 @@ ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent),
 	bRegistered(false),
 	bProfileCreated(false)
 {
-    startMoney = 10000;
 }
 
 ClientQuerys::~ClientQuerys()
@@ -66,7 +65,7 @@ bool ClientQuerys::UpdateProfile(SProfile* profile)
     return false;
 }
 
-SShopItem ClientQuerys::GetShopItemByName(QString name)
+SShopItem ClientQuerys::GetShopItemByName(const QString &name)
 {
     SShopItem item;
 

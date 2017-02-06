@@ -84,7 +84,7 @@ void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, NetPacket &pak
 	}
 }
 
-void RemoteServer::AddNewClient(SRemoteClient client)
+void RemoteServer::AddNewClient(SRemoteClient &client)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -107,7 +107,7 @@ void RemoteServer::AddNewClient(SRemoteClient client)
 	m_Clients.push_back(client);
 }
 
-void RemoteServer::RemoveClient(SRemoteClient client)
+void RemoteServer::RemoveClient(SRemoteClient &client)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -163,7 +163,7 @@ void RemoteServer::UpdateClient(SRemoteClient* client)
 	qWarning() << "Can't update client. Client" << client->socket << "not found";
 }
 
-bool RemoteServer::CheckGameServerExists(QString name, QString ip, int port)
+bool RemoteServer::CheckGameServerExists(const QString &name, const QString &ip, int port)
 {
 	QMutexLocker locker(&m_Mutex);
 
@@ -204,7 +204,7 @@ QStringList RemoteServer::GetServerList()
 	return serverList;
 }
 
-SGameServer* RemoteServer::GetGameServer(QString name, QString map, QString gamerules)
+SGameServer* RemoteServer::GetGameServer(const QString &name, const QString &map, const QString &gamerules)
 {
 	SGameServer gameServer;
 	bool byMap = false;

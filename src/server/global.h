@@ -18,7 +18,7 @@ class MainWindow;
 // Safe deleting
 #define SAFE_DELETE(p) {if(p){delete p; p = nullptr;}}
 #define SAFE_RELEASE(p) {if(p){p->deleteLater(); p = nullptr;}}
-#define SAFE_CLEAR(p) {if(p) {p->Clear();}}
+#define SAFE_CLEAR(p) {if(p){p->Clear();}}
 
 // Need for authorization system
 struct SUser
@@ -128,7 +128,6 @@ struct SGlobalEnvironment
 		m_ErrorsCount = 0;
 
 		m_MaxClientCount = 0;
-		//
 
 		m_serverFullName = "FireNET";
 

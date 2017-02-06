@@ -10,7 +10,7 @@
 #include "Tools/settings.h"
 
 MySqlConnector::MySqlConnector(QObject *parent) : QObject(parent),
-	connectStatus(false)
+bConnectStatus(false)
 {
 }
 
@@ -26,7 +26,7 @@ void MySqlConnector::run()
 	if (Connect())
 	{
 		qInfo() << "MySQL connected. Work on" << QThread::currentThread();
-		connectStatus = true;
+		bConnectStatus = true;
 		gEnv->m_ServerStatus.m_DBStatus = "online";
 	}
 	else
@@ -41,7 +41,7 @@ void MySqlConnector::Disconnect()
 {
 	gEnv->m_ServerStatus.m_DBStatus = "offline";
 
-	if (connectStatus)
+	if (bConnectStatus)
 	{
 		qInfo() << "Disconnecting...";
 		m_db.close();

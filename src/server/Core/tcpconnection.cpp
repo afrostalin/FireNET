@@ -286,14 +286,6 @@ void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
     qDebug() << "Client" << m_Socket << "changed socket state to " << socketState;
 }
 
-void TcpConnection::socketSslErrors(const QList<QSslError> list)
-{
-	foreach(QSslError item, list)
-	{
-		qCritical() << "Client" << m_Socket << "return socket error" << item.errorString();
-	}
-}
-
 void TcpConnection::socketError(QAbstractSocket::SocketError error)
 {
 	if (error == QAbstractSocket::SocketError::RemoteHostClosedError)
@@ -315,8 +307,7 @@ QSslSocket * TcpConnection::CreateSocket()
 	connect(socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead, Qt::QueuedConnection);
 	connect(socket, &QSslSocket::bytesWritten, this, &TcpConnection::bytesWritten, Qt::QueuedConnection);
 	connect(socket, &QSslSocket::stateChanged, this, &TcpConnection::stateChanged, Qt::QueuedConnection);
-	connect(socket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(socketSslErrors(QList<QSslError>)));
-	connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &TcpConnection::socketError, Qt::QueuedConnection);
+	connect(socket, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), this, &TcpConnection::socketError, Qt::QueuedConnection);
 
 	return socket;
 }
