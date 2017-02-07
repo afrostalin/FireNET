@@ -1,15 +1,34 @@
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
 #include "global.h"
 #include "client.h"
 
 #include <QTcpServer>
 
-RemoteClient::RemoteClient(QObject *parent) : QObject(parent)
+RemoteClient::RemoteClient(QObject *parent) : QObject(parent),
+	m_socket(nullptr),
+	bConnected(false),
+	bLastMsgSended(true)
 {
-    m_socket = nullptr;
-    bConnected = false;
+	connect(&m_Timer, &QTimer::timeout, this, &RemoteClient::Update);
+
+	m_Timer.start(33);
 }
 
-void RemoteClient::ConnectToServer(QString ip, int port)
+void RemoteClient::Update()
+{
+	if (bConnected && bLastMsgSended && m_packets.size() > 0)
+	{
+		NetPacket packet = m_packets.front();
+		m_packets.pop();
+		bLastMsgSended = false;
+
+		m_socket->write(packet.toString());
+	}
+}
+
+void RemoteClient::ConnectToServer(const QString &ip, int port)
 {
     m_socket = new QSslSocket(this);
     connect(m_socket, &QSslSocket::encrypted, this, &RemoteClient::onConnectedToServer);
@@ -28,13 +47,7 @@ void RemoteClient::ConnectToServer(QString ip, int port)
 
 void RemoteClient::SendMessage(NetPacket &packet)
 {
-    if(m_socket)
-    {
-        m_socket->write(packet.toString());
-        m_socket->waitForBytesWritten(10);
-    }
-    else
-        qDebug() << "You cannot send command to FireNET, you need connect before.";
+	m_packets.push(packet);
 }
 
 void RemoteClient::onConnectedToServer()
@@ -156,6 +169,7 @@ void RemoteClient::onReadyRead()
 void RemoteClient::onBytesWritten(qint64 bytes)
 {
     //qDebug() << "Message to FireNET sended. Size =" << bytes;
+	bLastMsgSended = true;
 }
 
 void RemoteClient::onDisconnected()
@@ -163,3 +177,5 @@ void RemoteClient::onDisconnected()
     qDebug() << "Connection with FireNET lost!";
     bConnected = false;
 }
+
+

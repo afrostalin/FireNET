@@ -1,5 +1,7 @@
-#ifndef GLOBAL_H
-#define GLOBAL_H
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
+#pragma once
 
 class RemoteClient;
 class InputListener;
@@ -14,12 +16,12 @@ struct SGlobalEnvironment
         magicKey = 2016207;
         bUsePacketDebug = false;
     }
-    RemoteClient* pClient;
+
+    RemoteClient*  pClient;
     InputListener* pListener;
-    int magicKey;
-    bool bUsePacketDebug;
+
+    int            magicKey;
+    bool           bUsePacketDebug;
 };
 
 extern SGlobalEnvironment* gEnv;
-
-#endif // GLOBAL_H

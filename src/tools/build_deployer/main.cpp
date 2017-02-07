@@ -1,3 +1,6 @@
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
@@ -7,7 +10,6 @@
 
 QString m_root = "../";
 QString m_bin_folder = m_root + "bin";
-
 QString m_3rd_folder = m_root + "3rd/";
 QString m_qt_folder = m_3rd_folder + "qt/";
 QString m_qt_plugins = m_qt_folder + "plugins/";
@@ -15,8 +17,10 @@ QString m_qt_plugins = m_qt_folder + "plugins/";
 QStringList m_ServerFileList = {
 	"server_files/scripts/server_list.xml",
 	"server_files/scripts/shop.xml",
-	"server_files/settings/Debug/server.cfg",
-	"server_files/settings/Release/server.cfg",
+	"server_files/settings/Debug/FireNET.cfg",
+	"server_files/settings/Debug/AutoTest.cfg",
+	"server_files/settings/Release/FireNET.cfg",
+	"server_files/settings/Release/AutoTest.cfg",
 	"server_files/key.key",
 	"server_files/key.pem"
 };
@@ -112,8 +116,10 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/scripts/server_list.xml";
 			else if (fileName.contains("shop.xml"))
 				path = m_bin_folder + "/scripts/shop.xml";
-			else if (fileName.contains("Debug/server.cfg"))
-				path = m_bin_folder + "/server.cfg";
+			else if (fileName.contains("Debug/FireNET.cfg"))
+				path = m_bin_folder + "/FireNET.cfg";
+			else if (fileName.contains("Debug/AutoTest.cfg"))
+				path = m_bin_folder + "/AutoTest.cfg";
 			else if (fileName.contains("key.key"))
 				path = m_bin_folder + "/key.key";
 			else if (fileName.contains("key.pem"))
@@ -225,8 +231,10 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/scripts/server_list.xml";
 			else if (fileName.contains("shop.xml"))
 				path = m_bin_folder + "/scripts/shop.xml";
-			else if (fileName.contains("Release/server.cfg"))
-				path = m_bin_folder + "/server.cfg";
+			else if (fileName.contains("Release/FireNET.cfg"))
+				path = m_bin_folder + "/FireNET.cfg";
+			else if (fileName.contains("Release/AutoTest.cfg"))
+				path = m_bin_folder + "/AutoTest.cfg";
 			else if (fileName.contains("key.key"))
 				path = m_bin_folder + "/key.key";
 			else if (fileName.contains("key.pem"))

@@ -1,3 +1,6 @@
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
@@ -7,9 +10,6 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
-    qInfo() << "Build number updater v.1.1";
-    qInfo() << "Copyright (c) 2016 Ilya Chernetsov. All rights reserved";
 
 	QString folderToFile = "../src/server/";
 	QString fileName = folderToFile + "main.cpp";

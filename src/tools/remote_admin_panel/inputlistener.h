@@ -1,5 +1,7 @@
-#ifndef INPUTLISTENER_H
-#define INPUTLISTENER_H
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
+#pragma once
 
 #include <QObject>
 
@@ -10,8 +12,4 @@ public:
     explicit InputListener(QObject *parent = 0);
 public slots:
     void Run();
-public:
-    void StartListen();
 };
-
-#endif // INPUTLISTENER_H

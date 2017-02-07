@@ -51,7 +51,7 @@ NetPacket::~NetPacket()
 	m_MagicFooter.clear();
 }
 
-void NetPacket::WriteString(std::string value)
+void NetPacket::WriteString(const std::string &value)
 {
 	m_data = m_data + value + m_separator;
 }

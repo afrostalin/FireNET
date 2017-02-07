@@ -1,9 +1,13 @@
-#ifndef REMOTEADMIN_H
-#define REMOTEADMIN_H
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
+#pragma once
 
 #include <QObject>
 #include <QDebug>
 #include <QSslSocket>
+#include <QTimer>
+#include <queue>
 
 #include "Core/netpacket.h"
 
@@ -13,17 +17,20 @@ class RemoteClient : public QObject
 public:
     explicit RemoteClient(QObject *parent = 0);
 public:
-    void ConnectToServer(QString ip, int port);
-    void SendMessage(NetPacket &packet);
+    void                  ConnectToServer(const QString &ip, int port);
+    void                  SendMessage(NetPacket &packet);
+	bool                  IsConnected() { return bConnected; }
 public slots:
-    void onConnectedToServer();
-    void onReadyRead();
-    void onBytesWritten(qint64 bytes);
-    void onDisconnected();
-public:
-    bool bConnected;
+    void                  onConnectedToServer();
+    void                  onReadyRead();
+    void                  onBytesWritten(qint64 bytes);
+    void                  onDisconnected();
+	void                  Update();
 private:
-    QSslSocket* m_socket;
-};
+    QSslSocket*           m_socket;
+	std::queue<NetPacket> m_packets;
+	QTimer                m_Timer;
 
-#endif // REMOTEADMIN_H
+	bool                  bLastMsgSended;
+	bool                  bConnected;
+};
