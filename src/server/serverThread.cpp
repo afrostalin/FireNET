@@ -52,18 +52,18 @@ void UpdateFileLogLevel(QVariant variable)
 	case 0:
 	{
 		logLevel = Logger::Info;
-		pLogFileAppender->setFormat(QLatin1String("%{time}{dd.MM.yy <HH:mm:ss.zzz>} [%{type:-7}] %{message}\n"));
+		pLogFileAppender->setFormat(QLatin1String("%{time}{<HH:mm:ss.zzz>} [%{type:-7}] %{message}\n"));
 		break;
 	}
 	case 1:
 	{
 		logLevel = Logger::Debug;
-		pLogFileAppender->setFormat(QLatin1String("%{time}{dd.MM.yy <HH:mm:ss.zzz>} [%{type:-7}] <%{function}> %{message}\n"));
+		pLogFileAppender->setFormat(QLatin1String("%{time}{<HH:mm:ss.zzz>} [%{type:-7}] <%{function}> %{message}\n"));
 	}
 	default:
 	{
 		logLevel = Logger::Debug;
-		pLogFileAppender->setFormat(QLatin1String("%{time}{dd.MM.yy <HH:mm:ss.zzz>} [%{type:-7}] <%{function}> %{message}\n"));
+		pLogFileAppender->setFormat(QLatin1String("%{time}{<HH:mm:ss.zzz>} [%{type:-7}] <%{function}> %{message}\n"));
 		break;
 	}
 	}
@@ -125,9 +125,9 @@ bool CServerThread::Init()
 		return false;
 	}
 
-	if (!QFile::exists("server.cfg"))
+	if (!QFile::exists("FireNET.cfg"))
 	{
-		qWarning() << "Not found server.cfg! Using default settings...";
+		qWarning() << "Not found FireNET.cfg! Using default settings...";
 	}
 
 	if (!QFile::exists("scripts/shop.xml"))
@@ -216,7 +216,7 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("net_max_packets_speed", 4, "Maximum packets per second count by client", true);
 	gEnv->pSettings->RegisterVariable("net_packet_debug", false, "Enable/Disable packet debugging", true);
 	// Utils
-	gEnv->pSettings->RegisterVariable("stress_mode", false, "Changes server settings to work with stress test", true);
+	gEnv->pSettings->RegisterVariable("stress_mode", false, "Changes server settings to work with stress test", false);
 	gEnv->pSettings->RegisterVariable("bUseGlobalChat", false, "Enable/Disable global chat", true);
 	// Gloval vars (This variables not need read from server.cfg)
 	gEnv->pSettings->RegisterVariable("bUseRedis", true, "Enable/Disable using Redis database", false);
@@ -226,7 +226,7 @@ void CServerThread::RegisterVariables()
 
 void CServerThread::ReadServerCFG()
 {
-	QSettings settings(QString("server.cfg"), QSettings::IniFormat);
+	QSettings settings(QString("FireNET.cfg"), QSettings::IniFormat);
 
 	QStringList serverCFG = settings.allKeys();
 

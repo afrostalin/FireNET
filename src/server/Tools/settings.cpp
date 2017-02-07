@@ -117,7 +117,7 @@ void SettingsManager::SetVariable(const QString &key, const QVariant &value)
 			}
 			else if (it->value != value)
 			{
-				qInfo() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
+				qWarning() << "Variable" << key << "changed value from" << it->value.toString() << "to" << value.toString();
 				it->value = value;
 				return;
 			}

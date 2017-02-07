@@ -24,8 +24,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>1000</width>
-    <height>600</height>
+    <width>950</width>
+    <height>530</height>
    </size>
   </property>
   <property name="mouseTracking">
@@ -46,14 +46,14 @@
   <widget class="QWidget" name="centralWidget">
    <property name="minimumSize">
     <size>
-     <width>1000</width>
-     <height>600</height>
+     <width>950</width>
+     <height>530</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>1000</width>
-     <height>600</height>
+     <width>950</width>
+     <height>530</height>
     </size>
    </property>
    <widget class="QLineEdit" name="Input">
