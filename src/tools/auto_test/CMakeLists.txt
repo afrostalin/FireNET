@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.6.0)
-project (AutoTest VERSION 2.0 LANGUAGES CXX)
+project (AutoTest VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

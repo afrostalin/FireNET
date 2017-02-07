@@ -30,10 +30,7 @@
 *.Debug
 *.Release
 
-/bin/WIN64/Makefile
-/bin/WIN64/ui_mainwindow.h
-
-/bin/WIN64/debug/*.lib
-/bin/WIN64/debug/*.pdb
-/bin/WIN64/release/*.lib
-/bin/WIN64/release/*.pdb
+# Opensll generated files
+/tools/openssl/bin/*.rnd
+/tools/openssl/bin/*.key
+/tools/openssl/bin/*.pem

@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.6.0)
-project (FireNET VERSION 2.0 LANGUAGES CXX)
+project (FireNET VERSION 2.1 LANGUAGES CXX)
 
 # QT automoc + autouic
 set(CMAKE_AUTOMOC ON)
