@@ -132,11 +132,7 @@ int NetPacket::ReadInt()
 
 bool NetPacket::ReadBool()
 {
-	std::string m_value = ReadString();
-	bool result;
-
-	m_value == "t" ? result = true : result = false;
-	return result;
+	return ReadInt() == 1 ? true : false;
 }
 
 float NetPacket::ReadFloat()
