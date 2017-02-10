@@ -95,6 +95,7 @@ enum ENetPacketServerType
 {
 	net_server_global_chat_msg,
 	net_server_private_chat_msg,
+	net_server_clan_chat_msg,
 	net_server_message,
 	net_server_command,
 	net_server_register_game_server,

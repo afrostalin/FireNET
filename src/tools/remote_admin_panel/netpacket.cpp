@@ -66,10 +66,8 @@ void NetPacket::WriteInt(int value)
 
 void NetPacket::WriteBool(bool value)
 {
-	std::string m_value;
-	value ? m_value = "t" : m_value = "f";
-
-	m_data = m_data + m_value + m_separator;
+	int m_value = value ? 1 : 0;
+	m_data = m_data + std::to_string(m_value) + m_separator;
 }
 
 void NetPacket::WriteFloat(float value)
