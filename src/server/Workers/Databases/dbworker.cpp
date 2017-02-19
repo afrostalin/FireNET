@@ -5,7 +5,6 @@
 #include "dbworker.h"
 #include "redisconnector.h"
 #include "mysqlconnector.h"
-#include "httpconnector.h"
 
 #include "Workers/Packets/clientquerys.h"
 #include "Tools/settings.h"
@@ -15,8 +14,7 @@
 
 DBWorker::DBWorker(QObject *parent) : QObject(parent),
 	pRedis(nullptr),
-	pMySql(nullptr),
-	pHTTP(nullptr)
+	pMySql(nullptr)
 {
 }
 
@@ -25,7 +23,6 @@ DBWorker::~DBWorker()
 	qDebug() << "~DBWorker";
 	SAFE_RELEASE(pRedis);
 	SAFE_RELEASE(pMySql);
-	SAFE_RELEASE(pHTTP);
 }
 
 void DBWorker::Clear()
@@ -59,13 +56,6 @@ void DBWorker::Init()
 		gEnv->pSettings->SetVariable("redis_bg_saving", true);
 		pMySql = new MySqlConnector;
 		pMySql->run();
-	}
-
-	// Create HTTP connector
-	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
-	{
-		qWarning() << "Authorization mode set to HTTP, this can slows server";
-		pHTTP = new HttpConnector;
 	}
 }
 

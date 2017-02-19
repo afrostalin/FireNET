@@ -54,8 +54,8 @@ set (SourceGroup_Main
 # CODE - Core
 set (SourceGroup_Core
 	"src/server/core/global.cpp"
-	"src/server/core/netpacket.cpp"
-	"src/server/core/netpacket.h"	
+	"src/server/core/tcppacket.cpp"
+	"src/server/core/tcppacket.h"	
 )
 # CODE - Core/MasterServer
 set (SourceGroup_Core_MS
@@ -100,8 +100,6 @@ set (SourceGroup_Workers_Packets
 set (SourceGroup_Workers_DB
 	"src/server/workers/databases/dbworker.cpp"
 	"src/server/workers/databases/dbworker.h"
-	"src/server/workers/databases/httpconnector.cpp"
-	"src/server/workers/databases/httpconnector.h"
 	"src/server/workers/databases/mysqlconnector.cpp"
 	"src/server/workers/databases/mysqlconnector.h"
 	"src/server/workers/databases/redisconnector.cpp"
@@ -134,10 +132,12 @@ set (SOURCE
 if(WIN32)
 	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/Windows/Server")
 else()
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/Unix/Server")
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/Linux/Server")
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE})
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/includes/FireNetCommon)
 
 # Update build number
 if(WIN32)
@@ -162,9 +162,7 @@ else()
 	target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
 endif()
 
-set_target_properties (${PROJECT_NAME} PROPERTIES
-    FOLDER Server
-)
+set_target_properties (${PROJECT_NAME} PROPERTIES FOLDER Server)
 
 # Tools - Remote administration panel
 add_subdirectory("src/tools/remote_admin_panel" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/remote_admin")

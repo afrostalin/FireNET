@@ -8,7 +8,7 @@
 
 #include "global.h"
 
-class NetPacket;
+class CTcpPacket;
 class TcpConnection;
 
 class ClientQuerys : public QObject
@@ -22,25 +22,25 @@ public:
 	void           SetClient(SClient* client);
 	void           SetConnection(TcpConnection* connection) { this->m_Connection = connection; }
 	
-	void           onLogin(NetPacket &packet);
-	void           onRegister(NetPacket &packet);
+	void           onLogin(CTcpPacket &packet);
+	void           onRegister(CTcpPacket &packet);
 	
-	void           onCreateProfile(NetPacket &packet);
+	void           onCreateProfile(CTcpPacket &packet);
 	void           onGetProfile();
 	
 	void           onGetShopItems();
-	void           onBuyItem(NetPacket &packet);
-	void           onRemoveItem(NetPacket &packet);
+	void           onBuyItem(CTcpPacket &packet);
+	void           onRemoveItem(CTcpPacket &packet);
 	
-	void           onAddFriend(NetPacket &packet);
-	void           onRemoveFriend(NetPacket &packet);
+	void           onAddFriend(CTcpPacket &packet);
+	void           onRemoveFriend(CTcpPacket &packet);
 
-	void           onChatMessage(NetPacket &packet);
+	void           onChatMessage(CTcpPacket &packet);
 
-	void           onInvite(NetPacket &packet);
-	void           onDeclineInvite(NetPacket &packet);
+	void           onInvite(CTcpPacket &packet);
+	void           onDeclineInvite(CTcpPacket &packet);
 	
-	void           onGetGameServer(NetPacket &packet);
+	void           onGetGameServer(CTcpPacket &packet);
 private:
 	bool           UpdateProfile(SProfile* profile);
 	// Depricated. TODO - Remove this

@@ -26,13 +26,11 @@ set (SOURCE ${SourceGroup_Main})
 if(WIN32)
 	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Windows/Server")
 else()
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Unix/Server")
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Linux/Server")
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Network)
 
-set_target_properties (${PROJECT_NAME} PROPERTIES
-    FOLDER Tools
-)
+set_target_properties (${PROJECT_NAME} PROPERTIES FOLDER Tools)

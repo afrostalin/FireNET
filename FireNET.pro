@@ -23,12 +23,11 @@ SOURCES += src/server/workers/packets/clientquerys.cpp \
     src/server/workers/packets/helper.cpp \
     src/server/workers/databases/dbworker.cpp \
     src/server/workers/databases/mysqlconnector.cpp \
-    src/server/workers/databases/httpconnector.cpp \
     src/server/workers/packets/remoteclientquerys.cpp \
     src/server/core/remoteserver.cpp \
     src/server/core/remoteconnection.cpp \
     src/server/tools/settings.cpp \
-    src/server/core/netpacket.cpp \
+    src/server/core/tcppacket.cpp \
     src/server/tools/scripts.cpp \
     src/server/ui/mainwindow.cpp \
     src/server/ui/UILogger.cpp \
@@ -43,12 +42,11 @@ HEADERS += \
     src/server/global.h \
     src/server/workers/databases/dbworker.h \
     src/server/workers/databases/mysqlconnector.h \
-    src/server/workers/databases/httpconnector.h \
     src/server/workers/packets/remoteclientquerys.h \
     src/server/core/remoteserver.h \
     src/server/core/remoteconnection.h \
     src/server/tools/settings.h \
-    src/server/core/netpacket.h \
+    src/server/core/tcppacket.h \
     src/server/tools/scripts.h \
     src/server/ui/mainwindow.h \
     src/server/ui/UILogger.h \

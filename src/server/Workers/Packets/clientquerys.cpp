@@ -6,8 +6,9 @@
 
 #include "Core/remoteserver.h"
 #include "Core/tcpserver.h"
+
 #include "Workers/Databases/dbworker.h"
-#include "Workers/Databases/httpconnector.h"
+
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
 
@@ -18,15 +19,15 @@
 #endif
 
 // Error types : 0 - Login not found, 1 - Account blocked, 2 - Incorrect password, 3 - Double authorization
-void ClientQuerys::onLogin(NetPacket &packet)
+void ClientQuerys::onLogin(CTcpPacket &packet)
 {
 	if (bAuthorizated)
 	{
 		qDebug() << "Client alredy authorizated!";
 
 		// Auth failed (Double authorization)
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_auth_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::LoginFail);
 		m_packet.WriteInt(3);
 		m_Connection->SendMessage(m_packet);
 
@@ -46,76 +47,14 @@ void ClientQuerys::onLogin(NetPacket &packet)
 	TcpServer* pServer = gEnv->pServer;
 	DBWorker* pDataBase = gEnv->pDBWorker;
 
-	// Log in by HTTP
-	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
-	{
-		if (pDataBase->pHTTP->Login(login, password))
-		{
-			int uid = pDataBase->pHTTP->GetUID();
-
-			if (pDataBase->ProfileExists(uid))
-			{
-				SProfile *dbProfile = pDataBase->GetUserProfile(uid);
-				if (dbProfile)
-				{
-					bAuthorizated = true;
-					m_Client->profile = dbProfile;
-					m_Client->status = 1;
-					pServer->UpdateClient(m_Client);
-
-					qDebug() << "-------------------------Profile found--------------------------";
-					qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
-
-					NetPacket m_packet(net_Result);
-					m_packet.WriteInt(net_result_auth_complete_with_profile);
-					m_Connection->SendMessage(m_packet);
-
-					return;
-				}
-				else
-				{
-					qWarning() << "Profile finded, but can't get it from database!";
-					return;
-				}
-			}
-			else
-			{
-				qDebug() << "-----------------------Profile not found------------------------";
-				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
-
-				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_auth_complete);
-				m_Connection->SendMessage(m_packet);
-
-				bAuthorizated = true;
-				m_Client->profile->uid = uid;
-				m_Client->status = 0;
-				pServer->UpdateClient(m_Client);
-
-				return;
-			}
-		}
-		else
-		{
-			// Auth failed
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_auth_fail);
-			m_packet.WriteInt(pDataBase->pHTTP->GetError());
-			m_Connection->SendMessage( m_packet);
-
-			return;
-		}
-	}
-
-	// Default log in mode
 	if (!(pDataBase->UserExists(login)))
 	{
 		qDebug() << "-----------------------Login not found------------------------";
 		qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
 		// Auth failed
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_auth_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::LoginFail);
 		m_packet.WriteInt(0);
 		m_Connection->SendMessage( m_packet);
 
@@ -134,8 +73,8 @@ void ClientQuerys::onLogin(NetPacket &packet)
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
 			// Auth failed
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_auth_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::LoginFail);
 			m_packet.WriteInt(1);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -157,8 +96,8 @@ void ClientQuerys::onLogin(NetPacket &packet)
 					qDebug() << "-------------------------Profile found--------------------------";
 					qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-					NetPacket m_packet(net_Result);
-					m_packet.WriteInt(net_result_auth_complete_with_profile);
+					CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+					m_packet.WriteResult(EFireNetTcpResult::LoginCompleteWithProfile);
 					m_Connection->SendMessage(m_packet);
 
 					return;
@@ -174,8 +113,8 @@ void ClientQuerys::onLogin(NetPacket &packet)
 				qDebug() << "-----------------------Profile not found------------------------";
 				qDebug() << "---------------------AUTHORIZATION COMPLETE---------------------";
 
-				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_auth_complete);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+				m_packet.WriteResult(EFireNetTcpResult::LoginComplete);
 				m_Connection->SendMessage(m_packet);
 
 				bAuthorizated = true;
@@ -191,8 +130,8 @@ void ClientQuerys::onLogin(NetPacket &packet)
 			qDebug() << "----------------------Incorrect password----------------------";
 			qDebug() << "---------------------AUTHORIZATION FAILED---------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_auth_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::LoginFail);
 			m_packet.WriteInt(2);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -201,14 +140,14 @@ void ClientQuerys::onLogin(NetPacket &packet)
 }
 
 // Error types : 0 - Login alredy register, 1 - Can't create account, 2 - Double registration
-void ClientQuerys::onRegister(NetPacket &packet)
+void ClientQuerys::onRegister(CTcpPacket &packet)
 {
 	if (bRegistered)
 	{
 		qDebug() << "Client alredy registered!";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_register_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::RegisterFail);
 		m_packet.WriteInt(2);
 		m_Connection->SendMessage( m_packet);
 		return;
@@ -226,30 +165,6 @@ void ClientQuerys::onRegister(NetPacket &packet)
 
 	DBWorker* pDataBase = gEnv->pDBWorker;
 
-	// Login by HTTP
-	if (gEnv->pSettings->GetVariable("bUseHttpAuth").toBool())
-	{
-		if (pDataBase->pHTTP->Register(login, password))
-		{
-			qDebug() << "---------------------REGISTRATION COMPLETE---------------------";
-			bRegistered = true;
-
-			NetPacket m_packet(net_Result);
-			m_packet.WriteInt(net_result_register_complete);
-			m_Connection->SendMessage( m_packet);
-			return;
-		}
-		else
-		{
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_register_fail);
-			m_packet.WriteInt(pDataBase->pHTTP->GetError());
-			m_Connection->SendMessage( m_packet);
-			return;
-		}
-	}
-
-	// Default register
 	if (!(pDataBase->UserExists(login)))
 	{
 		int uid = pDataBase->GetFreeUID();
@@ -262,8 +177,8 @@ void ClientQuerys::onRegister(NetPacket &packet)
 
 				bRegistered = true;
 
-				NetPacket m_packet(net_Result);
-				m_packet.WriteInt(net_result_register_complete);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+				m_packet.WriteResult(EFireNetTcpResult::RegisterComplete);
 				m_Connection->SendMessage( m_packet);
 				return;
 			}
@@ -272,8 +187,8 @@ void ClientQuerys::onRegister(NetPacket &packet)
 				qDebug() << "--------------Can't create account in database!--------------";
 				qDebug() << "---------------------REGISTRATION FAILED---------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_register_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::RegisterFail);
 				m_packet.WriteInt(1);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -284,8 +199,8 @@ void ClientQuerys::onRegister(NetPacket &packet)
 	{
 		qDebug() << "----------Login alredy register or some values empty!--------";
 		qDebug() << "---------------------REGISTRATION FAILED---------------------";
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_register_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::RegisterFail);
 		m_packet.WriteInt(0);
 		m_Connection->SendMessage( m_packet);
 		return;
@@ -293,14 +208,14 @@ void ClientQuerys::onRegister(NetPacket &packet)
 }
 
 // Error types : 0 - Client alredy have profile, 1 - Nickname alredy registered, 2 - Can't create profile, 3 - Double profile creation
-void ClientQuerys::onCreateProfile(NetPacket &packet)
+void ClientQuerys::onCreateProfile(CTcpPacket &packet)
 {
 	if (bProfileCreated)
 	{
 		qDebug() << "Client alredy create profile!";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_profile_creation_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::ProfileCreationFail);
 		m_packet.WriteInt(3);
 		m_Connection->SendMessage(m_packet);
 
@@ -331,10 +246,10 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		qDebug() << "------------------Client alredy have profile-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
-		NetPacket m_paket(net_Error);
-		m_paket.WriteInt(net_error_profile_creation_fail);
-		m_paket.WriteInt(0);
-		m_Connection->SendMessage( m_paket);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::ProfileCreationFail);
+		m_packet.WriteInt(0);
+		m_Connection->SendMessage(m_packet);
 
 		return;
 	}
@@ -353,8 +268,8 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		{
 			qDebug() << "---------------------CREATE PROFILE COMPLETE---------------------";
 
-			NetPacket m_paket(net_Result);
-			m_paket.WriteInt(net_result_profile_creation_complete);
+			CTcpPacket m_paket(EFireNetTcpPacketType::Result);
+			m_paket.WriteResult(EFireNetTcpResult::ProfileCreationComplete);
 			m_paket.WriteInt(m_Client->profile->uid);
 			m_paket.WriteString(m_Client->profile->nickname.toStdString());
 			m_paket.WriteString(m_Client->profile->fileModel.toStdString());
@@ -364,7 +279,7 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 			m_paket.WriteString(m_Client->profile->items.toStdString());
 			m_paket.WriteString(m_Client->profile->friends.toStdString());
 
-			m_Connection->SendMessage( m_paket);
+			m_Connection->SendMessage(m_paket);
 
 			bProfileCreated = true;
 			m_Client->status = 1;
@@ -377,10 +292,10 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 			qDebug() << "---------------------Database return error---------------------";
 			qDebug() << "---------------------CREATE PROFILE FAILED---------------------";
 
-			NetPacket m_paket(net_Error);
-			m_paket.WriteInt(net_error_profile_creation_fail);
-			m_paket.WriteInt(2);
-			m_Connection->SendMessage( m_paket);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::ProfileCreationFail);
+			m_packet.WriteInt(2);
+			m_Connection->SendMessage(m_packet);
 			return;
 		}
 	}
@@ -389,10 +304,10 @@ void ClientQuerys::onCreateProfile(NetPacket &packet)
 		qDebug() << "-------------------Nickname alredy registered!-------------------";
 		qDebug() << "---------------------CREATE PROFILE FAILED-----------------------";
 
-		NetPacket m_paket(net_Error);
-		m_paket.WriteInt(net_error_profile_creation_fail);
-		m_paket.WriteInt(1);
-		m_Connection->SendMessage( m_paket);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::ProfileCreationFail);
+		m_packet.WriteInt(1);
+		m_Connection->SendMessage(m_packet);
 		return;
 	}
 }
@@ -411,8 +326,8 @@ void ClientQuerys::onGetProfile()
 		qDebug() << "-------------------------Profile found--------------------------";
 		qDebug() << "----------------------GET PROFILE COMPLETE----------------------";
 
-		NetPacket profile(net_Result);
-		profile.WriteInt(net_result_get_profile_complete);
+		CTcpPacket profile(EFireNetTcpPacketType::Result);
+		profile.WriteResult(EFireNetTcpResult::GetProfileComplete);
 		profile.WriteInt(m_Client->profile->uid);
 		profile.WriteString(m_Client->profile->nickname.toStdString());
 		profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -429,8 +344,8 @@ void ClientQuerys::onGetProfile()
 		qDebug() << "----------------------Profile not found-----------------------";
 		qDebug() << "----------------------GET PROFILE FAILED----------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_get_profile_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::GetProfileFail);
 		m_packet.WriteInt(1);
 		m_Connection->SendMessage( m_packet);
 	}
@@ -463,15 +378,15 @@ void ClientQuerys::onGetShopItems()
 			    QString::number(bCanbay));
 		}
 
-		NetPacket m_packet(net_Result);
-		m_packet.WriteInt(net_result_get_shop_complete);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+		m_packet.WriteResult(EFireNetTcpResult::GetShopComplete);
 		m_packet.WriteString(m_shopList.join(",").toStdString());
 		m_Connection->SendMessage( m_packet);
 	}
 	else
 	{
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_get_shop_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::GetShopFail);
 		m_packet.WriteInt(0);
 
 		return;
@@ -480,7 +395,7 @@ void ClientQuerys::onGetShopItems()
 
 // Error types : 0 - Item alredy purchased, 1 - Player lvl < minimal lvl for buy this item, 2 - Insufficient money to buy, 3 - Item not found,
 // 4 - Can't get profile,  5 - Can't update profile
-void ClientQuerys::onBuyItem(NetPacket &packet)
+void ClientQuerys::onBuyItem(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -511,8 +426,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				qDebug() << "------------------This item alredy purchased------------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_buy_item_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::BuyItemFail);
 				m_packet.WriteInt(0);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -524,8 +439,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				qDebug() << "-----------------Profile level < minimal level----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_buy_item_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::BuyItemFail);
 				m_packet.WriteInt(1);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -546,8 +461,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 					qDebug() << "----------------------Profile updated----------------------";
 					qDebug() << "---------------------BUI ITEM COMPLETE---------------------";
 
-					NetPacket profile(net_Result);
-					profile.WriteInt(net_result_buy_item_complete);
+					CTcpPacket profile(EFireNetTcpPacketType::Result);
+					profile.WriteResult(EFireNetTcpResult::UpdateProfileComplete);
 					profile.WriteInt(m_Client->profile->uid);
 					profile.WriteString(m_Client->profile->nickname.toStdString());
 					profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -564,8 +479,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 					qDebug() << "---------------------Can't update profile---------------------";
 					qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-					NetPacket m_packet(net_Error);
-					m_packet.WriteInt(net_error_buy_item_fail);
+					CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+					m_packet.WriteError(EFireNetTcpError::BuyItemFail);
 					m_packet.WriteInt(5);
 					m_Connection->SendMessage( m_packet);
 					return;
@@ -576,8 +491,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 				qDebug() << "-------------------Insufficient money to buy-----------------";
 				qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_buy_item_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::BuyItemFail);
 				m_packet.WriteInt(2);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -588,8 +503,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 			qDebug() << "------------------------Item not found------------------------";
 			qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_buy_item_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::BuyItemFail);
 			m_packet.WriteInt(3);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -600,8 +515,8 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 		qDebug() << "----------------------Profile not found-----------------------";
 		qDebug() << "------------------------BUY ITEM FAILED-----------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_buy_item_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::BuyItemFail);
 		m_packet.WriteInt(4);
 		m_Connection->SendMessage( m_packet);
 
@@ -610,7 +525,7 @@ void ClientQuerys::onBuyItem(NetPacket &packet)
 }
 
 // Error types : 0 - Item not found in shop list, 1 - Item not found in inventory, 2 - Can't get profile, 3 - Can't update profile
-void ClientQuerys::onRemoveItem(NetPacket &packet)
+void ClientQuerys::onRemoveItem(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -636,8 +551,8 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 			qDebug() << "-------------------Item not found in shop list-------------------";
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_remove_item_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::RemoveItemFail);
 			m_packet.WriteInt(0);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -651,8 +566,8 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 			qDebug() << "-------------------Item not found in inventory--------------------";
 			qDebug() << "------------------------REMOVE ITEM FAILED-----------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_remove_item_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::RemoveItemFail);
 			m_packet.WriteInt(1);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -669,8 +584,8 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 				qDebug() << "-----------------------Profile updated------------------------";
 				qDebug() << "---------------------REMOVE ITEM COMPLETE---------------------";
 
-				NetPacket profile(net_Result);
-				profile.WriteInt(net_result_remove_item_complete);
+				CTcpPacket profile(EFireNetTcpPacketType::Result);
+				profile.WriteResult(EFireNetTcpResult::RemoveItemComplete);
 				profile.WriteInt(m_Client->profile->uid);
 				profile.WriteString(m_Client->profile->nickname.toStdString());
 				profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -687,8 +602,8 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 				qDebug() << "--------------------Can't update profile--------------------";
 				qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_remove_item_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::RemoveItemFail);
 				m_packet.WriteInt(3);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -700,8 +615,8 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 		qDebug() << "---------------------Error get profile----------------------";
 		qDebug() << "---------------------REMOVE ITEM FAILED---------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_remove_item_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::RemoveItemFail);
 		m_packet.WriteInt(2);
 		m_Connection->SendMessage( m_packet);
 		return;
@@ -709,7 +624,7 @@ void ClientQuerys::onRemoveItem(NetPacket &packet)
 }
 
 // Error types : 0 - User not found, 1 - User not online
-void ClientQuerys::onInvite(NetPacket &packet)
+void ClientQuerys::onInvite(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -740,8 +655,8 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			qDebug() << "------------------------User not found------------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_send_invite_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::SendInviteFail);
 			m_packet.WriteInt(0);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -752,13 +667,13 @@ void ClientQuerys::onInvite(NetPacket &packet)
 		if (reciverSocket != nullptr)
 		{
 			// Send result to client
-			NetPacket m_packet(net_Result);
-			m_packet.WriteInt(net_result_send_invite_complete);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+			m_packet.WriteResult(EFireNetTcpResult::SendInviteComplete);
 			m_Connection->SendMessage( m_packet);
 
 			// Send invite to user
-			NetPacket invite(net_Query);
-			invite.WriteInt(net_query_send_invite);
+			CTcpPacket invite(EFireNetTcpPacketType::Query);
+			invite.WriteQuery(EFireNetTcpQuery::SendInvite);
 			invite.WriteInt(0); // Friend invite
 			invite.WriteString(m_Client->profile->nickname.toStdString()); // From
 			pServer->sendMessageToClient(reciverSocket, invite);
@@ -769,8 +684,8 @@ void ClientQuerys::onInvite(NetPacket &packet)
 			qDebug() << "----------------------Reciver not online----------------------";
 			qDebug() << "---------------------INVITE FRIEND FAILED---------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_send_invite_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::SendInviteFail);
 			m_packet.WriteInt(1);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -790,8 +705,7 @@ void ClientQuerys::onInvite(NetPacket &packet)
 	}
 }
 
-// Error types : 0 - User not found, 1 - User not online
-void ClientQuerys::onDeclineInvite(NetPacket &packet)
+void ClientQuerys::onDeclineInvite(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -817,11 +731,6 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 	{
 		qDebug() << "------------------------User not found-------------------------";
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
-
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_decline_invite_fail);
-		m_packet.WriteInt(1);
-		m_Connection->SendMessage( m_packet);
 		return;
 	}
 
@@ -830,8 +739,8 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 	if (reciverSocket != nullptr)
 	{
 		// Send decline invite to invite sender
-		NetPacket m_packet(net_Result);
-		m_packet.WriteInt(net_error_send_invite_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::SendInviteFail);
 		pServer->sendMessageToClient(reciverSocket, m_packet);
 		return;
 	}
@@ -839,17 +748,12 @@ void ClientQuerys::onDeclineInvite(NetPacket &packet)
 	{
 		qDebug() << "----------------------Reciver not online-----------------------";
 		qDebug() << "---------------------DECLINE INVITE FAILED---------------------";
-
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_decline_invite_fail);
-		m_packet.WriteInt(1);
-		m_Connection->SendMessage( m_packet);
 		return;
 	}
 }
 
 // Error types : 0 - Friend alredy exist, 1 - Can't add yourself to friend, 2 - Friend not found,  3 - Can't get profile, 4 - Can't update profile
-void ClientQuerys::onAddFriend(NetPacket &packet)
+void ClientQuerys::onAddFriend(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -886,18 +790,19 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "--------------------This friend alredy added--------------------";
 				qDebug() << "------------------------ADD FRIEND FAILED-----------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_accept_invite_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::AcceptInviteFail);
 				m_packet.WriteInt(0);
 				m_Connection->SendMessage( m_packet);
 				return;
-			} else if (m_Client->profile->uid == friendUID) // Block add yourself in friends
+			} 
+			else if (m_Client->profile->uid == friendUID) // Block add yourself in friends
 			{
 				qDebug() << "----------------Can't add yourself to friends--------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_accept_invite_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::AcceptInviteFail);
 				m_packet.WriteInt(1);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -916,8 +821,8 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "-----------------------Profile updated-----------------------";
 				qDebug() << "---------------------ADD FRIEND COMPLETE---------------------";
 
-				NetPacket profile(net_Result);
-				profile.WriteInt(net_result_accept_invite_complete);
+				CTcpPacket profile(EFireNetTcpPacketType::Result);
+				profile.WriteResult(EFireNetTcpResult::AcceptInviteComplete);
 				profile.WriteInt(m_Client->profile->uid);
 				profile.WriteString(m_Client->profile->nickname.toStdString());
 				profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -932,8 +837,8 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				//Send new info to friend here
 				if (friendSocket != nullptr)
 				{
-					NetPacket profile(net_Result);
-					profile.WriteInt(net_result_accept_invite_complete);
+					CTcpPacket profile(EFireNetTcpPacketType::Result);
+					profile.WriteResult(EFireNetTcpResult::AcceptInviteComplete);
 					profile.WriteInt(m_Client->profile->uid);
 					profile.WriteString(m_Client->profile->nickname.toStdString());
 					profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -953,8 +858,8 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 				qDebug() << "-------------------Can't update profile--------------------";
 				qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_accept_invite_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::AcceptInviteFail);
 				m_packet.WriteInt(4);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -965,8 +870,8 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 			qDebug() << "---------------------Error get profile---------------------";
 			qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_accept_invite_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::AcceptInviteFail);
 			m_packet.WriteInt(3);
 			m_Connection->SendMessage( packet);
 			return;
@@ -977,8 +882,8 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 		qDebug() << "---------------------Friend not found----------------------";
 		qDebug() << "---------------------ADD FRIEND FAILED---------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_accept_invite_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::AcceptInviteFail);
 		m_packet.WriteInt(2);
 		m_Connection->SendMessage( m_packet);
 		return;
@@ -986,7 +891,7 @@ void ClientQuerys::onAddFriend(NetPacket &packet)
 }
 
 // Error types : 0 - Friend not found, 1 - Can't get profile, 2 - Can't update profile
-void ClientQuerys::onRemoveFriend(NetPacket &packet)
+void ClientQuerys::onRemoveFriend(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -1017,8 +922,8 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 			qDebug() << "--------------------------Friend not found-------------------------";
 			qDebug() << "------------------------REMOVE FRIEND FAILED-----------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_remove_friend_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::RemoveFriendFail);
 			m_packet.WriteInt(0);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -1041,8 +946,8 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				qDebug() << "------------------------Profile updated-------------------------";
 				qDebug() << "---------------------REMOVE FRIEND COMPLETE---------------------";
 
-				NetPacket profile (net_Result);
-				profile.WriteInt(net_result_remove_friend_complete);
+				CTcpPacket profile (EFireNetTcpPacketType::Result);
+				profile.WriteResult(EFireNetTcpResult::RemoveFriendComplete);
 				profile.WriteInt(m_Client->profile->uid);
 				profile.WriteString(m_Client->profile->nickname.toStdString());
 				profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -1057,8 +962,8 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				//Send new info to friend here
 				if (friendSocket != nullptr)
 				{
-					NetPacket profile(net_Result);
-					profile.WriteInt(net_result_remove_friend_complete);
+					CTcpPacket profile(EFireNetTcpPacketType::Result);
+					profile.WriteResult(EFireNetTcpResult::RemoveFriendComplete);
 					profile.WriteInt(m_Client->profile->uid);
 					profile.WriteString(m_Client->profile->nickname.toStdString());
 					profile.WriteString(m_Client->profile->fileModel.toStdString());
@@ -1078,8 +983,8 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 				qDebug() << "---------------------Can't update profile---------------------";
 				qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-				NetPacket m_packet(net_Error);
-				m_packet.WriteInt(net_error_remove_friend_fail);
+				CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+				m_packet.WriteError(EFireNetTcpError::RemoveFriendFail);
 				m_packet.WriteInt(2);
 				m_Connection->SendMessage( m_packet);
 				return;
@@ -1091,8 +996,8 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 		qDebug() << "----------------------Error get profile-----------------------";
 		qDebug() << "---------------------REMOVE FRIEND FAILED---------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_remove_friend_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::RemoveFriendFail);
 		m_packet.WriteInt(1);
 		m_Connection->SendMessage( m_packet);
 		return;
@@ -1100,7 +1005,7 @@ void ClientQuerys::onRemoveFriend(NetPacket &packet)
 }
 
 // Error types : 0 - Can't send message to yourself, 1 - Reciver not online
-void ClientQuerys::onChatMessage(NetPacket &packet)
+void ClientQuerys::onChatMessage(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -1126,8 +1031,8 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 		qDebug() << "--------------Client cannot send message to himself---------------";
 		qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_send_chat_msg_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::SendChatMsgFail);
 		m_packet.WriteInt(0);
 		m_Connection->SendMessage( m_packet);
 		return;
@@ -1137,8 +1042,8 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 	{
 		if (gEnv->pSettings->GetVariable("bUseGlobalChat").toBool())
 		{
-			NetPacket msg(net_Server);
-			msg.WriteInt(net_server_global_chat_msg);
+			CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
+			msg.WriteServerMessage(EFireNetTcpSMessage::GlobalChatMsg);
 			msg.WriteString(m_Client->profile->nickname.toStdString());
 			msg.WriteString(message.toStdString());
 			pServer->sendGlobalMessage(msg);
@@ -1159,8 +1064,8 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 
 		if (reciverSocket != nullptr)
 		{
-			NetPacket msg(net_Server);
-			msg.WriteInt(net_server_private_chat_msg);
+			CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
+			msg.WriteServerMessage(EFireNetTcpSMessage::PrivateChatMsg);
 			msg.WriteString(m_Client->profile->nickname.toStdString());
 			msg.WriteString(message.toStdString());
 			pServer->sendMessageToClient(reciverSocket, msg);
@@ -1172,8 +1077,8 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 			qDebug() << "-------------------Reciver not found or offline-------------------";
 			qDebug() << "---------------------SEND CHAT MESSAGE FAILED---------------------";
 
-			NetPacket m_packet(net_Error);
-			m_packet.WriteInt(net_error_send_chat_msg_fail);
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::SendChatMsgFail);
 			m_packet.WriteInt(1);
 			m_Connection->SendMessage( m_packet);
 			return;
@@ -1182,7 +1087,7 @@ void ClientQuerys::onChatMessage(NetPacket &packet)
 }
 
 // Error types : 0 - Not any online servers, 1 - Server not found
-void ClientQuerys::onGetGameServer(NetPacket &packet)
+void ClientQuerys::onGetGameServer(CTcpPacket &packet)
 {
 	if (m_Client->profile->uid <= 0)
 	{
@@ -1198,8 +1103,8 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		qDebug() << "---------------------Not any online server----------------------";
 		qDebug() << "---------------------GET GAME SERVER FAILED---------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_get_server_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::GetServerFail);
 		m_packet.WriteInt(0);
 		m_Connection->SendMessage( m_packet);
 
@@ -1214,8 +1119,8 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 
 	if (pGameServer != nullptr)
 	{
-		NetPacket gameServer(net_Result);
-		gameServer.WriteInt(net_result_get_server_complete);
+		CTcpPacket gameServer(EFireNetTcpPacketType::Result);
+		gameServer.WriteResult(EFireNetTcpResult::GetServerComplete);
 		gameServer.WriteString(pGameServer->name.toStdString());
 		gameServer.WriteString(pGameServer->ip.toStdString());
 		gameServer.WriteInt(pGameServer->port);
@@ -1233,8 +1138,8 @@ void ClientQuerys::onGetGameServer(NetPacket &packet)
 		qDebug() << "-----------------------Server not found-------------------------";
 		qDebug() << "---------------------GET GAME SERVER FAILED---------------------";
 
-		NetPacket m_packet(net_Error);
-		m_packet.WriteInt(net_error_get_server_fail);
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::GetServerFail);
 		m_packet.WriteInt(1);
 		m_Connection->SendMessage( m_packet);
 	}

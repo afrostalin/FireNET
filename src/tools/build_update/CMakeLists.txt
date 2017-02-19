@@ -16,12 +16,10 @@ set (SOURCE ${SourceGroup_Main})
 if(WIN32)
 	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Windows/Tools")
 else()
-	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Unix/Tools")
+	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/../../../bin/Linux/Tools")
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
 
-set_target_properties (${PROJECT_NAME} PROPERTIES
-    FOLDER Tools
-)
+set_target_properties (${PROJECT_NAME} PROPERTIES FOLDER Tools)

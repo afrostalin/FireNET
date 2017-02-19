@@ -10,7 +10,6 @@
 
 class RedisConnector;
 class MySqlConnector;
-class HttpConnector;
 
 class DBWorker : public QObject
 {
@@ -37,7 +36,6 @@ public:
 public:
 	RedisConnector* pRedis;
 	MySqlConnector* pMySql;
-	HttpConnector*	pHTTP;
 };
 
 #endif // DBWORKER_H
