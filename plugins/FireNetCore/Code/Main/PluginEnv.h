@@ -25,6 +25,7 @@ struct SPluginEnv
 		net_ip = nullptr;
 		net_port = 0;
 		net_timeout = 0.f;
+		net_debug = 0;
 	}
 
 	// Pointers
@@ -38,6 +39,7 @@ struct SPluginEnv
 	ICVar*                            net_ip;
 	int                               net_port;
 	float                             net_timeout;
+	int                               net_debug;
 
 	// Send FireNet event with arguments
 	inline void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs())

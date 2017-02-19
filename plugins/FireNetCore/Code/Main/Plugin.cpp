@@ -18,7 +18,12 @@ IEntityRegistrator *IEntityRegistrator::g_pLast = nullptr;
 
 CFireNetCorePlugin::~CFireNetCorePlugin()
 {
-	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+	// Unregister listeners
+	if (gEnv->pSystem)
+		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+
+	if (gEnv->pGameFramework)
+		gEnv->pGameFramework->UnregisterListener(this);
 
 	// Unregister entities
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
@@ -36,7 +41,7 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 		pConsole->UnregisterVariable("firenet_port");
 		pConsole->UnregisterVariable("firenet_timeout");
 #ifndef NDEBUG
-		pConsole->UnregisterVariable("firenet_magic_key");
+		pConsole->UnregisterVariable("firenet_packet_debug");
 #endif
 	}
 
@@ -83,6 +88,10 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		mEnv->net_ip = REGISTER_STRING("firenet_ip", "127.0.0.1", VF_NULL, "Sets the FireNet master server ip address");
 		REGISTER_CVAR2("firenet_port", &mEnv->net_port, 3322, VF_CHEAT, "FireNet master server port");
 		REGISTER_CVAR2("firenet_timeout", &mEnv->net_timeout, 5.0f, VF_NULL, "FireNet master server timeout");
+
+#ifndef  NDEBUG // Only in debug mode
+		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
+#endif // ! NDEBUG
 
 		break;
 	}
@@ -139,7 +148,7 @@ void CFireNetCorePlugin::Authorization(const std::string & login, const std::str
 	if (!login.empty() && !password.empty())
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::Login);
+		packet.WriteQuery(EFireNetTcpQuery::Login);
 		packet.WriteString(login.c_str());
 		packet.WriteString(password.c_str());
 
@@ -158,7 +167,7 @@ void CFireNetCorePlugin::Registration(const std::string & login, const std::stri
 	if (!login.empty() && !password.empty())
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::Register);
+		packet.WriteQuery(EFireNetTcpQuery::Register);
 		packet.WriteString(login.c_str());
 		packet.WriteString(password.c_str());
 
@@ -177,7 +186,7 @@ void CFireNetCorePlugin::CreateProfile(const std::string & nickname, const std::
 	if (!nickname.empty() && !character.empty())
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::CreateProfile);
+		packet.WriteQuery(EFireNetTcpQuery::CreateProfile);
 		packet.WriteString(nickname.c_str());
 		packet.WriteString(character.c_str());
 
@@ -194,7 +203,7 @@ void CFireNetCorePlugin::GetProfile(int uid)
 	CryLog(TITLE "Try get profile");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
-	packet.WriteQuery(EFireNetTcpPacketQuery::GetProfile);
+	packet.WriteQuery(EFireNetTcpQuery::GetProfile);
 
 	SEND_PACKET(packet);
 }
@@ -210,7 +219,7 @@ void CFireNetCorePlugin::GetShop()
 	CryLog(TITLE "Try get shop");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
-	packet.WriteQuery(EFireNetTcpPacketQuery::GetShop);
+	packet.WriteQuery(EFireNetTcpQuery::GetShop);
 
 	SEND_PACKET(packet);
 }
@@ -222,7 +231,7 @@ void CFireNetCorePlugin::BuyItem(const std::string & item)
 	if (!item.empty())
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::BuyItem);
+		packet.WriteQuery(EFireNetTcpQuery::BuyItem);
 		packet.WriteString(item.c_str());
 
 		SEND_PACKET(packet);
@@ -240,7 +249,7 @@ void CFireNetCorePlugin::RemoveItem(const std::string & item)
 	if (!item.empty())
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::RemoveItem);
+		packet.WriteQuery(EFireNetTcpQuery::RemoveItem);
 		packet.WriteString(item.c_str());
 
 		SEND_PACKET(packet);
@@ -258,7 +267,7 @@ void CFireNetCorePlugin::SendInvite(EFireNetInviteType type, int uid)
 	if (uid > 0)
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::SendInvite);
+		packet.WriteQuery(EFireNetTcpQuery::SendInvite);
 		packet.WriteInt(type);
 		packet.WriteInt(uid);
 
@@ -275,7 +284,7 @@ void CFireNetCorePlugin::DeclineInvite()
 	CryLog(TITLE "Try decline invite");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
-	packet.WriteQuery(EFireNetTcpPacketQuery::DeclineInvite);
+	packet.WriteQuery(EFireNetTcpQuery::DeclineInvite);
 
 	SEND_PACKET(packet);
 }
@@ -285,7 +294,7 @@ void CFireNetCorePlugin::AcceptInvite()
 	CryLog(TITLE "Try accept invite");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
-	packet.WriteQuery(EFireNetTcpPacketQuery::AcceptInvite);
+	packet.WriteQuery(EFireNetTcpQuery::AcceptInvite);
 
 	SEND_PACKET(packet);
 }
@@ -297,7 +306,7 @@ void CFireNetCorePlugin::RemoveFriend(int uid)
 	if (uid > 0)
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::RemoveFriend);
+		packet.WriteQuery(EFireNetTcpQuery::RemoveFriend);
 		packet.WriteInt(uid);
 
 		SEND_PACKET(packet);
@@ -313,7 +322,7 @@ void CFireNetCorePlugin::SendChatMessage(EFireNetChatMsgType type, int uid)
 	CryLog(TITLE "Try send chat message");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
-	packet.WriteQuery(EFireNetTcpPacketQuery::SendChatMsg);
+	packet.WriteQuery(EFireNetTcpQuery::SendChatMsg);
 	packet.WriteInt(type);
 
 	if (type == EMsg_PrivateChat)
@@ -331,7 +340,7 @@ void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::strin
 	if (!map.empty() && !gamerules.empty())
 	{
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
-		packet.WriteQuery(EFireNetTcpPacketQuery::GetServer);
+		packet.WriteQuery(EFireNetTcpQuery::GetServer);
 		packet.WriteString(map.c_str());
 		packet.WriteString(gamerules.c_str());
 

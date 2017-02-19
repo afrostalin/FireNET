@@ -15,9 +15,9 @@ public:
 public:
 	void ReadPacket(CTcpPacket &packet);
 private:
-	void ReadResult(CTcpPacket &packet , EFireNetTcpPacketResult result);
-	void ReadError(CTcpPacket &packet, EFireNetTcpPacketError error);
-	void ReadServerMsg(CTcpPacket &packet, EFireNetTcpPacketSMessage serverMsg);
+	void ReadResult(CTcpPacket &packet , EFireNetTcpResult result);
+	void ReadError(CTcpPacket &packet, EFireNetTcpError error);
+	void ReadServerMsg(CTcpPacket &packet, EFireNetTcpSMessage serverMsg);
 private:
 	void LoadProfile(CTcpPacket &packet);
 	void LoadShop(CTcpPacket &packet);

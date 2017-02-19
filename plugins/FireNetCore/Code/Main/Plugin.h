@@ -12,8 +12,8 @@
 class CFireNetCorePlugin 
 	: public ICryPlugin
 	, public ISystemEventListener
-	, public IFireNetCore
 	, public IGameFrameworkListener
+	, public IFireNetCore	
 {
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)

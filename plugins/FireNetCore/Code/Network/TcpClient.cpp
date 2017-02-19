@@ -210,7 +210,9 @@ void CTcpClient::Do_Handshake()
 
 void CTcpClient::Do_Read()
 {
-	async_read(m_SslSocket, buffer(m_ReadBuffer, static_cast<int>(ETcpPacketMaxSize::SIZE)), [this](boost::system::error_code ec, std::size_t length)
+	std::memset(m_ReadBuffer, 0, static_cast<int>(ETcpPacketMaxSize::SIZE));
+
+	m_SslSocket.async_read_some(buffer(m_ReadBuffer, static_cast<int>(ETcpPacketMaxSize::SIZE)), [this](boost::system::error_code ec, std::size_t length) 
 	{
 		if (!ec)
 		{
@@ -235,7 +237,10 @@ void CTcpClient::Do_Read()
 
 void CTcpClient::Do_Write()
 {
-	async_write(m_SslSocket, buffer(m_Queue.front().toString(), m_Queue.front().getLength()), [this](error_code ec, std::size_t length)
+	const char* packetData = m_Queue.front().toString();
+	size_t      packetSize = strlen(packetData);
+
+	async_write(m_SslSocket, buffer(packetData, packetSize), [this](error_code ec, std::size_t length)
 	{
 		if (!ec)
 		{

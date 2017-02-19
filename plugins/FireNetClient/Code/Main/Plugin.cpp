@@ -42,7 +42,11 @@ void TestConnection(IConsoleCmdArgs* argc)
 
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
-	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+	if (gEnv->pSystem)
+		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+
+	if (gEnv->pGameFramework)
+		gEnv->pGameFramework->UnregisterListener(this);
 
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 	while (pTemp != nullptr)

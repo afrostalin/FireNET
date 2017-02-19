@@ -14,8 +14,8 @@
 class CFireNetClientPlugin 
 	: public ICryPlugin
 	, public ISystemEventListener
-	, public IFireNetClientCore
 	, public IGameFrameworkListener
+	, public IFireNetClientCore
 {
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
@@ -34,13 +34,6 @@ public:
 	virtual void        OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 	// ~ISystemEventListener
 
-	// IFireNetClientCore
-	virtual void        ConnectToServer(const char* ip, int port) override;
-	virtual void        DisconnectFromServer() override;
-	virtual void        SendMovementRequest(EFireNetClientActions action, float value = 0.f) override;
-	virtual bool        IsConnected() override { return false; }
-	// ~IFireNetClientCore
-
 	// IGameFrameworkListener
 	virtual void        OnPostUpdate(float fDeltaTime) override;
 	virtual void        OnSaveGame(ISaveGame* pSaveGame) override {};
@@ -48,6 +41,13 @@ public:
 	virtual void        OnLevelEnd(const char* nextLevel) override {};
 	virtual void        OnActionEvent(const SActionEvent& event) override {};
 	// ~IGameFrameworkListener
+
+	// IFireNetClientCore
+	virtual void        ConnectToServer(const char* ip, int port) override;
+	virtual void        DisconnectFromServer() override;
+	virtual void        SendMovementRequest(EFireNetClientActions action, float value = 0.f) override;
+	virtual bool        IsConnected() override { return false; }
+	// ~IFireNetClientCore
 public:
 	template<class T>
 	struct CObjectCreator : public IGameObjectExtensionCreatorBase

@@ -192,6 +192,14 @@ const char * CTcpPacket::toString()
 	if (!bInitFromData)
 	{
 		WriteFooter();
+
+		// Packet debugging
+		if (mEnv->net_debug > 0)
+		{
+			CryLog(TITLE "TCP packet data : %s", m_Data.c_str());
+			CryLog(TITLE "TCP packet size : %d", getLength());
+		}
+
 		return m_Data.c_str();
 	}
 	else
@@ -210,6 +218,13 @@ void CTcpPacket::ReadPacket()
 	if (!m_Data.empty())
 	{
 		m_Packet = Split(m_Data, m_Separator);
+
+		// Packet debugging
+		if (mEnv->net_debug > 0)
+		{
+			CryLog(TITLE "TCP packet data : %s", m_Data.c_str());
+			CryLog(TITLE "TCP packet size : %d", getLength());
+		}
 
 		if (m_Packet.size() >= 3)
 		{

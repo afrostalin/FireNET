@@ -4,7 +4,7 @@
 #include "global.h"
 #include "remoteconnection.h"
 #include "remoteserver.h"
-#include "netpacket.h"
+#include "tcppacket.h"
 
 #include "Workers/Packets/remoteclientquerys.h"
 #include "Tools/settings.h"
@@ -39,7 +39,7 @@ void RemoteConnection::Update()
 	if (!m_Packets.empty() && m_socket && bConnected && bLastMsgSended)
 	{
 		bLastMsgSended = false;
-		NetPacket packet = m_Packets.front();
+		CTcpPacket packet = m_Packets.front();
 		m_Packets.pop();
 		m_socket->write(packet.toString());
 	}
@@ -51,7 +51,7 @@ void RemoteConnection::Update()
 	}
 }
 
-void RemoteConnection::SendMessage(NetPacket & packet)
+void RemoteConnection::SendMessage(CTcpPacket & packet)
 {
 	m_Packets.push(packet);
 }
@@ -168,38 +168,38 @@ void RemoteConnection::readyRead()
 
 	qDebug() << "Read message from remote client" << m_socket;
 
-	NetPacket packet(m_socket->readAll());
+	CTcpPacket packet(m_socket->readAll());
 
-	if (packet.getType() == net_Query)
+	if (packet.getType() == EFireNetTcpPacketType::Query)
 	{
-		switch ((ENetPacketQueryType)packet.ReadInt())
+		switch (packet.ReadQuery())
 		{
-		case net_query_remote_admin_login:
+		case EFireNetTcpQuery::AdminLogin :
 		{
 			pQuerys->onAdminLogining(packet);
 			break;
 		}
-		case net_query_remote_server_command:
+		case EFireNetTcpQuery::AdminCommand :
 		{
 			pQuerys->onConsoleCommandRecived(packet);
 			break;
 		}
-		case net_query_remote_register_server:
+		case EFireNetTcpQuery::RegisterServer :
 		{
 			pQuerys->onGameServerRegister(packet);
 			break;
 		}
-		case net_query_remote_update_server:
+		case EFireNetTcpQuery::UpdateServer :
 		{
 			pQuerys->onGameServerUpdateInfo(packet);
 			break;
 		}
-		case net_query_remote_get_profile:
+		case EFireNetTcpQuery::GetProfile :
 		{
 			pQuerys->onGameServerGetOnlineProfile(packet);
 			break;
 		}
-		case net_query_remote_update_profile:
+		case EFireNetTcpQuery::UpdateProfile :
 		{
 			pQuerys->onGameServerUpdateOnlineProfile(packet);
 			break;

@@ -42,9 +42,9 @@ struct SPluginEnv
 	int                        m_LastInPacketNumber;
 
 	// CVars
-	ICVar*                            net_ip;
-	int                               net_port;
-	float                             net_timeout;
+	ICVar*                     net_ip;
+	int                        net_port;
+	float                      net_timeout;
 };
 
 extern SPluginEnv* mEnv;
