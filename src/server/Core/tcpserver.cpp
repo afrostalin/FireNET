@@ -442,13 +442,13 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 	return nullptr;
 }
 
-void TcpServer::sendMessageToClient(QSslSocket* socket, NetPacket &packet)
+void TcpServer::sendMessageToClient(QSslSocket* socket, CTcpPacket &packet)
 {
 	if (socket)
 		socket->write(packet.toString());
 }
 
-void TcpServer::sendGlobalMessage(NetPacket &packet)
+void TcpServer::sendGlobalMessage(CTcpPacket &packet)
 {
 	for (auto it = m_threads.begin(); it != m_threads.end(); ++it)
 	{

@@ -12,7 +12,8 @@
 
 #include "global.h"
 #include "remoteconnection.h"
-#include "netpacket.h"
+
+class CTcpPacket;
 
 class RemoteServer : public QTcpServer
 {
@@ -23,7 +24,7 @@ public:
 public:
 	void                     Clear();
 	void                     run();
-	void                     sendMessageToRemoteClient(QSslSocket* socket, NetPacket &packet);
+	void                     sendMessageToRemoteClient(QSslSocket* socket, CTcpPacket &packet);
 	void                     AddNewClient(SRemoteClient &client);
 	void                     RemoveClient(SRemoteClient &client);
 	void                     UpdateClient(SRemoteClient* client);

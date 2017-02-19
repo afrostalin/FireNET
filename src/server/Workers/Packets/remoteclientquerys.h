@@ -8,8 +8,7 @@
 
 #include "global.h"
 
-#include "Core/netpacket.h"
-
+class CTcpPacket;
 class RemoteConnection;
 
 class RemoteClientQuerys : public QObject
@@ -24,14 +23,14 @@ public:
 	void              SetConnection(RemoteConnection* connection) { this->m_connection = connection; }
 public:
 	// Administration functional
-	void              onAdminLogining(NetPacket &packet);
-	void              onConsoleCommandRecived(NetPacket &packet);
+	void              onAdminLogining(CTcpPacket &packet);
+	void              onConsoleCommandRecived(CTcpPacket &packet);
 
 	// Game server functionality
-	void              onGameServerRegister(NetPacket &packet);
-	void              onGameServerUpdateInfo(NetPacket &packet);
-	void              onGameServerGetOnlineProfile(NetPacket &packet);
-	void              onGameServerUpdateOnlineProfile(NetPacket &packet);
+	void              onGameServerRegister(CTcpPacket &packet);
+	void              onGameServerUpdateInfo(CTcpPacket &packet);
+	void              onGameServerGetOnlineProfile(CTcpPacket &packet);
+	void              onGameServerUpdateOnlineProfile(CTcpPacket &packet);
 private:
 	bool              CheckInTrustedList(const QString &name, const QString &ip, int port);
 private:

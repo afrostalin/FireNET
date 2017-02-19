@@ -6,7 +6,7 @@
 #include "global.h"
 #include "remoteserver.h"
 #include "remoteconnection.h"
-#include "netpacket.h"
+#include "tcppacket.h"
 #include "tcpserver.h"
 
 #include "Tools/settings.h"
@@ -76,7 +76,7 @@ void RemoteServer::incomingConnection(qintptr socketDescriptor)
 	m_remoteConnection->accept(socketDescriptor);
 }
 
-void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, NetPacket &paket)
+void RemoteServer::sendMessageToRemoteClient(QSslSocket * socket, CTcpPacket &paket)
 {
 	if (socket)
 	{

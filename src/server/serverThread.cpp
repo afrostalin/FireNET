@@ -18,7 +18,6 @@
 
 #include "Workers/Databases/dbworker.h"
 #include "Workers/Databases/mysqlconnector.h"
-#include "Workers/Databases/httpconnector.h"
 
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
@@ -194,7 +193,6 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("remote_server_port", 64000, "Remote server port", false);
 	// Database vars
 	gEnv->pSettings->RegisterVariable("db_mode", "Redis", "Database mode [Redis, MySql, Redis+MySql]", false);
-	gEnv->pSettings->RegisterVariable("auth_mode", "Default", "Authorization mode [Default, HTTP]", false);
 	// Redis vars
 	gEnv->pSettings->RegisterVariable("redis_ip", "127.0.0.1", "Redis database ip address", false);
 	gEnv->pSettings->RegisterVariable("redis_port", 6379, "Redis database port", false);
@@ -205,9 +203,6 @@ void CServerThread::RegisterVariables()
 	gEnv->pSettings->RegisterVariable("mysql_db_name", "FireNET", "MySql database name", false);
 	gEnv->pSettings->RegisterVariable("mysql_username", "admin", "MySql username", false);
 	gEnv->pSettings->RegisterVariable("mysql_password", "password", "MySql password", false);
-	// HTTP authorization vars
-	gEnv->pSettings->RegisterVariable("http_login_page", "http://127.0.0.1/login.php", "Login page address for HTTP authorization", false);
-	gEnv->pSettings->RegisterVariable("http_register_page", "http://127.0.0.1/reg.php", "Register page address for HTTP authorization", false);
 	// Network vars
 	gEnv->pSettings->RegisterVariable("net_encryption_timeout", 3, "Network timeout for new connection", true);
 	gEnv->pSettings->RegisterVariable("net_magic_key", 2016207, "Network magic key for check packets for validations", true);
@@ -331,8 +326,6 @@ void CServerThread::start()
 			gEnv->pSettings->SetVariable("bUseRedis", true);
 			gEnv->pSettings->SetVariable("bUseMySQL", true);
 		}
-		else if (gEnv->pSettings->GetVariable("auth_mode").toString() == "HTTP")
-			gEnv->pSettings->SetVariable("bUseHttpAuth", true);
 
 		gEnv->m_ServerStatus.m_DBMode = gEnv->pSettings->GetVariable("db_mode").toString();
 

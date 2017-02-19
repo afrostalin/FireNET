@@ -4,7 +4,7 @@
 #include "global.h"
 #include "tcpconnection.h"
 #include "tcpserver.h"
-#include "netpacket.h"
+#include "tcppacket.h"
 
 #include "Workers/Packets/clientquerys.h"
 #include "Workers/Databases/mysqlconnector.h"
@@ -42,7 +42,7 @@ void TcpConnection::Update()
 	if (!m_Packets.empty() && m_Socket && bConnected && bLastMsgSended)
 	{
 		bLastMsgSended = false;
-		NetPacket packet = m_Packets.front();
+		CTcpPacket packet = m_Packets.front();
 		m_Packets.pop();
 		m_Socket->write(packet.toString());
 	}
@@ -54,7 +54,7 @@ void TcpConnection::Update()
 	}
 }
 
-void TcpConnection::SendMessage(NetPacket& packet)
+void TcpConnection::SendMessage(CTcpPacket& packet)
 {
 	m_Packets.push(packet);
 }
@@ -180,72 +180,72 @@ void TcpConnection::readyRead()
 		return;
 	}
 
-	NetPacket packet(m_Socket->readAll());
+	CTcpPacket packet(m_Socket->readAll());
 
-	if(packet.getType() == net_Query)
+	if(packet.getType() == EFireNetTcpPacketType::Query)
 	{
-		switch ((ENetPacketQueryType)packet.ReadInt())
+		switch (packet.ReadQuery())
 		{
-		case net_query_auth :
+		case EFireNetTcpQuery::Login :
 		{
 			pQuery->onLogin(packet);
 			break;
 		}
-		case net_query_register :
+		case EFireNetTcpQuery::Register :
 		{
 			pQuery->onRegister(packet);
 			break;
 		}
-		case net_query_create_profile :
+		case EFireNetTcpQuery::CreateProfile :
 		{
 			pQuery->onCreateProfile(packet);
 			break;
 		}
-		case net_query_get_profile :
+		case EFireNetTcpQuery::GetProfile :
 		{
 			pQuery->onGetProfile();
 			break;
 		}
-		case net_query_get_shop :
+		case EFireNetTcpQuery::GetShop :
 		{
 			pQuery->onGetShopItems();
 			break;
 		}
-		case net_query_buy_item :
+		case EFireNetTcpQuery::BuyItem :
 		{
 			pQuery->onBuyItem(packet);
 			break;
 		}
-		case net_query_remove_item :
+		case EFireNetTcpQuery::RemoveItem :
 		{
 			pQuery->onRemoveItem(packet);
 			break;
 		}		
-		case net_query_send_invite :
+		case EFireNetTcpQuery::SendInvite :
 		{
 			pQuery->onInvite(packet);
 			break;
 		}
-		case net_query_decline_invite :
+		case EFireNetTcpQuery::DeclineInvite :
 		{
 			pQuery->onDeclineInvite(packet);
 			break;
 		}
-		case net_query_accept_invite :
+		case EFireNetTcpQuery::AcceptInvite :
 		{
 			break;
 		}
-		case net_query_remove_friend :
+		case EFireNetTcpQuery::RemoveFriend :
 		{
 			pQuery->onRemoveFriend(packet);
 			break;
 		}
-		case net_query_send_chat_msg :
+		case EFireNetTcpQuery::SendChatMsg :
 		{
 			pQuery->onChatMessage(packet);
 			break;
 		}
-		case net_query_get_server :
+		case EFireNetTcpQuery::GetServer :
 		{
 			pQuery->onGetGameServer(packet);
 			break;

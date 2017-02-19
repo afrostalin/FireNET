@@ -11,7 +11,6 @@
 
 #include "Workers/Databases/dbworker.h"
 #include "Workers/Databases/mysqlconnector.h"
-#include "Workers/Databases/httpconnector.h"
 
 #include "Tools/settings.h"
 #include "Tools/scripts.h"
@@ -241,9 +240,6 @@ void MainWindow::on_Input_returnPressed()
 		// Databases status
 		qWarning() << "Database status :" << gEnv->m_ServerStatus.m_DBStatus.toStdString().c_str();
 
-		// Authorization type
-		qWarning() << "Authorization type :" << gEnv->pSettings->GetVariable("auth_mode").toString().toStdString().c_str();
-
 		// Debug messages
 		qWarning() << "Debug messages :" << gEnv->m_DebugsCount;
 		qWarning() << "Warning messages :" << gEnv->m_WarningsCount;
@@ -255,8 +251,8 @@ void MainWindow::on_Input_returnPressed()
 
 		qInfo() << "Try send message to all clients <" << message.toStdString().c_str() << ">";
 
-		NetPacket msg(net_Server);
-		msg.WriteInt(net_server_message);
+		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
+		msg.WriteServerMessage(EFireNetTcpSMessage::ServerMessage);
 		msg.WriteString(message.toStdString());
 		gEnv->pServer->sendGlobalMessage(msg);
 	}
@@ -266,8 +262,8 @@ void MainWindow::on_Input_returnPressed()
 
 		qInfo() << "Try send command to all clients <" << command.toStdString().c_str() << ">";
 
-		NetPacket msg(net_Server);
-		msg.WriteInt(net_server_command);
+		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
+		msg.WriteServerMessage(EFireNetTcpSMessage::ServerCommand);
 		msg.WriteString(command.toStdString());
 		gEnv->pServer->sendGlobalMessage(msg);
 	}

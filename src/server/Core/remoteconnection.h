@@ -9,7 +9,7 @@
 #include <queue>
 
 #include "global.h"
-#include "netpacket.h"
+#include "tcppacket.h"
 
 class RemoteClientQuerys;
 
@@ -20,7 +20,7 @@ public:
     explicit RemoteConnection(QObject *parent = nullptr);
 	~RemoteConnection();
 public:
-	void                  SendMessage(NetPacket &packet);
+	void                  SendMessage(CTcpPacket &packet);
 private:
 	void                  CalculateStatistic();
 public slots:
@@ -40,7 +40,7 @@ private:
 	QSslSocket*           m_socket;
 	RemoteClientQuerys*   pQuerys;
 	SRemoteClient         m_Client;
-	std::queue<NetPacket> m_Packets;
+	std::queue<CTcpPacket> m_Packets;
 private:
 	int                   m_maxPacketSize;
 	int                   m_maxBadPacketsCount;

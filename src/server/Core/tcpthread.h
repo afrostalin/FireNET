@@ -26,7 +26,7 @@ public:
 public:
 	void                  run();
 	int                   Count();
-	void                  SendGlobalMessage(NetPacket &packet);
+	void                  SendGlobalMessage(CTcpPacket &packet);
 private:
 	TcpConnection*        CreateConnection();
 	void                  AddSignals(TcpConnection* connection);

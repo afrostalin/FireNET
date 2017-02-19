@@ -17,7 +17,7 @@ enum class EFireNetTcpPacketType : int
 	ServerMessage,
 };
 
-enum class EFireNetTcpPacketQuery : int
+enum class EFireNetTcpQuery : int
 {
 	Login,
 	Register,
@@ -40,7 +40,7 @@ enum class EFireNetTcpPacketQuery : int
 	UpdateProfile,
 };
 
-enum class EFireNetTcpPacketResult : int
+enum class EFireNetTcpResult : int
 {
 	LoginComplete,
 	LoginCompleteWithProfile,
@@ -64,7 +64,7 @@ enum class EFireNetTcpPacketResult : int
 	UpdateProfileComplete,
 };
 
-enum class EFireNetTcpPacketError : int
+enum class EFireNetTcpError : int
 {
 	LoginFail,
 	RegisterFail,
@@ -88,7 +88,7 @@ enum class EFireNetTcpPacketError : int
 };
 
 // Only server to client
-enum class EFireNetTcpPacketSMessage : int
+enum class EFireNetTcpSMessage : int
 {
 	GlobalChatMsg,
 	PrivateChatMsg,
@@ -100,15 +100,15 @@ enum class EFireNetTcpPacketSMessage : int
 class IFireNetTcpPacket
 {
 public:
-	virtual void                       WriteQuery(EFireNetTcpPacketQuery query) { WriteInt(static_cast<int>(query)); }
-	virtual void                       WriteResult(EFireNetTcpPacketResult result) { WriteInt(static_cast<int>(result)); }
-	virtual void                       WriteError(EFireNetTcpPacketError error) { WriteInt(static_cast<int>(error)); }
-	virtual void                       WriteServerMessage(EFireNetTcpPacketSMessage msg) { WriteInt(static_cast<int>(msg)); }
+	virtual void                       WriteQuery(EFireNetTcpQuery query) { WriteInt(static_cast<int>(query)); }
+	virtual void                       WriteResult(EFireNetTcpResult result) { WriteInt(static_cast<int>(result)); }
+	virtual void                       WriteError(EFireNetTcpError error) { WriteInt(static_cast<int>(error)); }
+	virtual void                       WriteServerMessage(EFireNetTcpSMessage msg) { WriteInt(static_cast<int>(msg)); }
 public:
-	virtual EFireNetTcpPacketQuery     ReadQuery() { return (EFireNetTcpPacketQuery)ReadInt(); }
-	virtual EFireNetTcpPacketResult    ReadResult() { return (EFireNetTcpPacketResult)ReadInt(); }
-	virtual EFireNetTcpPacketError     ReadError() { return (EFireNetTcpPacketError)ReadInt(); }
-	virtual EFireNetTcpPacketSMessage  ReadSMessage() { return (EFireNetTcpPacketSMessage)ReadInt(); }
+	virtual EFireNetTcpQuery           ReadQuery() { return (EFireNetTcpQuery)ReadInt(); }
+	virtual EFireNetTcpResult          ReadResult() { return (EFireNetTcpResult)ReadInt(); }
+	virtual EFireNetTcpError           ReadError() { return (EFireNetTcpError)ReadInt(); }
+	virtual EFireNetTcpSMessage        ReadSMessage() { return (EFireNetTcpSMessage)ReadInt(); }
 public:
 	virtual void                       WriteString(const std::string &value) = 0;
 	virtual void                       WriteInt(int value) = 0;

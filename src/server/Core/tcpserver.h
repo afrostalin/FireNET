@@ -14,7 +14,8 @@
 #include <QMutex>
 
 #include "tcpthread.h"
-#include "netpacket.h"
+
+class CTcpPacket;
 
 class TcpServer : public QTcpServer
 {
@@ -29,8 +30,8 @@ public:
 	bool              Listen(const QHostAddress &address, quint16 port);
 	void              Clear();
 public:
-	void              sendMessageToClient(QSslSocket* socket, NetPacket &packet);
-	void              sendGlobalMessage(NetPacket &packet);
+	void              sendMessageToClient(QSslSocket* socket, CTcpPacket &packet);
+	void              sendGlobalMessage(CTcpPacket &packet);
 
 	void              AddNewClient(SClient &client);
 	void              RemoveClient(SClient &client);

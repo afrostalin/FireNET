@@ -38,7 +38,7 @@ int TcpThread::Count()
 	return m_connections.count();
 }
 
-void TcpThread::SendGlobalMessage(NetPacket & packet)
+void TcpThread::SendGlobalMessage(CTcpPacket & packet)
 {
 	for (auto it = m_connections.begin(); it != m_connections.end(); ++it)
 	{
