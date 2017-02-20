@@ -18,13 +18,6 @@ IEntityRegistrator *IEntityRegistrator::g_pLast = nullptr;
 
 CFireNetCorePlugin::~CFireNetCorePlugin()
 {
-	// Unregister listeners
-	if (gEnv->pSystem)
-		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-
-	if (gEnv->pGameFramework)
-		gEnv->pGameFramework->UnregisterListener(this);
-
 	// Unregister entities
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 	while (pTemp != nullptr)
@@ -45,13 +38,18 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 #endif
 	}
 
-	if (mEnv->pNetworkThread)
+	// Close network thread
+	if (mEnv->pNetworkThread && mEnv->pTcpClient)
 		mEnv->pNetworkThread->SignalStopWork();
-
 	SAFE_DELETE(mEnv->pNetworkThread);
 
+	// Unregister listeners
+	if (gEnv && gEnv->pSystem)
+		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+
 	// Clear FireNet core pointer
-	gEnv->pFireNetCore = nullptr;
+	if (gEnv)
+		gEnv->pFireNetCore = nullptr;
 }
 
 bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams)
@@ -87,7 +85,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		// Register CVars
 		mEnv->net_ip = REGISTER_STRING("firenet_ip", "127.0.0.1", VF_NULL, "Sets the FireNet master server ip address");
 		REGISTER_CVAR2("firenet_port", &mEnv->net_port, 3322, VF_CHEAT, "FireNet master server port");
-		REGISTER_CVAR2("firenet_timeout", &mEnv->net_timeout, 5.0f, VF_NULL, "FireNet master server timeout");
+		REGISTER_CVAR2("firenet_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet master server timeout");
 
 #ifndef  NDEBUG // Only in debug mode
 		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
@@ -114,8 +112,6 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 
 void CFireNetCorePlugin::OnPostUpdate(float fDeltaTime)
 {
-	if (mEnv->pNetworkThread && mEnv->pTcpClient)
-		mEnv->pTcpClient->Update(fDeltaTime);
 }
 
 void CFireNetCorePlugin::ConnectToMasterServer()

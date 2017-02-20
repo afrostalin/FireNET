@@ -42,12 +42,6 @@ void TestConnection(IConsoleCmdArgs* argc)
 
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
-	if (gEnv->pSystem)
-		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-
-	if (gEnv->pGameFramework)
-		gEnv->pGameFramework->UnregisterListener(this);
-
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 	while (pTemp != nullptr)
 	{
@@ -58,11 +52,15 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 	// Stop and delete network thread
 	if (mEnv->pNetworkThread)
 		mEnv->pNetworkThread->SignalStopWork();
-
 	SAFE_DELETE(mEnv->pNetworkThread);
 
-	// Clear FireNet client pointer
-	gEnv->pFireNetClient = nullptr;
+	// Unregister listeners
+	if (gEnv && gEnv->pSystem)
+		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+
+	// Clear FireNet core pointer
+	if (gEnv)
+		gEnv->pFireNetClient = nullptr;
 }
 
 bool CFireNetClientPlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams)

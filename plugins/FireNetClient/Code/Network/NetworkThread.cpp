@@ -21,6 +21,8 @@ void CNetworkThread::ThreadEntry()
 		io_service.run();
 
 		CryLog(TITLE "UDP client closed.");
+
+		SAFE_DELETE(mEnv->pUdpClient);
 	}
 	catch (const std::exception& e)
 	{

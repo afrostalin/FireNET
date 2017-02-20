@@ -29,6 +29,8 @@ void CNetworkThread::ThreadEntry()
 		io_service.run();
 
 		CryLog(TITLE "TCP client closed.");
+
+		SAFE_DELETE(mEnv->pTcpClient);
 	}
 	catch (const std::exception& e)
 	{
@@ -38,7 +40,7 @@ void CNetworkThread::ThreadEntry()
 
 void CNetworkThread::SignalStopWork()
 {
-	if (mEnv->pTcpClient)
+	if (mEnv->pTcpClient && mEnv->pTcpClient->IsConnected())
 		mEnv->pTcpClient->CloseConnection();
 
 	SAFE_DELETE(mEnv->pTcpClient);

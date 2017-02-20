@@ -8,6 +8,7 @@
 #endif
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/asio/ssl.hpp>
 #include <queue>
 
@@ -42,11 +43,9 @@ public:
 public:
 	void                    CloseConnection();
 public:
-	void                    Update(float fDeltaTime);	
 	bool                    IsConnected() { return bIsConnected; };
 public:
 	void                    SendQuery(CTcpPacket &packet);
-	void                    SendSyncQuery(CTcpPacket &packet, float timeout);
 private:
 	bool                    Do_VerifyCertificate(bool preverified, boost::asio::ssl::verify_context& ctx);
 	void                    Do_Connect();
@@ -54,8 +53,9 @@ private:
 	void                    Do_Read();
 	void                    Do_Write();
 private:
-	void                    On_Disconnected();
+	void                    On_Disconnected();             
 private:
+	void                    TimeOutCheck();
 	void                    AddToSendQueue(CTcpPacket &packet);
 private:
 	ETcpClientStatus        m_Status;
@@ -74,4 +74,5 @@ private:
 private:
 	boost::asio::io_service&                                m_IO_service;
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket>  m_SslSocket;
+	boost::asio::deadline_timer                             m_Timer;
 };

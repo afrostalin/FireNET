@@ -11,6 +11,7 @@ using namespace boost::asio;
 
 CTcpClient::CTcpClient(io_service & io_service, ssl::context & context) : m_SslSocket(io_service, context) 
 	, m_IO_service(io_service)
+	, m_Timer(io_service)
 	, pReadQueue(nullptr)
 {
 	m_Status = ETcpClientStatus::NotConnected;
@@ -25,6 +26,9 @@ CTcpClient::CTcpClient(io_service & io_service, ssl::context & context) : m_SslS
 
 	// Start connection
 	Do_Connect();
+
+	// Start timer
+	m_Timer.async_wait(boost::bind(&CTcpClient::TimeOutCheck, this));
 }
 
 CTcpClient::~CTcpClient()
@@ -32,44 +36,15 @@ CTcpClient::~CTcpClient()
 	SAFE_DELETE(pReadQueue);
 }
 
-void CTcpClient::Update(float fDeltaTime)
+void CTcpClient::TimeOutCheck()
 {
-	// Connection timeout
-	if (m_Status == ETcpClientStatus::Connecting)
+	if (m_Timer.expires_at() <= deadline_timer::traits_type::now())
 	{
-		if (fConTimeout == 0.f)
-		{
-			fConTimeout = gEnv->pTimer->GetAsyncCurTime() + gEnv->pConsole->GetCVar("firenet_timeout")->GetFVal();
-			CryLog(TITLE "Wait connection. Start time = %f. End time = %f", fDeltaTime, fConTimeout);
-		}
-
-		if (fConTimeout < gEnv->pTimer->GetAsyncCurTime())
-		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
-
-			m_Status = ETcpClientStatus::NotConnected;
-
-			SFireNetEventArgs args;
-			args.AddInt(0);
-			mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
-		}
+		m_SslSocket.lowest_layer().close();
+		m_Timer.expires_at(boost::posix_time::pos_infin);
 	}
 
-	// Message sending timeout
-	if (m_Status == ETcpClientStatus::Connected && m_MessageStatus == ETcpMessageStatus::Wait)
-	{
-		if (fMsgEndTime == 0.f)
-		{
-			fMsgEndTime = gEnv->pTimer->GetAsyncCurTime() + fMsgTimeout;
-			CryLog(TITLE "Wait server answer. Start time = %f. End time = %f", fDeltaTime, fConTimeout);
-		}
-
-		if (fMsgEndTime < gEnv->pTimer->GetAsyncCurTime())
-		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Answer timeout!");
-			m_MessageStatus = ETcpMessageStatus::Error;
-		}
-	}
+	m_Timer.async_wait(boost::bind(&CTcpClient::TimeOutCheck, this));
 }
 
 void CTcpClient::AddToSendQueue(CTcpPacket & packet)
@@ -94,6 +69,7 @@ void CTcpClient::CloseConnection()
 		bIsConnected = false;
 		m_MessageStatus = ETcpMessageStatus::None;
 
+		m_Timer.cancel();
 		m_IO_service.stop();
 	}
 }
@@ -112,28 +88,6 @@ void CTcpClient::SendQuery(CTcpPacket & packet)
 	}
 }
 
-void CTcpClient::SendSyncQuery(CTcpPacket & packet, float timeout)
-{
-	if (bIsConnected)
-	{
-		fMsgTimeout = timeout;
-		fMsgEndTime = 0.f;
-		m_MessageStatus = ETcpMessageStatus::Wait;
-		AddToSendQueue(packet);
-
-		while (m_MessageStatus != ETcpMessageStatus::Error || m_MessageStatus != ETcpMessageStatus::Recieved)
-		{
-			CrySleep(15);
-		}
-	}
-	else
-	{
-		m_MessageStatus = ETcpMessageStatus::Error;
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't send message to master server. No connection");
-		return;
-	}
-}
-
 bool CTcpClient::Do_VerifyCertificate(bool preverified, boost::asio::ssl::verify_context & ctx)
 {
 	CryLog(TITLE "Verifyng ssl certificate...");
@@ -148,8 +102,9 @@ void CTcpClient::Do_Connect()
 { 
 	ICVar* ip = gEnv->pConsole->GetCVar("firenet_ip");
 	ICVar* port = gEnv->pConsole->GetCVar("firenet_port");
+	ICVar* timeout = gEnv->pConsole->GetCVar("firenet_timeout");
 
-	if (ip && port)
+	if (ip && port && timeout)
 	{
 		CryLog(TITLE "Start connecting to master server <%s : %d>", ip->GetString(), port->GetIVal());
 
@@ -159,15 +114,27 @@ void CTcpClient::Do_Connect()
 		ip::tcp::resolver resolver(m_IO_service);
 		auto epIt = resolver.resolve(ep);
 
+		m_Timer.expires_from_now(boost::posix_time::seconds(timeout->GetIVal()));
+
 		async_connect(m_SslSocket.lowest_layer(), epIt, [this](error_code ec, ip::tcp::resolver::iterator)
 		{
-			if (!ec)
+			if (!m_SslSocket.lowest_layer().is_open())
+			{
+				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
+				SFireNetEventArgs args;
+				args.AddInt(0);
+				mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+			} 
+			else if (!ec)
 			{
 				Do_Handshake();
 			}
 			else
 			{
-				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection error : %s", ec.message().c_str());
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection error : %s", ec.message().c_str());	
+				SFireNetEventArgs args;
+				args.AddInt(1);
+				mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 			}
 		});
 	}
@@ -267,7 +234,9 @@ void CTcpClient::Do_Write()
 
 void CTcpClient::On_Disconnected()
 {
+	m_Timer.cancel();
 	m_IO_service.stop();
+
 	m_Status = ETcpClientStatus::NotConnected;
 	m_MessageStatus = ETcpMessageStatus::None;
 	bIsConnected = false;

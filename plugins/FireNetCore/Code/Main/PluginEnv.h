@@ -38,7 +38,7 @@ struct SPluginEnv
 	// CVars
 	ICVar*                            net_ip;
 	int                               net_port;
-	float                             net_timeout;
+	int                               net_timeout;
 	int                               net_debug;
 
 	// Send FireNet event with arguments
