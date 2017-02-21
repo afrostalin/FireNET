@@ -24,6 +24,8 @@ CTcpClient::CTcpClient(io_service & io_service, ssl::context & context) : m_SslS
 	m_SslSocket.set_verify_mode(ssl::verify_peer);
 	m_SslSocket.set_verify_callback(boost::bind(&CTcpClient::Do_VerifyCertificate, this, _1, _2));
 
+	CryLog(TITLE "TCP client successfully init.");
+
 	// Start connection
 	Do_Connect();
 
@@ -62,16 +64,13 @@ void CTcpClient::AddToSendQueue(CTcpPacket & packet)
 
 void CTcpClient::CloseConnection()
 {
-	if (bIsConnected)
-	{
-		CryLog(TITLE "Closing connection with master server");
-		m_Status = ETcpClientStatus::NotConnected;
-		bIsConnected = false;
-		m_MessageStatus = ETcpMessageStatus::None;
+	CryLog(TITLE "Closing TCP client...");
+	m_Status = ETcpClientStatus::NotConnected;
+	bIsConnected = false;
+	m_MessageStatus = ETcpMessageStatus::None;
 
-		m_Timer.cancel();
-		m_IO_service.stop();
-	}
+	m_Timer.cancel();
+	m_IO_service.stop();
 }
 
 void CTcpClient::SendQuery(CTcpPacket & packet)
@@ -98,6 +97,7 @@ bool CTcpClient::Do_VerifyCertificate(bool preverified, boost::asio::ssl::verify
 	return preverified;
 }
 
+// Errors : 0 - connection timeout, 1 - connection refused, 2 - unknown error
 void CTcpClient::Do_Connect()
 { 
 	ICVar* ip = gEnv->pConsole->GetCVar("firenet_ip");
@@ -106,7 +106,7 @@ void CTcpClient::Do_Connect()
 
 	if (ip && port && timeout)
 	{
-		CryLog(TITLE "Start connecting to master server <%s : %d>", ip->GetString(), port->GetIVal());
+		CryLog(TITLE "Connecting to master server <%s : %d> ...", ip->GetString(), port->GetIVal());
 
 		m_Status = ETcpClientStatus::Connecting;
 
@@ -118,12 +118,16 @@ void CTcpClient::Do_Connect()
 
 		async_connect(m_SslSocket.lowest_layer(), epIt, [this](error_code ec, ip::tcp::resolver::iterator)
 		{
+			SFireNetEventArgs args;
+
 			if (!m_SslSocket.lowest_layer().is_open())
 			{
 				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
-				SFireNetEventArgs args;
+				
 				args.AddInt(0);
 				mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+
+				CloseConnection();
 			} 
 			else if (!ec)
 			{
@@ -131,10 +135,22 @@ void CTcpClient::Do_Connect()
 			}
 			else
 			{
-				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection error : %s", ec.message().c_str());	
-				SFireNetEventArgs args;
-				args.AddInt(1);
-				mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+				if (ec.value() == 10061)
+				{
+					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection refused by host!");
+			
+					args.AddInt(1);
+					mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+				}
+				else
+				{
+					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection error : %s", ec.message().c_str());
+
+					args.AddInt(2);
+					mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+				}
+
+				CloseConnection();
 			}
 		});
 	}

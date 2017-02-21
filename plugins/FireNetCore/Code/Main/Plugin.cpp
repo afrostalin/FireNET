@@ -10,6 +10,7 @@
 
 #include <CryExtension/ICryPluginManager.h>
 #include <CryCore/Platform/platform_impl.inl>
+#include <CryExtension/ICryPluginManager.h>
 
 USE_CRYPLUGIN_FLOWNODES
 
@@ -44,27 +45,33 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 	SAFE_DELETE(mEnv->pNetworkThread);
 
 	// Unregister listeners
-	if (gEnv && gEnv->pSystem)
+	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
 	// Clear FireNet core pointer
-	if (gEnv)
-		gEnv->pFireNetCore = nullptr;
+	gEnv->pFireNetCore = nullptr;
+
+	CryLogAlways(TITLE "Unloaded.");
 }
 
 bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams)
 {
+	if (initParams.bEditor && !gEnv->IsEditor())
+		gEnv->SetIsEditor(true);
+
+	if (initParams.bDedicatedServer && !gEnv->IsDedicated())
+		gEnv->SetIsDedicated(true);
+
 	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 
 	// Init FireNet core pointer
 	gEnv->pFireNetCore = this;
-
-	if (initParams.bEditor)
-		gEnv->SetIsEditor(true);
-
-	if (initParams.bDedicatedServer)
-		gEnv->SetIsDedicated(true);
 	
+/*	if (!gEnv->IsDedicated())
+		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Client", "FireNetClient_Plugin");
+	else if(gEnv->IsDedicated())
+		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Server", "FireNetServer_Plugin");*/
+
 	return true;
 }
 
@@ -102,7 +109,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		}
 		else
 			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
-
+			
 		break;
 	}
 	default:
@@ -148,7 +155,7 @@ void CFireNetCorePlugin::Authorization(const std::string & login, const std::str
 		packet.WriteString(login.c_str());
 		packet.WriteString(password.c_str());
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -167,7 +174,7 @@ void CFireNetCorePlugin::Registration(const std::string & login, const std::stri
 		packet.WriteString(login.c_str());
 		packet.WriteString(password.c_str());
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -186,7 +193,7 @@ void CFireNetCorePlugin::CreateProfile(const std::string & nickname, const std::
 		packet.WriteString(nickname.c_str());
 		packet.WriteString(character.c_str());
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -201,7 +208,7 @@ void CFireNetCorePlugin::GetProfile(int uid)
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::GetProfile);
 
-	SEND_PACKET(packet);
+	mEnv->SendPacket(packet);
 }
 
 SFireNetProfile * CFireNetCorePlugin::GetLocalProfile()
@@ -217,7 +224,7 @@ void CFireNetCorePlugin::GetShop()
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::GetShop);
 
-	SEND_PACKET(packet);
+	mEnv->SendPacket(packet);
 }
 
 void CFireNetCorePlugin::BuyItem(const std::string & item)
@@ -230,7 +237,7 @@ void CFireNetCorePlugin::BuyItem(const std::string & item)
 		packet.WriteQuery(EFireNetTcpQuery::BuyItem);
 		packet.WriteString(item.c_str());
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -248,7 +255,7 @@ void CFireNetCorePlugin::RemoveItem(const std::string & item)
 		packet.WriteQuery(EFireNetTcpQuery::RemoveItem);
 		packet.WriteString(item.c_str());
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -267,7 +274,7 @@ void CFireNetCorePlugin::SendInvite(EFireNetInviteType type, int uid)
 		packet.WriteInt(type);
 		packet.WriteInt(uid);
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -282,7 +289,7 @@ void CFireNetCorePlugin::DeclineInvite()
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::DeclineInvite);
 
-	SEND_PACKET(packet);
+	mEnv->SendPacket(packet);
 }
 
 void CFireNetCorePlugin::AcceptInvite()
@@ -292,7 +299,7 @@ void CFireNetCorePlugin::AcceptInvite()
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::AcceptInvite);
 
-	SEND_PACKET(packet);
+	mEnv->SendPacket(packet);
 }
 
 void CFireNetCorePlugin::RemoveFriend(int uid)
@@ -305,7 +312,7 @@ void CFireNetCorePlugin::RemoveFriend(int uid)
 		packet.WriteQuery(EFireNetTcpQuery::RemoveFriend);
 		packet.WriteInt(uid);
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -326,7 +333,7 @@ void CFireNetCorePlugin::SendChatMessage(EFireNetChatMsgType type, int uid)
 		packet.WriteInt(uid);
 	}
 
-	SEND_PACKET(packet);
+	mEnv->SendPacket(packet);
 }
 
 void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::string & gamerules)
@@ -340,7 +347,7 @@ void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::strin
 		packet.WriteString(map.c_str());
 		packet.WriteString(gamerules.c_str());
 
-		SEND_PACKET(packet);
+		mEnv->SendPacket(packet);
 	}
 	else
 	{
@@ -350,7 +357,12 @@ void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::strin
 
 void CFireNetCorePlugin::SendRawRequestToMasterServer(CTcpPacket &packet)
 {
-	SEND_PACKET(packet);
+	mEnv->SendPacket(packet);
+}
+
+bool CFireNetCorePlugin::IsConnected()
+{
+	return mEnv->pTcpClient ? mEnv->pTcpClient->IsConnected() : false;
 }
 
 void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)

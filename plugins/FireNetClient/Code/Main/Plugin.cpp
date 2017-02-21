@@ -42,11 +42,21 @@ void TestConnection(IConsoleCmdArgs* argc)
 
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
+	// Unregister entities
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 	while (pTemp != nullptr)
 	{
 		pTemp->Unregister();
 		pTemp = pTemp->m_pNext;
+	}
+
+	// Unregister CVars
+	IConsole* pConsole = gEnv->pConsole;
+	if (pConsole)
+	{
+		pConsole->UnregisterVariable("firenet_game_server_ip");
+		pConsole->UnregisterVariable("firenet_game_server_port");
+		pConsole->UnregisterVariable("firenet_game_server_timeout");
 	}
 
 	// Stop and delete network thread
@@ -55,26 +65,36 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 	SAFE_DELETE(mEnv->pNetworkThread);
 
 	// Unregister listeners
-	if (gEnv && gEnv->pSystem)
+	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
 	// Clear FireNet core pointer
-	if (gEnv)
-		gEnv->pFireNetClient = nullptr;
+	gEnv->pFireNetClient = nullptr;
+
+	CryLogAlways(TITLE "Unloaded.");
 }
 
 bool CFireNetClientPlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams)
 {
-	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
-
-	// Init FireNet client pointer
-	gEnv->pFireNetClient = this;
-
-	if (initParams.bEditor)
+	if (initParams.bEditor && !gEnv->IsEditor())
 		gEnv->SetIsEditor(true);
 
-	if (initParams.bDedicatedServer)
+	if (initParams.bDedicatedServer && !gEnv->IsDedicated())
 		gEnv->SetIsDedicated(true);
+
+	if (!gEnv->IsDedicated())
+	{
+		gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
+
+		// Init FireNet client pointer
+		gEnv->pFireNetClient = this;
+	}
+	else
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't init FireNet-Client.dll - Dedicated server not support client library!");
+
+		gEnv->pFireNetClient = nullptr;
+	}
 
 	return true;
 }
@@ -117,7 +137,7 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			CryLog(TITLE "Framework listener registered");
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
 
 		break;
 	}
@@ -133,7 +153,7 @@ void CFireNetClientPlugin::OnPostUpdate(float fDeltaTime)
 	}
 }
 
-void CFireNetClientPlugin::ConnectToServer(const char * ip, int port)
+void CFireNetClientPlugin::ConnectToGameServer()
 {
 	if (mEnv->pNetworkThread)
 	{
@@ -147,7 +167,7 @@ void CFireNetClientPlugin::ConnectToServer(const char * ip, int port)
 
 		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetClient_Thread"))
 		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
 
 			SAFE_DELETE(mEnv->pNetworkThread);
 		}
@@ -156,7 +176,7 @@ void CFireNetClientPlugin::ConnectToServer(const char * ip, int port)
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : It's not dedicated server or it's editor");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : It's not dedicated server or it's editor");
 	}
 }
 

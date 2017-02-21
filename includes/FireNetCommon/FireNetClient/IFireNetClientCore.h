@@ -8,7 +8,7 @@
 struct IFireNetClientCore
 {
 	// Connect to game server
-	virtual void ConnectToServer(const char* ip, int port) = 0;
+	virtual void ConnectToGameServer() = 0;
 
 	// Disconnect from game server
 	virtual void DisconnectFromServer() = 0;

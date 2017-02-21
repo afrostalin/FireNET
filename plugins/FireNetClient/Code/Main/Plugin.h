@@ -19,7 +19,7 @@ class CFireNetClientPlugin
 {
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
-	CRYGENERATE_SINGLETONCLASS(CFireNetClientPlugin, "FireNetClient_Impl", 0x0D7D9B7F70664BCF, 0x91C7F28F7EF39D72)
+	CRYGENERATE_SINGLETONCLASS(CFireNetClientPlugin, "FireNetClient_Plugin", 0xABEFAB8521264428, 0xA2F67A39185CE405)
 
 	virtual ~CFireNetClientPlugin();
 	
@@ -43,7 +43,7 @@ public:
 	// ~IGameFrameworkListener
 
 	// IFireNetClientCore
-	virtual void        ConnectToServer(const char* ip, int port) override;
+	virtual void        ConnectToGameServer() override;
 	virtual void        DisconnectFromServer() override;
 	virtual void        SendMovementRequest(EFireNetClientActions action, float value = 0.f) override;
 	virtual bool        IsConnected() override { return false; }

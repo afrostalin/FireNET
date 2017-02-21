@@ -17,7 +17,7 @@ class CFireNetCorePlugin
 {
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
-	CRYGENERATE_SINGLETONCLASS(CFireNetCorePlugin, "FireNetCore_Impl", 0x2799ED0066B04E6B, 0xA5722E51345346A8)
+	CRYGENERATE_SINGLETONCLASS(CFireNetCorePlugin, "FireNetCore_Plugin", 0x2799ED0066B04E6B, 0xA5722E51345346A8)
 	PLUGIN_FLOWNODE_REGISTER
 	PLUGIN_FLOWNODE_UNREGISTER
 
@@ -60,7 +60,7 @@ public:
 	virtual void             SendChatMessage(EFireNetChatMsgType type, int uid = 0) override;
 	virtual void             GetGameServer(const std::string &map, const std::string &gamerules) override;
 	virtual void             SendRawRequestToMasterServer(CTcpPacket &packet) override;
-	virtual bool             IsConnected() override { return false; }
+	virtual bool             IsConnected() override;
 	virtual void             SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) override;
 	// ~IFireNetCore
 };

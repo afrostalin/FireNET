@@ -63,14 +63,11 @@ void CUdpClient::SendNetMessage(CUdpPacket & packet)
 
 void CUdpClient::CloseConnection()
 {
-	if (bIsConnected)
-	{
-		CryLog(TITLE "Closing connection with game server");
-		m_Status = EUdpClientStatus::NotConnected;
-		bIsConnected = false;
+	CryLog(TITLE "Closing connection with game server");
+	m_Status = EUdpClientStatus::NotConnected;
+	bIsConnected = false;
 
-		m_IO_service.stop();
-	}
+	m_IO_service.stop();
 }
 
 void CUdpClient::Do_Connect()

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ISimpleActor.h"
+#include "Actors/ISimpleActor.h"
 #include <CryMath/Cry_Camera.h>
 
 class CNetPlayerInput;

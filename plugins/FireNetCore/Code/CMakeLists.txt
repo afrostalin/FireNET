@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.8.0)
-project (FireNetCore VERSION 1.0 LANGUAGES CXX)
+cmake_minimum_required (VERSION 3.6.0)
+project (FireNet-Core VERSION 1.0 LANGUAGES CXX)
 
 option(OPTION_PCH "Enable Precompiled headers" ON)
 

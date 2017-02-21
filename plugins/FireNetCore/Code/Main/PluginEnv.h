@@ -4,14 +4,10 @@
 #pragma once
 
 #include <FireNet-Core>
+#include "Network/TcpClient.h"
 
 #define TITLE "[FireNet-Core] "
 
-// Safe packet sending
-#define SEND_PACKET(packet) {if(mEnv->pTcpClient) {mEnv->pTcpClient->SendQuery(packet);}}
-#define SEND_SYNC_PACKET(packet, timeout) {if(mEnv->pTcpClient) {mEnv->pTcpClient->SendSyncQuery(packet, timeout);}}
-
-class CTcpClient;
 class CNetworkThread;
 
 // Global FireNet environment
@@ -47,6 +43,15 @@ struct SPluginEnv
 		for (auto it = m_Listeners.begin(); it != m_Listeners.end(); ++it)
 		{
 			(*it)->OnFireNetEvent(event, args);
+		}
+	}
+	
+	// Safe send TCP packet to master server
+	inline void SendPacket(CTcpPacket &packet)
+	{
+		if (pNetworkThread && pTcpClient && pTcpClient->IsConnected())
+		{
+			pTcpClient->SendQuery(packet);
 		}
 	}
 };
