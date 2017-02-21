@@ -28,6 +28,9 @@ enum class EFireNetUdpRequest : int
 	Action,
 };
 
+// Max UDP packet size
+enum class EFireNetUdpPackeMaxSize : int { SIZE = 512 };
+
 class IFireNetUdpPacket
 {
 public:

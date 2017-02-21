@@ -97,7 +97,7 @@ void CUdpClient::Do_Connect()
 
 void CUdpClient::Do_Read()
 {
-	m_UdpSocket->async_receive_from( buffer(m_ReadBuffer, static_cast<int>(EUdpPacketMaxSize::SIZE)), m_UdpSenderEndPoint, [this](boost::system::error_code ec, std::size_t length)
+	m_UdpSocket->async_receive_from( buffer(m_ReadBuffer, static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)), m_UdpSenderEndPoint, [this](boost::system::error_code ec, std::size_t length)
 	{
 		if (!ec && length > 0)
 		{

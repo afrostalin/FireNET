@@ -177,9 +177,9 @@ void CTcpClient::Do_Handshake()
 
 void CTcpClient::Do_Read()
 {
-	std::memset(m_ReadBuffer, 0, static_cast<int>(ETcpPacketMaxSize::SIZE));
+	std::memset(m_ReadBuffer, 0, static_cast<int>(EFireNetTcpPackeMaxSize::SIZE));
 
-	m_SslSocket.async_read_some(buffer(m_ReadBuffer, static_cast<int>(ETcpPacketMaxSize::SIZE)), [this](boost::system::error_code ec, std::size_t length) 
+	m_SslSocket.async_read_some(buffer(m_ReadBuffer, static_cast<int>(EFireNetTcpPackeMaxSize::SIZE)), [this](boost::system::error_code ec, std::size_t length)
 	{
 		if (!ec)
 		{

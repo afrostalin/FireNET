@@ -16,8 +16,6 @@
 
 class CReadQueue;
 
-enum class ETcpPacketMaxSize : int { SIZE = 512};
-
 enum class ETcpClientStatus : int
 {
 	NotConnected,
@@ -70,7 +68,7 @@ private:
 
 	bool                    bIsConnected;
 
-	char                    m_ReadBuffer[static_cast<int>(ETcpPacketMaxSize::SIZE)];
+	char                    m_ReadBuffer[static_cast<int>(EFireNetTcpPackeMaxSize::SIZE)];
 private:
 	boost::asio::io_service&                                m_IO_service;
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket>  m_SslSocket;

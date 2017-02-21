@@ -12,8 +12,6 @@
 
 #include "UdpPacket.h"
 
-enum class EUdpPacketMaxSize : int { SIZE = 512 };
-
 enum class EUdpClientStatus : int
 {
 	NotConnected,
@@ -56,5 +54,5 @@ private:
 	boost::asio::ip::udp::endpoint* m_UdpEndPoint;
 	boost::asio::ip::udp::endpoint  m_UdpSenderEndPoint;
 
-	char                            m_ReadBuffer[static_cast<int>(EUdpPacketMaxSize::SIZE)];
+	char                            m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];
 };

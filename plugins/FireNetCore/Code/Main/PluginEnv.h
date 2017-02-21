@@ -24,7 +24,7 @@ struct SPluginEnv
 
 		net_ip = nullptr;
 		net_port = 0;
-		net_timeout = 0.f;
+		net_timeout = 0;
 		net_debug = 0;
 	}
 

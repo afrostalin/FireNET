@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define TITLE "[FireNET-Client] "
+#define TITLE "[FireNet-Client] "
 
 class CGameStateSynchronization;
 class CUdpClient;
@@ -26,7 +26,7 @@ struct SPluginEnv
 
 		net_ip = nullptr;
 		net_port = 0;
-		net_timeout = 0.f;
+		net_timeout = 0;
 	}
 
 	// Pointers
@@ -44,7 +44,7 @@ struct SPluginEnv
 	// CVars
 	ICVar*                     net_ip;
 	int                        net_port;
-	float                      net_timeout;
+	int                        net_timeout;
 };
 
 extern SPluginEnv* mEnv;

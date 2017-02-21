@@ -32,7 +32,7 @@ set (SourceGroup_PluginMain
 set (SourceGroup_NetActor
 	"NetActor/NetPlayer.cpp"
 	"NetActor/NetPlayer.h"
-	"NetActor/ISimpleActor.h"
+	"../../Common/Actors/ISimpleActor.h"
 )
 
 set(SourceGroup_NetActorAnimations
@@ -51,14 +51,14 @@ set(SourceGroup_NetActorMovement
 )
 
 set(SourceGroup_Entities
-	"Entities/ISimpleExtension.h"
+	"../../Common/Entities/ISimpleExtension.h"
 )
 
 set(SourceGroup_Network
 	"Network/UdpClient.cpp"
 	"Network/UdpClient.h"
-	"Network/UdpPacket.cpp"
-	"Network/UdpPacket.h"
+	"../../Common/Network/UdpPacket.cpp"
+	"../../Common/Network/UdpPacket.h"
 	"Network/SyncGameState.cpp"
 	"Network/SyncGameState.h"
 	"Network/ReadQueue.cpp"
@@ -97,6 +97,7 @@ endif (OPTION_PCH AND MSVC)
 
 add_library(${PROJECT_NAME} MODULE ${SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../Common)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../includes/FireNetCommon)
 target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction ${Boost_LIBRARIES})
 

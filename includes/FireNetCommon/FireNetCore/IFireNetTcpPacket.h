@@ -97,6 +97,9 @@ enum class EFireNetTcpSMessage : int
 	ServerCommand,
 };
 
+// Max TCP packet size
+enum class EFireNetTcpPackeMaxSize : int { SIZE = 512 };
+
 class IFireNetTcpPacket
 {
 public:

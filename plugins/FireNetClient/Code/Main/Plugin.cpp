@@ -96,7 +96,7 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 		// Register CVars
 		mEnv->net_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
 		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_port, 64000, VF_CHEAT, "FireNet game server port");
-		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_timeout, 10.0f, VF_NULL, "FireNet game server timeout");
+		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet game server timeout");
 
 		// Test functionality
 		REGISTER_COMMAND("net_connect", TestConnection, VF_NULL, "");
