@@ -68,4 +68,7 @@ struct IFireNetCore
 
 	// Send FireNet event
 	virtual void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) = 0;
+
+	// Normaly shutdown plugin
+	virtual bool Quit() = 0;
 };

@@ -18,4 +18,7 @@ struct IFireNetClientCore
 
 	// Return connection status
 	virtual bool IsConnected() = 0;
+
+	// Normaly shutdown plugin
+	virtual bool Quit() = 0;
 };

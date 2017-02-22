@@ -7,6 +7,7 @@
 #include "Network/UdpClient.h"
 #include "Network/NetworkThread.h"
 #include "Network/SyncGameState.h"
+#include "Network/UdpPacket.h"
 
 #include <CryCore/Platform/platform_impl.inl>
 
@@ -59,9 +60,17 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 		pConsole->UnregisterVariable("firenet_game_server_timeout");
 	}
 
-	// Stop and delete network thread
+	// Stop and delete network thread if Quit funtion not executed
 	if (mEnv->pNetworkThread)
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Network thread not deleted! Use Quit function to normal shutdown plugin!");
+
 		mEnv->pNetworkThread->SignalStopWork();
+
+		if (gEnv->pThreadManager)
+			gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+	}
+
 	SAFE_DELETE(mEnv->pNetworkThread);
 
 	// Unregister listeners
@@ -157,8 +166,12 @@ void CFireNetClientPlugin::ConnectToGameServer()
 {
 	if (mEnv->pNetworkThread)
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "FireNet client thread alredy spawned!");
-		return;
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "FireNet client thread alredy spawned. Removing...");
+
+		mEnv->pNetworkThread->SignalStopWork();
+		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+
+		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
 	if (!gEnv->IsDedicated() && !gEnv->IsEditor())
@@ -199,6 +212,31 @@ void CFireNetClientPlugin::SendMovementRequest(EFireNetClientActions action, flo
 
 		mEnv->pUdpClient->SendNetMessage(packet);
 	}
+}
+
+bool CFireNetClientPlugin::IsConnected()
+{
+	return mEnv->pUdpClient ? mEnv->pUdpClient->IsConnected() : false;
+}
+
+bool CFireNetClientPlugin::Quit()
+{
+	CryLogAlways(TITLE "Closing plugin...");
+
+	if (mEnv->pNetworkThread)
+	{
+		mEnv->pNetworkThread->SignalStopWork();
+		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+	}
+
+	SAFE_DELETE(mEnv->pNetworkThread);
+
+	if (!mEnv->pNetworkThread)
+		return true;
+	else
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normal close plugin - network thread not deleted!");
+
+	return false;
 }
 
 CRYREGISTER_SINGLETON_CLASS(CFireNetClientPlugin)
