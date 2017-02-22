@@ -62,6 +62,7 @@ public:
 	virtual void             SendRawRequestToMasterServer(CTcpPacket &packet) override;
 	virtual bool             IsConnected() override;
 	virtual void             SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) override;
+	virtual bool             Quit() override;
 	// ~IFireNetCore
 };
 

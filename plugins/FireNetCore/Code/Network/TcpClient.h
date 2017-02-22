@@ -67,6 +67,7 @@ private:
 	float                   fMsgEndTime;
 
 	bool                    bIsConnected;
+	bool                    bIsClosing;
 
 	char                    m_ReadBuffer[static_cast<int>(EFireNetTcpPackeMaxSize::SIZE)];
 private:

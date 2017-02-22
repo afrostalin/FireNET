@@ -16,9 +16,19 @@ void CNetworkThread::ThreadEntry()
 
 		io_service io_service;
 
-		mEnv->pUdpClient = new CUdpClient(io_service);
+		ICVar* ip = gEnv->pConsole->GetCVar("firenet_game_server_ip");
+		ICVar* port = gEnv->pConsole->GetCVar("firenet_game_server_port");
 
-		io_service.run();
+		if (ip && port)
+		{
+			mEnv->pUdpClient = new CUdpClient(io_service, ip->GetString(), port->GetIVal());
+
+			io_service.run();
+		}
+		else
+		{
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't init UDP client - Can't ger game server ip/port");
+		}
 
 		CryLog(TITLE "UDP client closed.");
 
@@ -34,6 +44,4 @@ void CNetworkThread::SignalStopWork()
 {
 	if (mEnv->pUdpClient)
 		mEnv->pUdpClient->CloseConnection();
-
-	SAFE_DELETE(mEnv->pUdpClient);
 }

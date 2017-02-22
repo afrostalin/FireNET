@@ -3,7 +3,7 @@
 
 #include "StdAfx.h"
 #include "ReadQueue.h"
-#include "UdpPacket.h"
+#include "Network/UdpPacket.h"
 
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {

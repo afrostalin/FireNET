@@ -40,8 +40,6 @@ void CNetworkThread::ThreadEntry()
 
 void CNetworkThread::SignalStopWork()
 {
-	if (mEnv->pTcpClient && mEnv->pTcpClient->IsConnected())
+	if (mEnv->pTcpClient)
 		mEnv->pTcpClient->CloseConnection();
-
-	SAFE_DELETE(mEnv->pTcpClient);
 }

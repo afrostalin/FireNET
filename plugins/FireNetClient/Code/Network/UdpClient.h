@@ -10,7 +10,7 @@
 #include <boost/bind.hpp>
 #include <queue>
 
-#include "UdpPacket.h"
+#include "Network/UdpPacket.h"
 
 enum class EUdpClientStatus : int
 {
@@ -24,7 +24,7 @@ class CReadQueue;
 class CUdpClient
 {
 public:
-	CUdpClient(boost::asio::io_service& io_service);
+	CUdpClient(boost::asio::io_service& io_service, const char* ip, short port);
 	~CUdpClient();
 public:
 	void                            Update(float fDeltaTime);
@@ -49,9 +49,9 @@ private:
 	bool                            bIsConnected;
 private:
 	boost::asio::io_service&        m_IO_service; 
-	boost::asio::ip::udp::socket*   m_UdpSocket;
+	boost::asio::ip::udp::socket    m_UdpSocket;
 
-	boost::asio::ip::udp::endpoint* m_UdpEndPoint;
+	boost::asio::ip::udp::endpoint  m_ServerEndPoint;
 	boost::asio::ip::udp::endpoint  m_UdpSenderEndPoint;
 
 	char                            m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];

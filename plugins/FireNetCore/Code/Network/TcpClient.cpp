@@ -13,6 +13,8 @@ CTcpClient::CTcpClient(io_service & io_service, ssl::context & context) : m_SslS
 	, m_IO_service(io_service)
 	, m_Timer(io_service)
 	, pReadQueue(nullptr)
+	, bIsConnected(false)
+	, bIsClosing(false)
 {
 	m_Status = ETcpClientStatus::NotConnected;
 	m_MessageStatus = ETcpMessageStatus::None;
@@ -40,7 +42,7 @@ CTcpClient::~CTcpClient()
 
 void CTcpClient::TimeOutCheck()
 {
-	if (m_Timer.expires_at() <= deadline_timer::traits_type::now())
+	if ((m_Timer.expires_at() <= deadline_timer::traits_type::now()) && !bIsConnected)
 	{
 		m_SslSocket.lowest_layer().close();
 		m_Timer.expires_at(boost::posix_time::pos_infin);
@@ -65,10 +67,13 @@ void CTcpClient::AddToSendQueue(CTcpPacket & packet)
 void CTcpClient::CloseConnection()
 {
 	CryLog(TITLE "Closing TCP client...");
-	m_Status = ETcpClientStatus::NotConnected;
-	bIsConnected = false;
-	m_MessageStatus = ETcpMessageStatus::None;
 
+	m_Status = ETcpClientStatus::NotConnected;
+	m_MessageStatus = ETcpMessageStatus::None;
+	bIsConnected = false;
+	bIsClosing = true;
+	
+	m_SslSocket.lowest_layer().close();
 	m_Timer.cancel();
 	m_IO_service.stop();
 }
@@ -101,7 +106,13 @@ bool CTcpClient::Do_VerifyCertificate(bool preverified, boost::asio::ssl::verify
 void CTcpClient::Do_Connect()
 { 
 	ICVar* ip = gEnv->pConsole->GetCVar("firenet_ip");
-	ICVar* port = gEnv->pConsole->GetCVar("firenet_port");
+	ICVar* port;
+
+	if (gEnv->IsDedicated())
+		port = gEnv->pConsole->GetCVar("firenet_remote_port");
+	else
+		port = gEnv->pConsole->GetCVar("firenet_port");
+
 	ICVar* timeout = gEnv->pConsole->GetCVar("firenet_timeout");
 
 	if (ip && port && timeout)
@@ -181,11 +192,9 @@ void CTcpClient::Do_Handshake()
 
 			Do_Read();
 		}
-		else
+		else if(ec && !bIsClosing)
 		{
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't ssl handshake : %s", ec.message().c_str());
-			m_SslSocket.lowest_layer().close();
-
 			On_Disconnected();
 		}
 	});
@@ -208,10 +217,9 @@ void CTcpClient::Do_Read()
 
 			Do_Read();
 		}
-		else
+		else if (ec && !bIsClosing)
 		{
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't read TCP packet : %s", ec.message().c_str());
-			m_SslSocket.lowest_layer().close();
 
 			On_Disconnected();
 		}
@@ -238,10 +246,9 @@ void CTcpClient::Do_Write()
 				Do_Write();
 			}
 		}
-		else
+		else if(ec && !bIsClosing)
 		{
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't send TCP packet : %s", ec.message().c_str());
-			m_SslSocket.lowest_layer().close();
 
 			On_Disconnected();
 		}
@@ -250,14 +257,9 @@ void CTcpClient::Do_Write()
 
 void CTcpClient::On_Disconnected()
 {
-	m_Timer.cancel();
-	m_IO_service.stop();
-
-	m_Status = ETcpClientStatus::NotConnected;
-	m_MessageStatus = ETcpMessageStatus::None;
-	bIsConnected = false;
-
 	CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection with master server lost");
 
 	mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_DISCONNECTED);
+
+	CloseConnection();
 }

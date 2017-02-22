@@ -34,6 +34,7 @@ struct SPluginEnv
 	// CVars
 	ICVar*                            net_ip;
 	int                               net_port;
+	int                               net_remote_port;
 	int                               net_timeout;
 	int                               net_debug;
 

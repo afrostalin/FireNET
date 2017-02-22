@@ -11,6 +11,7 @@
 #include <CryExtension/ICryPluginManager.h>
 #include <CryCore/Platform/platform_impl.inl>
 #include <CryExtension/ICryPluginManager.h>
+#include <CryThreading/IThreadConfigManager.h>
 
 USE_CRYPLUGIN_FLOWNODES
 
@@ -41,7 +42,16 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 
 	// Close network thread
 	if (mEnv->pNetworkThread && mEnv->pTcpClient)
+	{
+		if (!gEnv->IsDedicated())
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Network thread not deleted! Use Quit function to normal shutdown plugin!");
+
 		mEnv->pNetworkThread->SignalStopWork();
+
+		if (gEnv->pThreadManager)
+			gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+	}
+
 	SAFE_DELETE(mEnv->pNetworkThread);
 
 	// Unregister listeners
@@ -66,6 +76,9 @@ bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystem
 
 	// Init FireNet core pointer
 	gEnv->pFireNetCore = this;
+
+	// Load FireNet thread config
+	gEnv->pThreadManager->GetThreadConfigManager()->LoadConfig("config/firenet.thread_config");
 	
 /*	if (!gEnv->IsDedicated())
 		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Client", "FireNetClient_Plugin");
@@ -94,6 +107,9 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		REGISTER_CVAR2("firenet_port", &mEnv->net_port, 3322, VF_CHEAT, "FireNet master server port");
 		REGISTER_CVAR2("firenet_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet master server timeout");
 
+		if(gEnv->IsDedicated())
+			REGISTER_CVAR2("firenet_remote_port", &mEnv->net_remote_port, 5200, VF_CHEAT, "FireNet master server port for game server");
+
 #ifndef  NDEBUG // Only in debug mode
 		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
 #endif // ! NDEBUG
@@ -108,7 +124,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 			CryLog(TITLE "Framework listener registered");
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
 			
 		break;
 	}
@@ -125,8 +141,12 @@ void CFireNetCorePlugin::ConnectToMasterServer()
 {
 	if (mEnv->pNetworkThread)
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "FireNet core thread alredy spawned!");
-		return;
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "FireNet core thread alredy spawned. Removing...");
+		
+		mEnv->pNetworkThread->SignalStopWork();
+		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+
+		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
 	mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
@@ -138,7 +158,7 @@ void CFireNetCorePlugin::ConnectToMasterServer()
 
 		SAFE_DELETE(mEnv->pNetworkThread);
 	
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet core thread!");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet core thread!");
 	}
 	else
 		CryLog(TITLE "FireNet core thread spawned");
@@ -159,7 +179,7 @@ void CFireNetCorePlugin::Authorization(const std::string & login, const std::str
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't authorizate. Login or password empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't authorizate. Login or password empty");
 	}	
 }
 
@@ -178,7 +198,7 @@ void CFireNetCorePlugin::Registration(const std::string & login, const std::stri
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't register new account. Login or password empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't register new account. Login or password empty");
 	}
 }
 
@@ -197,7 +217,7 @@ void CFireNetCorePlugin::CreateProfile(const std::string & nickname, const std::
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't create new profile. Nickname or character model empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't create new profile. Nickname or character model empty");
 	}
 }
 
@@ -241,7 +261,7 @@ void CFireNetCorePlugin::BuyItem(const std::string & item)
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't buy item. Item name empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't buy item. Item name empty");
 	}
 }
 
@@ -259,7 +279,7 @@ void CFireNetCorePlugin::RemoveItem(const std::string & item)
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't remove item. Item name empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't remove item. Item name empty");
 	}
 }
 
@@ -278,7 +298,7 @@ void CFireNetCorePlugin::SendInvite(EFireNetInviteType type, int uid)
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't send invite. Wrong uid");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't send invite. Wrong uid");
 	}
 }
 
@@ -316,7 +336,7 @@ void CFireNetCorePlugin::RemoveFriend(int uid)
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't remove friend. Wrong uid");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't remove friend. Wrong uid");
 	}
 }
 
@@ -351,7 +371,7 @@ void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::strin
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't get game server. Map or gamerules empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't get game server. Map or gamerules empty");
 	}
 }
 
@@ -369,7 +389,7 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 {
 	if (listener == nullptr)
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Failed register FireNetEventListener. Null pointer");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Failed register FireNetEventListener. Null pointer");
 		return;
 	}
 
@@ -377,7 +397,7 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 	{
 		if ((*it) == listener)
 		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Failed register FireNetEventListener. Listener alredy registered");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Failed register FireNetEventListener. Listener alredy registered");
 			return;
 		}
 	}
@@ -389,6 +409,26 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs & args)
 {
 	mEnv->SendFireNetEvent(event, args);
+}
+
+bool CFireNetCorePlugin::Quit()
+{
+	CryLogAlways(TITLE "Closing plugin...");
+
+	if (mEnv->pNetworkThread)
+	{
+		mEnv->pNetworkThread->SignalStopWork();
+		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+	}
+
+	SAFE_DELETE(mEnv->pNetworkThread);
+
+	if (!mEnv->pNetworkThread)
+		return true;
+	else
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normal close plugin - network thread not deleted!");
+
+	return false;
 }
 
 CRYREGISTER_SINGLETON_CLASS(CFireNetCorePlugin)
