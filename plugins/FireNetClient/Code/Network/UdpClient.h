@@ -37,7 +37,7 @@ private:
 	void                            Do_Read();
 	void                            Do_Write();
 public:
-	void                            On_Connected(bool connected);
+	void                            On_Connected(bool connected, EFireNetUdpServerError reason = EFireNetUdpServerError::NONE);
 private: 
 	void                            On_Disconnected();
 private:

@@ -31,6 +31,14 @@ enum class EFireNetUdpRequest : int
 // Max UDP packet size
 enum class EFireNetUdpPackeMaxSize : int { SIZE = 512 };
 
+enum class EFireNetUdpServerError : int 
+{ 
+	NONE,
+	SERVER_FULL,
+	PLAYER_BANNED,
+	SERVER_BLOCK_NEW_CONNECTION
+};
+
 class IFireNetUdpPacket
 {
 public:

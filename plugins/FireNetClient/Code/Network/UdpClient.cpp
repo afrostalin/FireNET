@@ -92,6 +92,8 @@ void CUdpClient::Do_Read()
 
 			CUdpPacket packet(m_ReadBuffer);
 			pReadQueue->ReadPacket(packet);
+
+			Do_Read();
 		}
 		else
 		{
@@ -126,7 +128,7 @@ void CUdpClient::Do_Write()
 	});
 }
 
-void CUdpClient::On_Connected(bool connected)
+void CUdpClient::On_Connected(bool connected, EFireNetUdpServerError reason)
 {
 	if(connected)
 	{
@@ -140,6 +142,7 @@ void CUdpClient::On_Connected(bool connected)
 	}
 	else
 	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Game server can't accept new client. Reason = %d", static_cast<int>(reason));
 		On_Disconnected();
 	}
 }

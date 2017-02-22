@@ -12,11 +12,15 @@ CUdpPacket::CUdpPacket(int packetNumber, EFireNetUdpPacketType type)
 	// Only for reading
 	bInitFromData = false;
 	bIsGoodPacket = false;
+
 	m_LastIndex = 0;
+	m_PacketNumber = 0;
 
 	GenerateSession();
+
 	WriteHeader();
 	WritePacketType(type);
+	WriteInt(packetNumber);
 }
 
 CUdpPacket::CUdpPacket(const char * data)
@@ -29,7 +33,9 @@ CUdpPacket::CUdpPacket(const char * data)
 
 		bInitFromData = true;
 		bIsGoodPacket = false;
+
 		m_LastIndex = 0;
+		m_PacketNumber = 0;
 
 		GenerateSession();
 		ReadPacket();
@@ -193,6 +199,12 @@ const char * CUdpPacket::toString()
 	{
 		WriteFooter();
 		EncryptPacket();
+
+		if (gEnv->pConsole->GetCVar("firenet_packet_debug")->GetIVal() > 0)
+		{
+			CryLog(TITLE "Packet debug : %s", m_Data.c_str());
+		}
+
 		return m_Data.c_str();
 	}
 	else
@@ -213,20 +225,27 @@ void CUdpPacket::ReadPacket()
 		DecryptPacket();
 		m_Packet = Split(m_Data, m_Separator);
 
-		if (m_Packet.size() >= 3)
+		if (gEnv->pConsole->GetCVar("firenet_packet_debug")->GetIVal() > 0)
+		{
+			CryLog(TITLE "Packet debug : %s", m_Data.c_str());
+		}
+
+		if (m_Packet.size() >= 4)
 		{
 			std::string packet_header = m_Packet.at(0);
 			std::string packet_type = m_Packet.at(1);
+			std::string packet_number = m_Packet.at(2);
 			std::string packet_footer = m_Packet.at(m_Packet.size() - 1);
 
 			if (packet_header == m_Header && packet_footer == m_Footer)
 			{
 				m_Type = (EFireNetUdpPacketType)std::stoi(packet_type);
+				m_PacketNumber = std::stoi(packet_number);
 
 				if (m_Type != EFireNetUdpPacketType::Empty)
 				{
 					bIsGoodPacket = true;
-					m_LastIndex = 2; // 0 - header, 1 - type, 2 - start data
+					m_LastIndex = 3; // 0 - header, 1 - type, 2 - packet number, 3 - start data
 				}
 				else
 				{

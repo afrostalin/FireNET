@@ -3,6 +3,8 @@
 
 #include "StdAfx.h"
 #include "ReadQueue.h"
+
+#include "Network/UdpClient.h"
 #include "Network/UdpPacket.h"
 
 void CReadQueue::ReadPacket(CUdpPacket & packet)
@@ -12,18 +14,16 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 	{
 	case EFireNetUdpPacketType::Empty :
 	{
-		CryLog(TITLE "Packet type = EFireNetUdpPacketType::Empty");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Packet type = EFireNetUdpPacketType::Empty");
 		break;
 	}
 	case EFireNetUdpPacketType::Ask :
 	{
-		CryLog(TITLE "Packet type = EFireNetUdpPacketType::Ask");
 		ReadAsk(packet, packet.ReadAsk());
 		break;
 	}
 	case EFireNetUdpPacketType::Request :
 	{
-		CryLog(TITLE "Packet type = EFireNetUdpPacketType::Request");
 		ReadRequest(packet, packet.ReadRequest());
 		break;
 	}
@@ -38,6 +38,13 @@ void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
 	{
 	case EFireNetUdpAsk::ConnectToServer:
 	{
+		// If server can accept client we received "true" in packet
+		// Else server can't accept client we received "false" and reason (int)
+		if (packet.ReadBool())
+			mEnv->pUdpClient->On_Connected(true);
+		else if (!packet.ReadBool())
+			mEnv->pUdpClient->On_Connected(false, (EFireNetUdpServerError)packet.ReadInt());
+
 		break;
 	}
 	case EFireNetUdpAsk::ChangeTeam:
