@@ -6,10 +6,7 @@
 #include "TcpClient.h"
 #include "ReadQueue.h"
 
-using namespace boost::system;
-using namespace boost::asio;
-
-CTcpClient::CTcpClient(io_service & io_service, ssl::context & context) : m_SslSocket(io_service, context) 
+CTcpClient::CTcpClient(BoostIO & io_service, BoostSslContex & context) : m_SslSocket(io_service, context) 
 	, m_IO_service(io_service)
 	, m_Timer(io_service)
 	, pReadQueue(nullptr)
@@ -23,7 +20,7 @@ CTcpClient::CTcpClient(io_service & io_service, ssl::context & context) : m_SslS
 	fMsgTimeout = 0.f;
 	fMsgEndTime = 0.f;
 
-	m_SslSocket.set_verify_mode(ssl::verify_peer);
+	m_SslSocket.set_verify_mode(boost::asio::ssl::verify_peer);
 	m_SslSocket.set_verify_callback(boost::bind(&CTcpClient::Do_VerifyCertificate, this, _1, _2));
 
 	CryLog(TITLE "TCP client successfully init.");
@@ -42,7 +39,7 @@ CTcpClient::~CTcpClient()
 
 void CTcpClient::TimeOutCheck()
 {
-	if ((m_Timer.expires_at() <= deadline_timer::traits_type::now()) && !bIsConnected)
+	if ((m_Timer.expires_at() <= BoostTimer::traits_type::now()) && !bIsConnected)
 	{
 		m_SslSocket.lowest_layer().close();
 		m_Timer.expires_at(boost::posix_time::pos_infin);
@@ -121,13 +118,13 @@ void CTcpClient::Do_Connect()
 
 		m_Status = ETcpClientStatus::Connecting;
 
-		ip::tcp::endpoint ep(ip::address::from_string(ip->GetString()), port->GetIVal());	
-		ip::tcp::resolver resolver(m_IO_service);
+		BoostTcpEndPoint ep(boost::asio::ip::address::from_string(ip->GetString()), port->GetIVal());	
+		BoostTcpResolver resolver(m_IO_service);
 		auto epIt = resolver.resolve(ep);
 
 		m_Timer.expires_from_now(boost::posix_time::seconds(timeout->GetIVal()));
 
-		async_connect(m_SslSocket.lowest_layer(), epIt, [this](error_code ec, ip::tcp::resolver::iterator)
+		async_connect(m_SslSocket.lowest_layer(), epIt, [this](boost::system::error_code ec, BoostTcpResolver::iterator)
 		{
 			SFireNetEventArgs args;
 
@@ -176,7 +173,7 @@ void CTcpClient::Do_Handshake()
 {
 	CryLog(TITLE "Start ssl handshake...");
 
-	m_SslSocket.async_handshake(ssl::stream_base::handshake_type::client, [this](boost::system::error_code ec)
+	m_SslSocket.async_handshake(boost::asio::ssl::stream_base::handshake_type::client, [this](boost::system::error_code ec)
 	{
 		if (!ec)
 		{
@@ -204,7 +201,7 @@ void CTcpClient::Do_Read()
 {
 	std::memset(m_ReadBuffer, 0, static_cast<int>(EFireNetTcpPackeMaxSize::SIZE));
 
-	m_SslSocket.async_read_some(buffer(m_ReadBuffer, static_cast<int>(EFireNetTcpPackeMaxSize::SIZE)), [this](boost::system::error_code ec, std::size_t length)
+	m_SslSocket.async_read_some(boost::asio::buffer(m_ReadBuffer, static_cast<int>(EFireNetTcpPackeMaxSize::SIZE)), [this](boost::system::error_code ec, std::size_t length)
 	{
 		if (!ec)
 		{
@@ -231,7 +228,7 @@ void CTcpClient::Do_Write()
 	const char* packetData = m_Queue.front().toString();
 	size_t      packetSize = strlen(packetData);
 
-	async_write(m_SslSocket, buffer(packetData, packetSize), [this](error_code ec, std::size_t length)
+	async_write(m_SslSocket, boost::asio::buffer(packetData, packetSize), [this](boost::system::error_code ec, std::size_t length)
 	{
 		if (!ec)
 		{

@@ -6,41 +6,30 @@
 #include "Entities/ISimpleExtension.h"
 
 #include <CrySystem/ICryPlugin.h>
-#include <CryGame/IGameFramework.h>
 #include <CryEntitySystem/IEntityClass.h>
 
-#include <FireNet-Client>
+#include <FireNet>
 
 class CFireNetClientPlugin 
 	: public ICryPlugin
 	, public ISystemEventListener
-	, public IGameFrameworkListener
 	, public IFireNetClientCore
 {
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
-	CRYGENERATE_SINGLETONCLASS(CFireNetClientPlugin, "FireNetClient_Plugin", 0xABEFAB8521264428, 0xA2F67A39185CE405)
-
+	CRYGENERATE_SINGLETONCLASS(CFireNetClientPlugin, "FireNetClient_Plugin", 0x040424BC77B04FA8, 0x8E50F8B1CC02A27F)
 	virtual ~CFireNetClientPlugin();
 	
 	// ICryPlugin
-	virtual const char* GetName() const override { return "FireNetClient"; }
+	virtual const char* GetName() const override { return "FireNet-Client"; }
 	virtual const char* GetCategory() const override { return "Network"; }
 	virtual bool        Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams) override;
-	virtual void        OnPluginUpdate(EPluginUpdateType updateType) override {}
+	virtual void        OnPluginUpdate(EPluginUpdateType updateType) override;
 	// ~ICryPlugin
 
 	// ISystemEventListener
 	virtual void        OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 	// ~ISystemEventListener
-
-	// IGameFrameworkListener
-	virtual void        OnPostUpdate(float fDeltaTime) override;
-	virtual void        OnSaveGame(ISaveGame* pSaveGame) override {};
-	virtual void        OnLoadGame(ILoadGame* pLoadGame) override {};
-	virtual void        OnLevelEnd(const char* nextLevel) override {};
-	virtual void        OnActionEvent(const SActionEvent& event) override {};
-	// ~IGameFrameworkListener
 
 	// IFireNetClientCore
 	virtual void        ConnectToGameServer() override;

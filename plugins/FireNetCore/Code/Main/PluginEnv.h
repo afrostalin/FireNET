@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <FireNet-Core>
+#include <FireNet>
 #include "Network/TcpClient.h"
 
 #define TITLE "[FireNet-Core] "

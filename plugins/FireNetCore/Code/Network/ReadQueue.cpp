@@ -58,7 +58,11 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	{
 		CryLog(TITLE "Authorization complete. Profile loading...");
 		mEnv->SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_COMPLETE_WITH_PROFILE);
-		gEnv->pFireNetCore->GetProfile();
+
+		if (gFireNet && gFireNet->pCore)
+		{
+			gFireNet->pCore->GetProfile();
+		}
 
 		break;
 	}	

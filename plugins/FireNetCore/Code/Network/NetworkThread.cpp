@@ -5,22 +5,17 @@
 #include "NetworkThread.h"
 #include "TcpClient.h"
 
-#include <FireNet-Core>
-
-using namespace boost::system;
-using namespace boost::asio;
-
 void CNetworkThread::ThreadEntry()
 {
 	try
 	{
 		CryLog(TITLE "Init TCP client...");
 
-		io_service io_service;
+		BoostIO io_service;
 
 		// Load SSL certificate
-		const_buffer buffer(SSL_CERTIFICATE, strlen(SSL_CERTIFICATE));
-		ssl::context ctx(ssl::context::sslv23);
+		boost::asio::const_buffer buffer(SSL_CERTIFICATE, strlen(SSL_CERTIFICATE));
+		BoostSslContex ctx(BoostSslContex::sslv23);
 		ctx.add_certificate_authority(buffer);
 
 		// Init client

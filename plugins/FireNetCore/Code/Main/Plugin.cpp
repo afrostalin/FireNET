@@ -13,6 +13,8 @@
 #include <CryExtension/ICryPluginManager.h>
 #include <CryThreading/IThreadConfigManager.h>
 
+#include <FireNet.inl>
+
 USE_CRYPLUGIN_FLOWNODES
 
 IEntityRegistrator *IEntityRegistrator::g_pFirst = nullptr;
@@ -52,14 +54,12 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 			gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
 	}
 
-	SAFE_DELETE(mEnv->pNetworkThread);
-
 	// Unregister listeners
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
-	// Clear FireNet core pointer
-	gEnv->pFireNetCore = nullptr;
+	SAFE_DELETE(mEnv->pNetworkThread);
+	SAFE_DELETE(gFireNet);
 
 	CryLogAlways(TITLE "Unloaded.");
 }
@@ -75,10 +75,13 @@ bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystem
 	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 
 	// Init FireNet core pointer
-	gEnv->pFireNetCore = this;
+	gFireNet = new IFireNetEnv();
+	gFireNet->pCore = dynamic_cast<IFireNetCore*>(this);
 
 	// Load FireNet thread config
 	gEnv->pThreadManager->GetThreadConfigManager()->LoadConfig("config/firenet.thread_config");
+
+	ICryPlugin::SetUpdateFlags(EUpdateType_Update);
 	
 /*	if (!gEnv->IsDedicated())
 		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Client", "FireNetClient_Plugin");
@@ -86,6 +89,19 @@ bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystem
 		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Server", "FireNetServer_Plugin");*/
 
 	return true;
+}
+
+void CFireNetCorePlugin::OnPluginUpdate(EPluginUpdateType updateType)
+{
+	switch (updateType)
+	{
+	case IPluginUpdateListener::EUpdateType_Update:
+	{
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
@@ -116,25 +132,19 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 
 		break;
 	}
-	case ESYSTEM_EVENT_GAME_FRAMEWORK_INIT_DONE:
+	case ESYSTEM_EVENT_FULL_SHUTDOWN:
 	{
-		if (gEnv->pGameFramework)
-		{
-			gEnv->pGameFramework->RegisterListener(this, "FireNetCore_GameFrameworkListener", FRAMEWORKLISTENERPRIORITY_DEFAULT);
-			CryLog(TITLE "Framework listener registered");
-		}
-		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
-			
+		Quit();
+		break;
+	}
+	case ESYSTEM_EVENT_FAST_SHUTDOWN:
+	{
+		Quit();
 		break;
 	}
 	default:
 		break;
 	}
-}
-
-void CFireNetCorePlugin::OnPostUpdate(float fDeltaTime)
-{
 }
 
 void CFireNetCorePlugin::ConnectToMasterServer()
@@ -403,7 +413,6 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 	}
 
 	mEnv->m_Listeners.push_back(listener);
-	CryLog(TITLE "FireNet event listener registered");
 }
 
 void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs & args)
@@ -413,8 +422,9 @@ void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArg
 
 bool CFireNetCorePlugin::Quit()
 {
-	CryLogAlways(TITLE "Closing plugin...");
+	CryLogAlways(TITLE "Closing FireNet-Core plugin...");
 
+	// Close FireNet-Core thread
 	if (mEnv->pNetworkThread)
 	{
 		mEnv->pNetworkThread->SignalStopWork();
@@ -424,9 +434,12 @@ bool CFireNetCorePlugin::Quit()
 	SAFE_DELETE(mEnv->pNetworkThread);
 
 	if (!mEnv->pNetworkThread)
+	{
+		CryLogAlways(TITLE "FireNet-Core plugin ready to unload");
 		return true;
+	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normal close plugin - network thread not deleted!");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normaly close plugin - network thread not deleted!");
 
 	return false;
 }

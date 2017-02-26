@@ -3,7 +3,7 @@
 
 #pragma once
 
-// FireNet events
+//! FireNet events
 enum EFireNetEvents
 {
 	//! Event when start connection to FireNet
@@ -168,5 +168,7 @@ struct SFireNetEventArgs
 
 struct IFireNetListener
 {
+	virtual ~IFireNetListener() {}
+
 	virtual void OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) = 0;
 };

@@ -103,6 +103,8 @@ enum class EFireNetTcpPackeMaxSize : int { SIZE = 512 };
 class IFireNetTcpPacket
 {
 public:
+	virtual ~IFireNetTcpPacket() {}
+public:
 	virtual void                       WriteQuery(EFireNetTcpQuery query) { WriteInt(static_cast<int>(query)); }
 	virtual void                       WriteResult(EFireNetTcpResult result) { WriteInt(static_cast<int>(result)); }
 	virtual void                       WriteError(EFireNetTcpError error) { WriteInt(static_cast<int>(error)); }

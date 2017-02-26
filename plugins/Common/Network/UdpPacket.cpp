@@ -200,7 +200,9 @@ const char * CUdpPacket::toString()
 		WriteFooter();
 		EncryptPacket();
 
-		if (gEnv->pConsole->GetCVar("firenet_packet_debug")->GetIVal() > 0)
+		ICVar* debug = gEnv->pConsole->GetCVar("firenet_packet_debug");
+
+		if (debug && debug->GetIVal() > 0)
 		{
 			CryLog(TITLE "Packet debug : %s", m_Data.c_str());
 		}
@@ -225,7 +227,9 @@ void CUdpPacket::ReadPacket()
 		DecryptPacket();
 		m_Packet = Split(m_Data, m_Separator);
 
-		if (gEnv->pConsole->GetCVar("firenet_packet_debug")->GetIVal() > 0)
+		ICVar* debug = gEnv->pConsole->GetCVar("firenet_packet_debug");
+
+		if (debug && debug->GetIVal() > 0)
 		{
 			CryLog(TITLE "Packet debug : %s", m_Data.c_str());
 		}

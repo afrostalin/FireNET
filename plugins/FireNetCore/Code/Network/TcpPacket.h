@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <FireNet-Core>
+#include <FireNet>
 
 class CTcpPacket : public IFireNetTcpPacket
 {

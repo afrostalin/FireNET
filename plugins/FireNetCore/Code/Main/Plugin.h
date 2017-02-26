@@ -3,45 +3,39 @@
 
 #pragma once
 
-#include <FireNet-Core>
+#include <FireNet>
 
-#include <CrySystem/ICryPlugin.h>
 #include <CryEntitySystem/IEntityClass.h>
-#include <CryGame/IGameFramework.h>
 
 class CFireNetCorePlugin 
-	: public ICryPlugin
+	: public IFireNetCorePlugin	
 	, public ISystemEventListener
-	, public IGameFrameworkListener
-	, public IFireNetCore	
+	, public IFireNetCore
 {
 public:
-	CRYINTERFACE_SIMPLE(ICryPlugin)
+	CRYINTERFACE_BEGIN()
+	CRYINTERFACE_ADD(IFireNetCorePlugin)
+	CRYINTERFACE_ADD(ICryPlugin)
+	CRYINTERFACE_END()
+
 	CRYGENERATE_SINGLETONCLASS(CFireNetCorePlugin, "FireNetCore_Plugin", 0x2799ED0066B04E6B, 0xA5722E51345346A8)
+
 	PLUGIN_FLOWNODE_REGISTER
 	PLUGIN_FLOWNODE_UNREGISTER
 
 	virtual ~CFireNetCorePlugin();
-	
+public:
 	// ICryPlugin
-	virtual const char*      GetName() const override { return "FireNetCore"; }
+	virtual const char*      GetName() const override { return "FireNet-Core"; }
 	virtual const char*      GetCategory() const override { return "Network"; }
 	virtual bool             Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams) override;
-	virtual void             OnPluginUpdate(EPluginUpdateType updateType) override {};
+	virtual void             OnPluginUpdate(EPluginUpdateType updateType) override;
 	// ~ICryPlugin
-
+public:
 	// ISystemEventListener
 	virtual void             OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 	// ~ISystemEventListener
-
-	// IGameFrameworkListener
-	virtual void             OnPostUpdate(float fDeltaTime) override;
-	virtual void             OnSaveGame(ISaveGame* pSaveGame) override {};
-	virtual void             OnLoadGame(ILoadGame* pLoadGame) override {};
-	virtual void             OnLevelEnd(const char* nextLevel) override {};
-	virtual void             OnActionEvent(const SActionEvent& event) override {};
-	// ~IGameFrameworkListener
-
+public:
 	// IFireNetCore
 	virtual void             RegisterFireNetListener(IFireNetListener *listener) override;
 	virtual void             ConnectToMasterServer() override;
@@ -64,7 +58,9 @@ public:
 	virtual void             SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) override;
 	virtual bool             Quit() override;
 	// ~IFireNetCore
-};
+public:
+	virtual IFireNetEnv*     GetFireNetEnv() const override { return gFireNet; };
+}; 
 
 struct IEntityRegistrator
 {

@@ -33,19 +33,27 @@ class CNetPlayerRegistrator : public IEntityRegistrator , public CNetPlayer::SEx
 	void RegisterCVars()
 	{
 		// Load default player params
-		m_mass = gEnv->pConsole->GetCVar("pl_mass")->GetFVal();
+		auto pMass = gEnv->pConsole->GetCVar("pl_mass");
+		m_mass = pMass ? pMass->GetFVal() : 0.f;
 
-		m_moveSpeed = gEnv->pConsole->GetCVar("pl_moveSpeed")->GetFVal();
+		auto pMoveSpeed = gEnv->pConsole->GetCVar("pl_moveSpeed");
+		m_moveSpeed = pMoveSpeed ? pMoveSpeed->GetFVal() : 0.f;
 
-		m_jumpHeightMultiplier = gEnv->pConsole->GetCVar("pl_jumpHeightMultiplayer")->GetFVal();
+		auto pJumpHeight = gEnv->pConsole->GetCVar("pl_jumpHeightMultiplayer");
+		m_jumpHeightMultiplier = pJumpHeight ? pJumpHeight->GetFVal() : 0.f;
 
-		m_rotationSpeedYaw = gEnv->pConsole->GetCVar("pl_rotationSpeedYaw")->GetFVal();
-		m_rotationSpeedPitch = gEnv->pConsole->GetCVar("pl_rotationSpeedPitch")->GetFVal();
+		auto pRotSpeedYaw = gEnv->pConsole->GetCVar("pl_rotationSpeedYaw");
+		m_rotationSpeedYaw = pRotSpeedYaw ? pRotSpeedYaw->GetFVal() : 0.f;
+		auto pRotSpeedPitch = gEnv->pConsole->GetCVar("pl_rotationSpeedPitch");
+		m_rotationSpeedPitch = pRotSpeedPitch ? pRotSpeedPitch->GetFVal() : 0.f;
 
-		m_rotationLimitsMinPitch = gEnv->pConsole->GetCVar("pl_rotationLimitsMinPitch")->GetFVal();
-		m_rotationLimitsMaxPitch = gEnv->pConsole->GetCVar("pl_rotationLimitsMaxPitch")->GetFVal();
+		auto pRotLimitsMin = gEnv->pConsole->GetCVar("pl_rotationLimitsMinPitch");
+		m_rotationLimitsMinPitch = pRotLimitsMin ? pRotLimitsMin->GetFVal() : 0.f;
+		auto pRotLimitsMax = gEnv->pConsole->GetCVar("pl_rotationLimitsMaxPitch");
+		m_rotationLimitsMaxPitch = pRotLimitsMax ? pRotLimitsMax->GetFVal() : 0.f;
 
-		m_playerEyeHeight = gEnv->pConsole->GetCVar("pl_eyeHeight")->GetFVal();
+		auto pPlayerEyeHeight = gEnv->pConsole->GetCVar("pl_eyeHeight");
+		m_playerEyeHeight = pPlayerEyeHeight ? pPlayerEyeHeight->GetFVal() : 0.f;
 
 		// Create new CVars for NetPlayer
 		m_pThirdPersonGeometry = REGISTER_STRING("net_pl_thirdPersonGeometry", "Objects/Characters/SampleCharacter/thirdperson.cdf", VF_CHEAT, "Sets the third person geometry to load");
@@ -56,13 +64,12 @@ class CNetPlayerRegistrator : public IEntityRegistrator , public CNetPlayer::SEx
 
 	void UnregisterCVars()
 	{
-		IConsole* pConsole = gEnv->pConsole;
-		if (pConsole)
+		if (gEnv && gEnv->pConsole)
 		{
-			pConsole->UnregisterVariable("net_pl_thirdPersonGeometry");
-			pConsole->UnregisterVariable("net_pl_thirdPersonMannequinContext");
-			pConsole->UnregisterVariable("net_pl_thirdPersonAnimationDatabase");
-			pConsole->UnregisterVariable("net_pl_thirdPersonControllerDefinition");
+			gEnv->pConsole->UnregisterVariable("net_pl_thirdPersonGeometry");
+			gEnv->pConsole->UnregisterVariable("net_pl_thirdPersonMannequinContext");
+			gEnv->pConsole->UnregisterVariable("net_pl_thirdPersonAnimationDatabase");
+			gEnv->pConsole->UnregisterVariable("net_pl_thirdPersonControllerDefinition");
 		}
 	}
 };
@@ -72,6 +79,7 @@ CNetPlayerRegistrator g_netPlayerRegistrator;
 CNetPlayer::CNetPlayer()
 	: m_pInput(nullptr)
 	, m_pMovement(nullptr)
+	, m_pAnimations(nullptr)
 	, m_bAlive(false)
 {
 	

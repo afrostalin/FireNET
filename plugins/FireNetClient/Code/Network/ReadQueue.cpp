@@ -17,6 +17,11 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Packet type = EFireNetUdpPacketType::Empty");
 		break;
 	}
+	case EFireNetUdpPacketType::Ping :
+	{
+		mEnv->pUdpClient->ResetTimeout();
+		break;
+	}
 	case EFireNetUdpPacketType::Ask :
 	{
 		ReadAsk(packet, packet.ReadAsk());

@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include <FireNet-Core>
-
 class CTcpPacket;
 
 class CReadQueue

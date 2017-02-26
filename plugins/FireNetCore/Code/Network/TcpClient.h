@@ -16,6 +16,13 @@
 
 class CReadQueue;
 
+typedef boost::asio::io_service        BoostIO;
+typedef boost::asio::ip::tcp::socket   BoostTcpSocket;
+typedef boost::asio::ip::tcp::endpoint BoostTcpEndPoint;
+typedef boost::asio::ip::tcp::resolver BoostTcpResolver;
+typedef boost::asio::ssl::context      BoostSslContex;
+typedef boost::asio::deadline_timer    BoostTimer;
+
 enum class ETcpClientStatus : int
 {
 	NotConnected,
@@ -36,7 +43,7 @@ enum class ETcpMessageStatus : int
 class CTcpClient
 {
 public:
-	CTcpClient(boost::asio::io_service& io_service, boost::asio::ssl::context& context);
+	CTcpClient(BoostIO& io_service, BoostSslContex& context);
 	~CTcpClient();
 public:
 	void                    CloseConnection();
@@ -71,7 +78,7 @@ private:
 
 	char                    m_ReadBuffer[static_cast<int>(EFireNetTcpPackeMaxSize::SIZE)];
 private:
-	boost::asio::io_service&                                m_IO_service;
-	boost::asio::ssl::stream<boost::asio::ip::tcp::socket>  m_SslSocket;
-	boost::asio::deadline_timer                             m_Timer;
+	BoostIO&                                  m_IO_service;
+	boost::asio::ssl::stream<BoostTcpSocket>  m_SslSocket;
+	BoostTimer                                m_Timer;
 };

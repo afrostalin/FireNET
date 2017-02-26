@@ -5,16 +5,13 @@
 #include "NetworkThread.h"
 #include "Network/UdpClient.h"
 
-using namespace boost::system;
-using namespace boost::asio;
-
 void CNetworkThread::ThreadEntry()
 {
 	try
 	{
 		CryLog(TITLE "Init UDP client...");
 
-		io_service io_service;
+		BoostIO io_service;
 
 		ICVar* ip = gEnv->pConsole->GetCVar("firenet_game_server_ip");
 		ICVar* port = gEnv->pConsole->GetCVar("firenet_game_server_port");

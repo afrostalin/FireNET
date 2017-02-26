@@ -12,6 +12,7 @@ enum class EFireNetUdpPacketType : int
 {
 	Empty,
 	Ask,
+	Ping,
 	Request,
 };
 
@@ -33,14 +34,16 @@ enum class EFireNetUdpPackeMaxSize : int { SIZE = 512 };
 
 enum class EFireNetUdpServerError : int 
 { 
-	NONE,
-	SERVER_FULL,
-	PLAYER_BANNED,
-	SERVER_BLOCK_NEW_CONNECTION
+	None,
+	ServerFull,
+	PlayerBanned,
+	ServerBlockNewConnection
 };
 
 class IFireNetUdpPacket
 {
+public:
+	virtual ~IFireNetUdpPacket() {}
 public:
 	virtual void                       WriteAsk(EFireNetUdpAsk ask) { WriteInt(static_cast<int>(ask)); }
 	virtual void                       WriteRequest(EFireNetUdpRequest request) { WriteInt(static_cast<int>(request)); }

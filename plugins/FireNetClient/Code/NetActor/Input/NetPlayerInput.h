@@ -28,7 +28,8 @@ public:
 	};
 
 public:
-	CNetPlayerInput() : m_moveSpeed(0.0f) 
+	CNetPlayerInput() : m_moveSpeed(0.0f)
+		, m_pPlayer(nullptr)
 	{}
 	virtual ~CNetPlayerInput() {}
 

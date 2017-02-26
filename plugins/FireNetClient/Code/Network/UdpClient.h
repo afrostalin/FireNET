@@ -12,47 +12,56 @@
 
 #include "Network/UdpPacket.h"
 
-enum class EUdpClientStatus : int
-{
-	NotConnected,
-	Connecting,
-	Connected,
-};
-
 class CReadQueue;
+
+typedef boost::asio::io_service        BoostIO;
+typedef boost::asio::ip::udp::socket   BoostUdpSocket;
+typedef boost::asio::ip::udp::endpoint BoostUdpEndPoint;
 
 class CUdpClient
 {
 public:
-	CUdpClient(boost::asio::io_service& io_service, const char* ip, short port);
+	CUdpClient(BoostIO& io_service, const char* ip, short port);
 	~CUdpClient();
 public:
-	void                            Update(float fDeltaTime);
+	void                            Update();
 	void                            SendNetMessage(CUdpPacket &packet);
 public:
 	void                            CloseConnection();
 	bool                            IsConnected() { return bIsConnected; }
 private:
-	void                            Do_Connect(); // Virtual connecting (by Q/A)
+	void                            Do_Connect();
 	void                            Do_Read();
 	void                            Do_Write();
 public:
-	void                            On_Connected(bool connected, EFireNetUdpServerError reason = EFireNetUdpServerError::NONE);
-private: 
+	void                            On_Connected(bool connected, EFireNetUdpServerError reason = EFireNetUdpServerError::None);
+	void                            ResetTimeout() { m_ConnectionTimeout = 0.f; }
+private:
 	void                            On_Disconnected();
 private:
+	enum EUdpClientStatus : int
+	{
+		NotConnected,
+		Connecting,
+		Connected,
+		WaitStart,
+		Playing,
+	};
+private:
 	std::queue<CUdpPacket>          m_Queue;
-	EUdpClientStatus                m_Status;	
+	EUdpClientStatus                m_Status;
 
 	CReadQueue*                     pReadQueue;
 
 	bool                            bIsConnected;
 private:
-	boost::asio::io_service&        m_IO_service; 
-	boost::asio::ip::udp::socket    m_UdpSocket;
+	BoostIO&                        m_IO_service;
+	BoostUdpSocket                  m_UdpSocket;
 
-	boost::asio::ip::udp::endpoint  m_ServerEndPoint;
-	boost::asio::ip::udp::endpoint  m_UdpSenderEndPoint;
+	BoostUdpEndPoint                m_ServerEndPoint;
+	BoostUdpEndPoint                m_UdpSenderEndPoint;
 
 	char                            m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];
+private:
+	float                           m_ConnectionTimeout;
 };

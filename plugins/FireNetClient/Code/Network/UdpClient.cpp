@@ -7,19 +7,17 @@
 #include "SyncGameState.h"
 #include "ReadQueue.h"
 
-#include <FireNet-Core>
-#include <FireNet-Client>
+#include <FireNet>
 
-using namespace boost::asio;
-using namespace boost::system;
-
-CUdpClient::CUdpClient(boost::asio::io_service& io_service, const char* ip, short port) : m_IO_service(io_service)
-	, m_UdpSocket(io_service, ip::udp::endpoint(ip::udp::v4(), 0))
-	, m_ServerEndPoint(ip::udp::endpoint(ip::address::from_string(ip), port))
-	, bIsConnected(false)
-	, pReadQueue(new CReadQueue())
+CUdpClient::CUdpClient(BoostIO& io_service, const char* ip, short port) : m_IO_service(io_service)
+, m_UdpSocket(io_service, BoostUdpEndPoint(boost::asio::ip::udp::v4(), 0))
+, m_ServerEndPoint(BoostUdpEndPoint(boost::asio::ip::address::from_string(ip), port))
+, bIsConnected(false)
+, pReadQueue(new CReadQueue())
 {
 	m_Status = EUdpClientStatus::NotConnected;
+
+	m_ConnectionTimeout = 0.f;
 
 	Do_Connect();
 }
@@ -30,7 +28,7 @@ CUdpClient::~CUdpClient()
 	SAFE_DELETE(pReadQueue);
 }
 
-void CUdpClient::Update(float fDeltaTime)
+void CUdpClient::Update()
 {
 	if (m_Status == EUdpClientStatus::Connecting)
 	{
@@ -40,6 +38,24 @@ void CUdpClient::Update(float fDeltaTime)
 		packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
 
 		SendNetMessage(packet);
+	}
+
+	// Connection timeout
+	if (m_Status == (EUdpClientStatus::Connected | EUdpClientStatus::WaitStart))
+	{
+		if (m_ConnectionTimeout == 0.f)
+		{
+			m_ConnectionTimeout = gEnv->pTimer->GetAsyncCurTime() + mEnv->net_timeout;
+
+			// Send ping packet to server
+			CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Ping);
+			SendNetMessage(packet);
+		}
+		else if (m_ConnectionTimeout < gEnv->pTimer->GetAsyncCurTime())
+		{
+			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
+			CloseConnection();
+		}
 	}
 }
 
@@ -61,7 +77,7 @@ void CUdpClient::SendNetMessage(CUdpPacket & packet)
 void CUdpClient::CloseConnection()
 {
 	CryLog(TITLE "Closing UDP client...");
-	m_Status = EUdpClientStatus::NotConnected;
+	m_Status = NotConnected;
 	bIsConnected = false;
 
 	m_UdpSocket.close();
@@ -74,8 +90,8 @@ void CUdpClient::Do_Connect()
 	ICVar* port = gEnv->pConsole->GetCVar("firenet_game_server_port");
 
 	CryLog(TITLE "Connecting to game server <%s : %d>", ip->GetString(), port->GetIVal());
-		
-	m_Status = EUdpClientStatus::Connecting;
+
+	m_Status = Connecting;
 
 	Do_Read();
 }
@@ -84,11 +100,11 @@ void CUdpClient::Do_Read()
 {
 	std::memset(m_ReadBuffer, 0, static_cast<int>(EFireNetTcpPackeMaxSize::SIZE));
 
-	m_UdpSocket.async_receive_from( buffer(m_ReadBuffer, static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)), m_UdpSenderEndPoint, [this](boost::system::error_code ec, std::size_t length)
+	m_UdpSocket.async_receive_from(boost::asio::buffer(m_ReadBuffer, static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)), m_UdpSenderEndPoint, [this](boost::system::error_code ec, std::size_t length)
 	{
 		if (!ec && length > 0)
 		{
-			CryLog(TITLE "UDP packet received. Size = %d", length);
+			//			CryLog(TITLE "UDP packet received. Size = %d", length);
 
 			CUdpPacket packet(m_ReadBuffer);
 			pReadQueue->ReadPacket(packet);
@@ -107,11 +123,11 @@ void CUdpClient::Do_Write()
 	const char* packetData = m_Queue.front().toString();
 	size_t      packetSize = strlen(packetData);
 
-	m_UdpSocket.async_send_to(buffer(packetData, packetSize), m_ServerEndPoint,[this](boost::system::error_code ec, std::size_t length)
+	m_UdpSocket.async_send_to(boost::asio::buffer(packetData, packetSize), m_ServerEndPoint, [this](boost::system::error_code ec, std::size_t length)
 	{
 		if (!ec)
 		{
-			CryLog(TITLE "UDP packet sended. Size = %d", length);
+			//			CryLog(TITLE "UDP packet sended. Size = %d", length);
 
 			m_Queue.pop();
 
@@ -122,17 +138,17 @@ void CUdpClient::Do_Write()
 		}
 		else
 		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't send UDP packet : %s", ec.message().c_str());		
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't send UDP packet : %s", ec.message().c_str());
 			On_Disconnected();
-		}		
+		}
 	});
 }
 
 void CUdpClient::On_Connected(bool connected, EFireNetUdpServerError reason)
 {
-	if(connected)
+	if (connected)
 	{
-		m_Status = EUdpClientStatus::Connected;
+		m_Status = EUdpClientStatus(Connected | WaitStart);
 		bIsConnected = connected;
 
 		// Create game state syncronizator

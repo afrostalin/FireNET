@@ -10,6 +10,9 @@
 #include "Network/UdpPacket.h"
 
 #include <CryCore/Platform/platform_impl.inl>
+#include <CryExtension/ICryPluginManager.h>
+
+#include <FireNet.inl>
 
 IEntityRegistrator *IEntityRegistrator::g_pFirst = nullptr;
 IEntityRegistrator *IEntityRegistrator::g_pLast = nullptr;
@@ -18,8 +21,12 @@ void TestConnection(IConsoleCmdArgs* argc)
 {
 	if (mEnv->pNetworkThread)
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "FireNet client thread alredy spawned!");
-		return;
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "FireNet client thread alredy spawned. Removing...");
+
+		mEnv->pNetworkThread->SignalStopWork();
+		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+
+		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
 	if (!gEnv->IsDedicated() && !gEnv->IsEditor())
@@ -28,7 +35,7 @@ void TestConnection(IConsoleCmdArgs* argc)
 
 		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetClient_Thread"))
 		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
 
 			SAFE_DELETE(mEnv->pNetworkThread);
 		}
@@ -37,7 +44,7 @@ void TestConnection(IConsoleCmdArgs* argc)
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : It's not dedicated server or it's editor");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : It's not dedicated server or it's editor");
 	}
 }
 
@@ -77,9 +84,6 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
-	// Clear FireNet core pointer
-	gEnv->pFireNetClient = nullptr;
-
 	CryLogAlways(TITLE "Unloaded.");
 }
 
@@ -89,23 +93,53 @@ bool CFireNetClientPlugin::Initialize(SSystemGlobalEnvironment& env, const SSyst
 		gEnv->SetIsEditor(true);
 
 	if (initParams.bDedicatedServer && !gEnv->IsDedicated())
-		gEnv->SetIsDedicated(true);
+		gEnv->SetIsDedicated(true);	
 
 	if (!gEnv->IsDedicated())
 	{
-		gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
-
 		// Init FireNet client pointer
-		gEnv->pFireNetClient = this;
+		if (auto pPluginManager = gEnv->pSystem->GetIPluginManager())
+		{
+			if (auto pPlugin = pPluginManager->QueryPlugin<IFireNetCorePlugin>())
+			{
+				if (gFireNet = pPlugin->GetFireNetEnv())
+				{
+					gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
+
+					ICryPlugin::SetUpdateFlags(EUpdateType_Update);
+
+					gFireNet->pClient = dynamic_cast<IFireNetClientCore*>(this);
+				}
+				else
+					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error init FireNet - Can't get FireNet environment pointer!");
+			}
+			else
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error init FireNet - Can't get Plugin!");
+		}
+		else
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error init FireNet - Can't get factory!");
 	}
 	else
-	{
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't init FireNet-Client.dll - Dedicated server not support client library!");
 
-		gEnv->pFireNetClient = nullptr;
-	}
-
 	return true;
+}
+
+void CFireNetClientPlugin::OnPluginUpdate(EPluginUpdateType updateType)
+{
+	switch (updateType)
+	{
+	case IPluginUpdateListener::EUpdateType_Update:
+	{
+		if (mEnv->pNetworkThread && mEnv->pUdpClient)
+		{
+			mEnv->pUdpClient->Update();
+		}
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
@@ -138,27 +172,17 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			mEnv->pGameSync->Reset();
 		break;
 	}
-	case ESYSTEM_EVENT_GAME_FRAMEWORK_INIT_DONE:
+	case ESYSTEM_EVENT_FULL_SHUTDOWN:
 	{
-		if (gEnv->pGameFramework)
-		{
-			gEnv->pGameFramework->RegisterListener(this, "FireNetClient_GameFrameworkListener", FRAMEWORKLISTENERPRIORITY_DEFAULT);
-			CryLog(TITLE "Framework listener registered");
-		}
-		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't register framework listener!");
-
+		Quit();
+		break;
+	}
+	case ESYSTEM_EVENT_FAST_SHUTDOWN:
+	{
+		Quit();
 		break;
 	}
 	break;
-	}
-}
-
-void CFireNetClientPlugin::OnPostUpdate(float fDeltaTime)
-{
-	if (mEnv->pNetworkThread && mEnv->pUdpClient)
-	{
-		mEnv->pUdpClient->Update(fDeltaTime);
 	}
 }
 
@@ -221,7 +245,7 @@ bool CFireNetClientPlugin::IsConnected()
 
 bool CFireNetClientPlugin::Quit()
 {
-	CryLogAlways(TITLE "Closing plugin...");
+	CryLogAlways(TITLE "Closing FireNet-Client plugin...");
 
 	if (mEnv->pNetworkThread)
 	{
@@ -232,9 +256,12 @@ bool CFireNetClientPlugin::Quit()
 	SAFE_DELETE(mEnv->pNetworkThread);
 
 	if (!mEnv->pNetworkThread)
+	{
+		CryLogAlways(TITLE "FireNet-Cient plugin ready to unload");
 		return true;
+	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normal close plugin - network thread not deleted!");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normaly close plugin - network thread not deleted!");
 
 	return false;
 }

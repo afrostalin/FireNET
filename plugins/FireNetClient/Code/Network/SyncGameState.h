@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <FireNet-Client>
+#include <FireNet>
 
 class CGameStateSynchronization
 {

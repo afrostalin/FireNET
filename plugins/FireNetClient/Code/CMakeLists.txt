@@ -1,5 +1,10 @@
 cmake_minimum_required (VERSION 3.6.0)
-project (FireNet-Client VERSION 1.0 LANGUAGES CXX)
+project (CryFireNetClient VERSION 1.0 LANGUAGES CXX)
+
+# HOT RELOAD
+if (${CMAKE_GENERATOR} MATCHES "^Visual Studio")
+	ADD_DEFINITIONS("/ZI")
+endif()
 
 option(OPTION_PCH "Enable Precompiled headers" ON)
 
@@ -98,7 +103,7 @@ endif (OPTION_PCH AND MSVC)
 add_library(${PROJECT_NAME} MODULE ${SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../Common)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../includes/FireNetCommon)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../includes/FireNet)
 target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction ${Boost_LIBRARIES})
 
 if (WIN32)
