@@ -422,7 +422,7 @@ void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArg
 
 bool CFireNetCorePlugin::Quit()
 {
-	CryLogAlways(TITLE "Closing FireNet-Core plugin...");
+	CryLogAlways(TITLE "Closing plugin...");
 
 	// Close FireNet-Core thread
 	if (mEnv->pNetworkThread)
@@ -435,7 +435,7 @@ bool CFireNetCorePlugin::Quit()
 
 	if (!mEnv->pNetworkThread)
 	{
-		CryLogAlways(TITLE "FireNet-Core plugin ready to unload");
+		CryLogAlways(TITLE "Plugin ready to unload");
 		return true;
 	}
 	else

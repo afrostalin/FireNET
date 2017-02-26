@@ -63,5 +63,5 @@ private:
 
 	char                            m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];
 private:
-	float                           m_ConnectionTimeout;
+	float                           m_ConnectionTimeout;                          
 };

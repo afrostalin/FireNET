@@ -39,6 +39,6 @@ void CNetworkThread::ThreadEntry()
 
 void CNetworkThread::SignalStopWork()
 {
-	if (mEnv->pUdpClient)
+	if(mEnv->pUdpClient)
 		mEnv->pUdpClient->CloseConnection();
 }

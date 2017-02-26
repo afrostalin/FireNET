@@ -8,7 +8,7 @@
 class CNetworkThread : public IThread
 {
 public:
-	CNetworkThread() {}
+	CNetworkThread(){}
 	~CNetworkThread() {}
 public:
 	virtual void ThreadEntry();

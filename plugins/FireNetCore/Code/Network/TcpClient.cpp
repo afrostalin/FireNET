@@ -69,8 +69,7 @@ void CTcpClient::CloseConnection()
 	m_MessageStatus = ETcpMessageStatus::None;
 	bIsConnected = false;
 	bIsClosing = true;
-	
-	m_SslSocket.lowest_layer().close();
+
 	m_Timer.cancel();
 	m_IO_service.stop();
 }

@@ -84,6 +84,9 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
+	// Clear FireNet client pointer
+	gFireNet->pClient = nullptr;
+
 	CryLogAlways(TITLE "Unloaded.");
 }
 
@@ -120,7 +123,7 @@ bool CFireNetClientPlugin::Initialize(SSystemGlobalEnvironment& env, const SSyst
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error init FireNet - Can't get factory!");
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't init FireNet-Client.dll - Dedicated server not support client library!");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't init CryFireNetClient.dll - Dedicated server not support client library!");
 
 	return true;
 }
@@ -213,7 +216,7 @@ void CFireNetClientPlugin::ConnectToGameServer()
 	}
 	else
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : It's not dedicated server or it's editor");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : Editor/Server not support client library!");
 	}
 }
 
@@ -245,7 +248,7 @@ bool CFireNetClientPlugin::IsConnected()
 
 bool CFireNetClientPlugin::Quit()
 {
-	CryLogAlways(TITLE "Closing FireNet-Client plugin...");
+	CryLogAlways(TITLE "Closing plugin...");
 
 	if (mEnv->pNetworkThread)
 	{
@@ -257,7 +260,7 @@ bool CFireNetClientPlugin::Quit()
 
 	if (!mEnv->pNetworkThread)
 	{
-		CryLogAlways(TITLE "FireNet-Cient plugin ready to unload");
+		CryLogAlways(TITLE "Plugin ready to unload");
 		return true;
 	}
 	else

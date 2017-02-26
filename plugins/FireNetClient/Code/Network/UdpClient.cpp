@@ -30,32 +30,29 @@ CUdpClient::~CUdpClient()
 
 void CUdpClient::Update()
 {
-	if (m_Status == EUdpClientStatus::Connecting)
-	{
-		CryLog(TITLE "Sending ask packet to game server...");
-
-		CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Ask);
-		packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
-
-		SendNetMessage(packet);
-	}
-
 	// Connection timeout
-	if (m_Status == (EUdpClientStatus::Connected | EUdpClientStatus::WaitStart))
+	if (m_ConnectionTimeout == 0.f)
 	{
-		if (m_ConnectionTimeout == 0.f)
-		{
-			m_ConnectionTimeout = gEnv->pTimer->GetAsyncCurTime() + mEnv->net_timeout;
+		m_ConnectionTimeout = gEnv->pTimer->GetAsyncCurTime() + mEnv->net_timeout;
 
+		if (m_Status == EUdpClientStatus::Connecting)
+		{
+			// Sending ask packet to game server
+			CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Ask);
+			packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
+			SendNetMessage(packet);
+		}
+		else if (m_Status == (EUdpClientStatus::Connected | EUdpClientStatus::WaitStart))
+		{
 			// Send ping packet to server
 			CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Ping);
 			SendNetMessage(packet);
 		}
-		else if (m_ConnectionTimeout < gEnv->pTimer->GetAsyncCurTime())
-		{
-			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
-			CloseConnection();
-		}
+	}
+	else if (m_ConnectionTimeout < gEnv->pTimer->GetAsyncCurTime())
+	{
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
+		CloseConnection();
 	}
 }
 
