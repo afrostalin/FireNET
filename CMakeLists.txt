@@ -137,7 +137,7 @@ endif()
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/includes/FireNetCommon)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/includes/FireNet)
 
 # Update build number
 if(WIN32)
