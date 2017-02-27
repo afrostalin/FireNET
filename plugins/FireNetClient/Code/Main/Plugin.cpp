@@ -85,7 +85,8 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
 	// Clear FireNet client pointer
-	gFireNet->pClient = nullptr;
+	if (gFireNet)
+		gFireNet->pClient = nullptr;
 
 	CryLogAlways(TITLE "Unloaded.");
 }
@@ -134,9 +135,15 @@ void CFireNetClientPlugin::OnPluginUpdate(EPluginUpdateType updateType)
 	{
 	case IPluginUpdateListener::EUpdateType_Update:
 	{
+		//! Update UDP client here
 		if (mEnv->pNetworkThread && mEnv->pUdpClient)
 		{
 			mEnv->pUdpClient->Update();
+		}
+		//! Automatic deleting network thread if it's ready to close
+		if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose())
+		{
+			SAFE_DELETE(mEnv->pNetworkThread);
 		}
 		break;
 	}
@@ -232,7 +239,7 @@ void CFireNetClientPlugin::SendMovementRequest(EFireNetClientActions action, flo
 {
 	if (mEnv->pUdpClient && mEnv->pUdpClient->IsConnected())
 	{
-		CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Request);
+		CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
 		packet.WriteRequest(EFireNetUdpRequest::Action);
 		packet.WriteInt(action);
 		packet.WriteFloat(value);

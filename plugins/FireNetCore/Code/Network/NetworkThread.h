@@ -8,9 +8,13 @@
 class CNetworkThread : public IThread
 {
 public:
-	CNetworkThread() {}
+	CNetworkThread() : bIsReadyToClose(false)
+	{}
 	~CNetworkThread() {}
 public:
 	virtual void ThreadEntry();
 	void         SignalStopWork();
+	bool         IsReadyToClose() { return bIsReadyToClose; }
+private:
+	bool         bIsReadyToClose;
 };

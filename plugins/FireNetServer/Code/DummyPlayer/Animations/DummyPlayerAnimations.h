@@ -1,0 +1,45 @@
+// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+
+#pragma once
+
+#include "Entities/ISimpleExtension.h"
+
+#include <ICryMannequin.h>
+
+class CNetPlayer;
+
+////////////////////////////////////////////////////////
+// Player extension to manage animation handling and playback via Mannequin
+////////////////////////////////////////////////////////
+class CNetPlayerAnimations
+	: public CGameObjectExtensionHelper<CNetPlayerAnimations, ISimpleExtension>
+{
+public:
+	CNetPlayerAnimations();
+	virtual ~CNetPlayerAnimations();
+
+	// ISimpleExtension
+	virtual void PostInit(IGameObject* pGameObject) override;
+
+	virtual void Update(SEntityUpdateContext& ctx, int updateSlot) override;
+
+	virtual void ProcessEvent(SEntityEvent& event) override;
+	// ~ISimpleExtension
+
+	void OnPlayerModelChanged();
+
+protected:
+	void ActivateMannequinContext(const char *contextName, ICharacterInstance &character, const SControllerDef &controllerDefinition, const IAnimationDatabase &animationDatabase);
+
+protected:
+	CNetPlayer *m_pPlayer;
+
+	IActionController *m_pActionController;
+	SAnimationContext *m_pAnimationContext;
+
+	_smart_ptr<IAction> m_pIdleFragment;
+
+	TagID m_rotateTagId;
+	TagID m_walkTagId;
+};

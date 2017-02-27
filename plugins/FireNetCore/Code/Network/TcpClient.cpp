@@ -113,7 +113,7 @@ void CTcpClient::Do_Connect()
 
 	if (ip && port && timeout)
 	{
-		CryLog(TITLE "Connecting to master server <%s : %d> ...", ip->GetString(), port->GetIVal());
+		CryLogAlways(TITLE "Connecting to master server <%s : %d> ...", ip->GetString(), port->GetIVal());
 
 		m_Status = ETcpClientStatus::Connecting;
 

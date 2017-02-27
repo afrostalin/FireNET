@@ -18,6 +18,7 @@ CUdpClient::CUdpClient(BoostIO& io_service, const char* ip, short port) : m_IO_s
 	m_Status = EUdpClientStatus::NotConnected;
 
 	m_ConnectionTimeout = 0.f;
+	m_LastOutPacketNumber = 0;
 
 	Do_Connect();
 }
@@ -38,14 +39,14 @@ void CUdpClient::Update()
 		if (m_Status == EUdpClientStatus::Connecting)
 		{
 			// Sending ask packet to game server
-			CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Ask);
+			CUdpPacket packet(m_LastOutPacketNumber, EFireNetUdpPacketType::Ask);
 			packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
 			SendNetMessage(packet);
 		}
 		else if (m_Status == (EUdpClientStatus::Connected | EUdpClientStatus::WaitStart))
 		{
 			// Send ping packet to server
-			CUdpPacket packet(mEnv->m_LastOutPacketNumber, EFireNetUdpPacketType::Ping);
+			CUdpPacket packet(m_LastOutPacketNumber, EFireNetUdpPacketType::Ping);
 			SendNetMessage(packet);
 		}
 	}
@@ -58,7 +59,7 @@ void CUdpClient::Update()
 
 void CUdpClient::SendNetMessage(CUdpPacket & packet)
 {
-	mEnv->m_LastOutPacketNumber++;
+	m_LastOutPacketNumber++;
 
 	m_IO_service.post([this, packet]()
 	{
@@ -86,9 +87,9 @@ void CUdpClient::Do_Connect()
 	ICVar* ip = gEnv->pConsole->GetCVar("firenet_game_server_ip");
 	ICVar* port = gEnv->pConsole->GetCVar("firenet_game_server_port");
 
-	CryLog(TITLE "Connecting to game server <%s : %d>", ip->GetString(), port->GetIVal());
+	CryLogAlways(TITLE "Connecting to game server <%s : %d>", ip->GetString(), port->GetIVal());
 
-	m_Status = Connecting;
+	UpdateStatus(EUdpClientStatus::Connecting);
 
 	Do_Read();
 }
@@ -145,7 +146,8 @@ void CUdpClient::On_Connected(bool connected, EFireNetUdpServerError reason)
 {
 	if (connected)
 	{
-		m_Status = EUdpClientStatus(Connected | WaitStart);
+		UpdateStatus(EUdpClientStatus(Connected | WaitStart));
+
 		bIsConnected = connected;
 
 		// Create game state syncronizator
@@ -165,4 +167,10 @@ void CUdpClient::On_Disconnected()
 	CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection with game server lost");
 
 	CloseConnection();
+}
+
+void CUdpClient::UpdateStatus(EUdpClientStatus newStatus)
+{
+	m_ConnectionTimeout = 0.f;
+	m_Status = newStatus;
 }

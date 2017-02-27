@@ -10,11 +10,16 @@ class CUdpPacket;
 class CReadQueue
 {
 public:
-	CReadQueue() {}
+	CReadQueue() 
+	{
+		m_LastInputPacketNumber = 0;
+	}
 	~CReadQueue() {}
 public:
 	void ReadPacket(CUdpPacket &packet);
 private:
 	void ReadAsk(CUdpPacket &packet, EFireNetUdpAsk ask);
 	void ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
+private:
+	int m_LastInputPacketNumber;
 };

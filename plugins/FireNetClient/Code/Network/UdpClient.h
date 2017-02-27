@@ -29,6 +29,7 @@ public:
 public:
 	void                            CloseConnection();
 	bool                            IsConnected() { return bIsConnected; }
+	int                             GetLastPacketNumber() { return m_LastOutPacketNumber; }
 private:
 	void                            Do_Connect();
 	void                            Do_Read();
@@ -37,7 +38,7 @@ public:
 	void                            On_Connected(bool connected, EFireNetUdpServerError reason = EFireNetUdpServerError::None);
 	void                            ResetTimeout() { m_ConnectionTimeout = 0.f; }
 private:
-	void                            On_Disconnected();
+	void                            On_Disconnected();	
 private:
 	enum EUdpClientStatus : int
 	{
@@ -47,6 +48,7 @@ private:
 		WaitStart,
 		Playing,
 	};
+	void                            UpdateStatus(EUdpClientStatus newStatus);
 private:
 	std::queue<CUdpPacket>          m_Queue;
 	EUdpClientStatus                m_Status;
@@ -63,5 +65,6 @@ private:
 
 	char                            m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];
 private:
-	float                           m_ConnectionTimeout;                          
+	float                           m_ConnectionTimeout;     
+	int                             m_LastOutPacketNumber;
 };

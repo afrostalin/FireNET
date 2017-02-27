@@ -204,7 +204,8 @@ const char * CUdpPacket::toString()
 
 		if (debug && debug->GetIVal() > 0)
 		{
-			CryLog(TITLE "Packet debug : %s", m_Data.c_str());
+			CryLog(TITLE "Output UDP packet data : %s", m_Data.c_str());
+			CryLog(TITLE "Output UDP packet size : %d", getLength());
 		}
 
 		return m_Data.c_str();
@@ -231,7 +232,8 @@ void CUdpPacket::ReadPacket()
 
 		if (debug && debug->GetIVal() > 0)
 		{
-			CryLog(TITLE "Packet debug : %s", m_Data.c_str());
+			CryLog(TITLE "Input UDP packet data : %s", m_Data.c_str());
+			CryLog(TITLE "Input UDP packet size : %d", getLength());
 		}
 
 		if (m_Packet.size() >= 4)

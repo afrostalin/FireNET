@@ -3,44 +3,44 @@
 
 #include "StdAfx.h"
 #include "NetworkThread.h"
-#include "Network/UdpClient.h"
+#include "Network/UdpServer.h"
 
 void CNetworkThread::ThreadEntry()
 {
 	try
 	{
-		CryLog(TITLE "Init UDP client...");
-
-		BoostIO io_service;
+		CryLog(TITLE "Init UDP server...");
 
 		ICVar* ip = gEnv->pConsole->GetCVar("firenet_game_server_ip");
 		ICVar* port = gEnv->pConsole->GetCVar("firenet_game_server_port");
 
+		BoostIO io_service;
+
 		if (ip && port)
 		{
-			mEnv->pUdpClient = new CUdpClient(io_service, ip->GetString(), port->GetIVal());
+			mEnv->pUdpServer = new CUdpServer(io_service, ip->GetString(), port->GetIVal());
 
 			io_service.run();
 		}
 		else
 		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't init UDP client - Can't ger game server ip/port");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't init UDP server - Can't ger address to bind");
 		}
 
-		CryLog(TITLE "UDP client closed.");
+		CryLog(TITLE "UDP server closed.");
 
-		SAFE_DELETE(mEnv->pUdpClient);
+		SAFE_DELETE(mEnv->pUdpServer);
 
 		bIsReadyToClose = true;
 	}
 	catch (const std::exception& e)
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't init UDP client : %s", e.what());
-	}	
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't init UDP server : %s", e.what());
+	}
 }
 
 void CNetworkThread::SignalStopWork()
 {
-	if(mEnv->pUdpClient)
-		mEnv->pUdpClient->CloseConnection();
+	if (mEnv->pUdpServer)
+		mEnv->pUdpServer->Close();
 }

@@ -26,6 +26,8 @@ void CNetworkThread::ThreadEntry()
 		CryLog(TITLE "TCP client closed.");
 
 		SAFE_DELETE(mEnv->pTcpClient);
+
+		bIsReadyToClose = true;
 	}
 	catch (const std::exception& e)
 	{

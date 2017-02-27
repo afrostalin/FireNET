@@ -3,11 +3,11 @@
 
 #pragma once
 
-#define TITLE "[FireNet-Client] "
+#define TITLE "[FireNet-Server] "
 
-class CGameStateSynchronization;
-class CUdpClient;
+class CUdpServer;
 class CNetworkThread;
+class CGameStateSynchronization;
 
 struct SFireNetProfile;
 
@@ -16,28 +16,25 @@ struct SPluginEnv
 	SPluginEnv()
 	{
 		pNetworkThread = nullptr;
-		pUdpClient = nullptr;
+		pUdpServer = nullptr;
 		pGameSync = nullptr;
-
-		m_FireNetProfile = nullptr;
 
 		net_ip = nullptr;
 		net_port = 0;
 		net_timeout = 0;
+		net_max_players = 0;
 	}
 
 	//! Pointers
-	CUdpClient*                pUdpClient;
+	CUdpServer*                pUdpServer;
 	CGameStateSynchronization* pGameSync;
 	CNetworkThread*            pNetworkThread;
-
-	//! Local FireNet profile
-	SFireNetProfile*           m_FireNetProfile;
 
 	//! CVars
 	ICVar*                     net_ip;
 	int                        net_port;
 	int                        net_timeout;
+	int                        net_max_players;
 };
 
 extern SPluginEnv* mEnv;

@@ -97,6 +97,11 @@ void CFireNetCorePlugin::OnPluginUpdate(EPluginUpdateType updateType)
 	{
 	case IPluginUpdateListener::EUpdateType_Update:
 	{
+		//! Automatic deleting network thread if it's ready to close
+		if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose())
+		{
+			SAFE_DELETE(mEnv->pNetworkThread);
+		}
 		break;
 	}
 	default:

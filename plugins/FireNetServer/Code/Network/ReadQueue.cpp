@@ -4,15 +4,17 @@
 #include "StdAfx.h"
 #include "ReadQueue.h"
 
-#include "Network/UdpClient.h"
+#include "Network/UdpServer.h"
 #include "Network/UdpPacket.h"
 
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {
+	m_LastPacketTime = gEnv->pTimer->GetAsyncCurTime();
+
 	//! Check packet number
 	if (packet.getPacketNumber() < m_LastInputPacketNumber)
 	{
-		CryLog(TITLE "Packet from server can't be readed, because packet too old. Packet number : %d, last number : %d", packet.getPacketNumber(), m_LastInputPacketNumber);
+		CryLog(TITLE "Packet from client can't be readed, because packet too old. Packet number : %d, last number : %d", packet.getPacketNumber(), m_LastInputPacketNumber);
 		return;
 	}
 	else if (packet.getPacketNumber() >= m_LastInputPacketNumber)
@@ -30,7 +32,7 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 	}
 	case EFireNetUdpPacketType::Ping :
 	{
-		mEnv->pUdpClient->ResetTimeout();
+		ReadPing();
 		break;
 	}
 	case EFireNetUdpPacketType::Ask :
@@ -54,13 +56,6 @@ void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
 	{
 	case EFireNetUdpAsk::ConnectToServer:
 	{
-		//! If server can accept client we received "true" in packet
-		//! Else server can't accept client we received "false" and reason (int)
-		if (packet.ReadBool())
-			mEnv->pUdpClient->On_Connected(true);
-		else if (!packet.ReadBool())
-			mEnv->pUdpClient->On_Connected(false, (EFireNetUdpServerError)packet.ReadInt());
-
 		break;
 	}
 	case EFireNetUdpAsk::ChangeTeam:
@@ -70,6 +65,12 @@ void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
 	default:
 		break;
 	}
+}
+
+void CReadQueue::ReadPing()
+{
+	CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Ping);
+	SendPacket(packet);
 }
 
 void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
@@ -91,4 +92,10 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	default:
 		break;
 	}
+}
+
+void CReadQueue::SendPacket(CUdpPacket & packet)
+{
+	mEnv->pUdpServer->SendToClient(packet, m_ClientID);
+	m_LastOutputPacketNumber++;
 }
