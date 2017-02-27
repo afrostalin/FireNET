@@ -17,36 +17,20 @@
 IEntityRegistrator *IEntityRegistrator::g_pFirst = nullptr;
 IEntityRegistrator *IEntityRegistrator::g_pLast = nullptr;
 
-void TestConnection(IConsoleCmdArgs* argc)
+void CmdConnect(IConsoleCmdArgs* args)
 {
-	if (mEnv->pNetworkThread)
-	{
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "FireNet client thread alredy spawned. Removing...");
-
-		mEnv->pNetworkThread->SignalStopWork();
-		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
-
-		SAFE_DELETE(mEnv->pNetworkThread);
-	}
-
-	if (!gEnv->IsDedicated() && !gEnv->IsEditor())
-	{
-		mEnv->pNetworkThread = new CNetworkThread();
-
-		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetClient_Thread"))
-		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
-
-			SAFE_DELETE(mEnv->pNetworkThread);
-		}
-		else
-			CryLog(TITLE "FireNet client thread spawned");
-	}
-	else
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : It's not dedicated server or it's editor");
-	}
+	if (gFireNet && gFireNet->pClient)
+		gFireNet->pClient->ConnectToGameServer();
 }
+
+//! Test functionality
+#ifndef NDEBUG
+void CmdTestSpawn(IConsoleCmdArgs* args)
+{
+	if (gFireNet && gFireNet->pClient)
+		gFireNet->pClient->SendSpawnRequest();
+}
+#endif
 
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
@@ -158,7 +142,7 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 	{
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{
-		// Register entities
+		//! Register entities
 		IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 		while (pTemp != nullptr)
 		{
@@ -166,13 +150,18 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			pTemp = pTemp->m_pNext;
 		}
 
-		// Register CVars
+		//! Register CVars
 		mEnv->net_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
 		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_port, 64000, VF_CHEAT, "FireNet game server port");
 		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet game server timeout");
 
-		// Test functionality
-		REGISTER_COMMAND("net_connect", TestConnection, VF_NULL, "");
+		//! Register command
+		REGISTER_COMMAND("firenet_game_connect", CmdConnect, VF_NULL, "Connect to game server");
+
+		//! Test functionality
+#ifndef NDEBUG
+		REGISTER_COMMAND("firenet_test_spawn", CmdTestSpawn, VF_NULL, "");
+#endif
 
 		break;
 	}
@@ -243,6 +232,18 @@ void CFireNetClientPlugin::SendMovementRequest(EFireNetClientActions action, flo
 		packet.WriteRequest(EFireNetUdpRequest::Action);
 		packet.WriteInt(action);
 		packet.WriteFloat(value);
+
+		mEnv->pUdpClient->SendNetMessage(packet);
+	}
+}
+
+// TODO - Add spawn point pos / or entity id parametr for spawn
+void CFireNetClientPlugin::SendSpawnRequest()
+{
+	if (mEnv->pUdpClient && mEnv->pUdpClient->IsConnected())
+	{
+		CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
+		packet.WriteRequest(EFireNetUdpRequest::Spawn);
 
 		mEnv->pUdpClient->SendNetMessage(packet);
 	}

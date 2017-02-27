@@ -7,6 +7,8 @@
 #include "Network/UdpClient.h"
 #include "Network/UdpPacket.h"
 
+#include "Network/SyncGameState.h"
+
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {
 	//! Check packet number
@@ -78,6 +80,36 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	{
 	case EFireNetUdpRequest::Spawn:
 	{
+		CryLog(TITLE "Server request spawn player");
+
+		Vec3 m_SpawnPos;
+		Quat m_SpawnRot;
+
+		uint m_FireNetUID = packet.ReadInt();
+		uint m_ChanelID = packet.ReadInt();
+
+		m_SpawnPos.x = packet.ReadFloat();
+		m_SpawnPos.y = packet.ReadFloat();
+		m_SpawnPos.z = packet.ReadFloat();
+
+		m_SpawnRot.w = packet.ReadFloat();
+		m_SpawnRot.v.x = packet.ReadFloat();
+		m_SpawnRot.v.y = packet.ReadFloat();
+		m_SpawnRot.v.z = packet.ReadFloat();
+
+		string m_FileModel = packet.ReadString();
+		string m_Nickname = packet.ReadString();
+
+		SNetPlayer player;
+		player.m_PlayerUID = m_FireNetUID;
+		player.m_ChanelId = m_ChanelID;
+		player.m_PlayerSpawnPos = m_SpawnPos;
+		player.m_PlayerSpawnRot = m_SpawnRot;
+		player.m_PlayerModel = m_FileModel;
+		player.m_PlayerNickname = m_Nickname;
+
+		mEnv->pGameSync->SpawnNetPlayer(player);
+
 		break;
 	}
 	case EFireNetUdpRequest::Movement:

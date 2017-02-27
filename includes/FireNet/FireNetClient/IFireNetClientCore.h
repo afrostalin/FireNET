@@ -19,6 +19,9 @@ struct IFireNetClientCore
 	//! Send movement request
 	virtual void SendMovementRequest(EFireNetClientActions action, float value = 0.f) = 0;
 
+	//! Send spawn request
+	virtual void SendSpawnRequest() = 0;
+
 	//! Return connection status
 	virtual bool IsConnected() = 0;
 

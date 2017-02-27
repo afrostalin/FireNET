@@ -21,5 +21,5 @@ private:
 	void ReadAsk(CUdpPacket &packet, EFireNetUdpAsk ask);
 	void ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
 private:
-	int m_LastInputPacketNumber;
+	int  m_LastInputPacketNumber;
 };
