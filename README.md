@@ -1,8 +1,8 @@
 ![](https://pp.userapi.com/c638128/v638128053/258f5/hflY6sGj5rA.jpg)
 
-FireNet - a set of tools for creating and managing MMO games based on CryEngine V
+**FireNet** - a set of tools for creating and managing MMO games based on CryEngine V
 
-Master-server includes (C++ 11, Qt 5.7) : 
+**Master-server includes (C++ 11, Qt 5.7) :** 
 * Authorization system 
 * Player profile system
 * In-game store/inventory system
@@ -10,12 +10,12 @@ Master-server includes (C++ 11, Qt 5.7) :
 * Chat system (global/private/in-game)
 * Matchmacking system (find/join/host game)
 
-FireNet plugins includes (C++ 11, Boost.Asio 1.62, OpenSSL 1.1.0e) :
+**FireNet plugins includes (C++ 11, Boost.Asio 1.62, OpenSSL 1.1.0e) :**
 * Core plugin to work with master-server
 * Client plugin to work with game-server
 * Server plugin to create dedicated game-server without CryEngine network code
 
-Main advantages :
+**Main advantages :**
 * FireNet absolutely free and not have any royalties
 * Low latency and very fast work 
 * SSL encryption for all transferred  data
