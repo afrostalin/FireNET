@@ -5,8 +5,10 @@
 
 typedef unsigned int uint;
 
-class CNetPlayer;
+//! FireNet player class
+class CFireNetPlayer;
 
+//! Client actions for network syncronizations
 enum EFireNetClientActions : uint
 {
 	E_ACTION_MOVE_LEFT = 1 << 0,
@@ -20,21 +22,23 @@ enum EFireNetClientActions : uint
 	E_ACTION_MOUSE_ROTATE_PITCH = 1 << 8,
 };
 
-struct SNetPlayer
+//! Structure for using in syncronization class
+struct SFireNetSyncronizationClient
 {
-	uint        m_PlayerUID;
-	uint        m_ChanelId;
+	uint            m_PlayerUID;
+	uint            m_ChanelId;
 
-	Vec3        m_PlayerSpawnPos;
-	Quat        m_PlayerSpawnRot;
+	Vec3            m_PlayerSpawnPos;
+	Quat            m_PlayerSpawnRot;
 
-	string      m_PlayerModel;
-	string      m_PlayerNickname;
+	string          m_PlayerModel;
+	string          m_PlayerNickname;
 
-	CNetPlayer* pPlayer;
+	CFireNetPlayer* pPlayer;
 };
 
-struct SNetPlayerAction
+//! Structure for send/read action
+struct SFireNetClientAction
 {
 	EFireNetClientActions m_action;
 	float                 m_value;

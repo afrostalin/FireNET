@@ -2,21 +2,23 @@
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "StdAfx.h"
-#include "NetPlayerInput.h"
-#include "NetActor/NetPlayer.h"
-#include "NetActor/Movement/NetPlayerMovement.h"
+#include "FireNetPlayerInput.h"
+
+#include "Actors/FireNetPlayer.h"
+#include "Actors/Movement/FireNetPlayerMovement.h"
+
 #include <CryAnimation/ICryAnimation.h>
 
-void CNetPlayerInput::PostInit(IGameObject *pGameObject)
+void CFireNetPlayerInput::PostInit(IGameObject *pGameObject)
 {
-	m_pPlayer = static_cast<CNetPlayer *>(pGameObject->QueryExtension("NetPlayer"));
+	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
 	m_moveSpeed = m_pPlayer->GetCVars().m_moveSpeed;
 
 	// Make sure that this extension is updated regularly via the Update function below
 	GetGameObject()->EnableUpdateSlot(this, 0);
 }
 
-void CNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
+void CFireNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
 {
 	Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));
 	
@@ -36,14 +38,14 @@ void CNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
 	}
 }
 
-void CNetPlayerInput::OnPlayerRespawn()
+void CFireNetPlayerInput::OnPlayerRespawn()
 {
 	m_inputFlags = 0;
 	m_mouseDeltaRotation = ZERO;
 	m_lookOrientation = IDENTITY;
 }
 
-void CNetPlayerInput::OnActionJump()
+void CFireNetPlayerInput::OnActionJump()
 {
 	auto *pMovement = m_pPlayer->GetMovement();
 	auto *pEntity = m_pPlayer->GetEntity();
@@ -62,7 +64,7 @@ void CNetPlayerInput::OnActionJump()
 	}
 }
 
-void CNetPlayerInput::OnActionSprint()
+void CFireNetPlayerInput::OnActionSprint()
 {
 	if (auto* pMovement = m_pPlayer->GetMovement())
 	{
@@ -70,16 +72,16 @@ void CNetPlayerInput::OnActionSprint()
 	}
 }
 
-void CNetPlayerInput::OnActionMouseRotateYaw(float value)
+void CFireNetPlayerInput::OnActionMouseRotateYaw(float value)
 {
 	m_mouseDeltaRotation.x -= value;
 }
 
-void CNetPlayerInput::OnActionMouseRotatePitch(float value)
+void CFireNetPlayerInput::OnActionMouseRotatePitch(float value)
 {
 	m_mouseDeltaRotation.y -= value;
 }
 
-void CNetPlayerInput::OnActionShoot(EntityId entityId, const ActionId& actionId, int activationMode, float value)
+void CFireNetPlayerInput::OnActionShoot(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
 }

@@ -103,7 +103,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 		string m_FileModel = packet.ReadString();
 		string m_Nickname = packet.ReadString();
 
-		SNetPlayer player;
+		SFireNetSyncronizationClient player;
 		player.m_PlayerUID = m_FireNetUID;
 		player.m_ChanelId = m_ChanelID;
 		player.m_PlayerSpawnPos = m_SpawnPos;

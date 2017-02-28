@@ -5,7 +5,6 @@
 
 #include <FireNetCore/IFireNetCore.h>
 #include <FireNetCore/IFireNetCorePlugin.h>
-
 #include <FireNetClient/IFireNetClientCore.h>
 #include <FireNetServer/IFireNetServerCore.h>
 

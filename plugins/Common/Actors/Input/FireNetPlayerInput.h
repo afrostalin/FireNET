@@ -5,9 +5,9 @@
 
 #include "Entities/ISimpleExtension.h"
 
-class CNetPlayer;
+class CFireNetPlayer;
 
-class CNetPlayerInput : public CGameObjectExtensionHelper<CNetPlayerInput, ISimpleExtension>
+class CFireNetPlayerInput : public CGameObjectExtensionHelper<CFireNetPlayerInput, ISimpleExtension>
 {
 	enum EInputFlagType
 	{
@@ -28,10 +28,11 @@ public:
 	};
 
 public:
-	CNetPlayerInput() : m_moveSpeed(0.0f)
+	// TODO - move it 
+	CFireNetPlayerInput() : m_moveSpeed(0.0f)
 		, m_pPlayer(nullptr)
 	{}
-	virtual ~CNetPlayerInput() {}
+	virtual ~CFireNetPlayerInput() {}
 
 	// ISimpleExtension
 	virtual void       PostInit(IGameObject* pGameObject) override;
@@ -54,7 +55,7 @@ public:
 	
 	void               OnActionShoot(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 protected:
-	CNetPlayer*        m_pPlayer;
+	CFireNetPlayer*    m_pPlayer;
 	TInputFlags        m_inputFlags;
 	Vec2               m_mouseDeltaRotation;
 	float              m_moveSpeed;

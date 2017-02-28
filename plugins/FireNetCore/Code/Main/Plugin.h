@@ -6,6 +6,7 @@
 #include <FireNet>
 
 #include <CryEntitySystem/IEntityClass.h>
+#include <CryGame/IGameFramework.h>
 
 class CFireNetCorePlugin 
 	: public IFireNetCorePlugin	
@@ -60,6 +61,45 @@ public:
 	// ~IFireNetCore
 public:
 	virtual IFireNetEnv*     GetFireNetEnv() const override { return gFireNet; };
+public:
+	template<class T>
+	struct CObjectCreator : public IGameObjectExtensionCreatorBase
+	{
+		IGameObjectExtension* Create(IEntity* pEntity)
+		{
+			return pEntity->CreateComponentClass<T>();
+		}
+
+		void GetGameObjectExtensionRMIData(void** ppRMI, size_t* nCount)
+		{
+			*ppRMI = nullptr;
+			*nCount = 0;
+		}
+	};
+
+	template<class T>
+	static void RegisterEntityWithDefaultComponent(const char *name, const char* category = nullptr, const char* icon = nullptr, bool iconOnTop = false)
+	{
+		IEntityClassRegistry::SEntityClassDesc clsDesc;
+		clsDesc.sName = name;
+
+		clsDesc.editorClassInfo.sCategory = category;
+		clsDesc.editorClassInfo.sIcon = icon;
+		clsDesc.editorClassInfo.bIconOnTop = iconOnTop;
+
+		static CObjectCreator<T> _creator;
+
+		gEnv->pGameFramework->GetIGameObjectSystem()->RegisterExtension(name, &_creator, &clsDesc);
+	}
+
+	template<class T>
+	static void RegisterEntityComponent(const char *name)
+	{
+		static CObjectCreator<T> _creator;
+
+		gEnv->pGameFramework->GetIGameObjectSystem()->RegisterExtension(name, &_creator, nullptr);
+		T::SetExtensionId(gEnv->pGameFramework->GetIGameObjectSystem()->GetID(name));
+	}
 }; 
 
 struct IEntityRegistrator

@@ -26,6 +26,7 @@ else()
   message("Boost NOT INCLUDED!")
 endif()
 
+# Main
 set (SourceGroup_PluginMain
 	"StdAfx.cpp"
 	"StdAfx.h"
@@ -34,31 +35,12 @@ set (SourceGroup_PluginMain
 	"Main/PluginEnv.h"
 )
 
-set (SourceGroup_DummyPlayer
-	"DummyPlayer/DummyPlayer.cpp"
-	"DummyPlayer/DummyPlayer.h"
-	"../../Common/Actors/ISimpleActor.h"
-)
-
-set(SourceGroup_DummyPlayerAnimations
-	"DummyPlayer/Animations/DummyPlayerAnimations.cpp"
-	"DummyPlayer/Animations/DummyPlayerAnimations.h"
-)
-
-set(SourceGroup_DummyPlayerInput
-	"DummyPlayer/Input/DummyPlayerInput.cpp"
-	"DummyPlayer/Input/DummyPlayerInput.h"
-)
-
-set(SourceGroup_DummyPlayerMovement
-	"DummyPlayer/Movement/DummyPlayerMovement.cpp"
-	"DummyPlayer/Movement/DummyPlayerMovement.h"
-)
-
+# Entities
 set(SourceGroup_Entities
 	"../../Common/Entities/ISimpleExtension.h"
 )
 
+# Network
 set(SourceGroup_Network
 	"Network/UdpServer.cpp"
 	"Network/UdpServer.h"
@@ -73,20 +55,11 @@ set(SourceGroup_Network
 )
 
 source_group("Main" FILES ${SourceGroup_PluginMain})
-source_group("DummyPlayer" FILES ${SourceGroup_DummyPlayer})
-source_group("DummyPlayer\\Animations" FILES ${SourceGroup_DummyPlayerAnimations})
-source_group("DummyPlayer\\Input" FILES ${SourceGroup_DummyPlayerInput})
-source_group("DummyPlayer\\Movement" FILES ${SourceGroup_DummyPlayerMovement})
-source_group("Interfaces" FILES ${SourceGroup_Interfaces})
 source_group("Entities" FILES ${SourceGroup_Entities})
 source_group("Network" FILES ${SourceGroup_Network})
 
 set (SOURCE
 	${SourceGroup_PluginMain}
-	${SourceGroup_DummyPlayer}
-	${SourceGroup_DummyPlayerAnimations}
-	${SourceGroup_DummyPlayerInput}
-	${SourceGroup_DummyPlayerMovement}
 	${SourceGroup_Entities}
 	${SourceGroup_Network}
 )

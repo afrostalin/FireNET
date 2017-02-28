@@ -10,6 +10,7 @@ option(OPTION_PCH "Enable Precompiled headers" ON)
 
 # CryEngine headers
 find_package (CryCommon REQUIRED)
+find_package (CryAction REQUIRED)
 
 # BOOST 
 set(BOOST_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../3rd/boost)
@@ -61,14 +62,55 @@ set (SourceGroup_Network
 	"Network/TcpPacket.h"
 )
 
+# FireNet spawn point
+set(SourceGroup_FireNetSpawnPoint
+	"Entities/FireNetSpawnPoint.cpp"
+	"Entities/FireNetSpawnPoint.h"
+)
+
+# FireNet player
+set (SourceGroup_FireNetPlayer
+	"../../Common/Actors/FireNetPlayer.cpp"
+	"../../Common/Actors/FireNetPlayer.h"
+	"../../Common/Actors/ISimpleActor.h"
+)
+
+# FireNet player animations
+set(SourceGroup_FireNetPlayerAnimations
+	"../../Common/Actors/Animations/FireNetPlayerAnimations.cpp"
+	"../../Common/Actors/Animations/FireNetPlayerAnimations.h"
+)
+
+# FireNet player input
+set(SourceGroup_FireNetPlayerInput
+	"../../Common/Actors/Input/FireNetPlayerInput.cpp"
+	"../../Common/Actors/Input/FireNetPlayerInput.h"
+)
+
+# FireNet player movement
+set(SourceGroup_FireNetPlayerMovement
+	"../../Common/Actors/Movement/FireNetPlayerMovement.cpp"
+	"../../Common/Actors/Movement/FireNetPlayerMovement.h"
+)
+
 source_group("Main" FILES ${SourceGroup_PluginMain})
 source_group("FlowNodes" FILES ${SourceGroup_FlowNodes})
 source_group("Network" FILES ${SourceGroup_Network})
+source_group("Entities\\FireNetSpawnPoint" FILES ${SourceGroup_FireNetSpawnPoint})
+source_group("Entities\\FireNetPlayer" FILES ${SourceGroup_FireNetPlayer})
+source_group("Entities\\FireNetPlayer\\Animations" FILES ${SourceGroup_FireNetPlayerAnimations})
+source_group("Entities\\FireNetPlayer\\Input" FILES ${SourceGroup_FireNetPlayerInput})
+source_group("Entities\\FireNetPlayer\\Movement" FILES ${SourceGroup_FireNetPlayerMovement})
 
 set (SOURCE
 	${SourceGroup_PluginMain}
 	${SourceGroup_FlowNodes}
 	${SourceGroup_Network}
+	${SourceGroup_FireNetSpawnPoint}
+	${SourceGroup_FireNetPlayer}
+	${SourceGroup_FireNetPlayerAnimations}
+	${SourceGroup_FireNetPlayerInput}
+	${SourceGroup_FireNetPlayerMovement}
 )
 
 if(OPTION_PCH AND MSVC)
@@ -82,8 +124,9 @@ endif (OPTION_PCH AND MSVC)
 
 add_library(${PROJECT_NAME} MODULE ${SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../Common)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../includes/FireNet)
-target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE CryCommon CryAction ${Boost_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 if (WIN32)
 	target_link_libraries(${PROJECT_NAME} PRIVATE Ntdll)

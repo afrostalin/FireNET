@@ -13,15 +13,15 @@ public:
 public:
 	void Reset();
 
-	void SpawnNetPlayer(SNetPlayer &player);
+	void SpawnNetPlayer(SFireNetSyncronizationClient &player);
 	void RemoveNetPlayer(uint uid);
 
 	void HideNetPlayer(uint uid);
 	void UnhideNetPlayer(uint uid);
 
-	void SyncNetPlayerAction(uint uid, SNetPlayerAction &action);
+	void SyncNetPlayerAction(uint uid, SFireNetClientAction &action);
 	void SyncNetPlayerPos(uint uid, Vec3 &pos);
 	void SyncNetPlayerRot(uint uid, Quat &rot);
 private:
-	std::vector<SNetPlayer> m_NetPlayers;
+	std::vector<SFireNetSyncronizationClient> m_NetPlayers;
 };

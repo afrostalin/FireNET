@@ -2,23 +2,24 @@
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "StdAfx.h"
-#include "DummyPlayerMovement.h"
+#include "FireNetPlayerMovement.h"
 
-#include "DummyPlayer/DummyPlayer.h"
-#include "DummyPlayer/Input/DummyPlayerInput.h"
+#include "Actors/FireNetPlayer.h"
+#include "Actors/Input/FireNetPlayerInput.h"
 
-CNetPlayerMovement::CNetPlayerMovement()
+// TODO init all members
+CFireNetPlayerMovement::CFireNetPlayerMovement()
 	: m_bOnGround(false)
 {
 }
 
-void CNetPlayerMovement::PostInit(IGameObject *pGameObject)
+void CFireNetPlayerMovement::PostInit(IGameObject *pGameObject)
 {
-	m_pPlayer = static_cast<CNetPlayer *>(pGameObject->QueryExtension("DummyPlayer"));
+	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
 	pGameObject->EnableUpdateSlot(this, 0);
 }
 
-void CNetPlayerMovement::Physicalize()
+void CFireNetPlayerMovement::Physicalize()
 {
 	SEntityPhysicalizeParams physParams;
 	physParams.type = PE_LIVING;
@@ -42,7 +43,7 @@ void CNetPlayerMovement::Physicalize()
 	GetEntity()->Physicalize(physParams);
 }
 
-void CNetPlayerMovement::Update(SEntityUpdateContext &ctx, int updateSlot)
+void CFireNetPlayerMovement::Update(SEntityUpdateContext &ctx, int updateSlot)
 {
 	IEntity &entity = *GetEntity();
 	IPhysicalEntity *pPhysicalEntity = entity.GetPhysics();
@@ -53,7 +54,7 @@ void CNetPlayerMovement::Update(SEntityUpdateContext &ctx, int updateSlot)
 	UpdateMovementRequest(ctx.fFrameTime, *pPhysicalEntity);
 }
 
-void CNetPlayerMovement::GetLatestPhysicsStats(IPhysicalEntity &physicalEntity)
+void CFireNetPlayerMovement::GetLatestPhysicsStats(IPhysicalEntity &physicalEntity)
 {
 	pe_status_living livingStatus;
 	if(physicalEntity.GetStatus(&livingStatus) != 0)
@@ -63,7 +64,7 @@ void CNetPlayerMovement::GetLatestPhysicsStats(IPhysicalEntity &physicalEntity)
 	}
 }
 
-void CNetPlayerMovement::UpdateMovementRequest(float frameTime, IPhysicalEntity &physicalEntity)
+void CFireNetPlayerMovement::UpdateMovementRequest(float frameTime, IPhysicalEntity &physicalEntity)
 {
 	if (m_bOnGround)
 	{
@@ -77,25 +78,25 @@ void CNetPlayerMovement::UpdateMovementRequest(float frameTime, IPhysicalEntity 
 	}
 }
 
-Vec3 CNetPlayerMovement::GetLocalMoveDirection() const
+Vec3 CFireNetPlayerMovement::GetLocalMoveDirection() const
 {
 	Vec3 moveDirection = ZERO;
 
 	uint32 inputFlags = m_pPlayer->GetInput()->GetInputFlags();
 
-	if (inputFlags & CNetPlayerInput::eInputFlag_MoveLeft)
+	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveLeft)
 	{
 		moveDirection.x -= 1;
 	}
-	if (inputFlags & CNetPlayerInput::eInputFlag_MoveRight)
+	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveRight)
 	{
 		moveDirection.x += 1;
 	}
-	if (inputFlags & CNetPlayerInput::eInputFlag_MoveForward)
+	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveForward)
 	{
 		moveDirection.y += 1;
 	}
-	if (inputFlags & CNetPlayerInput::eInputFlag_MoveBack)
+	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveBack)
 	{
 		moveDirection.y -= 1;
 	}

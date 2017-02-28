@@ -26,6 +26,7 @@ else()
   message("Boost NOT INCLUDED!")
 endif()
 
+# Main
 set (SourceGroup_PluginMain
 	"StdAfx.cpp"
 	"StdAfx.h"
@@ -34,31 +35,12 @@ set (SourceGroup_PluginMain
 	"Main/PluginEnv.h"
 )
 
-set (SourceGroup_NetActor
-	"NetActor/NetPlayer.cpp"
-	"NetActor/NetPlayer.h"
-	"../../Common/Actors/ISimpleActor.h"
-)
-
-set(SourceGroup_NetActorAnimations
-	"NetActor/Animations/NetPlayerAnimations.cpp"
-	"NetActor/Animations/NetPlayerAnimations.h"
-)
-
-set(SourceGroup_NetActorInput
-	"NetActor/Input/NetPlayerInput.cpp"
-	"NetActor/Input/NetPlayerInput.h"
-)
-
-set(SourceGroup_NetActorMovement
-	"NetActor/Movement/NetPlayerMovement.cpp"
-	"NetActor/Movement/NetPlayerMovement.h"
-)
-
+# Entities
 set(SourceGroup_Entities
 	"../../Common/Entities/ISimpleExtension.h"
 )
 
+# Network
 set(SourceGroup_Network
 	"Network/UdpClient.cpp"
 	"Network/UdpClient.h"
@@ -73,20 +55,11 @@ set(SourceGroup_Network
 )
 
 source_group("Main" FILES ${SourceGroup_PluginMain})
-source_group("NetActor" FILES ${SourceGroup_NetActor})
-source_group("NetActor\\Animations" FILES ${SourceGroup_NetActorAnimations})
-source_group("NetActor\\Input" FILES ${SourceGroup_NetActorInput})
-source_group("NetActor\\Movement" FILES ${SourceGroup_NetActorMovement})
-source_group("Interfaces" FILES ${SourceGroup_Interfaces})
 source_group("Entities" FILES ${SourceGroup_Entities})
 source_group("Network" FILES ${SourceGroup_Network})
 
 set (SOURCE
 	${SourceGroup_PluginMain}
-	${SourceGroup_NetActor}
-	${SourceGroup_NetActorAnimations}
-	${SourceGroup_NetActorInput}
-	${SourceGroup_NetActorMovement}
 	${SourceGroup_Entities}
 	${SourceGroup_Network}
 )

@@ -2,36 +2,36 @@
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "StdAfx.h"
-#include "NetPlayerAnimations.h"
+#include "FireNetPlayerAnimations.h"
 
-#include "NetActor/NetPlayer.h"
-#include "NetActor/Input/NetPlayerInput.h"
-#include "NetActor/Movement/NetPlayerMovement.h"
+#include "Actors/FireNetPlayer.h"
+#include "Actors/Input/FireNetPlayerInput.h"
+#include "Actors/Movement/FireNetPlayerMovement.h"
 
 #include <CryAnimation/ICryAnimation.h>
 #include <ICryMannequin.h>
 
-CNetPlayerAnimations::CNetPlayerAnimations()
+CFireNetPlayerAnimations::CFireNetPlayerAnimations()
 	: m_pActionController(nullptr)
 	, m_pAnimationContext(nullptr)
 {
 }
 
-CNetPlayerAnimations::~CNetPlayerAnimations()
+CFireNetPlayerAnimations::~CFireNetPlayerAnimations()
 {
 	SAFE_RELEASE(m_pActionController);
 	SAFE_DELETE(m_pAnimationContext);
 }
 
-void CNetPlayerAnimations::PostInit(IGameObject *pGameObject)
+void CFireNetPlayerAnimations::PostInit(IGameObject *pGameObject)
 {
-	m_pPlayer = static_cast<CNetPlayer *>(pGameObject->QueryExtension("NetPlayer"));
+	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
 
 	// Make sure that this extension is updated regularly via the Update function below
 	pGameObject->EnableUpdateSlot(this, 0);
 }
 
-void CNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
+void CFireNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
 {
 	// Start updating the motion parameters used for blend spaces
 	if (auto *pPhysEnt = m_pPlayer->GetEntity()->GetPhysics())
@@ -43,7 +43,7 @@ void CNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
 		// Re-calculate the quaternion based on the corrected look orientation
 		Quat correctedOrientation = Quat(CCamera::CreateOrientationYPR(ypr));
 
-		auto *pCharacter = m_pPlayer->GetEntity()->GetCharacter(CNetPlayer::eGeometry_ThirdPerson);
+		auto *pCharacter = m_pPlayer->GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_ThirdPerson);
 
 		// Get the player's velocity from physics
 		pe_status_dynamics playerDynamics;
@@ -91,7 +91,7 @@ void CNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
 	}
 }
 
-void CNetPlayerAnimations::ProcessEvent(SEntityEvent& event)
+void CFireNetPlayerAnimations::ProcessEvent(SEntityEvent& event)
 {
 	switch (event.event)
 	{
@@ -106,7 +106,7 @@ void CNetPlayerAnimations::ProcessEvent(SEntityEvent& event)
 	}
 }
 
-void CNetPlayerAnimations::OnPlayerModelChanged()
+void CFireNetPlayerAnimations::OnPlayerModelChanged()
 {
 	// Release previous controller and context, if we are respawning
 	SAFE_RELEASE(m_pActionController);
@@ -145,7 +145,7 @@ void CNetPlayerAnimations::OnPlayerModelChanged()
 	m_pActionController = mannequinInterface.CreateActionController(GetEntity(), *m_pAnimationContext);
 	CRY_ASSERT(m_pActionController != nullptr);
 
-	ICharacterInstance *pCharacterInstance = GetEntity()->GetCharacter(CNetPlayer::eGeometry_ThirdPerson);
+	ICharacterInstance *pCharacterInstance = GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_ThirdPerson);
 	CRY_ASSERT(pCharacterInstance != nullptr);
 
 	// Activate the Main context we'll be playing our animations in
@@ -169,7 +169,7 @@ void CNetPlayerAnimations::OnPlayerModelChanged()
 	pCharacterInstance->GetISkeletonAnim()->SetAnimationDrivenMotion(1);
 }
 
-void CNetPlayerAnimations::ActivateMannequinContext(const char *contextName, ICharacterInstance &character, const SControllerDef &controllerDefinition, const IAnimationDatabase &animationDatabase)
+void CFireNetPlayerAnimations::ActivateMannequinContext(const char *contextName, ICharacterInstance &character, const SControllerDef &controllerDefinition, const IAnimationDatabase &animationDatabase)
 {
 	IEntity &entity = *GetEntity();
 
