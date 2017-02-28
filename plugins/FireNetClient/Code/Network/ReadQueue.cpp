@@ -45,6 +45,16 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 		ReadRequest(packet, packet.ReadRequest());
 		break;
 	}
+	case EFireNetUdpPacketType::Result :
+	{
+		ReadResult(packet, packet.ReadResult());
+		break;
+	}
+	case EFireNetUdpPacketType::Error :
+	{
+		ReadError(packet, packet.ReadError());
+		break;
+	}
 	default:
 		break;
 	}
@@ -56,13 +66,6 @@ void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
 	{
 	case EFireNetUdpAsk::ConnectToServer:
 	{
-		//! If server can accept client we received "true" in packet
-		//! Else server can't accept client we received "false" and reason (int)
-		if (packet.ReadBool())
-			mEnv->pUdpClient->On_Connected(true);
-		else if (!packet.ReadBool())
-			mEnv->pUdpClient->On_Connected(false, (EFireNetUdpServerError)packet.ReadInt());
-
 		break;
 	}
 	case EFireNetUdpAsk::ChangeTeam:
@@ -80,7 +83,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	{
 	case EFireNetUdpRequest::Spawn:
 	{
-		CryLog(TITLE "Server request spawn player");
+		CryLog(TITLE "Server request spawn new player");
 
 		Vec3 m_SpawnPos;
 		Quat m_SpawnRot;
@@ -118,6 +121,51 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	}
 	case EFireNetUdpRequest::Action:
 	{
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
+{
+	switch (result)
+	{
+	case EFireNetUdpResult::ClientAccepted:
+	{
+		mEnv->pUdpClient->On_Connected(true);
+		break;
+	}
+	case EFireNetUdpResult::ClientSpawned:
+		break;
+	case EFireNetUdpResult::ClientMoved:
+		break;
+	default:
+		break;
+	}
+}
+
+void CReadQueue::ReadError(CUdpPacket & packet, EFireNetUdpError error)
+{
+	switch (error)
+	{
+	case EFireNetUdpError::ServerFull:
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Game server can't accept new client - server full");
+		mEnv->pUdpClient->On_Connected(false);
+		break;
+	}
+	case EFireNetUdpError::PlayerBanned:
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Game server can't accept new client - player banned");
+		mEnv->pUdpClient->On_Connected(false);
+		break;
+	}
+	case EFireNetUdpError::ServerBlockNewConnection:
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Game server can't accept new client - server not ready");
+		mEnv->pUdpClient->On_Connected(false);
 		break;
 	}
 	default:

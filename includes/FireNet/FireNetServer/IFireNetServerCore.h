@@ -13,6 +13,12 @@ struct IFireNetServerCore
 	//! Register game server in FireNet master server
 	virtual void RegisterGameServer() = 0;
 
+	//! Update game server in FireNet master server
+	virtual void UpdateGameServerInfo() = 0;
+
+	//! Get game server status
+	virtual EFireNetUdpServerStatus GetServerStatus() = 0;
+
 	//! Normaly shutdown plugin
 	virtual bool Quit() = 0;
 };

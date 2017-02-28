@@ -14,6 +14,8 @@ enum class EFireNetUdpPacketType : int
 	Ask,
 	Ping,
 	Request,
+	Result,
+	Error,
 };
 
 enum class EFireNetUdpAsk : int
@@ -29,16 +31,22 @@ enum class EFireNetUdpRequest : int
 	Action,
 };
 
-// Max UDP packet size
-enum class EFireNetUdpPackeMaxSize : int { SIZE = 512 };
+enum class EFireNetUdpResult : int
+{
+	ClientAccepted,
+	ClientSpawned,
+	ClientMoved,
+};
 
-enum class EFireNetUdpServerError : int 
-{ 
-	None,
+enum class EFireNetUdpError : int
+{
 	ServerFull,
 	PlayerBanned,
-	ServerBlockNewConnection
+	ServerBlockNewConnection,
 };
+
+// Max UDP packet size
+enum class EFireNetUdpPackeMaxSize : int { SIZE = 512 };
 
 class IFireNetUdpPacket
 {
@@ -47,9 +55,13 @@ public:
 public:
 	virtual void                       WriteAsk(EFireNetUdpAsk ask) { WriteInt(static_cast<int>(ask)); }
 	virtual void                       WriteRequest(EFireNetUdpRequest request) { WriteInt(static_cast<int>(request)); }
+	virtual void                       WriteResult(EFireNetUdpResult result) { WriteInt(static_cast<int>(result)); }
+	virtual void                       WriteError(EFireNetUdpError error) { WriteInt(static_cast<int>(error)); }
 public:
 	virtual EFireNetUdpAsk             ReadAsk() { return (EFireNetUdpAsk)ReadInt(); }
 	virtual EFireNetUdpRequest         ReadRequest() { return (EFireNetUdpRequest)ReadInt(); }
+	virtual EFireNetUdpResult          ReadResult() { return (EFireNetUdpResult)ReadInt(); }
+	virtual EFireNetUdpError           ReadError() { return (EFireNetUdpError)ReadInt(); }
 public:
 	virtual void                       WriteString(const std::string &value) = 0;
 	virtual void                       WriteInt(int value) = 0;
@@ -68,6 +80,7 @@ public:
 public:
 	EFireNetUdpPacketType              getType() { return m_Type; }
 	int                                getPacketNumber() { return m_PacketNumber; }
+	bool                               IsGoodPacket() { return bIsGoodPacket; }
 protected:
 	void                               WritePacketType(EFireNetUdpPacketType type) { WriteInt(static_cast<int>(type)); }
 	void                               WriteHeader() { WriteString(m_Header); }

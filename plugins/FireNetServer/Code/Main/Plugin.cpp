@@ -29,6 +29,8 @@ CFireNetServerPlugin::~CFireNetServerPlugin()
 	// Unregister CVars
 	if (gEnv && gEnv->pConsole)
 	{
+		gEnv->pConsole->UnregisterVariable("firenet_map");
+		gEnv->pConsole->UnregisterVariable("firenet_gamerules");
 		gEnv->pConsole->UnregisterVariable("firenet_game_server_ip");
 		gEnv->pConsole->UnregisterVariable("firenet_game_server_port");
 		gEnv->pConsole->UnregisterVariable("firenet_game_server_timeout");
@@ -122,7 +124,7 @@ void CFireNetServerPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 	{
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{
-		// Register entities
+		//! Register entities
 		IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 		while (pTemp != nullptr)
 		{
@@ -130,13 +132,16 @@ void CFireNetServerPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			pTemp = pTemp->m_pNext;
 		}
 
-		// Register CVars
-		mEnv->net_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
+		//! Register CVars
+		mEnv->net_ip =        REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
+		mEnv->net_map =       REGISTER_STRING("firenet_map", "", VF_NULL, "Map name for loading and register in master server");
+		mEnv->net_gamerules = REGISTER_STRING("firenet_gamerules", "TDM", VF_NULL, "Gamerules name for loading and register in master server");
+
 		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_port, 64000, VF_CHEAT, "FireNet game server port");
 		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet game server timeout");
 		REGISTER_CVAR2("firenet_game_server_max_players", &mEnv->net_max_players, 64, VF_NULL, "FireNet game server max players count");
 
-		// Start network thread
+		//! Start network thread
 		mEnv->pNetworkThread = new CNetworkThread();
 		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetServer_Thread"))
 		{
@@ -165,12 +170,57 @@ void CFireNetServerPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 		Quit();
 		break;
 	}
+	case ESYSTEM_EVENT_LEVEL_LOAD_START:
+	{
+		if (mEnv->pUdpServer)
+			mEnv->pUdpServer->SetServerStatus(EFireNetUdpServerStatus::LevelLoading);
+		break;
+	}
+	case ESYSTEM_EVENT_LEVEL_LOAD_END:
+	{
+		if (mEnv->pUdpServer)
+			mEnv->pUdpServer->SetServerStatus(EFireNetUdpServerStatus::LevelLoaded);
+		break;
+	}
+	case ESYSTEM_EVENT_LEVEL_LOAD_ERROR:
+	{
+		if (mEnv->pUdpServer)
+			mEnv->pUdpServer->SetServerStatus(EFireNetUdpServerStatus::LevelLoadError);
+		break;
+	}
+	case ESYSTEM_EVENT_LEVEL_GAMEPLAY_START:
+	{
+		if (mEnv->pUdpServer)
+			mEnv->pUdpServer->SetServerStatus(EFireNetUdpServerStatus::GameStart);
+		break;
+	}
+	case ESYSTEM_EVENT_LEVEL_UNLOAD:
+	{
+		if (mEnv->pUdpServer)
+			mEnv->pUdpServer->SetServerStatus(EFireNetUdpServerStatus::LevelUnloading);
+		break;
+	}
+	case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
+	{
+		if (mEnv->pUdpServer)
+			mEnv->pUdpServer->SetServerStatus(EFireNetUdpServerStatus::LevelUnloaded);
+		break;
+	}
 	break;
 	}
 }
 
 void CFireNetServerPlugin::RegisterGameServer()
 {
+}
+
+void CFireNetServerPlugin::UpdateGameServerInfo()
+{
+}
+
+EFireNetUdpServerStatus CFireNetServerPlugin::GetServerStatus()
+{
+	return mEnv->pUdpServer ? mEnv->pUdpServer->GetServerStatus() : EFireNetUdpServerStatus::None;
 }
 
 bool CFireNetServerPlugin::Quit()

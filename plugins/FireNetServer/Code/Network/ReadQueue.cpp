@@ -7,6 +7,9 @@
 #include "Network/UdpServer.h"
 #include "Network/UdpPacket.h"
 
+#include <CryEntitySystem/IEntitySystem.h>
+#include <CryGame/IGameFramework.h>
+
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {
 	m_LastPacketTime = gEnv->pTimer->GetAsyncCurTime();
@@ -79,6 +82,25 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	{
 	case EFireNetUdpRequest::Spawn:
 	{
+		CryLog(TITLE "Client %d request spawn", m_ClientID);
+
+		//! Spawn packet
+		CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Request);
+		packet.WriteRequest(EFireNetUdpRequest::Spawn);
+		packet.WriteInt(1000001);           //! FireNet uid
+		packet.WriteInt(2);                 //! Chanel id (always > 1)
+		packet.WriteFloat(130.562943f);           //! Spawn position x
+		packet.WriteFloat(143.508270f);           //! Spawn position y
+		packet.WriteFloat(32.171688f);           //! Spawn position x
+		packet.WriteFloat(1);           //! Spawn rotatin w
+		packet.WriteFloat(0);         //! Spawn rotatin vector x
+		packet.WriteFloat(0);         //! Spawn rotatin vector y
+		packet.WriteFloat(0);         //! Spawn rotatin vector z
+		packet.WriteString("player_model"); //! Player model
+		packet.WriteString("nickname");     //! Player nickname
+
+		SendPacket(packet);
+
 		break;
 	}
 	case EFireNetUdpRequest::Movement:

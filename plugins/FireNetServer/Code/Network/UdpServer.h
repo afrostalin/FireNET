@@ -21,6 +21,7 @@ typedef boost::asio::io_service        BoostIO;
 typedef boost::asio::ip::udp::socket   BoostUdpSocket;
 typedef boost::asio::ip::udp::endpoint BoostUdpEndPoint;
 
+// TODO - Create client list + player list
 struct SFireNetUdpServerClient
 {
 	uint32                          m_ID;
@@ -28,6 +29,9 @@ struct SFireNetUdpServerClient
 
 	SFireNetProfile*                pFireNetProfile;
 	CReadQueue*                     pReader;
+
+	bool                            bConnected;
+	bool                            bNeedToRemove;
 };
 
 typedef std::map<uint32, SFireNetUdpServerClient> UdpClientList;
@@ -41,13 +45,21 @@ public:
 public:
 	void                                 Update();
 	void                                 Close();
+public:
+	void                                 SetServerStatus(EFireNetUdpServerStatus status) 
+	{
+		CryLog(TITLE "Update server status from %d to %d", static_cast<int>(m_Status), static_cast<int>(status));
+		m_Status = status;
+	}
+public:
 	short                                GetClientCount() { return m_Clients.size(); }
+	EFireNetUdpServerStatus              GetServerStatus() { return m_Status; }
 public:
 	void                                 SendToClient(CUdpPacket &packet, uint32 clientID);
 	void                                 SendToAll(CUdpPacket &packet);
 private:	
 	uint32                               GetOrCreateClientID(BoostUdpEndPoint endpoint);
-	const SFireNetUdpServerClient*       GetClient(uint32 id);
+	SFireNetUdpServerClient*             GetClient(uint32 id);
 	void                                 RemoveClient(uint32 id);
 private:
 	void                                 Do_Receive();
@@ -62,6 +74,7 @@ private:
 private:
 	BoostIO&                             m_IO_service;
 	BoostUdpSocket                       m_UdpSocket;
+	EFireNetUdpServerStatus              m_Status;
 
 	BoostUdpEndPoint                     m_RemoteEndPoint;
 	uint32                               m_NextClientID;

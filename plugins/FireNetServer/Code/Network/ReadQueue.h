@@ -14,7 +14,7 @@ public:
 	{
 		m_LastInputPacketNumber = 0;
 		m_LastOutputPacketNumber = 0;
-		m_LastPacketTime = 0.f;
+		m_LastPacketTime = gEnv->pTimer->GetAsyncCurTime();
 	}
 	~CReadQueue() {}
 public:

@@ -20,6 +20,8 @@ public:
 private:
 	void ReadAsk(CUdpPacket &packet, EFireNetUdpAsk ask);
 	void ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
+	void ReadResult(CUdpPacket &packet, EFireNetUdpResult result);
+	void ReadError(CUdpPacket &packet, EFireNetUdpError error);
 private:
 	int  m_LastInputPacketNumber;
 };

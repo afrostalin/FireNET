@@ -35,7 +35,7 @@ private:
 	void                            Do_Read();
 	void                            Do_Write();
 public:
-	void                            On_Connected(bool connected, EFireNetUdpServerError reason = EFireNetUdpServerError::None);
+	void                            On_Connected(bool connected);
 	void                            ResetTimeout() { m_ConnectionTimeout = 0.f; }
 private:
 	void                            On_Disconnected();	

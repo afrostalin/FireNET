@@ -142,7 +142,7 @@ void CUdpClient::Do_Write()
 	});
 }
 
-void CUdpClient::On_Connected(bool connected, EFireNetUdpServerError reason)
+void CUdpClient::On_Connected(bool connected)
 {
 	if (connected)
 	{
@@ -156,10 +156,7 @@ void CUdpClient::On_Connected(bool connected, EFireNetUdpServerError reason)
 		CryLogAlways(TITLE "Connection with game server established");
 	}
 	else
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Game server can't accept new client. Reason = %d", static_cast<int>(reason));
-		On_Disconnected();
-	}
+		CloseConnection();
 }
 
 void CUdpClient::On_Disconnected()

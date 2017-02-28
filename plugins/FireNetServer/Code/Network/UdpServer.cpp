@@ -10,6 +10,7 @@ CUdpServer::CUdpServer(BoostIO& io_service, const char* ip, short port)
 	: m_IO_service(io_service)
 	, m_UdpSocket(io_service, BoostUdpEndPoint(boost::asio::ip::address::from_string(ip), port))
 	, m_NextClientID(0L)
+	, m_Status(EFireNetUdpServerStatus::None)
 {
 	Do_Receive();
 
@@ -30,19 +31,34 @@ void CUdpServer::Update()
 	if (m_CurTime > 0.f && pTimeout)
 	{
 		bool   bFinded = false;
+		bool   bNeedToRemove = false;
 		uint32 m_ID;
 		for (const auto &it : m_Clients)
 		{
-			if ((it.second.pReader->GetLastTime() + pTimeout->GetFVal()) < m_CurTime)
+			if (it.second.bConnected && it.second.pReader && it.second.pReader->GetLastTime() + pTimeout->GetFVal() < m_CurTime)
 			{
 				bFinded = true;
+				m_ID = it.first;
+				break;
+			}
+			else if (it.second.bNeedToRemove)
+			{
+				bNeedToRemove = true;
 				m_ID = it.first;
 				break;
 			}
 		}
 
 		if (bFinded)
+		{
+			CryLogAlways(TITLE "Client (%d) disconnecting - Connection timeout", m_ID);
 			RemoveClient(m_ID);
+		}
+		else if (bNeedToRemove)
+		{
+			CryLogAlways(TITLE "Client (%d) removing - Client marked for removing", m_ID);
+			RemoveClient(m_ID);
+		}
 	}
 }
 
@@ -97,16 +113,18 @@ uint32 CUdpServer::GetOrCreateClientID(BoostUdpEndPoint endpoint)
 	SFireNetUdpServerClient client;
 	client.m_ID = id;
 	client.m_EndPoint = endpoint;
-	client.pReader = new CReadQueue(id);
+	client.pReader = nullptr;
+	client.bConnected = false;
+	client.bNeedToRemove = false;
+
+	CryLog(TITLE "Add new client (%d)", id);
 
 	m_Clients.insert(UdpClient(id, client));
-
-	CryLog(TITLE "Created new client id = %d", id);
 
 	return id;
 }
 
-const SFireNetUdpServerClient * CUdpServer::GetClient(uint32 id)
+SFireNetUdpServerClient* CUdpServer::GetClient(uint32 id)
 {
 	try 
 	{
@@ -123,14 +141,20 @@ void CUdpServer::RemoveClient(uint32 id)
 {
 	try
 	{
-		CryLog(TITLE "Removing client %d", id);
+		CryLog(TITLE "Removing client (%d)...", id);
 
-		m_Clients.erase(id);
-		On_ClientDisconnect(id);
+		if (auto pClient = GetClient(id))
+		{
+			if (pClient->bConnected)
+				On_ClientDisconnect(id);		
+
+			CryLog(TITLE "Client (%d) removed.", id);
+			m_Clients.erase(id);
+		}		
 	}
 	catch (std::out_of_range)
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't remove client - unknown id!");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't remove client - unknown id (%d)", id);
 	}
 }
 
@@ -150,6 +174,7 @@ void CUdpServer::Do_Receive()
 		}
 		else
 		{
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't receive message from target!");
 			On_RemoteError(ec, m_RemoteEndPoint);
 		}
 
@@ -166,6 +191,7 @@ void CUdpServer::Do_Send(BoostUdpEndPoint target)
 	{
 		if (ec)
 		{
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't send message to target!");
 			On_RemoteError(ec, m_RemoteEndPoint);
 		}
 
@@ -177,6 +203,8 @@ void CUdpServer::On_RemoteError(const boost::system::error_code error_code, cons
 {
 	bool bFound = false;
 	uint32 id;
+
+	CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "ErrorID : %d, Error message : %s", error_code.value(), error_code.message().c_str());
 
 	for (const auto &it : m_Clients)
 	{
@@ -196,50 +224,77 @@ void CUdpServer::On_RemoteError(const boost::system::error_code error_code, cons
 
 void CUdpServer::On_ClientDisconnect(uint32 id)
 {
-	CryLogAlways(TITLE "Client %d disconnected", id);
+	CryLogAlways(TITLE "Client (%d) disconnected", id);
 }
 
 void CUdpServer::MessageProcess(const char* data, uint32 id)
 {
-	//CryLog(TITLE "Reading message from client %d", id);
+	auto pClient = GetClient(id);
+	CUdpPacket packet(data);
 
-	CUdpPacket       packet(data);
-
-	//! Accepting new client
-	if (packet.getType() == EFireNetUdpPacketType::Ask && 
-		packet.ReadAsk() == EFireNetUdpAsk::ConnectToServer &&
-		GetClientCount() < mEnv->net_max_players)
+	//! Mark to remove if client send broken packet
+	if (!packet.IsGoodPacket())
 	{
-		CryLogAlways(TITLE "Client %d accepted", id);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Client (%d) send bad packet. Marked to remove", id);
 
-		CUdpPacket packet(0, EFireNetUdpPacketType::Ask);
-		packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
-		packet.WriteBool(true);
-
-		SendToClient(packet, id);
-
-		return;
-	}
-	else if (packet.getType() == EFireNetUdpPacketType::Ask &&
-		packet.ReadAsk() == EFireNetUdpAsk::ConnectToServer &&
-		GetClientCount() >= mEnv->net_max_players)
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't accept new client. Server full!");
-
-		CUdpPacket packet(0, EFireNetUdpPacketType::Ask);
-		packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
-		packet.WriteBool(false);
-		packet.WriteInt(1);
-
-		SendToClient(packet, id);
+		if (pClient)
+			pClient->bNeedToRemove = true;
 
 		return;
 	}
 
-	//! Reading messages
-	if (auto pClient = GetClient(id))
+	//! Try accept new client
+	if (pClient && !pClient->bConnected)
+	{	
+		if (packet.getType() == EFireNetUdpPacketType::Ask && packet.ReadAsk() == EFireNetUdpAsk::ConnectToServer)
+		{
+			if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() < mEnv->net_max_players)
+			{
+				pClient->bConnected = true;
+				pClient->pReader = new CReadQueue(id);
+
+				CryLogAlways(TITLE "Client (%d) accepted", id);
+
+				CUdpPacket packet(0, EFireNetUdpPacketType::Result);
+				packet.WriteResult(EFireNetUdpResult::ClientAccepted);
+
+				SendToClient(packet, id);
+			}
+			else if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() >= mEnv->net_max_players)
+			{
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server full");
+
+				CUdpPacket packet(0, EFireNetUdpPacketType::Error);
+				packet.WriteError(EFireNetUdpError::ServerFull);
+
+				SendToClient(packet, id);
+
+				//! Set client to remove for next frame
+				pClient->bNeedToRemove = true;
+			}
+			else if (m_Status != EFireNetUdpServerStatus::LevelLoaded)
+			{
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server not ready to accepting new players");
+
+				CUdpPacket packet(0, EFireNetUdpPacketType::Error);
+				packet.WriteError(EFireNetUdpError::ServerBlockNewConnection);
+
+				SendToClient(packet, id);
+
+				//! Set client to remove for next frame
+				pClient->bNeedToRemove = true;
+			}
+
+			return;
+		}
+	}
+	//! Reading messages from connected clients
+	else if (pClient && pClient->bConnected) 
 	{
-		pClient->pReader->ReadPacket(packet);
+		if (auto pClient = GetClient(id))
+		{
+			pClient->pReader->ReadPacket(packet);
+		}
 	}
 }
 

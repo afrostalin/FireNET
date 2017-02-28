@@ -34,8 +34,10 @@ public:
 	// ~ISystemEventListener
 
 	// IFireNetServerCore
-	virtual void        RegisterGameServer() override;
-	virtual bool        Quit() override;
+	virtual void                    RegisterGameServer() override;
+	virtual void                    UpdateGameServerInfo() override;
+	virtual EFireNetUdpServerStatus GetServerStatus() override;
+	virtual bool                    Quit() override;
 	// ~IFireNetServerCore
 public:
 	template<class T>
