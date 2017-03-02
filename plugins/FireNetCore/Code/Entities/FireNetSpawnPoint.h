@@ -6,7 +6,8 @@
 #include <CryEntitySystem/IEntitySystem.h>
 #include "Entities/ISimpleExtension.h"
 
-class CFireNetSpawnPoint : public ISimpleExtension
+class CFireNetSpawnPoint 
+	: public ISimpleExtension
 	, public IEntityPropertyGroup
 {
 public:

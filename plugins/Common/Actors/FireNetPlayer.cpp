@@ -52,12 +52,19 @@ class CFireNetPlayerRegistrator : public IEntityRegistrator , public CFireNetPla
 		REGISTER_CVAR2("firenet_player_cameraOffsetY", &m_cameraOffsetY, 0.01f, VF_CHEAT, "Forward positional offset from camera joint");
 		REGISTER_CVAR2("firenet_player_cameraOffsetZ", &m_cameraOffsetZ, 0.26f, VF_CHEAT, "Vertical positional offset from camera joint");
 
-		m_pFirstPersonGeometry = REGISTER_STRING("firenet_player_firstPersonGeometry", "Objects/Characters/SampleCharacter/thirdperson.cdf", VF_CHEAT, "Sets the first person geometry to load");
 		m_pCameraJointName = REGISTER_STRING("firenet_player_cameraJointName", "head", VF_CHEAT, "Sets the name of the joint managing the player's view position");
 
+		// FPS
+		m_pFirstPersonGeometry = REGISTER_STRING("firenet_player_firstPersonGeometry", "Objects/Characters/SampleCharacter/firstperson.cdf", VF_CHEAT, "Sets the first person geometry to load");
 		m_pFirstPersonMannequinContext = REGISTER_STRING("firenet_player_firstPersonMannequinContext", "FirstPersonCharacter", VF_CHEAT, "The name of the FP context used in Mannequin");
 		m_pFirstPersonAnimationDatabase = REGISTER_STRING("firenet_player_firstPersonAnimationDatabase", "Animations/Mannequin/ADB/FirstPerson.adb", VF_CHEAT, "Path to the animation database file to load");
 		m_pFirstPersonControllerDefinition = REGISTER_STRING("firenet_player_firstPersonControllerDefinition", "Animations/Mannequin/ADB/FirstPersonControllerDefinition.xml", VF_CHEAT, "Path to the controller definition file to load");
+
+		// TPS
+		m_pThirdPersonGeometry = REGISTER_STRING("firenet_player_thirdPersonGeometry", "Objects/Characters/SampleCharacter/thirdperson.cdf", VF_CHEAT, "Sets the third person geometry to load");
+		m_pThirdPersonMannequinContext = REGISTER_STRING("firenet_player_thirdPersonMannequinContext", "FirstPersonCharacter", VF_CHEAT, "The name of the TP context used in Mannequin");
+		m_pThirdPersonAnimationDatabase = REGISTER_STRING("firenet_player_thirdPersonAnimationDatabase", "Animations/Mannequin/ADB/FirstPerson.adb", VF_CHEAT, "Path to the animation database file to load");
+		m_pThirdPersonControllerDefinition = REGISTER_STRING("firenet_player_thirdPersonControllerDefinition", "Animations/Mannequin/ADB/FirstPersonControllerDefinition.xml", VF_CHEAT, "Path to the controller definition file to load");
 	}
 
 	void UnregisterCVars()
@@ -78,11 +85,13 @@ class CFireNetPlayerRegistrator : public IEntityRegistrator , public CFireNetPla
 			pConsole->UnregisterVariable("firenet_player_eyeHeight");
 			pConsole->UnregisterVariable("firenet_player_cameraOffsetY");
 			pConsole->UnregisterVariable("firenet_player_cameraOffsetZ");
-			pConsole->UnregisterVariable("firenet_player_firstPersonGeometry");
+			
 			pConsole->UnregisterVariable("firenet_player_cameraJointName");
-			pConsole->UnregisterVariable("firenet_player_firstPersonMannequinContext");
-			pConsole->UnregisterVariable("firenet_player_firstPersonAnimationDatabase");
-			pConsole->UnregisterVariable("firenet_player_firstPersonControllerDefinition");
+
+			pConsole->UnregisterVariable("firenet_player_thirdPersonGeometry");
+			pConsole->UnregisterVariable("firenet_player_thirdPersonMannequinContext");
+			pConsole->UnregisterVariable("firenet_player_thirdPersonAnimationDatabase");
+			pConsole->UnregisterVariable("firenet_player_thirdPersonControllerDefinition");
 		}
 	}
 };
@@ -196,6 +205,7 @@ void CFireNetPlayer::OnPlayerMoveMousePitch(float value)
 
 void CFireNetPlayer::SetPlayerModel()
 {
+	// TODO need add FPS/TPS check
 	GetEntity()->LoadCharacter(eGeometry_ThirdPerson, GetCVars().m_pThirdPersonGeometry->GetString());
 	m_pAnimations->OnPlayerModelChanged();
 	m_pMovement->Physicalize();

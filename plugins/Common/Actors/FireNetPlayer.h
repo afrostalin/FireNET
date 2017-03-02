@@ -15,7 +15,7 @@ class CFireNetPlayerView;
 
 class CFireNetPlayer 
 	: public CGameObjectExtensionHelper<CFireNetPlayer, ISimpleActor>
-	, public IFireNetPlayerEntity
+	, public IFireNetEntityPlayer
 {
 public:
 	enum EGeometrySlots
@@ -72,12 +72,12 @@ public:
 	// ~ISimpleActor
 
 	// IFireNetPlayerEntity
-	virtual void OnPlayerAction(uint flags) override;
-	virtual void OnPlayerJump() override;
-	virtual void OnPlayerSprint() override;
-	virtual void OnPlayerShoot() override;
-	virtual void OnPlayerMoveMouseYaw(float value) override;
-	virtual void OnPlayerMoveMousePitch(float value) override;
+	virtual void              OnPlayerAction(uint flags) override;
+	virtual void              OnPlayerJump() override;
+	virtual void              OnPlayerSprint() override;
+	virtual void              OnPlayerShoot() override;
+	virtual void              OnPlayerMoveMouseYaw(float value) override;
+	virtual void              OnPlayerMoveMousePitch(float value) override;
 	// ~IFireNetPlayerEntity
 
 	CFireNetPlayerInput*      GetInput() const { return m_pInput; }

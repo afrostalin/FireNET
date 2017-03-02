@@ -6,7 +6,7 @@
 typedef unsigned int uint;
 
 // Basic interface for FireNet player class
-struct IFireNetPlayerEntity
+struct IFireNetEntityPlayer
 {
 	//! On player action
 	//! Need to syncronizate action flags
