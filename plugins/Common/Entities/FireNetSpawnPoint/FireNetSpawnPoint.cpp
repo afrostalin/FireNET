@@ -4,7 +4,6 @@
 #include "StdAfx.h"
 #include "FireNetSpawnPoint.h"
 #include "Main/Plugin.h"
-#include "Actors/FireNetPlayer.h"
 
 #include <CryEntitySystem/IEntitySystem.h>
 

@@ -1,12 +1,12 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
-// License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
+// Copyright (C) 2016-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// License: https://github.com/afrostalin/EasyShooter/blob/master/LICENCE.md
 
 #include "StdAfx.h"
 #include "FireNetPlayerAnimations.h"
 
-#include "Actors/FireNetPlayer.h"
-#include "Actors/Input/FireNetPlayerInput.h"
-#include "Actors/Movement/FireNetPlayerMovement.h"
+#include "Entities/FireNetPlayer/FireNetPlayer.h"
+#include "Entities/FireNetPlayer/Input/FireNetPlayerInput.h"
+#include "Entities/FireNetPlayer/Movement/FireNetPlayerMovement.h"
 
 #include <CryAnimation/ICryAnimation.h>
 #include <ICryMannequin.h>
@@ -43,7 +43,7 @@ void CFireNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
 		// Re-calculate the quaternion based on the corrected look orientation
 		Quat correctedOrientation = Quat(CCamera::CreateOrientationYPR(ypr));
 
-		auto *pCharacter = m_pPlayer->GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_ThirdPerson);
+		auto *pCharacter = m_pPlayer->GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_Default);
 
 		// Get the player's velocity from physics
 		pe_status_dynamics playerDynamics;
@@ -116,7 +116,7 @@ void CFireNetPlayerAnimations::OnPlayerModelChanged()
 	IMannequin &mannequinInterface = gEnv->pGameFramework->GetMannequinInterface();
 	IAnimationDatabaseManager &animationDatabaseManager = mannequinInterface.GetAnimationDatabaseManager();
 
-	const char *mannequinControllerDefinition = m_pPlayer->GetCVars().m_pThirdPersonControllerDefinition->GetString();
+	const char *mannequinControllerDefinition = m_pPlayer->GetCVars().m_pControllerDefinition->GetString();
 
 	// Load the Mannequin controller definition.
 	// This is owned by the animation database manager
@@ -127,8 +127,8 @@ void CFireNetPlayerAnimations::OnPlayerModelChanged()
 		return;
 	}
 
-	const char *mannequinContextName = m_pPlayer->GetCVars().m_pThirdPersonMannequinContext->GetString();
-	const char *animationDatabasePath = m_pPlayer->GetCVars().m_pThirdPersonAnimationDatabase->GetString();
+	const char *mannequinContextName = m_pPlayer->GetCVars().m_pMannequinContext->GetString();
+	const char *animationDatabasePath = m_pPlayer->GetCVars().m_pAnimationDatabase->GetString();
 
 	// Load the animation database
 	auto *pAnimationDatabase = animationDatabaseManager.Load(animationDatabasePath);
@@ -145,7 +145,7 @@ void CFireNetPlayerAnimations::OnPlayerModelChanged()
 	m_pActionController = mannequinInterface.CreateActionController(GetEntity(), *m_pAnimationContext);
 	CRY_ASSERT(m_pActionController != nullptr);
 
-	ICharacterInstance *pCharacterInstance = GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_ThirdPerson);
+	ICharacterInstance *pCharacterInstance = GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_Default);
 	CRY_ASSERT(pCharacterInstance != nullptr);
 
 	// Activate the Main context we'll be playing our animations in

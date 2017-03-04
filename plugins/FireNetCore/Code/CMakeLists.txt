@@ -62,55 +62,90 @@ set (SourceGroup_Network
 	"Network/TcpPacket.h"
 )
 
+# Entities 
+set(SourceGroup_Entities
+	"../../Common/Entities/ISimpleActor.h"
+	"../../Common/Entities/ISimpleExtension.h"
+	"../../Common/Entities/ISimpleWeapon.h"
+)
+
 # FireNet spawn point
 set(SourceGroup_FireNetSpawnPoint
-	"Entities/FireNetSpawnPoint.cpp"
-	"Entities/FireNetSpawnPoint.h"
+	"../../Common/Entities/FireNetSpawnPoint/FireNetSpawnPoint.cpp"
+	"../../Common/Entities/FireNetSpawnPoint/FireNetSpawnPoint.h"
 )
 
 # FireNet player
 set (SourceGroup_FireNetPlayer
-	"../../Common/Actors/FireNetPlayer.cpp"
-	"../../Common/Actors/FireNetPlayer.h"
-	"../../Common/Actors/ISimpleActor.h"
+	"../../Common/Entities/FireNetPlayer/FireNetPlayer.cpp"
+	"../../Common/Entities/FireNetPlayer/FireNetPlayer.h"
 )
 
 # FireNet player animations
 set(SourceGroup_FireNetPlayerAnimations
-	"../../Common/Actors/Animations/FireNetPlayerAnimations.cpp"
-	"../../Common/Actors/Animations/FireNetPlayerAnimations.h"
+	"../../Common/Entities/FireNetPlayer/Animations/FireNetPlayerAnimations.cpp"
+	"../../Common/Entities/FireNetPlayer/Animations/FireNetPlayerAnimations.h"
 )
 
 # FireNet player input
 set(SourceGroup_FireNetPlayerInput
-	"../../Common/Actors/Input/FireNetPlayerInput.cpp"
-	"../../Common/Actors/Input/FireNetPlayerInput.h"
+	"../../Common/Entities/FireNetPlayer/Input/FireNetPlayerInput.cpp"
+	"../../Common/Entities/FireNetPlayer/Input/FireNetPlayerInput.h"
 )
 
 # FireNet player movement
 set(SourceGroup_FireNetPlayerMovement
-	"../../Common/Actors/Movement/FireNetPlayerMovement.cpp"
-	"../../Common/Actors/Movement/FireNetPlayerMovement.h"
+	"../../Common/Entities/FireNetPlayer/Movement/FireNetPlayerMovement.cpp"
+	"../../Common/Entities/FireNetPlayer/Movement/FireNetPlayerMovement.h"
 )
 
+# FireNet player view
+set(SourceGroup_FireNetPlayerView
+	"../../Common/Entities/FireNetPlayer/View/FireNetPlayerView.cpp"
+	"../../Common/Entities/FireNetPlayer/View/FireNetPlayerView.h"
+)
+
+# FireNet rifle
+set(SourceGroup_FireNetRifle
+	"../../Common/Entities/FireNetRifle/FireNetRifle.cpp"
+	"../../Common/Entities/FireNetRifle/FireNetRifle.h"
+	"../../Common/Entities/FireNetRifle/FireNetBullet.cpp"
+	"../../Common/Entities/FireNetRifle/FireNetBullet.h"
+)
+
+# FireNet gamerules
+set(SourceGroup_FireNetGameRules
+	"Gamerules/FireNetGameRules.cpp"
+	"Gamerules/FireNetGameRules.h"
+)
+
+# MSVC filters 
 source_group("Main" FILES ${SourceGroup_PluginMain})
 source_group("FlowNodes" FILES ${SourceGroup_FlowNodes})
 source_group("Network" FILES ${SourceGroup_Network})
+source_group("Entities" FILES ${SourceGroup_Entities})
 source_group("Entities\\FireNetSpawnPoint" FILES ${SourceGroup_FireNetSpawnPoint})
 source_group("Entities\\FireNetPlayer" FILES ${SourceGroup_FireNetPlayer})
 source_group("Entities\\FireNetPlayer\\Animations" FILES ${SourceGroup_FireNetPlayerAnimations})
 source_group("Entities\\FireNetPlayer\\Input" FILES ${SourceGroup_FireNetPlayerInput})
 source_group("Entities\\FireNetPlayer\\Movement" FILES ${SourceGroup_FireNetPlayerMovement})
+source_group("Entities\\FireNetPlayer\\View" FILES ${SourceGroup_FireNetPlayerView})
+source_group("Entities\\FireNetRifle" FILES ${SourceGroup_FireNetRifle})
+source_group("GameRules" FILES ${SourceGroup_FireNetGameRules})
 
 set (SOURCE
 	${SourceGroup_PluginMain}
 	${SourceGroup_FlowNodes}
 	${SourceGroup_Network}
+	${SourceGroup_Entities}
 	${SourceGroup_FireNetSpawnPoint}
 	${SourceGroup_FireNetPlayer}
 	${SourceGroup_FireNetPlayerAnimations}
 	${SourceGroup_FireNetPlayerInput}
-	${SourceGroup_FireNetPlayerMovement}
+	${SourceGroup_FireNetPlayerMovement}	
+	${SourceGroup_FireNetPlayerView}
+	${SourceGroup_FireNetRifle}
+	${SourceGroup_FireNetGameRules}
 )
 
 if(OPTION_PCH AND MSVC)
