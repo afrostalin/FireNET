@@ -47,3 +47,6 @@
 /plugins/FireNetServer/bin/*
 /plugins/FireNetServer/Solutions/*
 /plugins/FireNetServer/Backup/*
+/plugins/FireNetUI/bin/*
+/plugins/FireNetUI/Solutions/*
+/plugins/FireNetUI/Backup/*

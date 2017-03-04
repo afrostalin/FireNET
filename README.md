@@ -14,6 +14,7 @@
 * Core plugin to work with master-server
 * Client plugin to work with game-server
 * Server plugin to create dedicated game-server without CryEngine network code
+* UI plugin for easy interaction with FireNet through Flash
 
 **Main advantages :**
 * FireNet absolutely free and not have any royalties
@@ -65,7 +66,7 @@ This will generate a `FireNET.sln` file (that is, a Visual Studio solution).
 * Go to plugins/3rd folder and unpack 3rd.7z archive
 
 ### Compiling
-* Go to plugins folder and choose plugin (FireNetCore/FireNetClient/FireNetServer)
+* Go to plugins folder and choose plugin (FireNetCore/FireNetClient/FireNetServer/FireNetUI)
 * Use .cryproject file to generate solution
 * Open solution with Visual Studio.
 * Build the solution in the configuration (Debug, Release, ...) of your choice.
