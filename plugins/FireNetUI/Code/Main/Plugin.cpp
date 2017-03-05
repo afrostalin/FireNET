@@ -26,6 +26,8 @@ CFireNetUIPlugin::~CFireNetUIPlugin()
 
 	// Unregister listeners
 	gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+
+	CryLogAlways(TITLE "Unloaded.");
 }
 
 bool CFireNetUIPlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams)
@@ -65,7 +67,6 @@ void CFireNetUIPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 	switch (event)
 	{
 	// Init UI manager and register entities / UI pages
-	// Start connect to master server
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{		
 		mEnv->pUIManager = new CUIManager();
@@ -76,30 +77,38 @@ void CFireNetUIPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 			pTemp->Register();
 			pTemp = pTemp->m_pNext;
 		}
-
+	}
+	// Start connect to master server
+	case ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN:
+	{
 		if (gFireNet && gFireNet->pCore && !gEnv->IsEditor())
 			gFireNet->pCore->ConnectToMasterServer();
-	}
-	// Start connect to FireNet
-	case ESYSTEM_EVENT_GAME_POST_INIT_DONE:
-	{		
-		
 
 		break;
 	}
 	// Show loading page on level loading
-	case ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN:
+	case ESYSTEM_EVENT_LEVEL_LOAD_START :
 	{
 		if (!gEnv->IsEditor() && mEnv->pUIManager)
-			mEnv->pUIManager->ShowPage("LoadingPage");
-		break;
+		{
+			auto pElement = mEnv->pUIManager->GetUIElement("LoadingPage");
+
+			if (pElement)
+			{
+				mEnv->pUIManager->ShowPage("LoadingPage");
+
+				SUIArguments load_args;
+				load_args.AddArgument("@ui_level_loading");
+				pElement->CallFunction("SetLoadingStatus", load_args);
+			}
+		}
 	}
 	// Unload HUD and load loading page when level unloading
 	case ESYSTEM_EVENT_LEVEL_UNLOAD:
 	{
 		if (!gEnv->IsEditor() && mEnv->pUIManager)
 		{
-			mEnv->pUIManager->UnloadPage("HUDPage");
+			mEnv->pUIManager->UnloadAll();
 			mEnv->pUIManager->ShowPage("LoadingPage");
 		}
 		break;
@@ -118,7 +127,7 @@ void CFireNetUIPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 	{
 		if (!gEnv->IsEditor() && mEnv->pUIManager)
 		{
-			mEnv->pUIManager->UnloadPage("LoadingPage");
+			mEnv->pUIManager->UnloadAll();
 			mEnv->pUIManager->ShowPage("MainPage");
 		}
 		break;
@@ -152,32 +161,149 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 {
 	switch (event)
 	{
+		// Show loading page when start connection to master server
 	case FIRENET_EVENT_MASTER_SERVER_START_CONNECTION:
 	{
+		auto pElement = mEnv->pUIManager->GetUIElement("LoadingPage");
+
+		if (pElement)
+		{
+			mEnv->pUIManager->ShowPage("LoadingPage");
+
+			SUIArguments load_args;
+			load_args.AddArgument("@ui_connecting_to_master_server");
+			pElement->CallFunction("SetLoadingStatus", load_args);
+		}
+
 		break;
 	}
+	// Hide loading page and show auth page when master server connected
 	case FIRENET_EVENT_MASTER_SERVER_CONNECTED:
 	{
+		mEnv->pUIManager->UnloadPage("LoadingPage");
+		mEnv->pUIManager->ShowPage("AuthorizationPage");
+
 		break;
 	}
+	// Show error page when connection error
 	case FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR:
 	{
+		mEnv->pUIManager->UnloadAll();
+		mEnv->pUIManager->ShowPage("ErrorPage");
+
+		int reason = args.GetInt();
+		auto pElement = mEnv->pUIManager->GetUIElement("ErrorPage");
+
+		if (pElement)
+		{
+			SUIArguments errorString;
+
+			if (reason == 0)
+				errorString.AddArgument("@ui_connection_timeout");
+			else if (reason == 1)
+				errorString.AddArgument("@ui_connection_refused");
+			else
+				errorString.AddArgument("@ui_unknown_connection_error");
+
+
+			pElement->CallFunction("SetErrorText", errorString);
+		}
+
 		break;
 	}
+	// Show error page when connection lose
 	case FIRENET_EVENT_MASTER_SERVER_DISCONNECTED:
 	{
+		mEnv->pUIManager->UnloadAll();
+		mEnv->pUIManager->ShowPage("ErrorPage");
+
+		auto pElement = mEnv->pUIManager->GetUIElement("ErrorPage");
+
+		if (pElement)
+		{
+			SUIArguments errorString;
+			errorString.AddArgument("@ui_lose_connection_with_master_server");
+			pElement->CallFunction("SetErrorText", errorString);
+		}
+
 		break;
 	}
+	// If authorization complete without profile show create profile page
 	case FIRENET_EVENT_AUTHORIZATION_COMPLETE:
+	{
+		mEnv->pUIManager->UnloadPage("AuthorizationPage");
+		mEnv->pUIManager->ShowPage("CreateProfilePage");
 		break;
+	}
+	// If authorization complete with profile show main menu
 	case FIRENET_EVENT_AUTHORIZATION_COMPLETE_WITH_PROFILE:
+	{
+		mEnv->pUIManager->UnloadPage("AuthorizationPage");
+		mEnv->pUIManager->ShowPage("MainMenuPage");
 		break;
+	}
+	// If authorization failed show error
 	case FIRENET_EVENT_AUTHORIZATION_FAILED:
+	{
+		int reason = args.GetInt();
+		auto pElement = mEnv->pUIManager->GetUIElement("AuthorizationPage");
+
+		if (pElement)
+		{
+			SUIArguments errorString;
+
+			if (reason == 0)
+				errorString.AddArgument("@ui_login_not_found");
+			else if (reason == 1)
+				errorString.AddArgument("@ui_account_blocked");
+			else if (reason == 2)
+				errorString.AddArgument("@ui_incorrect_password");
+			else if (reason == 3)
+				errorString.AddArgument("@ui_double_authorization");
+
+			pElement->CallFunction("SetServerResultText", errorString);
+		}
+
 		break;
+	}
+	// If registration complete show login page
 	case FIRENET_EVENT_REGISTRATION_COMPLETE:
+	{
+		auto pElement = mEnv->pUIManager->GetUIElement("AuthorizationPage");
+
+		if (pElement)
+		{
+			pElement->CallFunction("ShowLoginPage");
+
+			SUIArguments resultString;
+			resultString.AddArgument("@ui_registration_complete");
+
+			pElement->CallFunction("SetServerResultText", resultString);
+		}
+
 		break;
+	}
+	// If registration failed show error
 	case FIRENET_EVENT_REGISTRATION_FAILED:
+	{
+		int reason = args.GetInt();
+		auto pElement = mEnv->pUIManager->GetUIElement("AuthorizationPage");
+
+		if (pElement)
+		{
+			SUIArguments errorString;
+
+			if (reason == 0)
+				errorString.AddArgument("@ui_login_alredy_register");
+			else if (reason == 1)
+				errorString.AddArgument("@ui_cant_create_account");
+			else if (reason == 2)
+				errorString.AddArgument("@ui_double_registration");
+
+			pElement->CallFunction("SetServerResultText", errorString);
+		}
 		break;
+	}
 	case FIRENET_EVENT_UPDATE_PROFILE:
 		break;
 	case FIRENET_EVENT_CREATE_PROFILE_COMPLETE:
