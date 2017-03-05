@@ -1,0 +1,10 @@
+<ThreadConfig>
+
+	<Platform name="pc_Common">
+		<ThreadDefault Affinity="-1" Priority="normal" StackSizeKB="ignore"/>
+		<Thread name ="FireNetCore_Thread"/>	
+		<Thread name ="FireNetClient_Thread"/>
+		<Thread name ="FireNetServer_Thread"/>
+	</Platform>
+	
+</ThreadConfig>

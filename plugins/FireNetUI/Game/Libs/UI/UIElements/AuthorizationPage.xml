@@ -1,0 +1,43 @@
+<UIElements name="UIElements">
+
+	<UIElement name="AuthorizationPage" mouseevents="1" keyevents="1" cursor="1" eventsExclusive ="1">
+
+		<GFx file="AuthenticationPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetServerResultText" funcname="SetServerResultText" desc="Set server result">
+				<param name="Result" desc="Result text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+			
+			<function name="ShowLoginPage" funcname="ShowLoginPage" desc="Need to show login page after rigistration complete"/>
+			
+		</functions>
+
+		<events>
+		
+			<event name="OnLogin" fscommand="onLogin" desc="Start when login button pressed">
+				<param name="Login" desc="Login" type="string"/>
+				<param name="Password" desc="Password" type="string"/>
+			</event>
+			
+			<event name="OnRegister" fscommand="onRegister" desc="Start when register button pressed">
+				<param name="Login" desc="Login" type="string"/>
+				<param name="Password" desc="Password" type="string"/>
+			</event>
+
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
+		</events>
+
+	</UIElement>
+	
+</UIElements>

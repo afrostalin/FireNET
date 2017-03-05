@@ -1,0 +1,25 @@
+<UIElements name="UIElements">
+
+	<UIElement name="LoadingPage" mouseevents="0" keyevents="0" cursor="0">
+
+		<GFx file="LoadingPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetLoadingStatus" funcname="SetLoadingStatus" desc="Set loading text">
+				<param name="Status" desc="Status text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+
+		</functions>
+
+	</UIElement>
+	
+</UIElements>

@@ -1,0 +1,209 @@
+<UIElements name="FireNetUI">
+
+	<UIElement name="FireNetUI:AuthenticationPage" mouseevents="1" keyevents="1" cursor="1" eventsExclusive ="1">
+
+		<GFx file="AuthenticationPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetServerResultText" funcname="SetServerResultText" desc="Set server result">
+				<param name="Result" desc="Result text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+			
+			<function name="ShowLoginPage" funcname="ShowLoginPage" desc="Need to show login page after rigistration complete"/>
+			
+		</functions>
+
+		<events>
+		
+			<event name="OnLogin" fscommand="onLogin" desc="Start when login button pressed">
+				<param name="Login" desc="Login" type="string"/>
+				<param name="Password" desc="Password" type="string"/>
+			</event>
+			
+			<event name="OnRegister" fscommand="onRegister" desc="Start when register button pressed">
+				<param name="Login" desc="Login" type="string"/>
+				<param name="Password" desc="Password" type="string"/>
+			</event>
+
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
+		</events>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:CreateProfilePage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="CreateProfilePage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetServerResultText" funcname="SetServerResultText" desc="Set server result">
+				<param name="Result" desc="Result text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+			
+			<function name="AddCharacter" funcname="AddCharacter" desc="Add character to UI character list">
+				<param name="Race" desc="Character race" type="string"/>
+				<param name="Gender" desc="Character gender" type="string"/>
+				<param name="Color" desc="Character color" type="string"/>
+				<param name="Model" desc="Character model" type="string"/>
+			</function>
+			
+			<function name="InitTable" funcname="Init" desc="Need to init characters table"/>
+			
+		</functions>
+
+		<events>
+		
+			<event name="OnCreateProfile" fscommand="onCreateProfile" desc="Start when create profile button pressed">
+				<param name="Race" desc="Character race" type="string"/>
+				<param name="Gender" desc="Character gender" type="string"/>
+				<param name="Color" desc="Character color" type="string"/>
+				<param name="Model" desc="Character model" type="string"/>
+				<param name="Nickname" desc="Profile nickname" type="string"/>
+			</event>
+
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
+			<event name="OnChangeCharacter" fscommand="onChangeCharacter" desc="Start when need update character model">
+				<param name="Race" desc="Character race" type="string"/>
+				<param name="Gender" desc="Character gender" type="string"/>
+				<param name="Color" desc="Character color" type="string"/>
+				<param name="Model" desc="Character model" type="string"/>
+			</event>
+			
+		</events>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:MainMenuPage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="MainMenuPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetPlayerName" funcname="SetPlayerName" desc="Set player name">
+				<param name="Name" desc="Player name" type="string"/>
+			</function>
+			
+			<function name="SetNewsTitle" funcname="SetNewsTitle" desc="Set news title">
+				<param name="Title" desc="News title" type="string"/>
+			</function>
+			
+			<function name="AddNewsLine" funcname="AddNewsLine" desc="Add new line in news block">
+				<param name="Line" desc="New line" type="string"/>
+			</function>
+			
+			<function name="AddGlobalChatMessage" funcname="AddGlobalChatMessage" desc="Add message in global chat block">
+			    <param name="Sender" desc="Message sender" type="string"/>
+				<param name="Message" desc="Message" type="string"/>		
+			</function>
+			
+			<function name="AddPrivateChatMessage" funcname="AddPrivateChatMessage" desc="Add message in private chat block">
+			    <param name="Sender" desc="Message sender" type="string"/>
+				<param name="Message" desc="Message" type="string"/>		
+			</function>
+			
+			<function name="AddFriend" funcname="AddFriend" desc="Add friend in friend block">
+			    <param name="Nickname" desc="Friend nickname" type="string"/>
+				<param name="UID" desc="Friedn uid" type="int"/>
+                <param name="Status" desc="Friedn status" type="int"/>			
+			</function>
+			
+		</functions>
+		
+		<events>
+		
+			<event name="OnStorageOpen" fscommand="onStorageOpen" desc="Start when storage button pressed"/>
+			<event name="OnShopOpen" fscommand="onShopOpen" desc="Start when shop button pressed"/>
+			<event name="OnWantToPlay" fscommand="onWantToPlay" desc="Start when play button pressed"/>
+			<event name="OnSettingsOpen" fscommand="onSettingsOpen" desc="Start when settings button pressed"/>
+			<event name="OnExit" fscommand="onExit" desc="Start when exit button pressed"/>
+			
+			<event name="OnGlobalChatMessageSended" fscommand="onGlobalChatMessageSended" desc="Start when local user send new message to global chat">
+				<param name="Message" desc="Message" type="string"/>
+			</event>
+			<event name="OnPrivateChatMessageSended" fscommand="onPrivateChatMessageSended" desc="Start when local user send new message to some player">
+				<param name="Message" desc="Message" type="string"/>
+				<param name="Reciver" desc="Reciver" type="string"/>
+			</event>
+			
+			<event name="OnFriendInviteSended" fscommand="onFriendInviteSended" desc="Start when friend invite button pressed">
+			    <param name="Nickname" desc="Friend nickname" type="string"/>
+			</event>
+			
+		</events>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:LoadingPage" mouseevents="0" keyevents="0" cursor="0">
+
+		<GFx file="LoadingPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetLoadingStatus" funcname="SetLoadingStatus" desc="Set loading text">
+				<param name="Status" desc="Status text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+
+		</functions>
+
+	</UIElement>
+	
+	<UIElement name="FireNetUI:ErrorPage" mouseevents="1" keyevents="1" cursor="1">
+
+		<GFx file="ErrorPage.gfx" layer="1">
+			<Constraints>
+				<Align mode="dynamic" valign="center" halign="center" scale="1" max="0"/>
+			</Constraints>
+		</GFx>
+
+		<functions>
+		
+			<function name="SetErrorText" funcname="SetErrorText" desc="Set error text">
+				<param name="Error" desc="Error text" type="string"/>
+			</function>
+			
+			<function name="LoadBackground" funcname="LoadBackground" desc="Load background in png format">
+				<param name="PathToImage" desc="Path to background image file" type="string"/>
+			</function>
+
+		</functions>
+		
+		<events>
+		
+			<event name="OnAccept" fscommand="onAccept" desc="Start when accept button pressed"/>
+			
+		</events>
+
+	</UIElement>
+		
+</UIElements>

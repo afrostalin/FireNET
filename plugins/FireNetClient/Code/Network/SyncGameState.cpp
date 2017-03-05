@@ -4,7 +4,7 @@
 #include "StdAfx.h"
 #include "SyncGameState.h"
 
-#include "Actors/FireNetPlayer.h"
+#include "Entities/FireNetPlayer/FireNetPlayer.h"
 
 #include <IActorSystem.h>
 
@@ -129,7 +129,7 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 		return;
 	}
 
-	pPlayer->OnPlayerAction(action.m_action);
+/*	pPlayer->OnPlayerAction(action.m_action);
 
 	if (action.m_action & E_ACTION_JUMP)
 	{
@@ -150,7 +150,7 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 	if (action.m_action & E_ACTION_MOUSE_ROTATE_PITCH)
 	{
 		pPlayer->OnPlayerMoveMousePitch(action.m_value);
-	}
+	}*/
 }
 
 void CGameStateSynchronization::SyncNetPlayerPos(uint uid, Vec3 & pos)
