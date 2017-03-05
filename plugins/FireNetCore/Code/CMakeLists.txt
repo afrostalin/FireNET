@@ -115,8 +115,8 @@ set(SourceGroup_FireNetRifle
 
 # FireNet gamerules
 set(SourceGroup_FireNetGameRules
-	"Gamerules/FireNetEditorGameRules.cpp"
-	"Gamerules/FireNetEditorGameRules.h"
+	"Gamerules/FireNetGameRules.cpp"
+	"Gamerules/FireNetGameRules.h"
 )
 
 # MSVC filters 

@@ -2,7 +2,7 @@
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "StdAfx.h"
-#include "FireNetGameRules.h"
+#include "FireNetGamerules.h"
 #include "Main/Plugin.h"
 
 #include <IActorSystem.h>

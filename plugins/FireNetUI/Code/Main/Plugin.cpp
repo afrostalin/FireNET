@@ -67,6 +67,7 @@ void CFireNetUIPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 	switch (event)
 	{
 	// Init UI manager and register entities / UI pages
+	// Start connect to master server
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{		
 		mEnv->pUIManager = new CUIManager();
@@ -77,14 +78,9 @@ void CFireNetUIPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 			pTemp->Register();
 			pTemp = pTemp->m_pNext;
 		}
-	}
-	// Start connect to master server
-	case ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN:
-	{
+
 		if (gFireNet && gFireNet->pCore && !gEnv->IsEditor())
 			gFireNet->pCore->ConnectToMasterServer();
-
-		break;
 	}
 	// Show loading page on level loading
 	case ESYSTEM_EVENT_LEVEL_LOAD_START :

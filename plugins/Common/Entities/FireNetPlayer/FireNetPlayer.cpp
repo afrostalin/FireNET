@@ -10,7 +10,7 @@
 #include "Animations/FireNetPlayerAnimations.h"
 
 #include "Main/Plugin.h"
-#include "GameRules/FireNetEditorGameRules.h"
+#include "GameRules/FireNetGameRules.h"
 
 #include "Entities/FireNetSpawnPoint/FireNetSpawnPoint.h"
 #include "Entities/ISimpleWeapon.h"
