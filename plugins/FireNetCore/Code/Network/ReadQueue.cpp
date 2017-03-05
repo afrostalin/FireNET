@@ -50,14 +50,14 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	case EFireNetTcpResult::LoginComplete :
 	{
 		CryLog(TITLE "Authorization complete. Profile not found");	
-		mEnv->SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_COMPLETE);
 
 		break;
 	}
 	case EFireNetTcpResult::LoginCompleteWithProfile :
 	{
 		CryLog(TITLE "Authorization complete. Profile loading...");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_COMPLETE_WITH_PROFILE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_COMPLETE_WITH_PROFILE);
 
 		if (gFireNet && gFireNet->pCore)
 		{
@@ -69,14 +69,14 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	case EFireNetTcpResult::RegisterComplete :
 	{
 		CryLog(TITLE "Registration complete");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_REGISTRATION_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_REGISTRATION_COMPLETE);
 
 		break;
 	}	
 	case EFireNetTcpResult::ProfileCreationComplete :
 	{
 		CryLog(TITLE "Creating profile complete. Loading...");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_CREATE_PROFILE_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_CREATE_PROFILE_COMPLETE);
 		LoadProfile(packet);
 
 		break;
@@ -84,7 +84,7 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	case EFireNetTcpResult::GetProfileComplete :
 	{
 		CryLog(TITLE "Get profile complete. Loading...");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_GET_PROFILE_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_PROFILE_COMPLETE);
 		LoadProfile(packet);
 
 		break;
@@ -99,7 +99,7 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	case EFireNetTcpResult::BuyItemComplete :
 	{
 		CryLog(TITLE "Buy item complete. Updating profile...");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_BUY_ITEM_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_BUY_ITEM_COMPLETE);
 		LoadProfile(packet);
 
 		break;
@@ -107,7 +107,7 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	case EFireNetTcpResult::RemoveItemComplete :
 	{
 		CryLog(TITLE "Remove item complete. Updating profile...");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_REMOVE_ITEM_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_REMOVE_ITEM_COMPLETE);
 		LoadProfile(packet);
 
 		break;
@@ -115,32 +115,32 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 	case EFireNetTcpResult::SendInviteComplete :
 	{
 		CryLog(TITLE "Send invite complete");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_SEND_INVITE_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_SEND_INVITE_COMPLETE);
 		break;
 	}	
 	case EFireNetTcpResult::DeclineInviteComplete :
 	{
 		CryLog(TITLE "Decline invite complete");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_DECLINE_INVITE_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_DECLINE_INVITE_COMPLETE);
 		break;
 	}	
 	case EFireNetTcpResult::AcceptInviteComplete :
 	{
 		CryLog(TITLE "Accept invite complete");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_ACCEPT_INVITE_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_ACCEPT_INVITE_COMPLETE);
 		break;
 	}
 	case EFireNetTcpResult::RemoveFriendComplete :
 	{
 		CryLog(TITLE "Remove friend complete. Updating profile...");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_REMOVE_FRIEND_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_REMOVE_FRIEND_COMPLETE);
 		LoadProfile(packet);
 		break;
 	}
 	case EFireNetTcpResult::SendChatMsgComplete :
 	{
 		CryLog(TITLE "Send chat message complete");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_SEND_CHAT_MSG_COMPLETE);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_SEND_CHAT_MSG_COMPLETE);
 		break;
 	}	
 	case EFireNetTcpResult::GetServerComplete :
@@ -166,79 +166,79 @@ void CReadQueue::ReadError(CTcpPacket & packet, EFireNetTcpError error)
 	case EFireNetTcpError::LoginFail :
 	{		
 		CryLog(TITLE "Authorization failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::RegisterFail :
 	{
 		CryLog(TITLE "Registration failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_REGISTRATION_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_REGISTRATION_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::ProfileCreationFail :
 	{
 		CryLog(TITLE "Creating profile failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_CREATE_PROFILE_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_CREATE_PROFILE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::GetProfileFail :
 	{
 		CryLog(TITLE "Get profile failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_GET_PROFILE_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_PROFILE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::GetShopFail :
 	{
 		CryLog(TITLE "Get shop failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_GET_SHOP_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_SHOP_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::BuyItemFail :
 	{
 		CryLog(TITLE "Buy item failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_BUY_ITEM_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_BUY_ITEM_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::RemoveItemFail :
 	{
 		CryLog(TITLE "Remove item failed. Reasong = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_REMOVE_ITEM_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_REMOVE_ITEM_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::SendInviteFail :
 	{
 		CryLog(TITLE "Send invite failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_SEND_INVITE_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_SEND_INVITE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::DeclineInviteFail :
 	{
 		CryLog(TITLE "Decline invite failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_DECLINE_INVITE_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_DECLINE_INVITE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::AcceptInviteFail :
 	{
 		CryLog(TITLE "Accept invite failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_ACCEPT_INVITE_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_ACCEPT_INVITE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::RemoveFriendFail :
 	{
 		CryLog(TITLE "Remove friend failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_REMOVE_FRIEND_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_REMOVE_FRIEND_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::SendChatMsgFail :
 	{
 		CryLog(TITLE "Send chat message failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_SEND_CHAT_MSG_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_SEND_CHAT_MSG_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::GetServerFail :
 	{
 		CryLog(TITLE "Get game server failed. Reason = %d", reason);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_FAILED, args);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_FAILED, args);
 		break;
 	}
 	default:
@@ -262,7 +262,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 		SFireNetEventArgs chat;
 		chat.AddString(from);
 		chat.AddString(msg);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_GLOBAL_CHAT_MSG_RECEIVED, chat);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_GLOBAL_CHAT_MSG_RECEIVED, chat);
 
 		break;
 	}
@@ -278,7 +278,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 		SFireNetEventArgs chat;
 		chat.AddString(from);
 		chat.AddString(msg);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_PRIVATE_CHAT_MSG_RECEIVED, chat);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_PRIVATE_CHAT_MSG_RECEIVED, chat);
 
 		break;
 	}
@@ -294,7 +294,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 		SFireNetEventArgs chat;
 		chat.AddString(from);
 		chat.AddString(msg);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_CLAN_CHAT_MSG_RECEIVED, chat);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_CLAN_CHAT_MSG_RECEIVED, chat);
 
 		break;
 	}
@@ -308,7 +308,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 
 		SFireNetEventArgs chat;
 		chat.AddString(msg);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_SERVER_MESSAGE_RECEIVED, chat);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_SERVER_MESSAGE_RECEIVED, chat);
 
 		break;
 	}
@@ -320,7 +320,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 
 		SFireNetEventArgs command;
 		command.AddString(rawCmd);
-		mEnv->SendFireNetEvent(FIRENET_EVENT_CONSOLE_COMMAND_RECEIVED, command);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_CONSOLE_COMMAND_RECEIVED, command);
 
 		break;
 	}
@@ -359,7 +359,7 @@ void CReadQueue::LoadProfile(CTcpPacket & packet)
 	profile.AddInt(money);
 	profile.AddString(items);
 	profile.AddString(friends);
-	mEnv->SendFireNetEvent(FIRENET_EVENT_UPDATE_PROFILE, profile);
+	FireNet::SendFireNetEvent(FIRENET_EVENT_UPDATE_PROFILE, profile);
 }
 
 void CReadQueue::LoadShop(CTcpPacket & packet)
@@ -369,12 +369,12 @@ void CReadQueue::LoadShop(CTcpPacket & packet)
 	// Send event with shop data
 	SFireNetEventArgs shop;
 	shop.AddString(rawShop);
-	mEnv->SendFireNetEvent(FIRENET_EVENT_GET_SHOP_COMPLETE, shop);
+	FireNet::SendFireNetEvent(FIRENET_EVENT_GET_SHOP_COMPLETE, shop);
 }
 
 void CReadQueue::LoadGameServerInfo(CTcpPacket & packet)
 {
 	// Send event with game server info
 	SFireNetEventArgs gameServerInfo;
-	mEnv->SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_COMPLETE, gameServerInfo);
+	FireNet::SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_COMPLETE, gameServerInfo);
 }

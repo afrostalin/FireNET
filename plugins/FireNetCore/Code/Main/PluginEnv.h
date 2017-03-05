@@ -37,24 +37,25 @@ struct SPluginEnv
 	int                               net_remote_port;
 	int                               net_timeout;
 	int                               net_debug;
-
-	// Send FireNet event with arguments
-	inline void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs())
-	{
-		for (auto it = m_Listeners.begin(); it != m_Listeners.end(); ++it)
-		{
-			(*it)->OnFireNetEvent(event, args);
-		}
-	}
-	
-	// Safe send TCP packet to master server
-	inline void SendPacket(CTcpPacket &packet)
-	{
-		if (pNetworkThread && pTcpClient && pTcpClient->IsConnected())
-		{
-			pTcpClient->SendQuery(packet);
-		}
-	}
 };
 
 extern SPluginEnv* mEnv;
+
+namespace FireNet 
+{
+	// Send FireNet event with arguments
+	static void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs())
+	{
+		for (const auto &it : mEnv->m_Listeners)
+		{
+			it->OnFireNetEvent(event, args);
+		}
+	}
+
+	// Safe send TCP packet to master server
+	static void SendPacket(CTcpPacket &packet)
+	{
+		if (mEnv->pNetworkThread && mEnv->pTcpClient && mEnv->pTcpClient->IsConnected())
+			mEnv->pTcpClient->SendQuery(packet);
+	}
+}

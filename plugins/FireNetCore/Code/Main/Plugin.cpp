@@ -164,12 +164,12 @@ void CFireNetCorePlugin::ConnectToMasterServer()
 		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
-	mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
+	FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
 
 	mEnv->pNetworkThread = new CNetworkThread();
 	if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetCore_Thread"))
 	{
-		mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR);
 
 		SAFE_DELETE(mEnv->pNetworkThread);
 	
@@ -190,7 +190,7 @@ void CFireNetCorePlugin::Authorization(const std::string & login, const std::str
 		packet.WriteString(login.c_str());
 		packet.WriteString(password.c_str());
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -209,7 +209,7 @@ void CFireNetCorePlugin::Registration(const std::string & login, const std::stri
 		packet.WriteString(login.c_str());
 		packet.WriteString(password.c_str());
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -228,7 +228,7 @@ void CFireNetCorePlugin::CreateProfile(const std::string & nickname, const std::
 		packet.WriteString(nickname.c_str());
 		packet.WriteString(character.c_str());
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -243,7 +243,7 @@ void CFireNetCorePlugin::GetProfile(int uid)
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::GetProfile);
 
-	mEnv->SendPacket(packet);
+	FireNet::SendPacket(packet);
 }
 
 SFireNetProfile * CFireNetCorePlugin::GetLocalProfile()
@@ -259,7 +259,7 @@ void CFireNetCorePlugin::GetShop()
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::GetShop);
 
-	mEnv->SendPacket(packet);
+	FireNet::SendPacket(packet);
 }
 
 void CFireNetCorePlugin::BuyItem(const std::string & item)
@@ -272,7 +272,7 @@ void CFireNetCorePlugin::BuyItem(const std::string & item)
 		packet.WriteQuery(EFireNetTcpQuery::BuyItem);
 		packet.WriteString(item.c_str());
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -290,7 +290,7 @@ void CFireNetCorePlugin::RemoveItem(const std::string & item)
 		packet.WriteQuery(EFireNetTcpQuery::RemoveItem);
 		packet.WriteString(item.c_str());
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -309,7 +309,7 @@ void CFireNetCorePlugin::SendInvite(EFireNetInviteType type, int uid)
 		packet.WriteInt(type);
 		packet.WriteInt(uid);
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -324,7 +324,7 @@ void CFireNetCorePlugin::DeclineInvite()
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::DeclineInvite);
 
-	mEnv->SendPacket(packet);
+	FireNet::SendPacket(packet);
 }
 
 void CFireNetCorePlugin::AcceptInvite()
@@ -334,7 +334,7 @@ void CFireNetCorePlugin::AcceptInvite()
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::AcceptInvite);
 
-	mEnv->SendPacket(packet);
+	FireNet::SendPacket(packet);
 }
 
 void CFireNetCorePlugin::RemoveFriend(int uid)
@@ -347,7 +347,7 @@ void CFireNetCorePlugin::RemoveFriend(int uid)
 		packet.WriteQuery(EFireNetTcpQuery::RemoveFriend);
 		packet.WriteInt(uid);
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -368,7 +368,7 @@ void CFireNetCorePlugin::SendChatMessage(EFireNetChatMsgType type, int uid)
 		packet.WriteInt(uid);
 	}
 
-	mEnv->SendPacket(packet);
+	FireNet::SendPacket(packet);
 }
 
 void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::string & gamerules)
@@ -382,7 +382,7 @@ void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::strin
 		packet.WriteString(map.c_str());
 		packet.WriteString(gamerules.c_str());
 
-		mEnv->SendPacket(packet);
+		FireNet::SendPacket(packet);
 	}
 	else
 	{
@@ -392,7 +392,7 @@ void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::strin
 
 void CFireNetCorePlugin::SendRawRequestToMasterServer(CTcpPacket &packet)
 {
-	mEnv->SendPacket(packet);
+	FireNet::SendPacket(packet);
 }
 
 bool CFireNetCorePlugin::IsConnected()
@@ -408,21 +408,23 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 		return;
 	}
 
-	for (auto it = mEnv->m_Listeners.begin(); it != mEnv->m_Listeners.end(); ++it)
+	for (const auto &it : mEnv->m_Listeners)
 	{
-		if ((*it) == listener)
+		if (it == listener)
 		{
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Failed register FireNetEventListener. Listener alredy registered");
 			return;
 		}
 	}
 
+	CryLog(TITLE "FireNet event listener registered (%p)", listener);
+
 	mEnv->m_Listeners.push_back(listener);
 }
 
 void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs & args)
 {
-	mEnv->SendFireNetEvent(event, args);
+	FireNet::SendFireNetEvent(event, args);
 }
 
 bool CFireNetCorePlugin::Quit()

@@ -132,7 +132,7 @@ void CTcpClient::Do_Connect()
 				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
 				
 				args.AddInt(0);
-				mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+				FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 
 				CloseConnection();
 			} 
@@ -147,14 +147,14 @@ void CTcpClient::Do_Connect()
 					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection refused by host!");
 			
 					args.AddInt(1);
-					mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+					FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 				}
 				else
 				{
 					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection error : %s", ec.message().c_str());
 
 					args.AddInt(2);
-					mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+					FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 				}
 
 				CloseConnection();
@@ -164,7 +164,7 @@ void CTcpClient::Do_Connect()
 	else
 	{
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't connect to master server. Check CVars");
-		mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR);
+		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR);
 	}
 }
 
@@ -180,7 +180,7 @@ void CTcpClient::Do_Handshake()
 
 			pReadQueue = new CReadQueue();
 
-			mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTED);
+			FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTED);
 			m_Status = ETcpClientStatus::Connected;
 			bIsConnected = true;
 
@@ -255,7 +255,7 @@ void CTcpClient::On_Disconnected()
 {
 	CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection with master server lost");
 
-	mEnv->SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_DISCONNECTED);
+	FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_DISCONNECTED);
 
 	CloseConnection();
 }
