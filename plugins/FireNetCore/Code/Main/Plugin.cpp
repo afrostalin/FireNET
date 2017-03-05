@@ -20,6 +20,12 @@ USE_CRYPLUGIN_FLOWNODES
 IEntityRegistrator *IEntityRegistrator::g_pFirst = nullptr;
 IEntityRegistrator *IEntityRegistrator::g_pLast = nullptr;
 
+void CmdConnect(IConsoleCmdArgs* args)
+{
+	if (gFireNet)
+		gFireNet->pCore->ConnectToMasterServer();
+}
+
 CFireNetCorePlugin::~CFireNetCorePlugin()
 {
 	// Unregister entities
@@ -133,6 +139,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 
 #ifndef  NDEBUG // Only in debug mode
 		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
+		REGISTER_COMMAND("firenet_master_connect", CmdConnect, VF_NULL, "Connect to FireNet master server");
 #endif // ! NDEBUG
 
 		break;
