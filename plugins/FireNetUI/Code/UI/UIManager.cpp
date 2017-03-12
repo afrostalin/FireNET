@@ -120,6 +120,18 @@ void CUIManager::ReloadPage(const char * name)
 	}
 }
 
+void CUIManager::CallFunction(const char* page, const char * functionName, const SUIArguments & args)
+{
+	for (const auto &it : m_Pages)
+	{
+		if (strcmp(it->GetName(), page) == 0)
+		{
+			it->CallFunction(functionName, args);
+			break;
+		}
+	}
+}
+
 void CUIManager::HideAll()
 {
 	for (const auto &it : m_Pages)

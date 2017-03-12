@@ -20,6 +20,8 @@ public:
 	void                  HidePage(const char* name);
 	void                  ReloadPage(const char* name);
 
+	void                  CallFunction(const char* page, const char* functionName, const SUIArguments& args = SUIArguments());
+
 	void                  HideAll();
 	void                  UnhideAll();
 

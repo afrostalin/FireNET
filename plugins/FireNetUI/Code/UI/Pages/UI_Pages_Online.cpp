@@ -67,7 +67,7 @@ public:
 			// Call load background function
 			SUIArguments args;
 			args.AddArgument("backgrounds/main_menu.png");
-			pElement->CallFunction("LoadBackground", args);
+			CallFunction("LoadBackground", args);
 		}
 	}
 	// ~IUIPage

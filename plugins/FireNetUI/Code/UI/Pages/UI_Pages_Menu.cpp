@@ -22,12 +22,12 @@ public:
 			// Call set loading text
 			SUIArguments load_args;
 			load_args.AddArgument(m_LoadingText);
-			pElement->CallFunction("SetLoadingStatus", load_args);
+			CallFunction("SetLoadingStatus", load_args);
 
 			// Call load background function
 			SUIArguments bg_args;
 			bg_args.AddArgument(m_Background);
-			pElement->CallFunction("LoadBackground", bg_args);
+			CallFunction("LoadBackground", bg_args);
 		}
 	}
 
@@ -66,7 +66,7 @@ public:
 			// Call load background function
 			SUIArguments args;
 			args.AddArgument("backgrounds/error.png");
-			pElement->CallFunction("LoadBackground", args);
+			CallFunction("LoadBackground", args);
 		}
 	}
 private:

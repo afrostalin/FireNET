@@ -87,15 +87,15 @@ void CFireNetUIPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_P
 	{
 		if (!gEnv->IsEditor() && mEnv->pUIManager)
 		{
-			auto pElement = mEnv->pUIManager->GetUIElement("LoadingPage");
+			auto pPage = mEnv->pUIManager->GetPage("LoadingPage");
 
-			if (pElement)
+			if (pPage)
 			{
 				mEnv->pUIManager->ShowPage("LoadingPage");
 
 				SUIArguments load_args;
 				load_args.AddArgument("@ui_level_loading");
-				pElement->CallFunction("SetLoadingStatus", load_args);
+				pPage->CallFunction("SetLoadingStatus", load_args);
 			}
 		}
 	}
@@ -160,15 +160,15 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 		// Show loading page when start connection to master server
 	case FIRENET_EVENT_MASTER_SERVER_START_CONNECTION:
 	{
-		auto pElement = mEnv->pUIManager->GetUIElement("LoadingPage");
+		auto pPage = mEnv->pUIManager->GetPage("LoadingPage");
 
-		if (pElement)
+		if (pPage)
 		{
-			mEnv->pUIManager->ShowPage("LoadingPage");
-
 			SUIArguments load_args;
 			load_args.AddArgument("@ui_connecting_to_master_server");
-			pElement->CallFunction("SetLoadingStatus", load_args);
+			pPage->CallFunction("SetLoadingStatus", load_args);
+
+			mEnv->pUIManager->ShowPage("LoadingPage");
 		}
 
 		break;
@@ -188,9 +188,9 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 		mEnv->pUIManager->ShowPage("ErrorPage");
 
 		int reason = args.GetInt();
-		auto pElement = mEnv->pUIManager->GetUIElement("ErrorPage");
+		auto pPage = mEnv->pUIManager->GetPage("ErrorPage");
 
-		if (pElement)
+		if (pPage)
 		{
 			SUIArguments errorString;
 
@@ -202,7 +202,7 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 				errorString.AddArgument("@ui_unknown_connection_error");
 
 
-			pElement->CallFunction("SetErrorText", errorString);
+			pPage->CallFunction("SetErrorText", errorString);
 		}
 
 		break;
@@ -213,13 +213,13 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 		mEnv->pUIManager->UnloadAll();
 		mEnv->pUIManager->ShowPage("ErrorPage");
 
-		auto pElement = mEnv->pUIManager->GetUIElement("ErrorPage");
+		auto pPage = mEnv->pUIManager->GetPage("ErrorPage");
 
-		if (pElement)
+		if (pPage)
 		{
 			SUIArguments errorString;
 			errorString.AddArgument("@ui_lose_connection_with_master_server");
-			pElement->CallFunction("SetErrorText", errorString);
+			pPage->CallFunction("SetErrorText", errorString);
 		}
 
 		break;
@@ -242,9 +242,9 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 	case FIRENET_EVENT_AUTHORIZATION_FAILED:
 	{
 		int reason = args.GetInt();
-		auto pElement = mEnv->pUIManager->GetUIElement("AuthorizationPage");
+		auto pPage = mEnv->pUIManager->GetPage("AuthorizationPage");
 
-		if (pElement)
+		if (pPage)
 		{
 			SUIArguments errorString;
 
@@ -257,7 +257,7 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 			else if (reason == 3)
 				errorString.AddArgument("@ui_double_authorization");
 
-			pElement->CallFunction("SetServerResultText", errorString);
+			pPage->CallFunction("SetServerResultText", errorString);
 		}
 
 		break;
@@ -265,16 +265,16 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 	// If registration complete show login page
 	case FIRENET_EVENT_REGISTRATION_COMPLETE:
 	{
-		auto pElement = mEnv->pUIManager->GetUIElement("AuthorizationPage");
+		auto pPage = mEnv->pUIManager->GetPage("AuthorizationPage");
 
-		if (pElement)
+		if (pPage)
 		{
-			pElement->CallFunction("ShowLoginPage");
+			pPage->CallFunction("ShowLoginPage");
 
 			SUIArguments resultString;
 			resultString.AddArgument("@ui_registration_complete");
 
-			pElement->CallFunction("SetServerResultText", resultString);
+			pPage->CallFunction("SetServerResultText", resultString);
 		}
 
 		break;
@@ -283,9 +283,9 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 	case FIRENET_EVENT_REGISTRATION_FAILED:
 	{
 		int reason = args.GetInt();
-		auto pElement = mEnv->pUIManager->GetUIElement("AuthorizationPage");
+		auto pPage = mEnv->pUIManager->GetPage("AuthorizationPage");
 
-		if (pElement)
+		if (pPage)
 		{
 			SUIArguments errorString;
 
@@ -296,7 +296,7 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 			else if (reason == 2)
 				errorString.AddArgument("@ui_double_registration");
 
-			pElement->CallFunction("SetServerResultText", errorString);
+			pPage->CallFunction("SetServerResultText", errorString);
 		}
 		break;
 	}

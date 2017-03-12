@@ -148,6 +148,16 @@ public:
 			OnReloadPage(false);
 		}
 	}
+	void                     CallFunction(const char* functionName, const SUIArguments& args = SUIArguments())
+	{
+		if (pElement)
+		{
+			CryLog("[FireNet-UI] Caling UI function (%s) on page (%s)", functionName, m_Name);
+			pElement->CallFunction(functionName, args);
+		}
+		else
+			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "[FireNet-UI] Failed call function (%s). UI element = nullptr", functionName);
+	}
 public:
 	virtual void             OnInitPage(bool init) {}
 	virtual void             OnUnloadPage(bool unloaded) {}
