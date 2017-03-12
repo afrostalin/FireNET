@@ -23,6 +23,12 @@ public:
 	virtual float              ReadFloat() override;
 	virtual double             ReadDouble() override;
 public:
+	void                       WriteVec3(Vec3 vector);
+	void                       WriteQuat(Quat quat);
+public:
+	Vec3                       ReadVec3();
+	Quat                       ReadQuat();
+public:
 	virtual const char*        toString() override;
 private:
 	virtual void               GenerateSession() override;

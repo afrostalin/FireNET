@@ -193,6 +193,38 @@ double CUdpPacket::ReadDouble()
 	}
 }
 
+void CUdpPacket::WriteVec3(Vec3 vector)
+{
+	WriteFloat(vector.x);
+	WriteFloat(vector.y);
+	WriteFloat(vector.z);
+}
+
+void CUdpPacket::WriteQuat(Quat quat)
+{
+	WriteFloat(quat.w);
+	WriteVec3(quat.v);
+}
+
+Vec3 CUdpPacket::ReadVec3()
+{
+	Vec3 m_Vector;
+	m_Vector.x = ReadFloat();
+	m_Vector.y = ReadFloat();
+	m_Vector.z = ReadFloat();
+
+	return m_Vector;
+}
+
+Quat CUdpPacket::ReadQuat()
+{
+	Quat m_Quat;
+	m_Quat.w = ReadFloat();
+	m_Quat.v = ReadVec3();
+
+	return m_Quat;
+}
+
 const char * CUdpPacket::toString()
 {
 	if (!bInitFromData)

@@ -26,6 +26,7 @@ enum class EFireNetUdpAsk : int
 
 enum class EFireNetUdpRequest : int
 {
+	GetMap,
 	Spawn,
 	Movement,
 	Action,
@@ -33,6 +34,7 @@ enum class EFireNetUdpRequest : int
 
 enum class EFireNetUdpResult : int
 {
+	MapToLoad,
 	ClientAccepted,
 	ClientSpawned,
 	ClientMoved,
@@ -40,6 +42,7 @@ enum class EFireNetUdpResult : int
 
 enum class EFireNetUdpError : int
 {
+	CantGetMap,
 	ServerFull,
 	PlayerBanned,
 	ServerBlockNewConnection,
