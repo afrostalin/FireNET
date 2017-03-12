@@ -181,6 +181,17 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 		Quit();
 		break;
 	}
+	case ESYSTEM_EVENT_LEVEL_GAMEPLAY_START:
+	{
+		CryLog(TITLE "PLAYER SPAWN REQUEST HERE");
+
+		// Send spawn request
+		CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
+		packet.WriteRequest(EFireNetUdpRequest::Spawn);
+		mEnv->pUdpClient->SendNetMessage(packet);
+
+		break;
+	}
 	break;
 	}
 }

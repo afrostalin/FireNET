@@ -38,7 +38,7 @@ void CUdpClient::Update()
 
 		if (m_Status == EUdpClientStatus::Connecting)
 		{
-			// Sending ask packet to game server
+			// Sending connect request packet to game server
 			CUdpPacket packet(m_LastOutPacketNumber, EFireNetUdpPacketType::Ask);
 			packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
 			SendNetMessage(packet);
@@ -102,8 +102,6 @@ void CUdpClient::Do_Read()
 	{
 		if (!ec && length > 0)
 		{
-			//			CryLog(TITLE "UDP packet received. Size = %d", length);
-
 			CUdpPacket packet(m_ReadBuffer);
 			pReadQueue->ReadPacket(packet);
 
@@ -125,8 +123,6 @@ void CUdpClient::Do_Write()
 	{
 		if (!ec)
 		{
-			//			CryLog(TITLE "UDP packet sended. Size = %d", length);
-
 			m_Queue.pop();
 
 			if (!m_Queue.empty())
@@ -154,6 +150,11 @@ void CUdpClient::On_Connected(bool connected)
 		mEnv->pGameSync = new CGameStateSynchronization();
 
 		CryLogAlways(TITLE "Connection with game server established");
+
+		// Get map to load from game server
+		CUdpPacket packet(m_LastOutPacketNumber, EFireNetUdpPacketType::Request);
+		packet.WriteRequest(EFireNetUdpRequest::GetMap);
+		SendNetMessage(packet);
 	}
 	else
 		CloseConnection();

@@ -60,6 +60,10 @@ void CUdpServer::Update()
 			RemoveClient(m_ID);
 		}
 	}
+
+	//! Reset client IDs
+	if (m_Clients.size() == 0)
+		m_NextClientID = 0L;
 }
 
 void CUdpServer::SendToClient(CUdpPacket & packet, uint32 clientID)
@@ -115,6 +119,7 @@ uint32 CUdpServer::GetOrCreateClientID(BoostUdpEndPoint endpoint)
 	client.m_EndPoint = endpoint;
 	client.pReader = nullptr;
 	client.bConnected = false;
+	client.bInGame = false;
 	client.bNeedToRemove = false;
 
 	CryLog(TITLE "Add new client (%d)", id);

@@ -39,7 +39,7 @@ public:
 	void                            ResetTimeout() { m_ConnectionTimeout = 0.f; }
 private:
 	void                            On_Disconnected();	
-private:
+public:
 	enum EUdpClientStatus : int
 	{
 		NotConnected,
@@ -48,6 +48,7 @@ private:
 		WaitStart,
 		Playing,
 	};
+
 	void                            UpdateStatus(EUdpClientStatus newStatus);
 private:
 	std::queue<CUdpPacket>          m_Queue;

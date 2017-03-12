@@ -7,6 +7,24 @@
 
 class CUdpPacket;
 
+struct SFireNetSpawnPosition
+{
+	SFireNetSpawnPosition()
+	{
+		m_Pos(0, 0, 0);
+		m_Rot.w = 1;
+		m_Rot.v(0, 0, 0);
+		m_Team = "none";
+		b_Finded = false;
+	}
+
+	Vec3   m_Pos;
+	Quat   m_Rot;
+	string m_Team;
+
+	bool   b_Finded;
+};
+
 class CReadQueue
 {
 public:
@@ -26,6 +44,8 @@ private:
 	void   ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
 private:
 	void   SendPacket(CUdpPacket &packet);
+private:
+	SFireNetSpawnPosition   FindSpawnPosition();
 private:
 	uint32 m_ClientID;
 

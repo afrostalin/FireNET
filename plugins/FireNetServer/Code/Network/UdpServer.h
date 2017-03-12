@@ -31,6 +31,7 @@ struct SFireNetUdpServerClient
 	CReadQueue*                     pReader;
 
 	bool                            bConnected;
+	bool                            bInGame;
 	bool                            bNeedToRemove;
 };
 

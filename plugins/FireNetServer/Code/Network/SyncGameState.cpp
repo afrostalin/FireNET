@@ -4,7 +4,7 @@
 #include "StdAfx.h"
 #include "SyncGameState.h"
 
-#include "Actors/FireNetPlayer.h"
+#include "Entities/FireNetPlayer/FireNetPlayer.h"
 
 #include <IActorSystem.h>
 
@@ -21,32 +21,39 @@ void CGameStateSynchronization::Reset()
 {
 	CryLog(TITLE "CGameStateSynchronization::Reset()");
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		RemoveNetPlayer(it->m_PlayerUID);
+		RemoveNetPlayer(it.m_PlayerUID);
 	}
 
 	m_NetPlayers.clear();
 }
 
-void CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & player)
+bool CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & player)
 {
 	CryLog(TITLE "Spawning FireNet player (%d)", player.m_PlayerUID);
 
 	if (auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem())
 	{
-		auto* pPlayer = reinterpret_cast<CFireNetPlayer*> (pActorSystem->CreateActor(player.m_ChanelId, player.m_PlayerNickname, "FireNetPlayer", player.m_PlayerSpawnPos, player.m_PlayerSpawnRot, Vec3(1, 1, 1)));
+		auto pActor = pActorSystem->CreateActor(player.m_ChanelId, player.m_PlayerNickname, "FireNetPlayer", player.m_PlayerSpawnPos, player.m_PlayerSpawnRot, Vec3(1, 1, 1));
 
-		if (pPlayer)
+		if (pActor)
 		{
-			player.pPlayer = pPlayer;
+			CryLog(TITLE "FireNet player (%d) successfully spawned", player.m_PlayerUID);
+
+			player.pPlayer = dynamic_cast<CFireNetPlayer*>(pActor);
 			m_NetPlayers.push_back(player);
+
+			return true;
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d)", player.m_PlayerUID);
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d)", player.m_PlayerUID);
+
+
+	return false;
 }
 
 void CGameStateSynchronization::RemoveNetPlayer(uint uid)
@@ -55,14 +62,14 @@ void CGameStateSynchronization::RemoveNetPlayer(uint uid)
 
 	auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		if (it->m_PlayerUID == uid && it->pPlayer && pActorSystem)
-		{			
-			if (pActorSystem->GetActorByChannelId(it->m_ChanelId))
+		if (it.m_PlayerUID == uid && it.pPlayer && pActorSystem)
+		{
+			if (pActorSystem->GetActorByChannelId(it.m_ChanelId))
 			{
-				pActorSystem->RemoveActor(it->pPlayer->GetEntityId());
-			}		
+				pActorSystem->RemoveActor(it.pPlayer->GetEntityId());
+			}
 			break;
 		}
 	}
@@ -74,11 +81,11 @@ void CGameStateSynchronization::HideNetPlayer(uint uid)
 
 	IEntity* pEntity = nullptr;
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		if (it->m_PlayerUID == uid && it->pPlayer)
+		if (it.m_PlayerUID == uid && it.pPlayer)
 		{
-			pEntity = it->pPlayer->GetEntity();
+			pEntity = it.pPlayer->GetEntity();
 			break;
 		}
 	}
@@ -95,11 +102,11 @@ void CGameStateSynchronization::UnhideNetPlayer(uint uid)
 
 	IEntity* pEntity = nullptr;
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		if (it->m_PlayerUID == uid && it->pPlayer)
+		if (it.m_PlayerUID == uid && it.pPlayer)
 		{
-			pEntity = it->pPlayer->GetEntity();
+			pEntity = it.pPlayer->GetEntity();
 			break;
 		}
 	}
@@ -114,11 +121,11 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 {
 	CFireNetPlayer* pPlayer = nullptr;
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		if (it->m_PlayerUID == uid && it->pPlayer)
+		if (it.m_PlayerUID == uid && it.pPlayer)
 		{
-			pPlayer = it->pPlayer;
+			pPlayer = it.pPlayer;
 			break;
 		}
 	}
@@ -129,7 +136,7 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 		return;
 	}
 
-	pPlayer->OnPlayerAction(action.m_action);
+	/*pPlayer->OnPlayerAction(action.m_action);
 
 	if (action.m_action & E_ACTION_JUMP)
 	{
@@ -150,18 +157,18 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 	if (action.m_action & E_ACTION_MOUSE_ROTATE_PITCH)
 	{
 		pPlayer->OnPlayerMoveMousePitch(action.m_value);
-	}
+	}*/
 }
 
 void CGameStateSynchronization::SyncNetPlayerPos(uint uid, Vec3 & pos)
 {
 	CFireNetPlayer* pPlayer = nullptr;
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		if (it->m_PlayerUID == uid && it->pPlayer)
+		if (it.m_PlayerUID == uid && it.pPlayer)
 		{
-			pPlayer = it->pPlayer;
+			pPlayer = it.pPlayer;
 			break;
 		}
 	}
@@ -185,11 +192,11 @@ void CGameStateSynchronization::SyncNetPlayerRot(uint uid, Quat & rot)
 {
 	CFireNetPlayer* pPlayer = nullptr;
 
-	for (auto it = m_NetPlayers.begin(); it != m_NetPlayers.end(); ++it)
+	for (const auto &it : m_NetPlayers)
 	{
-		if (it->m_PlayerUID == uid && it->pPlayer)
+		if (it.m_PlayerUID == uid && it.pPlayer)
 		{
-			pPlayer = it->pPlayer;
+			pPlayer = it.pPlayer;
 			break;
 		}
 	}

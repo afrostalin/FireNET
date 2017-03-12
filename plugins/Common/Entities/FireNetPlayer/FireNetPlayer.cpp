@@ -137,7 +137,10 @@ void CFireNetPlayer::PostInit(IGameObject *pGameObject)
 
 	pGameObject->EnableUpdateSlot(this, 0);
 
-	SetHealth(GetMaxHealth());
+	if (gEnv->IsEditor())
+	{
+		SetHealth(GetMaxHealth());
+	}
 }
 
 void CFireNetPlayer::ProcessEvent(SEntityEvent& event)
@@ -155,9 +158,12 @@ void CFireNetPlayer::ProcessEvent(SEntityEvent& event)
 			}
 			case 1: // Game starts
 			{
-				SetHealth(GetMaxHealth());
-				if (!m_pCurrentWeapon) 
-					CreateWeapon("FireNetRifle");
+				if (gEnv->IsEditor())
+				{
+					SetHealth(GetMaxHealth());
+					if (!m_pCurrentWeapon)
+						CreateWeapon("FireNetRifle");
+				}
 
 				break;
 			}
@@ -199,7 +205,7 @@ void CFireNetPlayer::Update(SEntityUpdateContext & ctx, int updateSlot)
 void CFireNetPlayer::SetHealth(float health)
 {
 	// Find a spawn point and move the entity there
-	SelectSpawnPoint();
+//	SelectSpawnPoint();
 
 	// Note that this implementation does not handle the concept of death, SetHealth(0) will still revive the player.
 	if (m_bAlive)
@@ -255,7 +261,7 @@ void CFireNetPlayer::SelectSpawnPoint()
 		if (pSpawner == nullptr)
 			continue;
 
-		if (pSpawner->IsEnabled())
+		if (pSpawner && pSpawner->IsEnabled())
 		{
 			pSpawner->SpawnEntity(*GetEntity());
 			Vec3 pos = GetEntity()->GetPos();

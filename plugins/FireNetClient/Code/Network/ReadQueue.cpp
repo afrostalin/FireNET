@@ -9,6 +9,9 @@
 
 #include "Network/SyncGameState.h"
 
+#include <CryGame/IGameFramework.h>
+#include "ILevelSystem.h"
+
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {
 	//! Check packet number
@@ -137,8 +140,57 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 		mEnv->pUdpClient->On_Connected(true);
 		break;
 	}
-	case EFireNetUdpResult::ClientSpawned:
+	case EFireNetUdpResult::MapToLoad:
+	{
+		string m_MapName = packet.ReadString();
+
+		CryLog(TITLE "Map to load = %s. Loding...", m_MapName);
+
+		//gEnv->pGameFramework->GetILevelSystem()->LoadLevel(m_MapName);
+
+		
+		if (auto pLevel = gEnv->pGameFramework->GetILevelSystem()->GetCurrentLevel())
+		{
+			gEnv->pGameFramework->GetILevelSystem()->UnLoadLevel();
+		}
+
+		// TODO
+		string tmp("map " + m_MapName);
+		gEnv->pConsole->ExecuteString(tmp.c_str());
+
+		mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus::WaitStart);
+
 		break;
+	}
+	case EFireNetUdpResult::ClientSpawned:
+	{
+		uint uid = packet.ReadInt();
+		uint channelID = packet.ReadInt();
+		Vec3 pos = packet.ReadVec3();
+		Quat rot = packet.ReadQuat();
+		string fileModel = packet.ReadString();
+		string nickname = packet.ReadString();
+
+		CryLog(TITLE "New client spawned by server :");
+		CryLog(TITLE "Client uid : %d", uid);
+		CryLog(TITLE "Channel id : %d", channelID);
+		CryLog(TITLE "Spawn position (%f,%f,%f)", pos.x, pos.y, pos.z);
+		CryLog(TITLE "Spawn rotation (%f,%f,%f,%f)", rot.w, rot.v.x, rot.v.y, rot.v.z);
+		CryLog(TITLE "File model : %s", fileModel);
+		CryLog(TITLE "Nickname : %s", nickname);
+
+		SFireNetSyncronizationClient player;
+		player.m_PlayerUID = uid;
+		player.m_ChanelId = channelID;
+		player.m_PlayerSpawnPos = pos;
+		player.m_PlayerSpawnRot = rot;
+		player.m_PlayerModel = fileModel;
+		player.m_PlayerNickname = nickname;
+
+		mEnv->pGameSync->SpawnNetPlayer(player);
+
+		break;
+	}
 	case EFireNetUdpResult::ClientMoved:
 		break;
 	default:
