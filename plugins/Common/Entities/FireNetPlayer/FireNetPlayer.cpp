@@ -204,83 +204,31 @@ void CFireNetPlayer::Update(SEntityUpdateContext & ctx, int updateSlot)
 
 void CFireNetPlayer::SetHealth(float health)
 {
-	// Find a spawn point and move the entity there
-//	SelectSpawnPoint();
-
-	// Note that this implementation does not handle the concept of death, SetHealth(0) will still revive the player.
 	if (m_bAlive)
 		return;
 
 	m_bAlive = true;
 
-	// Unhide the entity in case hidden by the Editor
 	GetEntity()->Hide(false);
+	GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1, 1, 1), GetEntity()->GetRotation(), GetEntity()->GetWorldPos()));
 
-	// Make sure that the player spawns upright
-	GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1, 1, 1), IDENTITY, GetEntity()->GetWorldPos()));
+	if (!gEnv->IsEditor())
+		SetPlayerModel();
 
-	// Set the player geometry, this also triggers physics proxy creation
-	SetPlayerModel();
-
-	// Notify input that the player respawned
 	m_pInput->OnPlayerRespawn();
 
-	// Spawn the player with a weapon
 	if (m_pCurrentWeapon == nullptr)
 	{
 		CreateWeapon("FireNetRifle");
 	}
 }
 
-void CFireNetPlayer::SelectSpawnPoint()
-{
-	// We only handle default spawning below for the Launcher
-	// Editor has special logic in CEditorGame
-	if (gEnv->IsEditor())
-		return;
-
-	// Spawn at first default spawner
-	auto *pEntityIterator = gEnv->pEntitySystem->GetEntityIterator();
-	pEntityIterator->MoveFirst();
-
-	auto *pSpawnerClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass("FireNetSpawnPoint");
-	auto extensionId = gEnv->pGameFramework->GetIGameObjectSystem()->GetID("FireNetSpawnPoint");
-
-	while (!pEntityIterator->IsEnd())
-	{
-		IEntity *pEntity = pEntityIterator->Next();
-
-		if (pEntity->GetClass() != pSpawnerClass)
-			continue;
-
-		auto *pGameObject = gEnv->pGameFramework->GetGameObject(pEntity->GetId());
-		if (pGameObject == nullptr)
-			continue;
-
-		auto *pSpawner = static_cast<CFireNetSpawnPoint*>(pGameObject->QueryExtension(extensionId));
-		if (pSpawner == nullptr)
-			continue;
-
-		if (pSpawner && pSpawner->IsEnabled())
-		{
-			pSpawner->SpawnEntity(*GetEntity());
-			Vec3 pos = GetEntity()->GetPos();
-			break;
-		}
-	}
-}
-
 void CFireNetPlayer::SetPlayerModel()
 {
-	// Load the third person model
 	GetEntity()->LoadCharacter(eGeometry_Default, GetCVars().m_pGeometry->GetString());
 	
-	// Notify view so that the camera joint identifier can be re-cached
 	m_pView->OnPlayerModelChanged();
-	// Do the same for animations so that Mannequin data can be initialized
 	m_pAnimations->OnPlayerModelChanged();
-
-	// Now create the physical representation of the entity
 	m_pMovement->Physicalize();
 }
 
@@ -288,37 +236,22 @@ void CFireNetPlayer::CreateWeapon(const char *name)
 {
 	SEntitySpawnParams spawnParams;
 
-	// Set the class of the entity we want to create, e.g. "Rifle"
 	spawnParams.pClass = gEnv->pEntitySystem->GetClassRegistry()->FindClass(name);
 
-	// Now spawn the entity via the entity system
-	// Note that the game object extension (CRifle in this example) will be acquired automatically.
 	IEntity *pWeaponEntity = gEnv->pEntitySystem->SpawnEntity(spawnParams);
 
 	if (pWeaponEntity)
 	{
-
-		// Now acquire the game object for this entity
 		if (auto *pGameObject = gEnv->pGameFramework->GetGameObject(pWeaponEntity->GetId()))
 		{
-			// Obtain our ISimpleWeapon implementation, based on IGameObjectExtension
 			if (auto *pWeapon = pGameObject->QueryExtension(name))
-			{
-				// Set the equipped weapon
 				m_pCurrentWeapon = static_cast<ISimpleWeapon *>(pWeapon);
-			}
 			else
-			{
 				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Failed to query game object extension for weapon %s!", name);
-			}
 		}
 		else
-		{
 			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Spawned weapon of type %s but failed to get game object!", name);
-		}
 	}
 	else
-	{
 		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Can't spawn weapon of type %s - class not found", name);
-	}
 }

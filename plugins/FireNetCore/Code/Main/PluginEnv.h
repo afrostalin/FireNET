@@ -43,7 +43,7 @@ extern SPluginEnv* mEnv;
 
 namespace FireNet 
 {
-	// Send FireNet event with arguments
+	//! Send FireNet event with arguments
 	static void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs())
 	{
 		for (const auto &it : mEnv->m_Listeners)

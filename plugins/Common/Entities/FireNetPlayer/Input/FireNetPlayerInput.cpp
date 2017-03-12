@@ -14,37 +14,37 @@ void CFireNetPlayerInput::PostInit(IGameObject *pGameObject)
 	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
 	m_moveSpeed = m_pPlayer->GetCVars().m_moveSpeed;
 
-	IActionMapManager *pActionMapManager = gEnv->pGameFramework->GetIActionMapManager();
-	pActionMapManager->InitActionMaps("Libs/config/defaultprofile.xml"); // TODO - change it
-	pActionMapManager->Enable(true);
-	pActionMapManager->EnableActionMap("player", true);
-
-	if (IActionMap *pActionMap = pActionMapManager->GetActionMap("player"))
+	if (!gEnv->IsDedicated())
 	{
-		pActionMap->SetActionListener(GetEntityId());
+		IActionMapManager *pActionMapManager = gEnv->pGameFramework->GetIActionMapManager();
+		pActionMapManager->InitActionMaps("Libs/config/defaultprofile.xml");
+		pActionMapManager->Enable(true);
+		pActionMapManager->EnableActionMap("player", true);
+
+		if (IActionMap *pActionMap = pActionMapManager->GetActionMap("player"))
+		{
+			pActionMap->SetActionListener(GetEntityId());
+		}
+
+		GetGameObject()->CaptureActions(this);
+		GetGameObject()->EnableUpdateSlot(this, 0);
+
+		InitializeActionHandler();
 	}
-
-	GetGameObject()->CaptureActions(this);
-	GetGameObject()->EnableUpdateSlot(this, 0);
-
-	InitializeActionHandler();
+	else
+		GetGameObject()->EnableUpdateSlot(this, 0);
 }
 
 void CFireNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
 {
-	// Start by updating look dir
 	Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));
 	
 	ypr.x += m_mouseDeltaRotation.x * m_pPlayer->GetCVars().m_rotationSpeedYaw * ctx.fFrameTime;
-
-	// TODO: Perform soft clamp here instead of hard wall, should reduce rot speed in this direction when close to limit.
 	ypr.y = CLAMP(ypr.y + m_mouseDeltaRotation.y * m_pPlayer->GetCVars().m_rotationSpeedPitch * ctx.fFrameTime, m_pPlayer->GetCVars().m_rotationLimitsMinPitch, m_pPlayer->GetCVars().m_rotationLimitsMaxPitch);
-
 	ypr.z = 0;
 
 	m_lookOrientation = Quat(CCamera::CreateOrientationYPR(ypr));
 
-	// Reset every frame
 	m_mouseDeltaRotation = ZERO;
 
 	if (auto* pMovement = m_pPlayer->GetMovement())
@@ -80,7 +80,6 @@ void CFireNetPlayerInput::HandleInputFlagChange(EInputFlags flags, int activatio
 		{
 			if (activationMode == eIS_Released)
 			{
-				// Toggle the bit(s)
 				m_inputFlags ^= flags;
 			}
 		}
@@ -113,8 +112,6 @@ void CFireNetPlayerInput::InitializeActionHandler()
 
 void CFireNetPlayerInput::OnAction(const ActionId &action, int activationMode, float value)
 {
-	// This function is called when inputs trigger action map events
-	// The handler below maps the event (see 'action') to a callback, further below in this file.
 	m_actionHandler.Dispatch(this, GetEntityId(), action, activationMode, value);
 }
 
@@ -154,7 +151,6 @@ bool CFireNetPlayerInput::OnActionJump(EntityId entityId, const ActionId & actio
 
 		if (pPhysics && pEntity &&  pMovement->IsOnGround())
 		{
-			// TODO : This bad way! We need use animations for this action
 			pe_action_impulse impulseAction;
 			Vec3 impulsePos = pEntity->GetWorldPos();
 			impulsePos.x = 0;
@@ -196,7 +192,7 @@ bool CFireNetPlayerInput::OnToggleThirdPersonMode(EntityId entityId, const Actio
 bool CFireNetPlayerInput::OnActionGamePaused(EntityId entityId, const ActionId & actionId, int activationMode, float value)
 {
 	// Load InGame page if game paused and unload it when game resumed
-	if (!gEnv->IsEditor() /*&& mEnv->bInGame*/ && activationMode == eIS_Released && !bGamePaused)
+	if (!gEnv->IsEditor() && activationMode == eIS_Released && !bGamePaused)
 	{
 		bGamePaused = true;
 
@@ -209,7 +205,7 @@ bool CFireNetPlayerInput::OnActionGamePaused(EntityId entityId, const ActionId &
 
 		gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_GAME_PAUSED, 0, 0);
 	}
-	else if (!gEnv->IsEditor()/* && mEnv->bInGame*/ && activationMode == eIS_Released && bGamePaused)
+	else if (!gEnv->IsEditor() && activationMode == eIS_Released && bGamePaused)
 	{
 		bGamePaused = false;
 

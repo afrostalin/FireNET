@@ -242,20 +242,14 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 	case FIRENET_EVENT_AUTHORIZATION_FAILED:
 	{
 		int reason = args.GetInt();
+		string error = args.GetString();
+
 		auto pPage = mEnv->pUIManager->GetPage("AuthorizationPage");
 
 		if (pPage)
 		{
 			SUIArguments errorString;
-
-			if (reason == 0)
-				errorString.AddArgument("@ui_login_not_found");
-			else if (reason == 1)
-				errorString.AddArgument("@ui_account_blocked");
-			else if (reason == 2)
-				errorString.AddArgument("@ui_incorrect_password");
-			else if (reason == 3)
-				errorString.AddArgument("@ui_double_authorization");
+			errorString.AddArgument("@ui_" + error);
 
 			pPage->CallFunction("SetServerResultText", errorString);
 		}
@@ -283,18 +277,14 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 	case FIRENET_EVENT_REGISTRATION_FAILED:
 	{
 		int reason = args.GetInt();
+		string error = args.GetString();
+
 		auto pPage = mEnv->pUIManager->GetPage("AuthorizationPage");
 
 		if (pPage)
 		{
 			SUIArguments errorString;
-
-			if (reason == 0)
-				errorString.AddArgument("@ui_login_alredy_register");
-			else if (reason == 1)
-				errorString.AddArgument("@ui_cant_create_account");
-			else if (reason == 2)
-				errorString.AddArgument("@ui_double_registration");
+			errorString.AddArgument("@ui_" + error);
 
 			pPage->CallFunction("SetServerResultText", errorString);
 		}

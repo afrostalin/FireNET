@@ -26,46 +26,32 @@ CFireNetPlayerAnimations::~CFireNetPlayerAnimations()
 void CFireNetPlayerAnimations::PostInit(IGameObject *pGameObject)
 {
 	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
-
-	// Make sure that this extension is updated regularly via the Update function below
 	pGameObject->EnableUpdateSlot(this, 0);
 }
 
 void CFireNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
 {
-	// Start updating the motion parameters used for blend spaces
 	if (auto *pPhysEnt = m_pPlayer->GetEntity()->GetPhysics())
 	{
-		// Update entity rotation as the player turns
-		// Start with getting the look orientation's yaw, pitch and roll
 		Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_pPlayer->GetInput()->GetLookOrientation()));
 
-		// Re-calculate the quaternion based on the corrected look orientation
 		Quat correctedOrientation = Quat(CCamera::CreateOrientationYPR(ypr));
 
 		auto *pCharacter = m_pPlayer->GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_Default);
 
-		// Get the player's velocity from physics
 		pe_status_dynamics playerDynamics;
 		if (pPhysEnt->GetStatus(&playerDynamics) != 0 && pCharacter != nullptr)
 		{
-			// Set turn rate as the difference between previous and new entity rotation
 			float turnAngle = Ang3::CreateRadZ(GetEntity()->GetForwardDir(), correctedOrientation.GetColumn1()) / ctx.fFrameTime;
 			float travelAngle = Ang3::CreateRadZ(GetEntity()->GetForwardDir(), playerDynamics.v.GetNormalized());
 			float travelSpeed = playerDynamics.v.GetLength2D();
 
-			// Set the travel speed based on the physics velocity magnitude
-			// Keep in mind that the maximum number for motion parameters is 10.
-			// If your velocity can reach a magnitude higher than this, divide by the maximum theoretical account and work with a 0 - 1 ratio.
 			pCharacter->GetISkeletonAnim()->SetDesiredMotionParam(eMotionParamID_TravelSpeed, travelSpeed, 0.f);
-
-			// Update the turn speed in CryAnimation, note that the maximum motion parameter (10) applies here too.
 			pCharacter->GetISkeletonAnim()->SetDesiredMotionParam(eMotionParamID_TurnAngle, turnAngle, 0.f);
 			pCharacter->GetISkeletonAnim()->SetDesiredMotionParam(eMotionParamID_TravelAngle, travelAngle, 0.f);
 
 			if (m_pPlayer->GetMovement()->IsOnGround())
 			{
-				// Calculate slope value
 				Vec3 groundNormal = m_pPlayer->GetMovement()->GetGroundNormal() * correctedOrientation;
 				groundNormal.x = 0.0f;
 				float cosine = Vec3Constants<float>::fVec3_OneZ | groundNormal;
@@ -76,12 +62,10 @@ void CFireNetPlayerAnimations::Update(SEntityUpdateContext& ctx, int updateSlot)
 				pCharacter->GetISkeletonAnim()->SetDesiredMotionParam(eMotionParamID_TravelSlope, travelSlope, 0.f);
 			}
 
-			// Update the Mannequin tags
 			m_pAnimationContext->state.Set(m_rotateTagId, abs(turnAngle) > 0);
 			m_pAnimationContext->state.Set(m_walkTagId, travelSpeed > 0.2f && m_pPlayer->GetMovement()->IsOnGround());
 		}
 
-		// Send updated transform to the entity, only orientation changes
 		GetEntity()->SetPosRotScale(GetEntity()->GetWorldPos(), correctedOrientation, Vec3(1, 1, 1));
 	}
 

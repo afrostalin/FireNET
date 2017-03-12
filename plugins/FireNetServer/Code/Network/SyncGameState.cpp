@@ -41,16 +41,23 @@ bool CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & pl
 		{
 			CryLog(TITLE "FireNet player (%d) successfully spawned", player.m_PlayerUID);
 
-			player.pPlayer = dynamic_cast<CFireNetPlayer*>(pActor);
-			m_NetPlayers.push_back(player);
+			auto m_Player = dynamic_cast<CFireNetPlayer*>(pActor);
 
-			return true;
+			if (m_Player)
+			{
+				player.pPlayer = m_Player;
+				m_NetPlayers.push_back(player);
+
+				return true;
+			}
+			else
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d) - Can't get player", player.m_PlayerUID);
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d)", player.m_PlayerUID);
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d) - Can't spawn actor", player.m_PlayerUID);
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d)", player.m_PlayerUID);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d) - Can't get actor system pointer", player.m_PlayerUID);
 
 
 	return false;

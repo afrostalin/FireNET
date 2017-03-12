@@ -15,30 +15,19 @@ CFireNetPlayerMovement::CFireNetPlayerMovement()
 void CFireNetPlayerMovement::PostInit(IGameObject *pGameObject)
 {
 	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
-
-	// Make sure that this extension is updated regularly via the Update function below
 	pGameObject->EnableUpdateSlot(this, 0);
 }
 
 void CFireNetPlayerMovement::Physicalize()
 {
-	// Physicalize the player as type Living.
-	// This physical entity type is specifically implemented for players
 	SEntityPhysicalizeParams physParams;
 	physParams.type = PE_LIVING;
 	physParams.mass = m_pPlayer->GetCVars().m_mass;
 
 	pe_player_dimensions playerDimensions;
-
-	// Prefer usage of a cylinder instead of capsule
 	playerDimensions.bUseCapsule = 0;
-
-	// Specify the size of our cylinder
 	playerDimensions.sizeCollider = Vec3(0.35f, 0.35f, m_pPlayer->GetCVars().m_playerEyeHeight * 0.5f);
-
-	// Keep pivot at the player's feet (defined in player geometry) 
 	playerDimensions.heightPivot = 0.f;
-	// Offset collider upwards
 	playerDimensions.heightCollider = 1.f;
 	playerDimensions.groundContactEps = 0.004f;
 
@@ -57,13 +46,12 @@ void CFireNetPlayerMovement::Update(SEntityUpdateContext &ctx, int updateSlot)
 {
 	IEntity &entity = *GetEntity();
 	IPhysicalEntity *pPhysicalEntity = entity.GetPhysics();
+
 	if(pPhysicalEntity == nullptr)
 		return;
 
-	// Obtain stats from the living entity implementation
 	GetLatestPhysicsStats(*pPhysicalEntity);
 
-	// Send latest input data to physics indicating desired movement direction
 	UpdateMovementRequest(ctx.fFrameTime, *pPhysicalEntity);
 }
 
@@ -73,9 +61,6 @@ void CFireNetPlayerMovement::GetLatestPhysicsStats(IPhysicalEntity &physicalEnti
 	if(physicalEntity.GetStatus(&livingStatus) != 0)
 	{
 		m_bOnGround = !livingStatus.bFlying;
-
-		// Store the ground normal in case it is needed
-		// Note that users have to check if we're on ground before using, is considered invalid in air.
 		m_groundNormal = livingStatus.groundSlope;
 	}
 }
@@ -86,13 +71,11 @@ void CFireNetPlayerMovement::UpdateMovementRequest(float frameTime, IPhysicalEnt
 	{
 		pe_action_move moveAction;
 
-		// Apply movement request directly to velocity
 		moveAction.iJump = 2;
 
 		const float moveSpeed = m_pPlayer->GetCVars().m_moveSpeed;
 		moveAction.dir = m_pPlayer->GetInput()->GetLookOrientation() * GetLocalMoveDirection() *  (moveSpeed + m_SprintValue) * frameTime;
 
-		// Dispatch the movement request
 		physicalEntity.Action(&moveAction);
 	}
 }

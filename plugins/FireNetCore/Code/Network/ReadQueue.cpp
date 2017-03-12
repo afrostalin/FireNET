@@ -157,67 +157,180 @@ void CReadQueue::ReadResult(CTcpPacket & packet, EFireNetTcpResult result)
 void CReadQueue::ReadError(CTcpPacket & packet, EFireNetTcpError error)
 {
 	int reason = packet.ReadInt();
-
 	SFireNetEventArgs args;
-	args.AddInt(reason);
 
 	switch (error)
 	{
 	case EFireNetTcpError::LoginFail :
-	{		
-		CryLog(TITLE "Authorization failed. Reason = %d", reason);
+	{	
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "login_not_found";
+		else if (reason == 1)
+			m_Error = "account_blocked";
+		else if (reason == 2)
+			m_Error = "incorrect_password";
+		else if (reason == 3)
+			m_Error = "double_authorization";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Authorization failed. Reason = %s", m_Error);
+
 		FireNet::SendFireNetEvent(FIRENET_EVENT_AUTHORIZATION_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::RegisterFail :
 	{
-		CryLog(TITLE "Registration failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "login_alredy_register";
+		else if (reason == 1)
+			m_Error = "cant_create_account";
+		else if (reason == 2)
+			m_Error = "double_registration";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Registration failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_REGISTRATION_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::ProfileCreationFail :
 	{
-		CryLog(TITLE "Creating profile failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "client_alredy_have_profile";
+		else if (reason == 1)
+			m_Error = "nickname_alredy_registered";
+		else if (reason == 2)
+			m_Error = "server_error";
+		else if (reason == 3)
+			m_Error = "double_profile_creation";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Creating profile failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_CREATE_PROFILE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::GetProfileFail :
 	{
-		CryLog(TITLE "Get profile failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "profile_not_found";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Get profile failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_PROFILE_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::GetShopFail :
 	{
-		CryLog(TITLE "Get shop failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "server_error";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Get shop failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_SHOP_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::BuyItemFail :
 	{
-		CryLog(TITLE "Buy item failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "item_alredy_purchased";
+		else if (reason == 1)
+			m_Error = "player_lvl_block";
+		else if (reason == 2)
+			m_Error = "insufficient_money";
+		else if (reason == 3)
+			m_Error = "item_not_found";
+		else if (reason == 4)
+			m_Error = "server_error";
+		else if (reason == 5)
+			m_Error = "server_error";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Buy item failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_BUY_ITEM_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::RemoveItemFail :
 	{
-		CryLog(TITLE "Remove item failed. Reasong = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "item_not_found_in_shop";
+		else if (reason == 1)
+			m_Error = "item_not_found_in_profile";
+		else if (reason == 2)
+			m_Error = "server_error";
+		else if (reason == 3)
+			m_Error = "server_error";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Remove item failed. Reasong = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_REMOVE_ITEM_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::SendInviteFail :
 	{
-		CryLog(TITLE "Send invite failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "user_not_found";
+		else if (reason == 1)
+			m_Error = "user_not_online";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Send invite failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_SEND_INVITE_FAILED, args);
 		break;
 	}
-	case EFireNetTcpError::DeclineInviteFail :
+	case EFireNetTcpError::DeclineInviteFail : // TODO
 	{
 		CryLog(TITLE "Decline invite failed. Reason = %d", reason);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_DECLINE_INVITE_FAILED, args);
 		break;
 	}
-	case EFireNetTcpError::AcceptInviteFail :
+	case EFireNetTcpError::AcceptInviteFail : // TODO
 	{
 		CryLog(TITLE "Accept invite failed. Reason = %d", reason);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_ACCEPT_INVITE_FAILED, args);
@@ -225,19 +338,57 @@ void CReadQueue::ReadError(CTcpPacket & packet, EFireNetTcpError error)
 	}
 	case EFireNetTcpError::RemoveFriendFail :
 	{
-		CryLog(TITLE "Remove friend failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "friend_not_found";
+		else if (reason == 1)
+			m_Error = "server_error";
+		else if (reason == 2)
+			m_Error = "server_error";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Remove friend failed. Reason = %s", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_REMOVE_FRIEND_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::SendChatMsgFail :
 	{
-		CryLog(TITLE "Send chat message failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "cant_send_msg_yourself";
+		else if (reason == 1)
+			m_Error = "reciver_not_online";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Send chat message failed. Reason = %d", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_SEND_CHAT_MSG_FAILED, args);
 		break;
 	}
 	case EFireNetTcpError::GetServerFail :
 	{
-		CryLog(TITLE "Get game server failed. Reason = %d", reason);
+		const char* m_Error;
+
+		if (reason == 0)
+			m_Error = "not_any_online_servers";
+		else if (reason == 1)
+			m_Error = "server_not_found";
+		else
+			m_Error = "unknown_error";
+
+		args.AddInt(reason);
+		args.AddString(m_Error);
+
+		CryLog(TITLE "Get game server failed. Reason = %d", m_Error);
 		FireNet::SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_FAILED, args);
 		break;
 	}
@@ -262,6 +413,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 		SFireNetEventArgs chat;
 		chat.AddString(from);
 		chat.AddString(msg);
+
 		FireNet::SendFireNetEvent(FIRENET_EVENT_GLOBAL_CHAT_MSG_RECEIVED, chat);
 
 		break;
@@ -278,6 +430,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 		SFireNetEventArgs chat;
 		chat.AddString(from);
 		chat.AddString(msg);
+
 		FireNet::SendFireNetEvent(FIRENET_EVENT_PRIVATE_CHAT_MSG_RECEIVED, chat);
 
 		break;
@@ -294,6 +447,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 		SFireNetEventArgs chat;
 		chat.AddString(from);
 		chat.AddString(msg);
+
 		FireNet::SendFireNetEvent(FIRENET_EVENT_CLAN_CHAT_MSG_RECEIVED, chat);
 
 		break;
@@ -304,10 +458,11 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 
 		string msg = packet.ReadString();
 
-		CryLog(TITLE "[ServerMessafe] %s ", msg);
+		CryLog(TITLE "[ServerMessage] %s ", msg);
 
 		SFireNetEventArgs chat;
 		chat.AddString(msg);
+
 		FireNet::SendFireNetEvent(FIRENET_EVENT_SERVER_MESSAGE_RECEIVED, chat);
 
 		break;
@@ -320,6 +475,7 @@ void CReadQueue::ReadServerMsg(CTcpPacket & packet, EFireNetTcpSMessage serverMs
 
 		SFireNetEventArgs command;
 		command.AddString(rawCmd);
+
 		FireNet::SendFireNetEvent(FIRENET_EVENT_CONSOLE_COMMAND_RECEIVED, command);
 
 		break;
@@ -359,6 +515,7 @@ void CReadQueue::LoadProfile(CTcpPacket & packet)
 	profile.AddInt(money);
 	profile.AddString(items);
 	profile.AddString(friends);
+
 	FireNet::SendFireNetEvent(FIRENET_EVENT_UPDATE_PROFILE, profile);
 }
 
@@ -366,15 +523,12 @@ void CReadQueue::LoadShop(CTcpPacket & packet)
 {
 	string rawShop = packet.ReadString();
 
-	// Send event with shop data
-	SFireNetEventArgs shop;
-	shop.AddString(rawShop);
-	FireNet::SendFireNetEvent(FIRENET_EVENT_GET_SHOP_COMPLETE, shop);
+	// TODO
+
+	FireNet::SendFireNetEvent(FIRENET_EVENT_GET_SHOP_COMPLETE);
 }
 
 void CReadQueue::LoadGameServerInfo(CTcpPacket & packet)
 {
-	// Send event with game server info
-	SFireNetEventArgs gameServerInfo;
-	FireNet::SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_COMPLETE, gameServerInfo);
+	FireNet::SendFireNetEvent(FIRENET_EVENT_GET_GAME_SERVER_COMPLETE);
 }

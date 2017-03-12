@@ -429,7 +429,7 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 	mEnv->m_Listeners.push_back(listener);
 }
 
-void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs & args)
+void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args)
 {
 	FireNet::SendFireNetEvent(event, args);
 }
