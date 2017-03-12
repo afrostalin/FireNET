@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.6.0)
+cmake_minimum_required (VERSION 3.8.0)
 project (CryFireNetCore VERSION 1.0 LANGUAGES CXX)
 
 # HOT RELOAD
