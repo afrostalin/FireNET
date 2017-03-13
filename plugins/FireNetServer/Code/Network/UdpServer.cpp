@@ -253,7 +253,10 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 	{	
 		if (packet.getType() == EFireNetUdpPacketType::Ask && packet.ReadAsk() == EFireNetUdpAsk::ConnectToServer)
 		{
-			if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() < mEnv->net_max_players)
+			auto pMaxPlayers = gEnv->pConsole->GetCVar("firenet_game_server_max_players");
+			int m_MaxPlayers = pMaxPlayers ? pMaxPlayers->GetIVal() : 64;
+
+			if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() < m_MaxPlayers)
 			{
 				pClient->bConnected = true;
 				pClient->pReader = new CReadQueue(id);
@@ -265,7 +268,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 
 				SendToClient(packet, id);
 			}
-			else if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() >= mEnv->net_max_players)
+			else if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() >= m_MaxPlayers)
 			{
 				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server full");
 

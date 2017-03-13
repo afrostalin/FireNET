@@ -46,7 +46,7 @@ bool CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & pl
 			if (m_Player)
 			{
 				player.pPlayer = m_Player;
-				m_NetPlayers.push_back(player);
+//				m_NetPlayers.push_back(player);
 
 				return true;
 			}

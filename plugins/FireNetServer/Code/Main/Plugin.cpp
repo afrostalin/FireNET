@@ -26,17 +26,6 @@ CFireNetServerPlugin::~CFireNetServerPlugin()
 		pTemp = pTemp->m_pNext;
 	}
 
-	// Unregister CVars
-	if (gEnv && gEnv->pConsole)
-	{
-		gEnv->pConsole->UnregisterVariable("firenet_map");
-		gEnv->pConsole->UnregisterVariable("firenet_gamerules");
-		gEnv->pConsole->UnregisterVariable("firenet_game_server_ip");
-		gEnv->pConsole->UnregisterVariable("firenet_game_server_port");
-		gEnv->pConsole->UnregisterVariable("firenet_game_server_timeout");
-		gEnv->pConsole->UnregisterVariable("firenet_game_server_max_players");
-	}
-
 	// Stop and delete network thread
 	if (mEnv->pNetworkThread)
 	{
@@ -131,15 +120,6 @@ void CFireNetServerPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			pTemp->Register();
 			pTemp = pTemp->m_pNext;
 		}
-
-		//! Register CVars
-		mEnv->net_ip =        REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
-		mEnv->net_map =       REGISTER_STRING("firenet_map", "", VF_NULL, "Map name for loading and register in master server");
-		mEnv->net_gamerules = REGISTER_STRING("firenet_gamerules", "TDM", VF_NULL, "Gamerules name for loading and register in master server");
-
-		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_port, 64000, VF_CHEAT, "FireNet game server port");
-		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet game server timeout");
-		REGISTER_CVAR2("firenet_game_server_max_players", &mEnv->net_max_players, 64, VF_NULL, "FireNet game server max players count");
 
 		//! Start network thread
 		mEnv->pNetworkThread = new CNetworkThread();

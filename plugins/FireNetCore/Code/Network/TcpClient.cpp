@@ -101,15 +101,15 @@ bool CTcpClient::Do_VerifyCertificate(bool preverified, boost::asio::ssl::verify
 // Errors : 0 - connection timeout, 1 - connection refused, 2 - unknown error
 void CTcpClient::Do_Connect()
 { 
-	ICVar* ip = gEnv->pConsole->GetCVar("firenet_ip");
+	ICVar* ip = gEnv->pConsole->GetCVar("firenet_master_ip");
 	ICVar* port;
 
 	if (gEnv->IsDedicated())
-		port = gEnv->pConsole->GetCVar("firenet_remote_port");
+		port = gEnv->pConsole->GetCVar("firenet_master_remote_port");
 	else
-		port = gEnv->pConsole->GetCVar("firenet_port");
+		port = gEnv->pConsole->GetCVar("firenet_master_port");
 
-	ICVar* timeout = gEnv->pConsole->GetCVar("firenet_timeout");
+	ICVar* timeout = gEnv->pConsole->GetCVar("firenet_master_timeout");
 
 	if (ip && port && timeout)
 	{

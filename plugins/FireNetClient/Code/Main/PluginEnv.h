@@ -20,10 +20,6 @@ struct SPluginEnv
 		pGameSync = nullptr;
 
 		m_FireNetProfile = nullptr;
-
-		net_ip = nullptr;
-		net_port = 0;
-		net_timeout = 0;
 	}
 
 	//! Pointers
@@ -33,11 +29,6 @@ struct SPluginEnv
 
 	//! Local FireNet profile
 	SFireNetProfile*           m_FireNetProfile;
-
-	//! CVars
-	ICVar*                     net_ip;
-	int                        net_port;
-	int                        net_timeout;
 };
 
 extern SPluginEnv* mEnv;

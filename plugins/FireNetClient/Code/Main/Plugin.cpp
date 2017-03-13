@@ -23,15 +23,6 @@ void CmdConnect(IConsoleCmdArgs* args)
 		gFireNet->pClient->ConnectToGameServer();
 }
 
-//! Test functionality
-#ifndef NDEBUG
-void CmdTestSpawn(IConsoleCmdArgs* args)
-{
-	if (gFireNet && gFireNet->pClient)
-		gFireNet->pClient->SendSpawnRequest();
-}
-#endif
-
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
 	// Unregister entities
@@ -40,15 +31,6 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 	{
 		pTemp->Unregister();
 		pTemp = pTemp->m_pNext;
-	}
-
-	// Unregister CVars
-	IConsole* pConsole = gEnv->pConsole;
-	if (pConsole)
-	{
-		pConsole->UnregisterVariable("firenet_game_server_ip");
-		pConsole->UnregisterVariable("firenet_game_server_port");
-		pConsole->UnregisterVariable("firenet_game_server_timeout");
 	}
 
 	// Stop and delete network thread if Quit funtion not executed
@@ -150,18 +132,9 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			pTemp = pTemp->m_pNext;
 		}
 
-		//! Register CVars
-		mEnv->net_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
-		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_port, 64000, VF_CHEAT, "FireNet game server port");
-		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet game server timeout");
 
 		//! Register command
 		REGISTER_COMMAND("firenet_game_connect", CmdConnect, VF_NULL, "Connect to game server");
-
-		//! Test functionality
-#ifndef NDEBUG
-		REGISTER_COMMAND("firenet_test_spawn", CmdTestSpawn, VF_NULL, "");
-#endif
 
 		break;
 	}
@@ -183,8 +156,6 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 	}
 	case ESYSTEM_EVENT_LEVEL_GAMEPLAY_START:
 	{
-		CryLog(TITLE "PLAYER SPAWN REQUEST HERE");
-
 		//! Send spawn request
 		if (mEnv->pUdpClient)
 		{

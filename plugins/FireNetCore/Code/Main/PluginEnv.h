@@ -18,9 +18,18 @@ struct SPluginEnv
 		pTcpClient = nullptr;
 		pNetworkThread = nullptr;
 
-		net_ip = nullptr;
-		net_port = 0;
-		net_timeout = 0;
+		net_master_ip = nullptr;
+		net_master_port = 0;
+		net_master_remote_port = 0;
+		net_master_timeout = 0;
+
+		net_game_server_ip = nullptr;
+		net_game_server_map = nullptr;
+		net_game_server_gamerules = nullptr;
+		net_game_server_port = 0;
+	    net_game_server_timeout = 0;
+		net_game_server_max_players = 0;
+
 		net_debug = 0;
 	}
 
@@ -28,14 +37,22 @@ struct SPluginEnv
 	CTcpClient*                       pTcpClient;
 	CNetworkThread*                   pNetworkThread;
 	
-	// Containers
+	// Listeners container
 	std::vector<IFireNetListener*>    m_Listeners;
 
-	// CVars
-	ICVar*                            net_ip;
-	int                               net_port;
-	int                               net_remote_port;
-	int                               net_timeout;
+	// CVars - Master server
+	ICVar*                            net_master_ip;
+	int                               net_master_port;
+	int                               net_master_remote_port;
+	int                               net_master_timeout;
+	// CVars - Game server
+	ICVar*                            net_game_server_ip;
+	ICVar*                            net_game_server_map;
+	ICVar*                            net_game_server_gamerules;
+	int                               net_game_server_port;
+	int                               net_game_server_timeout;
+	int                               net_game_server_max_players;
+	// CVars - Other
 	int                               net_debug;
 };
 

@@ -166,7 +166,7 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 		string fileModel = packet.ReadString();
 		string nickname = packet.ReadString();
 
-		CryLog(TITLE "New client spawned by server :");
+		CryLog(TITLE "New client spawned by server");
 		CryLog(TITLE "Client uid : %d", uid);
 		CryLog(TITLE "Channel id : %d", channelID);
 		CryLog(TITLE "Spawn position (%f,%f,%f)", pos.x, pos.y, pos.z);

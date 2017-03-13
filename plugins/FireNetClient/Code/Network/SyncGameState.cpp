@@ -35,18 +35,26 @@ void CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & pl
 
 	if (auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem())
 	{
-		auto* pPlayer = reinterpret_cast<CFireNetPlayer*> (pActorSystem->CreateActor(player.m_ChanelId, player.m_PlayerNickname, "FireNetPlayer", player.m_PlayerSpawnPos, player.m_PlayerSpawnRot, Vec3(1, 1, 1)));
+		auto pActor = pActorSystem->CreateActor(player.m_ChanelId, player.m_PlayerNickname.c_str(), "FireNetPlayer", player.m_PlayerSpawnPos, player.m_PlayerSpawnRot, Vec3(1, 1, 1));
 
-		if (pPlayer)
+		if (pActor)
 		{
-			player.pPlayer = pPlayer;
-			m_NetPlayers.push_back(player);
+			auto* pPlayer = dynamic_cast<CFireNetPlayer*> (pActor);
+
+			if (pPlayer)
+			{
+				player.pPlayer = pPlayer;
+				m_NetPlayers.push_back(player);
+			}
+			else
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player - Can't get player pointer");
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player");
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player - Can't spawn actor");
+		
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player");
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player - Can't get actor system");
 }
 
 void CGameStateSynchronization::RemoveNetPlayer(uint uid)

@@ -40,9 +40,18 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 	IConsole* pConsole = gEnv->pConsole;
 	if (pConsole)
 	{
-		pConsole->UnregisterVariable("firenet_ip");
-		pConsole->UnregisterVariable("firenet_port");
-		pConsole->UnregisterVariable("firenet_timeout");
+		pConsole->UnregisterVariable("firenet_master_ip");
+		pConsole->UnregisterVariable("firenet_master_port");
+		pConsole->UnregisterVariable("firenet_master_remote_port");
+		pConsole->UnregisterVariable("firenet_master_timeout");
+
+		pConsole->UnregisterVariable("firenet_game_server_ip");
+		pConsole->UnregisterVariable("firenet_game_server_port");
+		pConsole->UnregisterVariable("firenet_game_server_timeout");
+		pConsole->UnregisterVariable("firenet_game_server_map");
+		pConsole->UnregisterVariable("firenet_game_server_gamerules");
+		pConsole->UnregisterVariable("firenet_game_server_max_players");
+
 #ifndef NDEBUG
 		pConsole->UnregisterVariable("firenet_packet_debug");
 #endif
@@ -121,7 +130,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 	{
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{
-		// Register entities
+		//! Register entities
 		IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 		while (pTemp != nullptr)
 		{
@@ -129,14 +138,21 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 			pTemp = pTemp->m_pNext;
 		}
 
-		// Register CVars
-		mEnv->net_ip = REGISTER_STRING("firenet_ip", "127.0.0.1", VF_NULL, "Sets the FireNet master server ip address");
-		REGISTER_CVAR2("firenet_port", &mEnv->net_port, 3322, VF_CHEAT, "FireNet master server port");
-		REGISTER_CVAR2("firenet_timeout", &mEnv->net_timeout, 10, VF_NULL, "FireNet master server timeout");
+		//! CVars - Master server
+		mEnv->net_master_ip = REGISTER_STRING("firenet_master_ip", "127.0.0.1", VF_NULL, "Sets the FireNet master server ip address");
+		REGISTER_CVAR2("firenet_master_port", &mEnv->net_master_port, 3322, VF_CHEAT, "FireNet master server port");
+		REGISTER_CVAR2("firenet_master_timeout", &mEnv->net_master_timeout, 10, VF_NULL, "FireNet master server timeout");
+		REGISTER_CVAR2("firenet_master_remote_port", &mEnv->net_master_remote_port, 5200, VF_CHEAT, "FireNet master server port for game server");
 
-		if(gEnv->IsDedicated())
-			REGISTER_CVAR2("firenet_remote_port", &mEnv->net_remote_port, 5200, VF_CHEAT, "FireNet master server port for game server");
+		//! CVars - Game server
+		mEnv->net_game_server_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
+		mEnv->net_game_server_map = REGISTER_STRING("firenet_game_server_map", "", VF_NULL, "Map name for loading and register in master server");
+		mEnv->net_game_server_gamerules = REGISTER_STRING("firenet_game_server_gamerules", "TDM", VF_NULL, "Gamerules name for loading and register in master server");
+		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_game_server_port, 64000, VF_CHEAT, "FireNet game server port");
+		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_game_server_timeout, 10, VF_NULL, "FireNet game server timeout");
+		REGISTER_CVAR2("firenet_game_server_max_players", &mEnv->net_game_server_max_players, 64, VF_NULL, "FireNet game server max players count");
 
+		//! CVars - Other
 #ifndef  NDEBUG
 		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
 		REGISTER_COMMAND("firenet_master_connect", CmdConnect, VF_NULL, "Connect to FireNet master server");
@@ -145,6 +161,9 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 	}
 	case ESYSTEM_EVENT_GAME_FRAMEWORK_INIT_DONE:
 	{
+		//! Load FireNet settings
+		gEnv->pConsole->ExecuteString("exec firenet.cfg");
+
 		//! Automatic connect to master server
 		if (gFireNet && gFireNet->pCore && !gEnv->IsEditor())
 			gFireNet->pCore->ConnectToMasterServer();

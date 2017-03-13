@@ -34,7 +34,10 @@ void CUdpClient::Update()
 	// Connection timeout
 	if (m_ConnectionTimeout == 0.f)
 	{
-		m_ConnectionTimeout = gEnv->pTimer->GetAsyncCurTime() + mEnv->net_timeout;
+		auto pNetTimeout = gEnv->pConsole->GetCVar("firenet_game_server_timeout");
+		int m_Timeout = pNetTimeout ? pNetTimeout->GetIVal() : 10;
+
+		m_ConnectionTimeout = gEnv->pTimer->GetAsyncCurTime() + m_Timeout;
 
 		if (m_Status == EUdpClientStatus::Connecting)
 		{
