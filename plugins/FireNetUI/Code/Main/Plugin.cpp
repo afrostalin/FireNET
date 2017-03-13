@@ -179,10 +179,10 @@ void CFireNetUIPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & 
 	case FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR:
 	{
 		int reason = args.GetInt();
-		const char* error = args.GetString();
+		string error = args.GetString();
 
 		SUIArguments errorString;
-		errorString.AddArgument(error);
+		errorString.AddArgument("@ui_" + error);
 
 		mEnv->pUIManager->HideAll();
 		mEnv->pUIManager->ShowPage("ErrorPage");

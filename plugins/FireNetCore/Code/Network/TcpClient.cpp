@@ -131,7 +131,8 @@ void CTcpClient::Do_Connect()
 			{
 				CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE  "Connection timeout!");
 				
-				args.AddInt(0);
+				args.AddInt(1);
+				args.AddString("connection_timeout");
 				FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 
 				CloseConnection();
@@ -146,14 +147,16 @@ void CTcpClient::Do_Connect()
 				{
 					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection refused by host!");
 			
-					args.AddInt(1);
+					args.AddInt(2);
+					args.AddString("connection_refused");
 					FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 				}
 				else
 				{
 					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Connection error : %s", ec.message().c_str());
 
-					args.AddInt(2);
+					args.AddInt(3);
+					args.AddString("unknown_error");
 					FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 				}
 

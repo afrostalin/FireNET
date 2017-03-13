@@ -146,8 +146,7 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 
 		CryLog(TITLE "Map to load = %s. Loding...", m_MapName);
 
-		//gEnv->pGameFramework->GetILevelSystem()->LoadLevel(m_MapName);
-
+		mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus::WaitStart);
 		
 		if (auto pLevel = gEnv->pGameFramework->GetILevelSystem()->GetCurrentLevel())
 		{
@@ -158,7 +157,9 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 		string tmp("map " + m_MapName);
 		gEnv->pConsole->ExecuteString(tmp.c_str());
 
-		mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus::WaitStart);
+		//gEnv->pGameFramework->GetILevelSystem()->LoadLevel(m_MapName);
+
+		
 
 		break;
 	}

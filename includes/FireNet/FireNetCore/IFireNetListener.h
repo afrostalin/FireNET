@@ -16,7 +16,7 @@ enum EFireNetEvents
     //! Event when FireNet success connected
 	FIRENET_EVENT_MASTER_SERVER_CONNECTED,
 	//! Event when connection to FireNet failed
-	//! Params 1 - reason
+	//! Params 1 - error type (int), 2 - error string (string)
 	FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR,
 	//! Event when connection with FireNet lost
 	FIRENET_EVENT_MASTER_SERVER_DISCONNECTED,

@@ -183,7 +183,11 @@ void CFireNetCorePlugin::ConnectToMasterServer()
 	mEnv->pNetworkThread = new CNetworkThread();
 	if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetCore_Thread"))
 	{
-		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR);
+		SFireNetEventArgs args;
+		args.AddInt(0);
+		args.AddString("cant_spawn_network_thread");
+
+		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
 
 		SAFE_DELETE(mEnv->pNetworkThread);
 	
