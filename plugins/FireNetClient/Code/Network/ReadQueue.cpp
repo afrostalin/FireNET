@@ -150,7 +150,7 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 			CryLog(TITLE "Map to load = %s. Loding...", m_MapName);
 
 			mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus::WaitStart);
-			gEnv->pConsole->ExecuteString(string().Format("map %s", m_MapName));
+			gEnv->pConsole->ExecuteString(string().Format("map %s", m_MapName), true, true);
 		}
 		else
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't load map - map empty!");

@@ -242,10 +242,10 @@ void CFireNetServerPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArg
 		{
 			string m_Level = pLevel->GetString();
 
-			/*if (!m_Level.IsEmpty())
-				gEnv->pConsole->ExecuteString(string().Format("map %s s", m_Level));
+			if (!m_Level.IsEmpty())
+				gEnv->pConsole->ExecuteString(string().Format("map %s s", m_Level), true, true);
 			else
-				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE  "Can't load level - level empty");*/
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE  "Can't load level - level empty");
 		}
 
 		break;
