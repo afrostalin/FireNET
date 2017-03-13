@@ -231,7 +231,7 @@ private:
 	{
 		if (m_LastIndex < 0)
 			return false;
-		else if (m_LastIndex > m_Data.size() - 1)
+		else if (m_LastIndex > m_Data.size())
 			return false;
 		else
 			return true;
