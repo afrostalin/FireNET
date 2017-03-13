@@ -137,10 +137,17 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		if(gEnv->IsDedicated())
 			REGISTER_CVAR2("firenet_remote_port", &mEnv->net_remote_port, 5200, VF_CHEAT, "FireNet master server port for game server");
 
-#ifndef  NDEBUG // Only in debug mode
+#ifndef  NDEBUG
 		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
 		REGISTER_COMMAND("firenet_master_connect", CmdConnect, VF_NULL, "Connect to FireNet master server");
-#endif // ! NDEBUG
+#endif
+		break;
+	}
+	case ESYSTEM_EVENT_GAME_FRAMEWORK_INIT_DONE:
+	{
+		//! Automatic connect to master server
+		if (gFireNet && gFireNet->pCore && !gEnv->IsEditor())
+			gFireNet->pCore->ConnectToMasterServer();
 
 		break;
 	}
