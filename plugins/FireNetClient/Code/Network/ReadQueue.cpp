@@ -144,22 +144,16 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 	{
 		string m_MapName = packet.ReadString();
 
-		CryLog(TITLE "Map to load = %s. Loding...", m_MapName);
-
-		mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus::WaitStart);
-		
-		if (auto pLevel = gEnv->pGameFramework->GetILevelSystem()->GetCurrentLevel())
+		//! Load server map
+		if (!m_MapName.IsEmpty() && gEnv->pConsole)
 		{
-			gEnv->pGameFramework->GetILevelSystem()->UnLoadLevel();
+			CryLog(TITLE "Map to load = %s. Loding...", m_MapName);
+
+			mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus::WaitStart);
+			gEnv->pConsole->ExecuteString(string().Format("map %s", m_MapName));
 		}
-
-		// TODO
-		string tmp("map " + m_MapName);
-		gEnv->pConsole->ExecuteString(tmp.c_str());
-
-		//gEnv->pGameFramework->GetILevelSystem()->LoadLevel(m_MapName);
-
-		
+		else
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't load map - map empty!");
 
 		break;
 	}
