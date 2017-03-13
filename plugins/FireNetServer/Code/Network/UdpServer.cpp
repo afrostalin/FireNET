@@ -3,7 +3,7 @@
 
 #include "StdAfx.h"
 #include "UdpServer.h"
-#include "SyncGameState.h"
+#include "Network/SyncGameState.h"
 #include "Network/UdpPacket.h"
 
 CUdpServer::CUdpServer(BoostIO& io_service, const char* ip, short port)

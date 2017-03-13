@@ -38,7 +38,7 @@ bool CFireNetUIPlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemIn
 	if (initParams.bDedicatedServer && !gEnv->IsDedicated())
 		gEnv->SetIsDedicated(true);
 
-	// Get FireNet
+	//! Get FireNet
 	if (auto pPluginManager = gEnv->pSystem->GetIPluginManager())
 	{
 		if (auto pPlugin = pPluginManager->QueryPlugin<IFireNetCorePlugin>())
@@ -55,7 +55,7 @@ bool CFireNetUIPlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemIn
 	else
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error init FireNet - Can't get factory!");
 
-	// UI manager can't work with dedicated server
+	//! UI manager can't work with dedicated server
 	if (!gEnv->IsDedicated())
 		gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 

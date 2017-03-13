@@ -12,7 +12,7 @@
 #include <ILevelSystem.h>
 
 #include "Entities/FireNetSpawnPoint/FireNetSpawnPoint.h"
-#include "SyncGameState.h"
+#include "Network/SyncGameState.h"
 
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {

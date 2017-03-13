@@ -4,7 +4,7 @@
 #include "StdAfx.h"
 #include "UdpClient.h"
 
-#include "SyncGameState.h"
+#include "Network/SyncGameState.h"
 #include "ReadQueue.h"
 
 #include <FireNet>

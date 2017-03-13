@@ -15,6 +15,7 @@ class CFireNetServerPlugin
 	: public ICryPlugin
 	, public ISystemEventListener
 	, public IFireNetServerCore
+	, public IFireNetListener
 {
 public:
 	CRYINTERFACE_SIMPLE(ICryPlugin)
@@ -39,6 +40,10 @@ public:
 	virtual EFireNetUdpServerStatus GetServerStatus() override;
 	virtual bool                    Quit() override;
 	// ~IFireNetServerCore
+
+	//! IFireNetListener
+	virtual void OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) override;
+	//! IFireNetListener
 public:
 	template<class T>
 	struct CObjectCreator : public IGameObjectExtensionCreatorBase

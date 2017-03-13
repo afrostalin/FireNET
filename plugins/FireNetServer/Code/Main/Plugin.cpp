@@ -58,7 +58,7 @@ bool CFireNetServerPlugin::Initialize(SSystemGlobalEnvironment& env, const SSyst
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't init CryFireNetServer.dll - Client/Editor not support server library!");
 	else
 	{
-		// Init FireNet client pointer
+		//! Init FireNet client pointer
 		if (auto pPluginManager = gEnv->pSystem->GetIPluginManager())
 		{
 			if (auto pPlugin = pPluginManager->QueryPlugin<IFireNetCorePlugin>())
@@ -70,6 +70,10 @@ bool CFireNetServerPlugin::Initialize(SSystemGlobalEnvironment& env, const SSyst
 					ICryPlugin::SetUpdateFlags(EUpdateType_Update);
 
 					gFireNet->pServer = dynamic_cast<IFireNetServerCore*>(this);
+
+					//! Register FireNet listener
+					if (gFireNet->pCore)
+						gFireNet->pCore->RegisterFireNetListener(this);
 				}
 				else
 					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error init FireNet - Can't get FireNet environment pointer!");
@@ -130,7 +134,7 @@ void CFireNetServerPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet server thread!");
 		}
 		else
-			CryLog(TITLE "FireNet server thread spawned");
+			CryLog(TITLE "FireNet server thread spawned");		
 
 		break;
 	}
@@ -224,6 +228,31 @@ bool CFireNetServerPlugin::Quit()
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't normaly close plugin - network thread not deleted!");
 
 	return false;
+}
+
+void CFireNetServerPlugin::OnFireNetEvent(EFireNetEvents event, SFireNetEventArgs & args)
+{
+	switch (event)
+	{
+	case FIRENET_EVENT_MASTER_SERVER_CONNECTED:
+	{
+		//! Load level if it set in config file
+		auto pLevel = gEnv->pConsole->GetCVar("firenet_game_server_map");
+		if (pLevel)
+		{
+			string m_Level = pLevel->GetString();
+
+			/*if (!m_Level.IsEmpty())
+				gEnv->pConsole->ExecuteString(string().Format("map %s s", m_Level));
+			else
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE  "Can't load level - level empty");*/
+		}
+
+		break;
+	}
+	default:
+		break;
+	}
 }
 
 CRYREGISTER_SINGLETON_CLASS(CFireNetServerPlugin)

@@ -33,31 +33,23 @@ bool CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & pl
 {
 	CryLog(TITLE "Spawning FireNet player (%d)", player.m_PlayerUID);
 
-	if (auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem())
+	if (auto pActorSystem = gEnv->pGameFramework->GetIActorSystem())
 	{
 		auto pActor = pActorSystem->CreateActor(player.m_ChanelId, player.m_PlayerNickname, "FireNetPlayer", player.m_PlayerSpawnPos, player.m_PlayerSpawnRot, Vec3(1, 1, 1));
 
 		if (pActor)
 		{
-			CryLog(TITLE "FireNet player (%d) successfully spawned", player.m_PlayerUID);
+			CryLog(TITLE "FireNet player (%s : %d) successfully spawned", player.m_PlayerNickname, player.m_PlayerUID);
 
-			auto m_Player = dynamic_cast<CFireNetPlayer*>(pActor);
+			m_NetPlayers.push_back(player);
 
-			if (m_Player)
-			{
-				player.pPlayer = m_Player;
-//				m_NetPlayers.push_back(player);
-
-				return true;
-			}
-			else
-				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d) - Can't get player", player.m_PlayerUID);
+			return true;
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d) - Can't spawn actor", player.m_PlayerUID);
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%s : %d) - Can't spawn actor", player.m_PlayerNickname, player.m_PlayerUID);
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%d) - Can't get actor system pointer", player.m_PlayerUID);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%s : %d) - Can't get actor system pointer", player.m_PlayerNickname, player.m_PlayerUID);
 
 
 	return false;
@@ -67,15 +59,15 @@ void CGameStateSynchronization::RemoveNetPlayer(uint uid)
 {
 	CryLog(TITLE "Removing FireNet player (%d)", uid);
 
-	auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem();
+	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
 	for (const auto &it : m_NetPlayers)
 	{
-		if (it.m_PlayerUID == uid && it.pPlayer && pActorSystem)
+		if (it.m_PlayerUID == uid && pActorSystem)
 		{
-			if (pActorSystem->GetActorByChannelId(it.m_ChanelId))
+			if (auto pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId))
 			{
-				pActorSystem->RemoveActor(it.pPlayer->GetEntityId());
+				pActorSystem->RemoveActor(pActor->GetEntityId());
 			}
 			break;
 		}
@@ -88,11 +80,17 @@ void CGameStateSynchronization::HideNetPlayer(uint uid)
 
 	IEntity* pEntity = nullptr;
 
+	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
+
 	for (const auto &it : m_NetPlayers)
 	{
-		if (it.m_PlayerUID == uid && it.pPlayer)
+		if (it.m_PlayerUID == uid && pActorSystem)
 		{
-			pEntity = it.pPlayer->GetEntity();
+			if (auto pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId))
+			{
+				pEntity = pActor->GetEntity();
+			}
+			
 			break;
 		}
 	}
@@ -109,11 +107,17 @@ void CGameStateSynchronization::UnhideNetPlayer(uint uid)
 
 	IEntity* pEntity = nullptr;
 
+	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
+
 	for (const auto &it : m_NetPlayers)
 	{
-		if (it.m_PlayerUID == uid && it.pPlayer)
+		if (it.m_PlayerUID == uid && pActorSystem)
 		{
-			pEntity = it.pPlayer->GetEntity();
+			if (auto pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId))
+			{
+				pEntity = pActor->GetEntity();
+			}
+
 			break;
 		}
 	}
@@ -126,16 +130,19 @@ void CGameStateSynchronization::UnhideNetPlayer(uint uid)
 
 void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientAction & action)
 {
-	CFireNetPlayer* pPlayer = nullptr;
+	IActor* pActor = nullptr;
+	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
 	for (const auto &it : m_NetPlayers)
 	{
-		if (it.m_PlayerUID == uid && it.pPlayer)
+		if (it.m_PlayerUID == uid && pActorSystem)
 		{
-			pPlayer = it.pPlayer;
+			pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId);
 			break;
 		}
 	}
+
+	CFireNetPlayer* pPlayer = pActor ? dynamic_cast<CFireNetPlayer*>(pActor) : nullptr;
 
 	if (!pPlayer)
 	{
@@ -169,16 +176,19 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 
 void CGameStateSynchronization::SyncNetPlayerPos(uint uid, Vec3 & pos)
 {
-	CFireNetPlayer* pPlayer = nullptr;
+	IActor* pActor = nullptr;
+	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
 	for (const auto &it : m_NetPlayers)
 	{
-		if (it.m_PlayerUID == uid && it.pPlayer)
+		if (it.m_PlayerUID == uid && pActorSystem)
 		{
-			pPlayer = it.pPlayer;
+			pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId);
 			break;
 		}
 	}
+
+	CFireNetPlayer* pPlayer = pActor ? dynamic_cast<CFireNetPlayer*>(pActor) : nullptr;
 
 	if (!pPlayer)
 	{
@@ -197,16 +207,19 @@ void CGameStateSynchronization::SyncNetPlayerPos(uint uid, Vec3 & pos)
 
 void CGameStateSynchronization::SyncNetPlayerRot(uint uid, Quat & rot)
 {
-	CFireNetPlayer* pPlayer = nullptr;
+	IActor* pActor = nullptr;
+	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
 	for (const auto &it : m_NetPlayers)
 	{
-		if (it.m_PlayerUID == uid && it.pPlayer)
+		if (it.m_PlayerUID == uid && pActorSystem)
 		{
-			pPlayer = it.pPlayer;
+			pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId);
 			break;
 		}
 	}
+
+	CFireNetPlayer* pPlayer = pActor ? dynamic_cast<CFireNetPlayer*>(pActor) : nullptr;
 
 	if (!pPlayer)
 	{

@@ -22,7 +22,7 @@ enum EFireNetClientActions : uint
 	E_ACTION_MOUSE_ROTATE_PITCH = 1 << 8,
 };
 
-//! Structure for using in syncronization class
+//! Structure for using in syncronization system
 struct SFireNetSyncronizationClient
 {
 	uint            m_PlayerUID;
@@ -33,8 +33,6 @@ struct SFireNetSyncronizationClient
 
 	string          m_PlayerModel;
 	string          m_PlayerNickname;
-
-	CFireNetPlayer* pPlayer;
 };
 
 //! Structure for send/read action
