@@ -53,16 +53,22 @@ bool CUIManager::RegisterUIPage(const char * name, IUIPage * page)
 	if(!name || !page)
 		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register UI page. Empty nama or nullpointer");
 
+	m_Mutex.Lock();
+
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
 		{
 			CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register %s UI page. Page alredy registered", name);
+			m_Mutex.Unlock();
 			return false;
 		}
 	}
+	
 
 	m_Pages.push_back(page);
+
+	m_Mutex.Unlock();
 
 	CryLog(TITLE "Successfully register UI page (%s)", name);
 
@@ -71,6 +77,7 @@ bool CUIManager::RegisterUIPage(const char * name, IUIPage * page)
 
 void CUIManager::UnloadPage(const char * name)
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
@@ -79,12 +86,12 @@ void CUIManager::UnloadPage(const char * name)
 			break;
 		}
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::ShowPage(const char * name)
 {
-	int size = m_Pages.size();
-
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
@@ -94,10 +101,12 @@ void CUIManager::ShowPage(const char * name)
 			break;
 		}
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::HidePage(const char * name)
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
@@ -106,10 +115,12 @@ void CUIManager::HidePage(const char * name)
 			break;
 		}
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::ReloadPage(const char * name)
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
@@ -118,10 +129,12 @@ void CUIManager::ReloadPage(const char * name)
 			break;
 		}
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::CallFunction(const char* page, const char * functionName, const SUIArguments & args)
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), page) == 0)
@@ -130,55 +143,76 @@ void CUIManager::CallFunction(const char* page, const char * functionName, const
 			break;
 		}
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::HideAll()
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		it->HidePage();
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::UnhideAll()
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		it->UnhidePage();
 	}
+	m_Mutex.Unlock();
 }
 
 void CUIManager::UnloadAll()
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		it->UnloadPage();
 	}
+	m_Mutex.Unlock();
 }
 
 int CUIManager::GetPagesCount()
 {
-	return m_Pages.size();
+	m_Mutex.Lock();
+	int size = m_Pages.size();
+	m_Mutex.Unlock();
+
+	return size;
 }
 
 IUIPage * CUIManager::GetPage(const char * name)
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
+		{
+			m_Mutex.Unlock();
 			return it;
+		}
 	}
+	m_Mutex.Unlock();
 
 	return nullptr;
 }
 
 IUIElement * CUIManager::GetUIElement(const char * name)
 {
+	m_Mutex.Lock();
 	for (const auto &it : m_Pages)
 	{
 		if (strcmp(it->GetName(), name) == 0)
+		{
+			m_Mutex.Unlock();
 			return it->GetUIElement();
+		}
 	}
+	m_Mutex.Unlock();
 
 	return nullptr;
 }

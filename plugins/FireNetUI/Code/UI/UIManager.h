@@ -4,6 +4,7 @@
 #pragma once
 
 #include <CrySystem/Scaleform/IFlashUI.h>
+#include <CryThreading/CryThread.h>
 
 class IUIPage;
 
@@ -34,4 +35,5 @@ public:
 private:
 	std::vector<IUIPage*> m_Pages;
 	IUIPage*              m_CurrentPage;
+	CryMutexFast          m_Mutex;
 };

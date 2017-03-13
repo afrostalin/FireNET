@@ -61,11 +61,11 @@ public:
 		}
 	}
 	virtual void             UnloadPage()
-	{
-		CryLog("[FireNet-UI] Unloading page (%s)", m_Name);
-
+	{		
 		if (gEnv->pSystem->IsQuitting())
 			return;
+
+		CryLog("[FireNet-UI] Unloading page (%s)", m_Name);
 
 		if (pElement)
 		{
