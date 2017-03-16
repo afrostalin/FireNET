@@ -3,8 +3,6 @@
 
 #pragma once
 
-typedef unsigned int uint;
-
 //! FireNet player class
 class CFireNetPlayer;
 
@@ -25,14 +23,14 @@ enum EFireNetClientActions : uint
 //! Structure for using in syncronization system
 struct SFireNetSyncronizationClient
 {
-	uint            m_PlayerUID;
-	uint            m_ChanelId;
+	uint32 m_PlayerUID;
+	uint32 m_ChanelId;
 
-	Vec3            m_PlayerSpawnPos;
-	Quat            m_PlayerSpawnRot;
+	Vec3   m_PlayerSpawnPos;
+	Quat   m_PlayerSpawnRot;
 
-	string          m_PlayerModel;
-	string          m_PlayerNickname;
+	string m_PlayerModel;
+	string m_PlayerNickname;
 };
 
 //! Structure for send/read action

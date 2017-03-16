@@ -14,6 +14,9 @@ CUdpServer::CUdpServer(BoostIO& io_service, const char* ip, short port)
 {
 	Do_Receive();
 
+	// Game synchronization system
+	mEnv->pGameSync = new CGameStateSynchronization();
+
 	CryLog(TITLE "UDP server successfully init.");
 }
 
@@ -33,6 +36,7 @@ void CUdpServer::Update()
 		bool   bFinded = false;
 		bool   bNeedToRemove = false;
 		uint32 m_ID;
+
 		for (const auto &it : m_Clients)
 		{
 			if (it.second.bConnected && it.second.pReader && it.second.pReader->GetLastTime() + pTimeout->GetFVal() < m_CurTime)

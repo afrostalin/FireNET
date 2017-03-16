@@ -80,7 +80,7 @@ protected:
 	Quat                         m_lookOrientation;
 	TActionHandler<CFireNetPlayerInput> m_actionHandler;
 
-	CFireNetPlayer*                     m_pPlayer;
+	CFireNetPlayer*              m_pPlayer;
 
 	TInputFlags                  m_inputFlags;
 	float                        m_inputValues;

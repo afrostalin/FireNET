@@ -13,7 +13,7 @@ public:
 public:
 	void Reset();
 
-	bool SpawnNetPlayer(SFireNetSyncronizationClient &player);
+	bool SpawnNetPlayer(const SFireNetSyncronizationClient& player);
 	void RemoveNetPlayer(uint uid);
 
 	void HideNetPlayer(uint uid);

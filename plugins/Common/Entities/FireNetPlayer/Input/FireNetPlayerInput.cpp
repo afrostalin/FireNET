@@ -31,8 +31,8 @@ void CFireNetPlayerInput::PostInit(IGameObject *pGameObject)
 
 		InitializeActionHandler();
 	}
-	else
-		GetGameObject()->EnableUpdateSlot(this, 0);
+	
+	GetGameObject()->EnableUpdateSlot(this, 0);
 }
 
 void CFireNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
@@ -47,7 +47,7 @@ void CFireNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
 
 	m_mouseDeltaRotation = ZERO;
 
-	if (auto* pMovement = m_pPlayer->GetMovement())
+	if (auto pMovement = m_pPlayer->GetMovement())
 	{
 		pMovement->SetSprint(0.f);
 	}
@@ -168,7 +168,7 @@ bool CFireNetPlayerInput::OnActionSprint(EntityId entityId, const ActionId & act
 {	
 	HandleInputFlagChange(eInputFlag_Sprint, activationMode);
 
-	if (auto* pMovement = m_pPlayer->GetMovement())
+	if (auto pMovement = m_pPlayer->GetMovement())
 	{
 		pMovement->SetSprint(30.f);
 	}

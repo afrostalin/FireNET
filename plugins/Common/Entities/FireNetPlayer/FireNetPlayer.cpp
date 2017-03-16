@@ -196,9 +196,10 @@ void CFireNetPlayer::ProcessEvent(SEntityEvent& event)
 void CFireNetPlayer::Update(SEntityUpdateContext & ctx, int updateSlot)
 {
 	// Send moveming request every frame
-	if (!gEnv->IsDedicated() && !gEnv->IsEditor() && gFireNet && gFireNet->pClient)
+	if (!gEnv->IsDedicated() && !gEnv->IsEditor() && gFireNet && gFireNet->pClient && gFireNet->pClient->IsConnected())
 	{
-		gFireNet->pClient->SendMovementRequest((EFireNetClientActions)m_pInput->GetInputFlags(), m_pInput->GetInputValues());
+		if (m_pInput)
+			gFireNet->pClient->SendMovementRequest((EFireNetClientActions)m_pInput->GetInputFlags(), m_pInput->GetInputValues());
 	}
 }
 

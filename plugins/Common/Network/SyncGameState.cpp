@@ -29,7 +29,7 @@ void CGameStateSynchronization::Reset()
 	m_NetPlayers.clear();
 }
 
-bool CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & player)
+bool CGameStateSynchronization::SpawnNetPlayer(const SFireNetSyncronizationClient & player)
 {
 	CryLog(TITLE "Spawning FireNet player (%d)", player.m_PlayerUID);
 
@@ -39,9 +39,11 @@ bool CGameStateSynchronization::SpawnNetPlayer(SFireNetSyncronizationClient & pl
 
 		if (pActor)
 		{
-			CryLog(TITLE "FireNet player (%s : %d) successfully spawned", player.m_PlayerNickname, player.m_PlayerUID);
+			pActor->SetHealth(pActor->GetMaxHealth());
 
 			m_NetPlayers.push_back(player);
+
+			CryLog(TITLE "FireNet player (%s : %d) successfully spawned", player.m_PlayerNickname, player.m_PlayerUID);
 
 			return true;
 		}
