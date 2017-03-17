@@ -43,7 +43,7 @@ void CUdpClient::Update()
 		{
 			// Sending connect request packet to game server
 			CUdpPacket packet(m_LastOutPacketNumber, EFireNetUdpPacketType::Ask);
-			packet.WriteAsk(EFireNetUdpAsk::ConnectToServer);
+			packet.WriteAsk(EFireNetUdpAsk::Ask_Connect);
 			SendNetMessage(packet);
 		}
 		else if (m_Status == (EUdpClientStatus::Connected | EUdpClientStatus::WaitStart))
@@ -80,6 +80,8 @@ void CUdpClient::CloseConnection()
 	CryLog(TITLE "Closing UDP client...");
 	m_Status = NotConnected;
 	bIsConnected = false;
+
+	mEnv->pGameSync->Reset();
 
 	m_UdpSocket.close();
 	m_IO_service.stop();
@@ -156,7 +158,7 @@ void CUdpClient::On_Connected(bool connected)
 
 		// Get map to load from game server
 		CUdpPacket packet(m_LastOutPacketNumber, EFireNetUdpPacketType::Request);
-		packet.WriteRequest(EFireNetUdpRequest::GetMap);
+		packet.WriteRequest(EFireNetUdpRequest::Request_GetMap);
 		SendNetMessage(packet);
 	}
 	else

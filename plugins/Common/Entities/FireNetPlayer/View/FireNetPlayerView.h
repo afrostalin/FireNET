@@ -29,10 +29,14 @@ public:
 
 	void OnPlayerModelChanged();
 
+	void StartCaptureView();
+
 protected:
 	CFireNetPlayer *m_pPlayer;
 
 	// Identifier of the camera joint inside the Character rig
 	// We use this to move the camera position in UpdateView
 	uint32 m_cameraJointId;
+
+	bool bIsLocal;
 };

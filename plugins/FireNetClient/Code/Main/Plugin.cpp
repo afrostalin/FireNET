@@ -157,12 +157,7 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 	case ESYSTEM_EVENT_LEVEL_GAMEPLAY_START:
 	{
 		//! Send spawn request
-		if (mEnv->pUdpClient)
-		{
-			CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
-			packet.WriteRequest(EFireNetUdpRequest::Spawn);
-			mEnv->pUdpClient->SendNetMessage(packet);
-		}
+		SendSpawnRequest();
 
 		break;
 	}
@@ -209,13 +204,13 @@ void CFireNetClientPlugin::DisconnectFromServer()
 	}
 }
 
-void CFireNetClientPlugin::SendMovementRequest(EFireNetClientActions action, float value)
+void CFireNetClientPlugin::SendUpdateInputRequest(TInputFlags flags, float value)
 {
 	if (mEnv->pUdpClient && mEnv->pUdpClient->IsConnected())
 	{
 		CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
-		packet.WriteRequest(EFireNetUdpRequest::Action);
-		packet.WriteInt(action);
+		packet.WriteRequest(EFireNetUdpRequest::Request_UpdateInput);
+		packet.WriteInt(flags);
 		packet.WriteFloat(value);
 
 		mEnv->pUdpClient->SendNetMessage(packet);
@@ -228,7 +223,7 @@ void CFireNetClientPlugin::SendSpawnRequest()
 	if (mEnv->pUdpClient && mEnv->pUdpClient->IsConnected())
 	{
 		CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
-		packet.WriteRequest(EFireNetUdpRequest::Spawn);
+		packet.WriteRequest(EFireNetUdpRequest::Request_SpawnPlayer);
 
 		mEnv->pUdpClient->SendNetMessage(packet);
 	}
@@ -237,6 +232,11 @@ void CFireNetClientPlugin::SendSpawnRequest()
 bool CFireNetClientPlugin::IsConnected()
 {
 	return mEnv->pUdpClient ? mEnv->pUdpClient->IsConnected() : false;
+}
+
+bool CFireNetClientPlugin::IsLocalPlayerSpawned()
+{
+	return mEnv->pLocalPlayer ? true : false;
 }
 
 bool CFireNetClientPlugin::Quit()

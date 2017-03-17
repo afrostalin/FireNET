@@ -9,6 +9,7 @@
 
 #include <CryEntitySystem/IEntitySystem.h>
 #include <CryGame/IGameFramework.h>
+#include <IActorSystem.h>
 #include <ILevelSystem.h>
 
 #include "Entities/FireNetSpawnPoint/FireNetSpawnPoint.h"
@@ -61,11 +62,7 @@ void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
 {
 	switch (ask)
 	{
-	case EFireNetUdpAsk::ConnectToServer:
-	{
-		break;
-	}
-	case EFireNetUdpAsk::ChangeTeam:
+	case EFireNetUdpAsk::Ask_ChangeTeam:
 	{
 		break;
 	}
@@ -84,7 +81,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 {
 	switch (request)
 	{
-	case EFireNetUdpRequest::GetMap:
+	case EFireNetUdpRequest::Request_GetMap:
 	{
 		CryLog(TITLE "Client %d request map", m_ClientID);
 
@@ -98,7 +95,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 			if (m_LevelName)
 			{
 				CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Result);
-				packet.WriteResult(EFireNetUdpResult::MapToLoad);
+				packet.WriteResult(EFireNetUdpResult::Result_MapToLoad);
 				packet.WriteString(m_LevelName);
 
 				SendPacket(packet);
@@ -106,7 +103,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 			else
 			{
 				CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Error);
-				packet.WriteError(EFireNetUdpError::CantGetMap);
+				packet.WriteError(EFireNetUdpError::Error_CantGetMap);
 
 				SendPacket(packet);
 			}
@@ -114,7 +111,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 
 		break;
 	}
-	case EFireNetUdpRequest::Spawn:
+	case EFireNetUdpRequest::Request_SpawnPlayer:
 	{
 		CryLog(TITLE "Client (%d) request spawn", m_ClientID);
 
@@ -124,9 +121,9 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 		{
 			CryLog(TITLE "Spawn point for client (%d) found. Position(%f,%f,%f)", m_ClientID, m_SpawnPosition.m_Pos.x, m_SpawnPosition.m_Pos.y, m_SpawnPosition.m_Pos.z);
 
-			SFireNetSyncronizationClient player;
-			player.m_PlayerUID = 1;
-			player.m_ChanelId = 2;
+			SFireNetClientPlayer player;
+			player.m_PlayerUID = m_ClientID;
+			player.m_ChanelId = m_ClientID;
 			player.m_PlayerSpawnPos = m_SpawnPosition.m_Pos;
 			player.m_PlayerSpawnRot = m_SpawnPosition.m_Rot;
 			player.m_PlayerModel = "Test";
@@ -134,16 +131,51 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 
 			if (mEnv->pGameSync->SpawnNetPlayer(player))
 			{
-				CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Result);
-				packet.WriteResult(EFireNetUdpResult::ClientSpawned);
-				packet.WriteInt(player.m_PlayerUID);                 // uid
-				packet.WriteInt(player.m_ChanelId);                  // cryengine channel id
-				packet.WriteVec3(player.m_PlayerSpawnPos);           // spawn position
-				packet.WriteQuat(player.m_PlayerSpawnRot);           // spawn rotation
-				packet.WriteString(player.m_PlayerModel.c_str());    // file model
-				packet.WriteString(player.m_PlayerNickname.c_str()); // nickname
+				//! Spawn all players connected to game server
+				auto pAllPlayers = mEnv->pGameSync->GetAllPlayers();
+				if (pAllPlayers)
+				{
+					for (const auto &it : *pAllPlayers)
+					{
+						if (it.m_PlayerUID != player.m_PlayerUID)
+						{
+							CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Request);
+							packet.WriteRequest(EFireNetUdpRequest::Request_SpawnPlayer);
+							packet.WriteInt(it.m_PlayerUID);
+							packet.WriteInt(it.m_ChanelId);
+							packet.WriteVec3(it.pActor->GetEntity()->GetPos());
+							packet.WriteQuat(it.pActor->GetEntity()->GetRotation());
+							packet.WriteString(it.m_PlayerModel.c_str());
+							packet.WriteString(it.m_PlayerNickname.c_str());
 
+							SendPacket(packet);
+						}
+					}
+				}
+
+				//! Spawn local player to client
+				CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Result);
+				packet.WriteResult(EFireNetUdpResult::Result_PlayerSpawned);
+				packet.WriteInt(player.m_PlayerUID);         
+				packet.WriteInt(player.m_ChanelId);               
+				packet.WriteVec3(player.m_PlayerSpawnPos);      
+				packet.WriteQuat(player.m_PlayerSpawnRot);         
+				packet.WriteString(player.m_PlayerModel.c_str());   
+				packet.WriteString(player.m_PlayerNickname.c_str()); 
+				
 				SendPacket(packet);
+
+				//! Spawn player on other clients
+				CUdpPacket packetToAll(m_LastOutputPacketNumber, EFireNetUdpPacketType::Request);
+				packetToAll.WriteRequest(EFireNetUdpRequest::Request_SpawnPlayer);
+				packetToAll.WriteInt(player.m_PlayerUID);       
+				packetToAll.WriteInt(player.m_ChanelId);                  
+				packetToAll.WriteVec3(player.m_PlayerSpawnPos);        
+				packetToAll.WriteQuat(player.m_PlayerSpawnRot);         
+				packetToAll.WriteString(player.m_PlayerModel.c_str());   
+				packetToAll.WriteString(player.m_PlayerNickname.c_str());
+
+				SendPacketToAllExcept(m_ClientID, packetToAll);
 			}	
 			else
 			{
@@ -156,23 +188,17 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 
 		break;
 	}
-	case EFireNetUdpRequest::Movement:
+	case EFireNetUdpRequest::Request_UpdateInput:
 	{
 		break;
 	}
-	case EFireNetUdpRequest::Action:
+	case EFireNetUdpRequest::Request_SyncPlayer:
 	{
 		break;
 	}
 	default:
 		break;
 	}
-}
-
-void CReadQueue::SendPacket(CUdpPacket & packet)
-{
-	mEnv->pUdpServer->SendToClient(packet, m_ClientID);
-	m_LastOutputPacketNumber++;
 }
 
 SFireNetSpawnPosition CReadQueue::FindSpawnPosition()
@@ -211,4 +237,22 @@ SFireNetSpawnPosition CReadQueue::FindSpawnPosition()
 	}
 
 	return m_SpawnPosition;
+}
+
+void CReadQueue::SendPacket(CUdpPacket & packet)
+{
+	mEnv->pUdpServer->SendToClient(packet, m_ClientID);
+	m_LastOutputPacketNumber++;
+}
+
+void CReadQueue::SendPacketToAll(CUdpPacket &packet)
+{
+	mEnv->pUdpServer->SendToAll(packet);
+	m_LastOutputPacketNumber++;
+}
+
+void CReadQueue::SendPacketToAllExcept(uint32 id, CUdpPacket &packet)
+{
+	mEnv->pUdpServer->SendToAllExcept(id, packet);
+	m_LastOutputPacketNumber++;
 }

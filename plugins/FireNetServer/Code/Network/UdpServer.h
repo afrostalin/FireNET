@@ -35,6 +35,12 @@ struct SFireNetUdpServerClient
 	bool                            bNeedToRemove;
 };
 
+struct SFireNetUdpMessage
+{
+	CUdpPacket       m_Packet;
+	BoostUdpEndPoint m_EndPoint;
+};
+
 typedef std::map<uint32, SFireNetUdpServerClient> UdpClientList;
 typedef UdpClientList::value_type UdpClient;
 
@@ -58,20 +64,21 @@ public:
 public:
 	void                                 SendToClient(CUdpPacket &packet, uint32 clientID);
 	void                                 SendToAll(CUdpPacket &packet);
+	void                                 SendToAllExcept(uint32 id, CUdpPacket &packet);
 private:	
 	uint32                               GetOrCreateClientID(BoostUdpEndPoint endpoint);
 	SFireNetUdpServerClient*             GetClient(uint32 id);
 	void                                 RemoveClient(uint32 id);
 private:
 	void                                 Do_Receive();
-	void                                 Do_Send(BoostUdpEndPoint target);
+	void                                 Do_Send();
 private:
 	void                                 On_RemoteError(const boost::system::error_code error_code, const BoostUdpEndPoint endPoint);
 	void                                 On_ClientDisconnect(uint32 id);
 private:
 	void                                 MessageProcess(const char* data, uint32 id);
 private:
-	std::queue<CUdpPacket>               m_Queue;
+	std::queue<SFireNetUdpMessage>       m_PacketQueue;
 private:
 	BoostIO&                             m_IO_service;
 	BoostUdpSocket                       m_UdpSocket;

@@ -35,11 +35,6 @@ set (SourceGroup_PluginMain
 	"Main/PluginEnv.h"
 )
 
-# Entities
-set(SourceGroup_Entities
-	"../../Common/Entities/ISimpleExtension.h"
-)
-
 # Network
 set(SourceGroup_Network
 	"Network/UdpServer.cpp"
@@ -55,12 +50,10 @@ set(SourceGroup_Network
 )
 
 source_group("Main" FILES ${SourceGroup_PluginMain})
-source_group("Entities" FILES ${SourceGroup_Entities})
 source_group("Network" FILES ${SourceGroup_Network})
 
 set (SOURCE
 	${SourceGroup_PluginMain}
-	${SourceGroup_Entities}
 	${SourceGroup_Network}
 )
 

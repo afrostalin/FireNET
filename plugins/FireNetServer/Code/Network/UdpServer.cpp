@@ -65,6 +65,12 @@ void CUdpServer::Update()
 		}
 	}
 
+	//! Send messages
+	if (m_PacketQueue.size() > 0)
+	{
+		Do_Send();
+	}
+
 	//! Reset client IDs
 	if (m_Clients.size() == 0)
 		m_NextClientID = 0L;
@@ -74,17 +80,14 @@ void CUdpServer::SendToClient(CUdpPacket & packet, uint32 clientID)
 {
 	if (auto pClient = GetClient(clientID))
 	{
-		m_IO_service.post([this, packet, pClient]()
-		{
-			bool b_IsInProgress = !m_Queue.empty();
+		//CryLog(TITLE "Sending UDP packet to client (%d) ...", clientID);
 
-			m_Queue.push(packet);
+		SFireNetUdpMessage message;
+		message.m_Packet = packet;
+		message.m_EndPoint = pClient->m_EndPoint;
 
-			if (!b_IsInProgress)
-			{
-				Do_Send(pClient->m_EndPoint);
-			}
-		});
+		m_PacketQueue.push(message);
+
 	}
 	else
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't send message to client %d - client not found", clientID);
@@ -92,19 +95,32 @@ void CUdpServer::SendToClient(CUdpPacket & packet, uint32 clientID)
 
 void CUdpServer::SendToAll(CUdpPacket & packet)
 {
+	//CryLog(TITLE "Sending UDP packet to all clients ...");
+
 	for (const auto &it : m_Clients)
 	{
-		m_IO_service.post([this, packet, it]()
+		SFireNetUdpMessage message;
+		message.m_Packet = packet;
+		message.m_EndPoint = it.second.m_EndPoint;
+
+		m_PacketQueue.push(message);
+	}
+}
+
+void CUdpServer::SendToAllExcept(uint32 id, CUdpPacket & packet)
+{
+	//CryLog(TITLE "Sending UDP packet to all clients except client (%d) ...", id);
+
+	for (const auto &it : m_Clients)
+	{
+		if (it.first != id)
 		{
-			bool b_IsInProgress = !m_Queue.empty();
+			SFireNetUdpMessage message;
+			message.m_Packet = packet;
+			message.m_EndPoint = it.second.m_EndPoint;
 
-			m_Queue.push(packet);
-
-			if (!b_IsInProgress)
-			{
-				Do_Send(it.second.m_EndPoint);
-			}
-		});
+			m_PacketQueue.push(message);
+		}
 	}
 }
 
@@ -191,21 +207,24 @@ void CUdpServer::Do_Receive()
 	});
 }
 
-void CUdpServer::Do_Send(BoostUdpEndPoint target)
+void CUdpServer::Do_Send()
 {
-	const char*      packetData = m_Queue.front().toString();
+	SFireNetUdpMessage message = m_PacketQueue.front();
+
+	const char*      packetData = message.m_Packet.toString();
+	BoostUdpEndPoint endPoint = message.m_EndPoint;
 	size_t           packetSize = strlen(packetData);
 
-	m_UdpSocket.async_send_to(boost::asio::buffer(packetData, packetSize), target, [this](boost::system::error_code ec, std::size_t length)
+	m_UdpSocket.async_send_to(boost::asio::buffer(packetData, packetSize), endPoint, [this, endPoint](boost::system::error_code ec, std::size_t length)
 	{
 		if (ec)
 		{
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't send message to target!");
-			On_RemoteError(ec, m_RemoteEndPoint);
+			On_RemoteError(ec, endPoint);
 		}
-
-		m_Queue.pop();
 	});
+
+	m_PacketQueue.pop();
 }
 
 void CUdpServer::On_RemoteError(const boost::system::error_code error_code, const BoostUdpEndPoint endPoint)
@@ -255,7 +274,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 	//! Try accept new client
 	if (pClient && !pClient->bConnected)
 	{	
-		if (packet.getType() == EFireNetUdpPacketType::Ask && packet.ReadAsk() == EFireNetUdpAsk::ConnectToServer)
+		if (packet.getType() == EFireNetUdpPacketType::Ask && packet.ReadAsk() == EFireNetUdpAsk::Ask_Connect)
 		{
 			auto pMaxPlayers = gEnv->pConsole->GetCVar("firenet_game_server_max_players");
 			int m_MaxPlayers = pMaxPlayers ? pMaxPlayers->GetIVal() : 64;
@@ -268,7 +287,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 				CryLogAlways(TITLE "Client (%d) accepted", id);
 
 				CUdpPacket packet(0, EFireNetUdpPacketType::Result);
-				packet.WriteResult(EFireNetUdpResult::ClientAccepted);
+				packet.WriteResult(EFireNetUdpResult::Result_ClientAccepted);
 
 				SendToClient(packet, id);
 			}
@@ -277,7 +296,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server full");
 
 				CUdpPacket packet(0, EFireNetUdpPacketType::Error);
-				packet.WriteError(EFireNetUdpError::ServerFull);
+				packet.WriteError(EFireNetUdpError::Error_ServerFull);
 
 				SendToClient(packet, id);
 
@@ -289,7 +308,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server not ready to accepting new players");
 
 				CUdpPacket packet(0, EFireNetUdpPacketType::Error);
-				packet.WriteError(EFireNetUdpError::ServerBlockNewConnection);
+				packet.WriteError(EFireNetUdpError::Error_ServerBlockNewConnection);
 
 				SendToClient(packet, id);
 

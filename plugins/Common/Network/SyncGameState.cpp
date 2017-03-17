@@ -21,6 +21,10 @@ void CGameStateSynchronization::Reset()
 {
 	CryLog(TITLE "CGameStateSynchronization::Reset()");
 
+#ifdef CryFireNetClient_EXPORTS
+	mEnv->pLocalPlayer = nullptr;
+#endif
+
 	for (const auto &it : m_NetPlayers)
 	{
 		RemoveNetPlayer(it.m_PlayerUID);
@@ -29,7 +33,7 @@ void CGameStateSynchronization::Reset()
 	m_NetPlayers.clear();
 }
 
-bool CGameStateSynchronization::SpawnNetPlayer(const SFireNetSyncronizationClient & player)
+bool CGameStateSynchronization::SpawnNetPlayer(SFireNetClientPlayer & player)
 {
 	CryLog(TITLE "Spawning FireNet player (%d)", player.m_PlayerUID);
 
@@ -39,8 +43,32 @@ bool CGameStateSynchronization::SpawnNetPlayer(const SFireNetSyncronizationClien
 
 		if (pActor)
 		{
+
+#ifdef CryFireNetClient_EXPORTS
+			if (mEnv->pLocalPlayer == nullptr)
+			{
+				mEnv->pLocalPlayer = dynamic_cast<CFireNetPlayer*>(pActor);
+				
+				if (mEnv->pLocalPlayer)
+				{
+					mEnv->pLocalPlayer->SetLocalPlayer(true);
+
+					CryLog(TITLE "Local player spawned by server");
+					CryLog(TITLE "Client uid : %d", player.m_PlayerUID);
+					CryLog(TITLE "Channel id : %d", player.m_ChanelId);
+					CryLog(TITLE "Spawn position (%f,%f,%f)", player.m_PlayerSpawnPos.x, player.m_PlayerSpawnPos.y, player.m_PlayerSpawnPos.z);
+					CryLog(TITLE "Spawn rotation (%f,%f,%f,%f)", player.m_PlayerSpawnRot.w, player.m_PlayerSpawnRot.v.x, player.m_PlayerSpawnRot.v.y, player.m_PlayerSpawnRot.v.z);
+					CryLog(TITLE "File model : %s", player.m_PlayerModel);
+					CryLog(TITLE "Nickname : %s", player.m_PlayerNickname);
+				}
+				else
+					CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Error spawning local player - Can't get player from actor");
+			}
+#endif
+
 			pActor->SetHealth(pActor->GetMaxHealth());
 
+			player.pActor = pActor;
 			m_NetPlayers.push_back(player);
 
 			CryLog(TITLE "FireNet player (%s : %d) successfully spawned", player.m_PlayerNickname, player.m_PlayerUID);
@@ -57,7 +85,7 @@ bool CGameStateSynchronization::SpawnNetPlayer(const SFireNetSyncronizationClien
 	return false;
 }
 
-void CGameStateSynchronization::RemoveNetPlayer(uint uid)
+void CGameStateSynchronization::RemoveNetPlayer(uint32 uid)
 {
 	CryLog(TITLE "Removing FireNet player (%d)", uid);
 
@@ -76,7 +104,7 @@ void CGameStateSynchronization::RemoveNetPlayer(uint uid)
 	}
 }
 
-void CGameStateSynchronization::HideNetPlayer(uint uid)
+void CGameStateSynchronization::HideNetPlayer(uint32 uid)
 {
 	CryLog(TITLE "Hiding FireNet player (%d)", uid);
 
@@ -103,7 +131,7 @@ void CGameStateSynchronization::HideNetPlayer(uint uid)
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't hide FireNet player (%d)", uid);
 }
 
-void CGameStateSynchronization::UnhideNetPlayer(uint uid)
+void CGameStateSynchronization::UnhideNetPlayer(uint32 uid)
 {
 	CryLog(TITLE "Unhiding FireNet player (%d)", uid);
 
@@ -130,7 +158,7 @@ void CGameStateSynchronization::UnhideNetPlayer(uint uid)
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't unhide FireNet player (%d)", uid);
 }
 
-void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientAction & action)
+void CGameStateSynchronization::SyncNetPlayerInput(uint32 uid, const SFireNetClientInput &input)
 {
 	IActor* pActor = nullptr;
 	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
@@ -148,35 +176,15 @@ void CGameStateSynchronization::SyncNetPlayerAction(uint uid, SFireNetClientActi
 
 	if (!pPlayer)
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync action for FireNet player (%d). pPlayer = nullptr or pInput = nullptr", uid);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync input for FireNet player (%d). Can't get player instance", uid);
 		return;
 	}
 
-	/*pPlayer->OnPlayerAction(action.m_action);
-
-	if (action.m_action & E_ACTION_JUMP)
-	{
-		pPlayer->OnPlayerJump();
-	}
-	if (action.m_action & E_ACTION_SPRINT)
-	{
-		pPlayer->OnPlayerSprint();
-	}
-	if (action.m_action & E_ACTION_SHOOT)
-	{
-		pPlayer->OnPlayerShoot();
-	}
-	if (action.m_action & E_ACTION_MOUSE_ROTATE_YAW)
-	{
-		pPlayer->OnPlayerMoveMouseYaw(action.m_value);
-	}
-	if (action.m_action & E_ACTION_MOUSE_ROTATE_PITCH)
-	{
-		pPlayer->OnPlayerMoveMousePitch(action.m_value);
-	}*/
+	//! Sync input
+	pPlayer->SyncNetInput(input);
 }
 
-void CGameStateSynchronization::SyncNetPlayerPos(uint uid, Vec3 & pos)
+void CGameStateSynchronization::SyncNetPlayerPos(uint32 uid, Vec3 & pos)
 {
 	IActor* pActor = nullptr;
 	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
@@ -207,7 +215,7 @@ void CGameStateSynchronization::SyncNetPlayerPos(uint uid, Vec3 & pos)
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync position FireNet player (%d)", uid);
 }
 
-void CGameStateSynchronization::SyncNetPlayerRot(uint uid, Quat & rot)
+void CGameStateSynchronization::SyncNetPlayerRot(uint32 uid, Quat & rot)
 {
 	IActor* pActor = nullptr;
 	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();

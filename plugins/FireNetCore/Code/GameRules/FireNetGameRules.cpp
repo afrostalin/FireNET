@@ -5,6 +5,8 @@
 #include "FireNetGamerules.h"
 #include "Main/Plugin.h"
 
+#include <Entities/FireNetPlayer/FireNetPlayer.h>
+
 #include <IActorSystem.h>
 
 class CFireNetRulesRegistrator : public IEntityRegistrator
@@ -45,9 +47,19 @@ bool CFireNetGameRules::OnClientConnect(int channelId, bool isReset)
 {
 	if (gEnv->IsEditor())
 	{
-		auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem();
+		auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
-		return pActorSystem->CreateActor(channelId, "EditorPlayer", "FireNetPlayer", ZERO, IDENTITY, Vec3(1, 1, 1)) != nullptr;
+		auto pActor = pActorSystem->CreateActor(channelId, "EditorPlayer", "FireNetPlayer", ZERO, IDENTITY, Vec3(1, 1, 1));
+
+		if (pActor)
+		{
+			if (auto pPlayer = dynamic_cast<CFireNetPlayer*>(pActor))
+			{
+				pPlayer->SetLocalPlayer(true);
+			}
+		}
+
+		return pActor ? true : false;
 	}
 
 	return true;

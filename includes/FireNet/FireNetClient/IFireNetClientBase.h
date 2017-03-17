@@ -3,25 +3,28 @@
 
 #pragma once
 
-//! FireNet player class
 class CFireNetPlayer;
 
-//! Client actions for network syncronizations
-enum EFireNetClientActions : uint
+struct IActor;
+
+typedef uint32 TInputFlags;
+
+//! Input flags
+enum EFireNetClientInputFlags : TInputFlags
 {
-	E_ACTION_MOVE_LEFT = 1 << 0,
-	E_ACTION_MOVE_RIGHT = 1 << 1,
-	E_ACTION_MOVE_FORWARD = 1 << 2,
-	E_ACTION_MOVE_BACK = 1 << 3,
-	E_ACTION_JUMP = 1 << 4,
-	E_ACTION_SPRINT = 1 << 5,
-	E_ACTION_SHOOT = 1 << 6,
-	E_ACTION_MOUSE_ROTATE_YAW = 1 << 7,
-	E_ACTION_MOUSE_ROTATE_PITCH = 1 << 8,
+	E_FIRENET_INPUT_MOVE_LEFT = 1 << 0,
+	E_FIRENET_INPUT_MOVE_RIGHT = 1 << 1,
+	E_FIRENET_INPUT_MOVE_FORWARD = 1 << 2,
+	E_FIRENET_INPUT_MOVE_BACK = 1 << 3,
+	E_FIRENET_INPUT_JUMP = 1 << 4,
+	E_FIRENET_INPUT_SPRINT = 1 << 5,
+	E_FIRENET_INPUT_SHOOT = 1 << 6,
+	E_FIRENET_INPUT_MOUSE_ROTATE_YAW = 1 << 7,
+	E_FIRENET_INPUT_MOUSE_ROTATE_PITCH = 1 << 8,
 };
 
-//! Structure for using in syncronization system
-struct SFireNetSyncronizationClient
+//! Structure for spawning player
+struct SFireNetClientPlayer
 {
 	uint32 m_PlayerUID;
 	uint32 m_ChanelId;
@@ -31,11 +34,13 @@ struct SFireNetSyncronizationClient
 
 	string m_PlayerModel;
 	string m_PlayerNickname;
+
+	IActor* pActor;
 };
 
-//! Structure for send/read action
-struct SFireNetClientAction
+//! Structure for send/read input
+struct SFireNetClientInput
 {
-	EFireNetClientActions m_action;
-	float                 m_value;
+	EFireNetClientInputFlags m_flags;
+	float                    m_value;
 };

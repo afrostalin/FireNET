@@ -16,14 +16,17 @@ struct IFireNetClientCore
 	//! Disconnect from game server
 	virtual void DisconnectFromServer() = 0;
 
-	//! Send movement request
-	virtual void SendMovementRequest(EFireNetClientActions action, float value = 0.f) = 0;
+	//! Send update input request
+	virtual void SendUpdateInputRequest(TInputFlags flags, float value = 0.f) = 0;
 
 	//! Send spawn request
 	virtual void SendSpawnRequest() = 0;
 
 	//! Return connection status
 	virtual bool IsConnected() = 0;
+
+	//! Return local player status
+	virtual bool IsLocalPlayerSpawned() = 0;
 
 	//! Normaly shutdown plugin
 	virtual bool Quit() = 0;

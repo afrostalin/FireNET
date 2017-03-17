@@ -8,6 +8,7 @@
 class CGameStateSynchronization;
 class CUdpClient;
 class CNetworkThread;
+class CFireNetPlayer;
 
 struct SFireNetProfile;
 
@@ -18,6 +19,7 @@ struct SPluginEnv
 		pNetworkThread = nullptr;
 		pUdpClient = nullptr;
 		pGameSync = nullptr;
+		pLocalPlayer = nullptr;
 
 		m_FireNetProfile = nullptr;
 	}
@@ -26,6 +28,7 @@ struct SPluginEnv
 	CUdpClient*                pUdpClient;
 	CGameStateSynchronization* pGameSync;
 	CNetworkThread*            pNetworkThread;
+	CFireNetPlayer*            pLocalPlayer;
 
 	//! Local FireNet profile
 	SFireNetProfile*           m_FireNetProfile;

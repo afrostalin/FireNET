@@ -44,6 +44,8 @@ private:
 	void   ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
 private:
 	void   SendPacket(CUdpPacket &packet);
+	void   SendPacketToAll(CUdpPacket &packet);
+	void   SendPacketToAllExcept(uint32 id, CUdpPacket &packet);
 private:
 	SFireNetSpawnPosition   FindSpawnPosition();
 private:

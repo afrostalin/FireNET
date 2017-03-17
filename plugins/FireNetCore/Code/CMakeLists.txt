@@ -67,6 +67,7 @@ set(SourceGroup_Entities
 	"../../Common/Entities/ISimpleActor.h"
 	"../../Common/Entities/ISimpleExtension.h"
 	"../../Common/Entities/ISimpleWeapon.h"
+	"../../Common/Entities/IFireNetActor.h"
 )
 
 # FireNet spawn point

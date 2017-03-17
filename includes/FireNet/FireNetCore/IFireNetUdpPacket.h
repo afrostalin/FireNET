@@ -20,32 +20,33 @@ enum class EFireNetUdpPacketType : int
 
 enum class EFireNetUdpAsk : int
 {
-	ConnectToServer,
-	ChangeTeam,
+	Ask_Connect,
+	Ask_ChangeTeam,
 };
 
 enum class EFireNetUdpRequest : int
 {
-	GetMap,
-	Spawn,
-	Movement,
-	Action,
+	Request_GetMap,
+	Request_SpawnPlayer,
+	Request_UpdateInput,
+	Request_SyncPlayer,
 };
 
 enum class EFireNetUdpResult : int
 {
-	MapToLoad,
-	ClientAccepted,
-	ClientSpawned,
-	ClientMoved,
+	Result_MapToLoad,
+	Result_ClientAccepted,
+	Result_PlayerSpawned,
+	Result_InputUpdated,
+	Result_PlayerSync,
 };
 
 enum class EFireNetUdpError : int
 {
-	CantGetMap,
-	ServerFull,
-	PlayerBanned,
-	ServerBlockNewConnection,
+	Error_CantGetMap,
+	Error_ServerFull,
+	Error_PlayerBanned,
+	Error_ServerBlockNewConnection,
 };
 
 // Max UDP packet size

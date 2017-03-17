@@ -13,20 +13,19 @@
 
 CFireNetPlayerView::CFireNetPlayerView()
 	: m_cameraJointId(0)
+	, bIsLocal(false)
 {
 }
 
 CFireNetPlayerView::~CFireNetPlayerView()
 {
-	GetGameObject()->ReleaseView(this);
+	if (bIsLocal)
+		GetGameObject()->ReleaseView(this);
 }
 
 void CFireNetPlayerView::PostInit(IGameObject *pGameObject)
 {
 	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
-
-	// Register for UpdateView callbacks
-	GetGameObject()->CaptureView(this);
 }
 
 void CFireNetPlayerView::OnPlayerModelChanged()
@@ -38,6 +37,11 @@ void CFireNetPlayerView::OnPlayerModelChanged()
 
 		m_cameraJointId = pCharacter->GetIDefaultSkeleton().GetJointIDByName(cameraJointName);
 	}
+}
+
+void CFireNetPlayerView::StartCaptureView()
+{
+	GetGameObject()->CaptureView(this);
 }
 
 void CFireNetPlayerView::UpdateView(SViewParams &viewParams)

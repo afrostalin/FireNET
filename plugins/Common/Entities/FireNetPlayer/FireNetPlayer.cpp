@@ -106,12 +106,24 @@ CFireNetPlayer::CFireNetPlayer()
 	, m_bAlive(false)
 	, m_bThirdPerson(false)
 	, m_pCurrentWeapon(nullptr)
+	, m_bIsLocalPlayer(false)
 {
 }
 
 CFireNetPlayer::~CFireNetPlayer()
 {
 	gEnv->pGameFramework->GetIActorSystem()->RemoveActor(GetEntityId());
+}
+
+void CFireNetPlayer::SetLocalPlayer(bool local)
+{
+	m_bIsLocalPlayer = local;
+
+	if (m_bIsLocalPlayer && m_pInput && m_pView)
+	{
+		m_pInput->StartActionCapture();
+		m_pView->StartCaptureView();
+	}
 }
 
 const CFireNetPlayer::SExternalCVars &CFireNetPlayer::GetCVars() const
@@ -199,7 +211,7 @@ void CFireNetPlayer::Update(SEntityUpdateContext & ctx, int updateSlot)
 	if (!gEnv->IsDedicated() && !gEnv->IsEditor() && gFireNet && gFireNet->pClient && gFireNet->pClient->IsConnected())
 	{
 		if (m_pInput)
-			gFireNet->pClient->SendMovementRequest((EFireNetClientActions)m_pInput->GetInputFlags(), m_pInput->GetInputValues());
+			gFireNet->pClient->SendUpdateInputRequest(m_pInput->GetInputFlags(), m_pInput->GetInputValues());
 	}
 }
 
@@ -222,6 +234,12 @@ void CFireNetPlayer::SetHealth(float health)
 	{
 		CreateWeapon("FireNetRifle");
 	}
+}
+
+void CFireNetPlayer::SyncNetInput(const SFireNetClientInput & input)
+{
+	if (m_pInput)
+		m_pInput->SyncInput(input);
 }
 
 void CFireNetPlayer::SetPlayerModel()

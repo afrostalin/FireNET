@@ -14,29 +14,8 @@ class CFireNetPlayerInput : public CGameObjectExtensionHelper<CFireNetPlayerInpu
 		eInputFlagType_Hold = 0,
 		eInputFlagType_Toggle
 	};
-
 public:
-	typedef uint32 TInputFlags;
-
-	enum EInputFlags
-		: TInputFlags
-	{
-		eInputFlag_MoveLeft = 1 << 0,
-		eInputFlag_MoveRight = 1 << 1,
-		eInputFlag_MoveForward = 1 << 2,
-		eInputFlag_MoveBack = 1 << 3,
-		eInputFlag_Jump = 1 << 4,
-		eInputFlag_Sprint = 1 << 5,
-		eInputFlag_Shoot = 1 << 6,
-		eInputFlag_MouseRotateYaw = 1 << 7,
-		eInputFlag_MouseRotatePitch = 1 << 8,
-	};
-
-public:
-	CFireNetPlayerInput() : bPhysDebug(false),
-		m_moveSpeed(0.0f) ,
-		bGamePaused(false)
-	{}
+	CFireNetPlayerInput();
 	virtual ~CFireNetPlayerInput() {}
 
 	// ISimpleExtension
@@ -55,9 +34,19 @@ public:
 
 	const Vec2                   GetMouseDeltaRotation() const { return m_mouseDeltaRotation; }
 	const Quat&                  GetLookOrientation() const { return m_lookOrientation; }
+public:
+	void                         StartActionCapture();
 protected:
 	void                         InitializeActionHandler();
-	void                         HandleInputFlagChange(EInputFlags flags, int activationMode, EInputFlagType type = eInputFlagType_Hold);
+	void                         HandleInputFlagChange(EFireNetClientInputFlags flags, int activationMode, EInputFlagType type = eInputFlagType_Hold);
+public:
+	void                         SyncInput(const SFireNetClientInput& input);
+private:
+	void                         DoJump();
+	void                         DoSprint();
+	void                         DoMouseYaw(float value);
+	void                         DoMousePitch(float value);
+	void                         DoShoot();
 protected:
 	bool                         OnActionMoveLeft(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 	bool                         OnActionMoveRight(EntityId entityId, const ActionId& actionId, int activationMode, float value);
@@ -65,16 +54,11 @@ protected:
 	bool                         OnActionMoveBack(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 	bool                         OnActionJump(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 	bool                         OnActionSprint(EntityId entityId, const ActionId& actionId, int activationMode, float value);
-	bool                         OnToggleThirdPersonMode(EntityId entityId, const ActionId& actionId, int activationMode, float value);
+	bool                         OnActionToggleThirdPersonMode(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 	bool                         OnActionGamePaused(EntityId entityId, const ActionId& actionId, int activationMode, float value);
-
-	// Debug functions
-	bool                         OnPhysicDebug(EntityId entityId, const ActionId& actionId, int activationMode, float value);
-	// --------------
-
+	bool                         OnActionPhysicDebug(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 	bool                         OnActionMouseRotateYaw(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 	bool                         OnActionMouseRotatePitch(EntityId entityId, const ActionId& actionId, int activationMode, float value);
-	
 	bool                         OnActionShoot(EntityId entityId, const ActionId& actionId, int activationMode, float value);
 protected:
 	Quat                         m_lookOrientation;
@@ -82,7 +66,7 @@ protected:
 
 	CFireNetPlayer*              m_pPlayer;
 
-	TInputFlags                  m_inputFlags;
+	uint32                       m_inputFlags;
 	float                        m_inputValues;
 
 	Vec2                         m_mouseDeltaRotation;

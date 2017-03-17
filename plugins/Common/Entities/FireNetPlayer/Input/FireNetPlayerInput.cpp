@@ -9,29 +9,20 @@
 
 #include <CryAnimation/ICryAnimation.h>
 
+CFireNetPlayerInput::CFireNetPlayerInput() : m_pPlayer(nullptr)
+	, bGamePaused(false)
+	, bPhysDebug(false)
+{
+	m_inputFlags = 0;
+	m_inputValues = 0.f;
+	m_moveSpeed = 0.f;
+}
+
 void CFireNetPlayerInput::PostInit(IGameObject *pGameObject)
 {
 	m_pPlayer = static_cast<CFireNetPlayer *>(pGameObject->QueryExtension("FireNetPlayer"));
 	m_moveSpeed = m_pPlayer->GetCVars().m_moveSpeed;
 
-	if (!gEnv->IsDedicated())
-	{
-		IActionMapManager *pActionMapManager = gEnv->pGameFramework->GetIActionMapManager();
-		pActionMapManager->InitActionMaps("Libs/config/defaultprofile.xml");
-		pActionMapManager->Enable(true);
-		pActionMapManager->EnableActionMap("player", true);
-
-		if (IActionMap *pActionMap = pActionMapManager->GetActionMap("player"))
-		{
-			pActionMap->SetActionListener(GetEntityId());
-		}
-
-		GetGameObject()->CaptureActions(this);
-		GetGameObject()->EnableUpdateSlot(this, 0);
-
-		InitializeActionHandler();
-	}
-	
 	GetGameObject()->EnableUpdateSlot(this, 0);
 }
 
@@ -60,7 +51,7 @@ void CFireNetPlayerInput::OnPlayerRespawn()
 	m_lookOrientation = IDENTITY;
 }
 
-void CFireNetPlayerInput::HandleInputFlagChange(EInputFlags flags, int activationMode, EInputFlagType type)
+void CFireNetPlayerInput::HandleInputFlagChange(EFireNetClientInputFlags flags, int activationMode, EInputFlagType type)
 {
 	switch (type)
 	{
@@ -87,6 +78,118 @@ void CFireNetPlayerInput::HandleInputFlagChange(EInputFlags flags, int activatio
 	}
 }
 
+void CFireNetPlayerInput::SyncInput(const SFireNetClientInput & input)
+{
+	//! Sync flags
+	m_inputFlags = input.m_flags;
+
+	//! Sync mouse yaw
+	if (m_inputFlags & E_FIRENET_INPUT_MOUSE_ROTATE_YAW)
+	{
+		DoMouseYaw(input.m_value);
+	}
+
+	//! Sync mouse pitch
+	if (m_inputFlags & E_FIRENET_INPUT_MOUSE_ROTATE_PITCH)
+	{
+		DoMousePitch(input.m_value);
+	}
+
+	//! Sync jump
+	if (m_inputFlags & E_FIRENET_INPUT_JUMP)
+	{
+		DoJump();
+	}
+	
+	//! Sync sprint
+	if (m_inputFlags & E_FIRENET_INPUT_SPRINT)
+	{
+		DoSprint();
+	}
+
+	//! Sync shoot
+	if (m_inputFlags & E_FIRENET_INPUT_SHOOT)
+	{
+		DoShoot();
+	}
+}
+
+void CFireNetPlayerInput::DoJump()
+{
+	auto pMovement = m_pPlayer->GetMovement();
+	auto pEntity = m_pPlayer->GetEntity();
+	auto pPhysics = GetEntity()->GetPhysics();
+
+	if (pPhysics && pEntity &&  pMovement->IsOnGround())
+	{
+		pe_action_impulse impulseAction;
+		Vec3 impulsePos = pEntity->GetWorldPos();
+		impulsePos.x = 0;
+		impulsePos.y = 0;
+		impulsePos.z = impulsePos.z + 400 * m_pPlayer->GetCVars().m_jumpHeightMultiplier;
+		impulseAction.impulse = impulsePos;
+
+		pPhysics->Action(&impulseAction);
+	}
+}
+
+void CFireNetPlayerInput::DoSprint()
+{
+	if (auto pMovement = m_pPlayer->GetMovement())
+	{
+		pMovement->SetSprint(30.f);
+	}
+}
+
+void CFireNetPlayerInput::DoMouseYaw(float value)
+{
+	m_mouseDeltaRotation.x -= value;
+}
+
+void CFireNetPlayerInput::DoMousePitch(float value)
+{
+	m_mouseDeltaRotation.y -= value;
+}
+
+void CFireNetPlayerInput::DoShoot()
+{
+	auto pWeapon = m_pPlayer->GetCurrentWeapon();
+	auto pCharacter = GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_Default);
+
+	if (pWeapon != nullptr && pCharacter != nullptr)
+	{
+		auto pBarrelOutAttachment = pCharacter->GetIAttachmentManager()->GetInterfaceByName("barrel_out");
+
+		if (pBarrelOutAttachment != nullptr)
+		{
+			QuatTS bulletOrigin = pBarrelOutAttachment->GetAttWorldAbsolute();
+
+			pWeapon->RequestFire(bulletOrigin.t, bulletOrigin.q);
+		}
+	}
+}
+
+void CFireNetPlayerInput::StartActionCapture()
+{
+	if (!gEnv->IsDedicated())
+	{
+		IActionMapManager *pActionMapManager = gEnv->pGameFramework->GetIActionMapManager();
+		pActionMapManager->InitActionMaps("Libs/config/defaultprofile.xml");
+		pActionMapManager->Enable(true);
+		pActionMapManager->EnableActionMap("player", true);
+
+		if (IActionMap *pActionMap = pActionMapManager->GetActionMap("player"))
+		{
+			pActionMap->SetActionListener(GetEntityId());
+		}
+
+		GetGameObject()->CaptureActions(this);
+		GetGameObject()->EnableUpdateSlot(this, 0);
+
+		InitializeActionHandler();
+	}
+}
+
 void CFireNetPlayerInput::InitializeActionHandler()
 {
 	m_actionHandler.AddHandler(ActionId("moveleft"), &CFireNetPlayerInput::OnActionMoveLeft);
@@ -97,11 +200,11 @@ void CFireNetPlayerInput::InitializeActionHandler()
 	// --------------
 	m_actionHandler.AddHandler(ActionId("jump"), &CFireNetPlayerInput::OnActionJump);
 	m_actionHandler.AddHandler(ActionId("sprint"), &CFireNetPlayerInput::OnActionSprint);
-	m_actionHandler.AddHandler(ActionId("toggleTP"), &CFireNetPlayerInput::OnToggleThirdPersonMode);
+	m_actionHandler.AddHandler(ActionId("toggleTP"), &CFireNetPlayerInput::OnActionToggleThirdPersonMode);
 	m_actionHandler.AddHandler(ActionId("gamePause"), &CFireNetPlayerInput::OnActionGamePaused);
 
 	// Debug actions
-	m_actionHandler.AddHandler(ActionId("phys_debug"), &CFireNetPlayerInput::OnPhysicDebug);
+	m_actionHandler.AddHandler(ActionId("phys_debug"), &CFireNetPlayerInput::OnActionPhysicDebug);
 	// --------------
 
 	m_actionHandler.AddHandler(ActionId("mouse_rotateyaw"), &CFireNetPlayerInput::OnActionMouseRotateYaw);
@@ -117,66 +220,49 @@ void CFireNetPlayerInput::OnAction(const ActionId &action, int activationMode, f
 
 bool CFireNetPlayerInput::OnActionMoveLeft(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(eInputFlag_MoveLeft, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_MOVE_LEFT, activationMode);
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionMoveRight(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(eInputFlag_MoveRight, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_MOVE_RIGHT, activationMode);
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionMoveForward(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(eInputFlag_MoveForward, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_MOVE_FORWARD, activationMode);
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionMoveBack(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(eInputFlag_MoveBack, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_MOVE_BACK, activationMode);
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionJump(EntityId entityId, const ActionId & actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(eInputFlag_Jump, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_JUMP, activationMode);
 
 	if (activationMode == eIS_Pressed)
 	{
-		auto *pMovement = m_pPlayer->GetMovement();
-		auto *pEntity = m_pPlayer->GetEntity();
-		auto *pPhysics = GetEntity()->GetPhysics();
-
-		if (pPhysics && pEntity &&  pMovement->IsOnGround())
-		{
-			pe_action_impulse impulseAction;
-			Vec3 impulsePos = pEntity->GetWorldPos();
-			impulsePos.x = 0;
-			impulsePos.y = 0;
-			impulsePos.z = impulsePos.z + 400 * m_pPlayer->GetCVars().m_jumpHeightMultiplier;
-			impulseAction.impulse = impulsePos;
-
-			pPhysics->Action(&impulseAction);
-		}
+		DoJump();
 	}
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionSprint(EntityId entityId, const ActionId & actionId, int activationMode, float value)
 {	
-	HandleInputFlagChange(eInputFlag_Sprint, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_SPRINT, activationMode);
 
-	if (auto pMovement = m_pPlayer->GetMovement())
-	{
-		pMovement->SetSprint(30.f);
-	}
+	DoSprint();
 
 	return true;
 }
 
-bool CFireNetPlayerInput::OnToggleThirdPersonMode(EntityId entityId, const ActionId & actionId, int activationMode, float value)
+bool CFireNetPlayerInput::OnActionToggleThirdPersonMode(EntityId entityId, const ActionId & actionId, int activationMode, float value)
 {
 	if (activationMode == eIS_Released)
 	{
@@ -223,7 +309,7 @@ bool CFireNetPlayerInput::OnActionGamePaused(EntityId entityId, const ActionId &
 }
 
 // Debug functions
-bool CFireNetPlayerInput::OnPhysicDebug(EntityId entityId, const ActionId & actionId, int activationMode, float value)
+bool CFireNetPlayerInput::OnActionPhysicDebug(EntityId entityId, const ActionId & actionId, int activationMode, float value)
 {
 	if (activationMode == eIS_Released && !bPhysDebug)
 	{
@@ -246,40 +332,31 @@ bool CFireNetPlayerInput::OnPhysicDebug(EntityId entityId, const ActionId & acti
 
 bool CFireNetPlayerInput::OnActionMouseRotateYaw(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	m_mouseDeltaRotation.x -= value;
+	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_YAW, activationMode);
 	m_inputValues = value;
-	HandleInputFlagChange(eInputFlag_MouseRotateYaw, activationMode);
+
+	DoMouseYaw(value);
+
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionMouseRotatePitch(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	m_mouseDeltaRotation.y -= value;
+	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_PITCH, activationMode);
 	m_inputValues = value;
-	HandleInputFlagChange(eInputFlag_MouseRotatePitch, activationMode);
+
+	DoMousePitch(value);
+
 	return true;
 }
 
 bool CFireNetPlayerInput::OnActionShoot(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(eInputFlag_Shoot, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_SHOOT, activationMode);
 
 	if (activationMode == eIS_Down)
 	{
-		auto *pWeapon = m_pPlayer->GetCurrentWeapon();
-		auto *pCharacter = GetEntity()->GetCharacter(CFireNetPlayer::eGeometry_Default);
-
-		if (pWeapon != nullptr && pCharacter != nullptr)
-		{
-			auto *pBarrelOutAttachment = pCharacter->GetIAttachmentManager()->GetInterfaceByName("barrel_out");
-
-			if (pBarrelOutAttachment != nullptr)
-			{
-				QuatTS bulletOrigin = pBarrelOutAttachment->GetAttWorldAbsolute();
-
-				pWeapon->RequestFire(bulletOrigin.t, bulletOrigin.q);
-			}
-		}
+		DoShoot();
 	}
 
 	return true;

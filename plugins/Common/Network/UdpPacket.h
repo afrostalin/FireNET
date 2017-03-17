@@ -9,7 +9,8 @@ class CUdpPacket : public IFireNetUdpPacket
 {
 public:
 	CUdpPacket(int packetNumber, EFireNetUdpPacketType type);
-	CUdpPacket(const char* data = nullptr);
+	CUdpPacket(const char* data);
+	CUdpPacket() {}
 public:
 	virtual void               WriteString(const std::string &value) override;
 	virtual void               WriteInt(int value) override;

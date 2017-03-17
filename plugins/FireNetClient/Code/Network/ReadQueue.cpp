@@ -6,16 +6,19 @@
 
 #include "Network/UdpClient.h"
 #include "Network/UdpPacket.h"
-
 #include "Network/SyncGameState.h"
 
+#include "Entities/FireNetPlayer/FireNetPlayer.h"
+
 #include <CryGame/IGameFramework.h>
+#include <IActorSystem.h>
+
 #include "ILevelSystem.h"
 
 void CReadQueue::ReadPacket(CUdpPacket & packet)
 {
 	//! Check packet number
-	if (packet.getPacketNumber() < m_LastInputPacketNumber)
+	/*if (packet.getPacketNumber() < m_LastInputPacketNumber)
 	{
 		CryLog(TITLE "Packet from server can't be readed, because packet too old. Packet number : %d, last number : %d", packet.getPacketNumber(), m_LastInputPacketNumber);
 		return;
@@ -23,7 +26,7 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 	else if (packet.getPacketNumber() >= m_LastInputPacketNumber)
 	{
 		m_LastInputPacketNumber = packet.getPacketNumber();
-	}
+	}*/
 
 	//! Server can't send to client empty packet, it's wrong, but you can see that if it happened
 	switch (packet.getType())
@@ -65,64 +68,34 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 
 void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
 {
-	switch (ask)
-	{
-	case EFireNetUdpAsk::ConnectToServer:
-	{
-		break;
-	}
-	case EFireNetUdpAsk::ChangeTeam:
-	{
-		break;
-	}
-	default:
-		break;
-	}
 }
 
 void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 {
 	switch (request)
 	{
-	case EFireNetUdpRequest::Spawn:
+	case EFireNetUdpRequest::Request_SpawnPlayer:
 	{
 		CryLog(TITLE "Server request spawn new player");
 
-		Vec3 m_SpawnPos;
-		Quat m_SpawnRot;
+		SFireNetClientPlayer player;
+		player.m_PlayerUID = packet.ReadInt();
+		player.m_ChanelId = packet.ReadInt();
+		player.m_PlayerSpawnPos = packet.ReadVec3();
+		player.m_PlayerSpawnRot = packet.ReadQuat();
+		player.m_PlayerModel = packet.ReadString();
+		player.m_PlayerNickname = packet.ReadString();
 
-		uint m_FireNetUID = packet.ReadInt();
-		uint m_ChanelID = packet.ReadInt();
-
-		m_SpawnPos.x = packet.ReadFloat();
-		m_SpawnPos.y = packet.ReadFloat();
-		m_SpawnPos.z = packet.ReadFloat();
-
-		m_SpawnRot.w = packet.ReadFloat();
-		m_SpawnRot.v.x = packet.ReadFloat();
-		m_SpawnRot.v.y = packet.ReadFloat();
-		m_SpawnRot.v.z = packet.ReadFloat();
-
-		string m_FileModel = packet.ReadString();
-		string m_Nickname = packet.ReadString();
-
-		SFireNetSyncronizationClient player;
-		player.m_PlayerUID = m_FireNetUID;
-		player.m_ChanelId = m_ChanelID;
-		player.m_PlayerSpawnPos = m_SpawnPos;
-		player.m_PlayerSpawnRot = m_SpawnRot;
-		player.m_PlayerModel = m_FileModel;
-		player.m_PlayerNickname = m_Nickname;
-
+		//! Spawn other player
 		mEnv->pGameSync->SpawnNetPlayer(player);
 
 		break;
 	}
-	case EFireNetUdpRequest::Movement:
+	case EFireNetUdpRequest::Request_UpdateInput:
 	{
 		break;
 	}
-	case EFireNetUdpRequest::Action:
+	case EFireNetUdpRequest::Request_SyncPlayer:
 	{
 		break;
 	}
@@ -135,12 +108,12 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 {
 	switch (result)
 	{
-	case EFireNetUdpResult::ClientAccepted:
+	case EFireNetUdpResult::Result_ClientAccepted:
 	{
 		mEnv->pUdpClient->On_Connected(true);
 		break;
 	}
-	case EFireNetUdpResult::MapToLoad:
+	case EFireNetUdpResult::Result_MapToLoad:
 	{
 		string m_MapName = packet.ReadString();
 
@@ -157,37 +130,29 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 
 		break;
 	}
-	case EFireNetUdpResult::ClientSpawned:
-	{
-		uint uid = packet.ReadInt();
-		uint channelID = packet.ReadInt();
-		Vec3 pos = packet.ReadVec3();
-		Quat rot = packet.ReadQuat();
-		string fileModel = packet.ReadString();
-		string nickname = packet.ReadString();
+	case EFireNetUdpResult::Result_PlayerSpawned:
+	{		
+		SFireNetClientPlayer player;
+		player.m_PlayerUID = packet.ReadInt();
+		player.m_ChanelId = packet.ReadInt();
+		player.m_PlayerSpawnPos = packet.ReadVec3();
+		player.m_PlayerSpawnRot = packet.ReadQuat();
+		player.m_PlayerModel = packet.ReadString();
+		player.m_PlayerNickname = packet.ReadString();
 
-		CryLog(TITLE "New client spawned by server");
-		CryLog(TITLE "Client uid : %d", uid);
-		CryLog(TITLE "Channel id : %d", channelID);
-		CryLog(TITLE "Spawn position (%f,%f,%f)", pos.x, pos.y, pos.z);
-		CryLog(TITLE "Spawn rotation (%f,%f,%f,%f)", rot.w, rot.v.x, rot.v.y, rot.v.z);
-		CryLog(TITLE "File model : %s", fileModel);
-		CryLog(TITLE "Nickname : %s", nickname);
-
-		SFireNetSyncronizationClient player;
-		player.m_PlayerUID = uid;
-		player.m_ChanelId = channelID;
-		player.m_PlayerSpawnPos = pos;
-		player.m_PlayerSpawnRot = rot;
-		player.m_PlayerModel = fileModel;
-		player.m_PlayerNickname = nickname;
-
+		//! Spawn local player
 		mEnv->pGameSync->SpawnNetPlayer(player);
 
 		break;
 	}
-	case EFireNetUdpResult::ClientMoved:
+	case EFireNetUdpResult::Result_InputUpdated:
+	{
 		break;
+	}
+	case EFireNetUdpResult::Result_PlayerSync:
+	{
+		break;
+	}
 	default:
 		break;
 	}
@@ -197,19 +162,19 @@ void CReadQueue::ReadError(CUdpPacket & packet, EFireNetUdpError error)
 {
 	switch (error)
 	{
-	case EFireNetUdpError::ServerFull:
+	case EFireNetUdpError::Error_ServerFull:
 	{
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Game server can't accept new client - server full");
 		mEnv->pUdpClient->On_Connected(false);
 		break;
 	}
-	case EFireNetUdpError::PlayerBanned:
+	case EFireNetUdpError::Error_PlayerBanned:
 	{
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Game server can't accept new client - player banned");
 		mEnv->pUdpClient->On_Connected(false);
 		break;
 	}
-	case EFireNetUdpError::ServerBlockNewConnection:
+	case EFireNetUdpError::Error_ServerBlockNewConnection:
 	{
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Game server can't accept new client - server not ready");
 		mEnv->pUdpClient->On_Connected(false);

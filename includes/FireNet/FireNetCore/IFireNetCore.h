@@ -9,8 +9,6 @@
 #include "IFireNetTcpPacket.h"
 #include "IFireNetUdpPacket.h"
 
-#include "IFireNetEntities.h"
-
 struct IFireNetEnv;
 class CTcpPacket;
 

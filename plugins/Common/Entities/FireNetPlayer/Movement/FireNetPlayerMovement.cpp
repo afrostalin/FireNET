@@ -86,19 +86,19 @@ Vec3 CFireNetPlayerMovement::GetLocalMoveDirection() const
 
 	uint32 inputFlags = m_pPlayer->GetInput()->GetInputFlags();
 
-	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveLeft)
+	if (inputFlags & E_FIRENET_INPUT_MOVE_LEFT)
 	{
 		moveDirection.x -= 1;
 	}
-	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveRight)
+	if (inputFlags & E_FIRENET_INPUT_MOVE_RIGHT)
 	{
 		moveDirection.x += 1;
 	}
-	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveForward)
+	if (inputFlags & E_FIRENET_INPUT_MOVE_FORWARD)
 	{
 		moveDirection.y += 1;
 	}
-	if (inputFlags & CFireNetPlayerInput::eInputFlag_MoveBack)
+	if (inputFlags & E_FIRENET_INPUT_MOVE_BACK)
 	{
 		moveDirection.y -= 1;
 	}
