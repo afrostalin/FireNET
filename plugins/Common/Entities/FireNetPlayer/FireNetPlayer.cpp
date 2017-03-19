@@ -206,13 +206,7 @@ void CFireNetPlayer::ProcessEvent(SEntityEvent& event)
 }
 
 void CFireNetPlayer::Update(SEntityUpdateContext & ctx, int updateSlot)
-{
-	// Send moveming request every frame
-	if (!gEnv->IsDedicated() && !gEnv->IsEditor() && gFireNet && gFireNet->pClient && gFireNet->pClient->IsConnected())
-	{
-		if (m_pInput)
-			gFireNet->pClient->SendUpdateInputRequest(m_pInput->GetInputFlags(), m_pInput->GetInputValues());
-	}
+{	
 }
 
 void CFireNetPlayer::SetHealth(float health)
@@ -225,8 +219,7 @@ void CFireNetPlayer::SetHealth(float health)
 	GetEntity()->Hide(false);
 	GetEntity()->SetWorldTM(Matrix34::Create(Vec3(1, 1, 1), GetEntity()->GetRotation(), GetEntity()->GetWorldPos()));
 
-	if (!gEnv->IsEditor())
-		SetPlayerModel();
+	SetPlayerModel();
 
 	m_pInput->OnPlayerRespawn();
 

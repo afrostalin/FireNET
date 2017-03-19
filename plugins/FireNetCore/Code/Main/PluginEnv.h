@@ -27,6 +27,7 @@ struct SPluginEnv
 		net_game_server_map = nullptr;
 		net_game_server_gamerules = nullptr;
 		net_game_server_port = 0;
+		net_game_server_tickrate = 0;
 	    net_game_server_timeout = 0;
 		net_game_server_max_players = 0;
 
@@ -50,6 +51,7 @@ struct SPluginEnv
 	ICVar*                            net_game_server_map;
 	ICVar*                            net_game_server_gamerules;
 	int                               net_game_server_port;
+	int                               net_game_server_tickrate;
 	int                               net_game_server_timeout;
 	int                               net_game_server_max_players;
 	// CVars - Other
@@ -69,7 +71,7 @@ namespace FireNet
 		}
 	}
 
-	// Safe send TCP packet to master server
+	//! Safe send TCP packet to master server
 	static void SendPacket(CTcpPacket &packet)
 	{
 		if (mEnv->pNetworkThread && mEnv->pTcpClient && mEnv->pTcpClient->IsConnected())

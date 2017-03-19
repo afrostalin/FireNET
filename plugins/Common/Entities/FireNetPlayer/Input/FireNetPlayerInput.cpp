@@ -29,7 +29,7 @@ void CFireNetPlayerInput::PostInit(IGameObject *pGameObject)
 void CFireNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
 {
 	Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));
-	
+
 	ypr.x += m_mouseDeltaRotation.x * m_pPlayer->GetCVars().m_rotationSpeedYaw * ctx.fFrameTime;
 	ypr.y = CLAMP(ypr.y + m_mouseDeltaRotation.y * m_pPlayer->GetCVars().m_rotationSpeedPitch * ctx.fFrameTime, m_pPlayer->GetCVars().m_rotationLimitsMinPitch, m_pPlayer->GetCVars().m_rotationLimitsMaxPitch);
 	ypr.z = 0;
@@ -76,6 +76,14 @@ void CFireNetPlayerInput::HandleInputFlagChange(EFireNetClientInputFlags flags, 
 		}
 		break;
 	}
+
+	if (m_pPlayer->IsLocalPlayer())
+	{
+		if (!gEnv->IsDedicated() && !gEnv->IsEditor() && gFireNet && gFireNet->pClient && gFireNet->pClient->IsConnected())
+		{
+			gFireNet->pClient->SendUpdateInputRequest(m_inputFlags, m_inputValues);
+		}
+	}
 }
 
 void CFireNetPlayerInput::SyncInput(const SFireNetClientInput & input)
@@ -86,13 +94,13 @@ void CFireNetPlayerInput::SyncInput(const SFireNetClientInput & input)
 	//! Sync mouse yaw
 	if (m_inputFlags & E_FIRENET_INPUT_MOUSE_ROTATE_YAW)
 	{
-		DoMouseYaw(input.m_value);
+		//DoMouseYaw(input.m_value);
 	}
 
 	//! Sync mouse pitch
 	if (m_inputFlags & E_FIRENET_INPUT_MOUSE_ROTATE_PITCH)
 	{
-		DoMousePitch(input.m_value);
+		//DoMousePitch(input.m_value);
 	}
 
 	//! Sync jump
@@ -332,7 +340,7 @@ bool CFireNetPlayerInput::OnActionPhysicDebug(EntityId entityId, const ActionId 
 
 bool CFireNetPlayerInput::OnActionMouseRotateYaw(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_YAW, activationMode);
+//	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_YAW, activationMode);
 	m_inputValues = value;
 
 	DoMouseYaw(value);
@@ -342,7 +350,7 @@ bool CFireNetPlayerInput::OnActionMouseRotateYaw(EntityId entityId, const Action
 
 bool CFireNetPlayerInput::OnActionMouseRotatePitch(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_PITCH, activationMode);
+//	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_PITCH, activationMode);
 	m_inputValues = value;
 
 	DoMousePitch(value);

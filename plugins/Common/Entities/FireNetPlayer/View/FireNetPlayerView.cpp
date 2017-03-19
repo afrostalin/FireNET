@@ -46,6 +46,9 @@ void CFireNetPlayerView::StartCaptureView()
 
 void CFireNetPlayerView::UpdateView(SViewParams &viewParams)
 {
+	if (!m_pPlayer->IsLocalPlayer())
+		return;
+
 	IEntity &entity = *GetEntity();
 
 	if (!m_pPlayer->IsThirdPerson())

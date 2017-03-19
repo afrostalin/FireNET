@@ -13,6 +13,7 @@ public:
 	CReadQueue() 
 	{
 		m_LastInputPacketNumber = 0;
+		m_LocalPlayerUID = 0;
 	}
 	~CReadQueue() {}
 public:
@@ -24,4 +25,5 @@ private:
 	void ReadError(CUdpPacket &packet, EFireNetUdpError error);
 private:
 	int  m_LastInputPacketNumber;
+	int  m_LocalPlayerUID;
 };

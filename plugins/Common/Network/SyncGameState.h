@@ -20,8 +20,7 @@ public:
 	void UnhideNetPlayer(uint32 uid);
 
 	void SyncNetPlayerInput(uint32 uid, const SFireNetClientInput &input);
-	void SyncNetPlayerPos(uint32 uid, Vec3 &pos);
-	void SyncNetPlayerRot(uint32 uid, Quat &rot);
+	void SyncNetPlayerPosRot(uint32 uid, const Vec3 &pos, const Quat &rot);
 public:
 	std::vector<SFireNetClientPlayer>* GetAllPlayers() {return &m_NetPlayers;}
 private:

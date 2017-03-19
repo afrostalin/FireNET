@@ -25,7 +25,7 @@ void CmdConnect(IConsoleCmdArgs* args)
 
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
-	// Unregister entities
+	//! Unregister entities
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 	while (pTemp != nullptr)
 	{
@@ -33,7 +33,7 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 		pTemp = pTemp->m_pNext;
 	}
 
-	// Stop and delete network thread if Quit funtion not executed
+	//!! Stop and delete network thread if Quit funtion not executed
 	if (mEnv->pNetworkThread)
 	{
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Network thread not deleted! Use Quit function to normal shutdown plugin!");
@@ -42,15 +42,15 @@ CFireNetClientPlugin::~CFireNetClientPlugin()
 
 		if (gEnv->pThreadManager)
 			gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
+
+		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
-	SAFE_DELETE(mEnv->pNetworkThread);
-
-	// Unregister listeners
+	//! Unregister listeners
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
-	// Clear FireNet client pointer
+	//! Clear FireNet client pointer
 	if (gFireNet)
 		gFireNet->pClient = nullptr;
 
@@ -67,7 +67,7 @@ bool CFireNetClientPlugin::Initialize(SSystemGlobalEnvironment& env, const SSyst
 
 	if (!gEnv->IsDedicated())
 	{
-		// Init FireNet client pointer
+		//! Init FireNet client pointer
 		if (auto pPluginManager = gEnv->pSystem->GetIPluginManager())
 		{
 			if (auto pPlugin = pPluginManager->QueryPlugin<IFireNetCorePlugin>())
@@ -101,15 +101,18 @@ void CFireNetClientPlugin::OnPluginUpdate(EPluginUpdateType updateType)
 	{
 	case IPluginUpdateListener::EUpdateType_Update:
 	{
-		//! Update UDP client here
-		if (mEnv->pNetworkThread && mEnv->pUdpClient)
+		if (!gEnv->pSystem->IsQuitting())
 		{
-			mEnv->pUdpClient->Update();
-		}
-		//! Automatic deleting network thread if it's ready to close
-		if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose())
-		{
-			SAFE_DELETE(mEnv->pNetworkThread);
+			//! Update UDP client here
+			if (mEnv->pNetworkThread && mEnv->pUdpClient)
+			{
+				mEnv->pUdpClient->Update();
+			}
+			//! Automatic deleting network thread if it's ready to close
+			if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose())
+			{
+				SAFE_DELETE(mEnv->pNetworkThread);
+			}
 		}
 		break;
 	}
@@ -132,7 +135,6 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 			pTemp = pTemp->m_pNext;
 		}
 
-
 		//! Register command
 		REGISTER_COMMAND("firenet_game_connect", CmdConnect, VF_NULL, "Connect to game server");
 
@@ -140,7 +142,7 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 	}
 	case ESYSTEM_EVENT_EDITOR_GAME_MODE_CHANGED:
 	{
-		if (mEnv->pGameSync && wparam == 0)
+		if (gEnv->IsEditor() && mEnv->pGameSync && wparam == 0)
 			mEnv->pGameSync->Reset();
 		break;
 	}
@@ -158,7 +160,6 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 	{
 		//! Send spawn request
 		SendSpawnRequest();
-
 		break;
 	}
 	break;
@@ -177,28 +178,31 @@ void CFireNetClientPlugin::ConnectToGameServer()
 		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
-	if (!gEnv->IsDedicated() && !gEnv->IsEditor())
+	if (mEnv->pNetworkThread == nullptr)
 	{
-		mEnv->pNetworkThread = new CNetworkThread();
-
-		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetClient_Thread"))
+		if (!gEnv->IsDedicated() && !gEnv->IsEditor())
 		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
+			mEnv->pNetworkThread = new CNetworkThread();
 
-			SAFE_DELETE(mEnv->pNetworkThread);
+			if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetClient_Thread"))
+			{
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread!");
+
+				SAFE_DELETE(mEnv->pNetworkThread);
+			}
+			else
+				CryLog(TITLE "FireNet client thread spawned");
 		}
 		else
-			CryLog(TITLE "FireNet client thread spawned");
-	}
-	else
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : Editor/Server not support client library!");
+		{
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet client thread : Editor/Server not support client library!");
+		}
 	}
 }
 
 void CFireNetClientPlugin::DisconnectFromServer()
 {
-	if (mEnv->pNetworkThread && mEnv->pUdpClient)
+	if (mEnv->pNetworkThread)
 	{
 		mEnv->pNetworkThread->SignalStopWork();
 	}
@@ -251,7 +255,7 @@ bool CFireNetClientPlugin::Quit()
 
 	SAFE_DELETE(mEnv->pNetworkThread);
 
-	if (!mEnv->pNetworkThread)
+	if (mEnv->pNetworkThread == nullptr)
 	{
 		CryLogAlways(TITLE "Plugin ready to unload");
 		return true;

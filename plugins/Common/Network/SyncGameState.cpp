@@ -43,7 +43,6 @@ bool CGameStateSynchronization::SpawnNetPlayer(SFireNetClientPlayer & player)
 
 		if (pActor)
 		{
-
 #ifdef CryFireNetClient_EXPORTS
 			if (mEnv->pLocalPlayer == nullptr)
 			{
@@ -184,7 +183,7 @@ void CGameStateSynchronization::SyncNetPlayerInput(uint32 uid, const SFireNetCli
 	pPlayer->SyncNetInput(input);
 }
 
-void CGameStateSynchronization::SyncNetPlayerPos(uint32 uid, Vec3 & pos)
+void CGameStateSynchronization::SyncNetPlayerPosRot(uint32 uid, const Vec3 & pos, const Quat & rot)
 {
 	IActor* pActor = nullptr;
 	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
@@ -208,39 +207,7 @@ void CGameStateSynchronization::SyncNetPlayerPos(uint32 uid, Vec3 & pos)
 
 	if (auto* pEntity = pPlayer->GetEntity())
 	{
-		if (pEntity->GetPos() != pos)
-			pEntity->SetPos(pos);
-	}
-	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync position FireNet player (%d)", uid);
-}
-
-void CGameStateSynchronization::SyncNetPlayerRot(uint32 uid, Quat & rot)
-{
-	IActor* pActor = nullptr;
-	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
-
-	for (const auto &it : m_NetPlayers)
-	{
-		if (it.m_PlayerUID == uid && pActorSystem)
-		{
-			pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId);
-			break;
-		}
-	}
-
-	CFireNetPlayer* pPlayer = pActor ? dynamic_cast<CFireNetPlayer*>(pActor) : nullptr;
-
-	if (!pPlayer)
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync rotation for FireNet player (%d). pPlayer = nullptr", uid);
-		return;
-	}
-
-	if (auto* pEntity = pPlayer->GetEntity())
-	{
-		if (pEntity->GetRotation() != rot)
-			pEntity->SetRotation(rot);
+		pEntity->SetPosRotScale(pos, rot, Vec3(1, 1, 1));
 	}
 	else
 		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync position FireNet player (%d)", uid);

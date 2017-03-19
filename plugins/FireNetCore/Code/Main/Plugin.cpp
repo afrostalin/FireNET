@@ -28,7 +28,7 @@ void CmdConnect(IConsoleCmdArgs* args)
 
 CFireNetCorePlugin::~CFireNetCorePlugin()
 {
-	// Unregister entities
+	//! Unregister entities
 	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
 	while (pTemp != nullptr)
 	{
@@ -36,20 +36,22 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 		pTemp = pTemp->m_pNext;
 	}
 
-	// Unregister CVars
+	//! Unregister CVars
 	IConsole* pConsole = gEnv->pConsole;
 	if (pConsole)
 	{
 		pConsole->UnregisterVariable("firenet_master_ip");
 		pConsole->UnregisterVariable("firenet_master_port");
+		pConsole->UnregisterVariable("firenet_master_timeout");
 		pConsole->UnregisterVariable("firenet_master_remote_port");
 		pConsole->UnregisterVariable("firenet_master_timeout");
 
 		pConsole->UnregisterVariable("firenet_game_server_ip");
-		pConsole->UnregisterVariable("firenet_game_server_port");
-		pConsole->UnregisterVariable("firenet_game_server_timeout");
 		pConsole->UnregisterVariable("firenet_game_server_map");
 		pConsole->UnregisterVariable("firenet_game_server_gamerules");
+		pConsole->UnregisterVariable("firenet_game_server_port");
+		pConsole->UnregisterVariable("firenet_game_server_tickrate");
+		pConsole->UnregisterVariable("firenet_game_server_timeout");	
 		pConsole->UnregisterVariable("firenet_game_server_max_players");
 
 #ifndef NDEBUG
@@ -57,7 +59,7 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 #endif
 	}
 
-	// Close network thread
+	//! Close network thread
 	if (mEnv->pNetworkThread && mEnv->pTcpClient)
 	{
 		if (!gEnv->IsDedicated())
@@ -69,7 +71,7 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 			gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
 	}
 
-	// Unregister listeners
+	//! Unregister listeners
 	if (gEnv->pSystem)
 		gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 
@@ -113,7 +115,7 @@ void CFireNetCorePlugin::OnPluginUpdate(EPluginUpdateType updateType)
 	case IPluginUpdateListener::EUpdateType_Update:
 	{
 		//! Automatic deleting network thread if it's ready to close
-		if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose())
+		if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose() && !gEnv->pSystem->IsQuitting())
 		{
 			SAFE_DELETE(mEnv->pNetworkThread);
 		}
@@ -149,6 +151,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		mEnv->net_game_server_map = REGISTER_STRING("firenet_game_server_map", "", VF_NULL, "Map name for loading and register in master server");
 		mEnv->net_game_server_gamerules = REGISTER_STRING("firenet_game_server_gamerules", "TDM", VF_NULL, "Gamerules name for loading and register in master server");
 		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_game_server_port, 64000, VF_CHEAT, "FireNet game server port");
+		REGISTER_CVAR2("firenet_game_server_tickrate", &mEnv->net_game_server_tickrate, 30, VF_NULL, "FireNet game server tickrate");
 		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_game_server_timeout, 10, VF_NULL, "FireNet game server timeout");
 		REGISTER_CVAR2("firenet_game_server_max_players", &mEnv->net_game_server_max_players, 64, VF_NULL, "FireNet game server max players count");
 
@@ -165,8 +168,8 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		gEnv->pConsole->ExecuteString("exec firenet.cfg");
 
 		//! Automatic connect to master server
-		if (gFireNet && gFireNet->pCore && !gEnv->IsEditor())
-			gFireNet->pCore->ConnectToMasterServer();
+		if (!gEnv->IsEditor())
+			ConnectToMasterServer();
 
 		break;
 	}
@@ -197,23 +200,27 @@ void CFireNetCorePlugin::ConnectToMasterServer()
 		SAFE_DELETE(mEnv->pNetworkThread);
 	}
 
-	FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
-
-	mEnv->pNetworkThread = new CNetworkThread();
-	if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetCore_Thread"))
+	if (mEnv->pNetworkThread == nullptr)
 	{
-		SFireNetEventArgs args;
-		args.AddInt(0);
-		args.AddString("cant_spawn_network_thread");
+		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
 
-		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+		mEnv->pNetworkThread = new CNetworkThread();
 
-		SAFE_DELETE(mEnv->pNetworkThread);
-	
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet core thread!");
+		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetCore_Thread"))
+		{
+			SFireNetEventArgs args;
+			args.AddInt(0);
+			args.AddString("cant_spawn_network_thread");
+
+			FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+
+			SAFE_DELETE(mEnv->pNetworkThread);
+
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet core thread!");
+		}
+		else
+			CryLog(TITLE "FireNet core thread spawned");
 	}
-	else
-		CryLog(TITLE "FireNet core thread spawned");
 }
 
 void CFireNetCorePlugin::Authorization(const std::string & login, const std::string & password)
@@ -468,7 +475,6 @@ bool CFireNetCorePlugin::Quit()
 {
 	CryLogAlways(TITLE "Closing plugin...");
 
-	// Close FireNet-Core thread
 	if (mEnv->pNetworkThread)
 	{
 		mEnv->pNetworkThread->SignalStopWork();
@@ -477,7 +483,7 @@ bool CFireNetCorePlugin::Quit()
 
 	SAFE_DELETE(mEnv->pNetworkThread);
 
-	if (!mEnv->pNetworkThread)
+	if (mEnv->pNetworkThread == nullptr)
 	{
 		CryLogAlways(TITLE "Plugin ready to unload");
 		return true;

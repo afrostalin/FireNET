@@ -11,6 +11,7 @@ CUdpServer::CUdpServer(BoostIO& io_service, const char* ip, short port)
 	, m_UdpSocket(io_service, BoostUdpEndPoint(boost::asio::ip::address::from_string(ip), port))
 	, m_NextClientID(0L)
 	, m_Status(EFireNetUdpServerStatus::None)
+	, m_LastSendedMessageTime(0.f)
 {
 	Do_Receive();
 
@@ -29,6 +30,9 @@ void CUdpServer::Update()
 {
 	float  m_CurTime = gEnv->pTimer->GetAsyncCurTime();
 	auto   pTimeout = gEnv->pConsole->GetCVar("firenet_game_server_timeout");
+	auto   pTickrate = gEnv->pConsole->GetCVar("firenet_game_server_tickrate");
+
+	double tickrate = pTickrate ? 1000 / pTickrate->GetIVal() * 0.001 : 33 * 0.001;
 
 	//! Connection timeout
 	if (m_CurTime > 0.f && pTimeout)
@@ -65,15 +69,15 @@ void CUdpServer::Update()
 		}
 	}
 
-	//! Send messages
-	if (m_PacketQueue.size() > 0)
+	//! Set tickrate
+	if (m_CurTime > m_LastSendedMessageTime + tickrate)
 	{
-		Do_Send();
+		//! Send messages
+		if (!m_PacketQueue.empty())
+		{
+			Do_Send();
+		}		
 	}
-
-	//! Reset client IDs
-	if (m_Clients.size() == 0)
-		m_NextClientID = 0L;
 }
 
 void CUdpServer::SendToClient(CUdpPacket & packet, uint32 clientID)
@@ -83,6 +87,7 @@ void CUdpServer::SendToClient(CUdpPacket & packet, uint32 clientID)
 		//CryLog(TITLE "Sending UDP packet to client (%d) ...", clientID);
 
 		SFireNetUdpMessage message;
+		message.m_ClientID = clientID;
 		message.m_Packet = packet;
 		message.m_EndPoint = pClient->m_EndPoint;
 
@@ -100,6 +105,7 @@ void CUdpServer::SendToAll(CUdpPacket & packet)
 	for (const auto &it : m_Clients)
 	{
 		SFireNetUdpMessage message;
+		message.m_ClientID = it.first;
 		message.m_Packet = packet;
 		message.m_EndPoint = it.second.m_EndPoint;
 
@@ -116,6 +122,7 @@ void CUdpServer::SendToAllExcept(uint32 id, CUdpPacket & packet)
 		if (it.first != id)
 		{
 			SFireNetUdpMessage message;
+			message.m_ClientID = it.first;
 			message.m_Packet = packet;
 			message.m_EndPoint = it.second.m_EndPoint;
 
@@ -157,7 +164,6 @@ SFireNetUdpServerClient* CUdpServer::GetClient(uint32 id)
 	}
 	catch (std::out_of_range)
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't get client - unknown id!");
 		return nullptr;
 	}
 }
@@ -176,6 +182,13 @@ void CUdpServer::RemoveClient(uint32 id)
 			CryLog(TITLE "Client (%d) removed.", id);
 			m_Clients.erase(id);
 		}		
+
+		//! Reset client IDs
+		if (m_Clients.size() == 0)
+		{
+			m_NextClientID = 0L;
+			mEnv->pGameSync->Reset();
+		}
 	}
 	catch (std::out_of_range)
 	{
@@ -199,8 +212,17 @@ void CUdpServer::Do_Receive()
 		}
 		else
 		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't receive message from target!");
-			On_RemoteError(ec, m_RemoteEndPoint);
+			if (ec.value() == 10061)
+			{
+				uint32 clientId = GetOrCreateClientID(m_RemoteEndPoint);
+
+				RemoveClient(clientId);
+			}
+			else
+			{
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't receive message from target!");
+				On_RemoteError(ec, m_RemoteEndPoint);
+			}
 		}
 
 		Do_Receive();
@@ -209,13 +231,20 @@ void CUdpServer::Do_Receive()
 
 void CUdpServer::Do_Send()
 {
-	SFireNetUdpMessage message = m_PacketQueue.front();
+	m_LastSendedMessageTime = gEnv->pTimer->GetAsyncCurTime();
 
+	SFireNetUdpMessage message = m_PacketQueue.front();
+	m_PacketQueue.pop();
+
+	uint32           clientID = message.m_ClientID;
 	const char*      packetData = message.m_Packet.toString();
 	BoostUdpEndPoint endPoint = message.m_EndPoint;
 	size_t           packetSize = strlen(packetData);
 
-	m_UdpSocket.async_send_to(boost::asio::buffer(packetData, packetSize), endPoint, [this, endPoint](boost::system::error_code ec, std::size_t length)
+	if (!GetClient(clientID))
+		return;
+
+	m_UdpSocket.async_send_to(boost::asio::buffer(packetData, packetSize), endPoint, [this, endPoint, clientID](boost::system::error_code ec, std::size_t length)
 	{
 		if (ec)
 		{
@@ -223,8 +252,6 @@ void CUdpServer::Do_Send()
 			On_RemoteError(ec, endPoint);
 		}
 	});
-
-	m_PacketQueue.pop();
 }
 
 void CUdpServer::On_RemoteError(const boost::system::error_code error_code, const BoostUdpEndPoint endPoint)

@@ -57,6 +57,7 @@ private:
 	CReadQueue*                     pReadQueue;
 
 	bool                            bIsConnected;
+	bool                            bIsStopped;
 private:
 	BoostIO&                        m_IO_service;
 	BoostUdpSocket                  m_UdpSocket;
@@ -66,6 +67,7 @@ private:
 
 	char                            m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];
 private:
-	float                           m_ConnectionTimeout;     
+	float                           m_ConnectionTimeout;  
+	float                           m_LastSendedMessageTime;
 	int                             m_LastOutPacketNumber;
 };

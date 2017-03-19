@@ -28,6 +28,9 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 		m_LastInputPacketNumber = packet.getPacketNumber();
 	}*/
 
+	//! Reset timeout
+	mEnv->pUdpClient->ResetTimeout();
+
 	//! Server can't send to client empty packet, it's wrong, but you can see that if it happened
 	switch (packet.getType())
 	{
@@ -38,7 +41,6 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 	}
 	case EFireNetUdpPacketType::Ping :
 	{
-		mEnv->pUdpClient->ResetTimeout();
 		break;
 	}
 	case EFireNetUdpPacketType::Ask :
@@ -91,12 +93,23 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 
 		break;
 	}
-	case EFireNetUdpRequest::Request_UpdateInput:
-	{
-		break;
-	}
 	case EFireNetUdpRequest::Request_SyncPlayer:
 	{
+		//! Sync net input from other players
+		int playerUID = packet.ReadInt();
+		SFireNetClientInput input;
+		input.m_flags = static_cast<EFireNetClientInputFlags>(packet.ReadInt());
+		input.m_value = packet.ReadFloat();
+		Vec3 playerPos = packet.ReadVec3();
+		Quat playerRot = packet.ReadQuat();
+
+		if (playerUID != m_LocalPlayerUID)
+		{
+			mEnv->pGameSync->SyncNetPlayerInput(playerUID, input);
+			mEnv->pGameSync->SyncNetPlayerPosRot(playerUID, playerPos, playerRot);
+		}
+
+
 		break;
 	}
 	default:
@@ -141,16 +154,13 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 		player.m_PlayerNickname = packet.ReadString();
 
 		//! Spawn local player
-		mEnv->pGameSync->SpawnNetPlayer(player);
+		if (mEnv->pGameSync->SpawnNetPlayer(player))
+		{
+			m_LocalPlayerUID = player.m_PlayerUID;
 
-		break;
-	}
-	case EFireNetUdpResult::Result_InputUpdated:
-	{
-		break;
-	}
-	case EFireNetUdpResult::Result_PlayerSync:
-	{
+			mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus(CUdpClient::EUdpClientStatus::Connected | CUdpClient::EUdpClientStatus::Playing));
+		}
+
 		break;
 	}
 	default:

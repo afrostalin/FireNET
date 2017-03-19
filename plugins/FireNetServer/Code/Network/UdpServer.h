@@ -37,6 +37,7 @@ struct SFireNetUdpServerClient
 
 struct SFireNetUdpMessage
 {
+	uint32           m_ClientID;
 	CUdpPacket       m_Packet;
 	BoostUdpEndPoint m_EndPoint;
 };
@@ -89,5 +90,6 @@ private:
 
 	char                                 m_ReadBuffer[static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)];
 private:
-	UdpClientList m_Clients;
+	UdpClientList                        m_Clients;
+	float                                m_LastSendedMessageTime;
 };

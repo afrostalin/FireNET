@@ -86,7 +86,9 @@ bool CFireNetGameRules::OnClientEnteredGame(int channelId, bool isReset)
 			auto *pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 
 			if (auto *pActor = pActorSystem->GetActorByChannelId(channelId))
+			{
 				pActor->SetHealth(pActor->GetMaxHealth());
+			}
 		}
 	}
 
