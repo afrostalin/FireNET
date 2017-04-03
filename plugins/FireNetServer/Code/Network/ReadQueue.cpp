@@ -84,7 +84,7 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	{
 	case EFireNetUdpRequest::Request_GetMap:
 	{
-		CryLog(TITLE "Client %d request map", m_ClientID);
+		CryLog(TITLE "Client (Channel ID = %d) request map", m_ClientChannelID);
 
 		auto pLevel = gEnv->pGameFramework->GetILevelSystem()->GetCurrentLevel();
 
@@ -114,30 +114,30 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	}
 	case EFireNetUdpRequest::Request_SpawnPlayer:
 	{
-		CryLog(TITLE "Client (%d) request spawn", m_ClientID);
+		CryLog(TITLE "Client (Channel ID = %d) request spawn", m_ClientChannelID);
 
 		auto m_SpawnPosition = FindSpawnPosition();
 
 		if (m_SpawnPosition.b_Finded)
 		{
-			CryLog(TITLE "Spawn point for client (%d) found. Position(%f,%f,%f)", m_ClientID, m_SpawnPosition.m_Pos.x, m_SpawnPosition.m_Pos.y, m_SpawnPosition.m_Pos.z);
+			CryLog(TITLE "Spawn point for client (Channel ID = %d) found. Position(%f,%f,%f)", m_ClientChannelID, m_SpawnPosition.m_Pos.x, m_SpawnPosition.m_Pos.y, m_SpawnPosition.m_Pos.z);
 
 			// TODO - Get info from master server and FireNet profile
 			SFireNetClientPlayer player;
-			player.m_PlayerUID = m_ClientID;
-			player.m_ChanelId = m_ClientID + 1;
+			player.m_PlayerUID = m_ClientChannelID;
+			player.m_ChanelId = m_ClientChannelID;
 			player.m_PlayerSpawnPos = m_SpawnPosition.m_Pos;
 			player.m_PlayerSpawnRot = m_SpawnPosition.m_Rot;
 			player.m_PlayerModel = "Test";
-			player.m_PlayerNickname = "Test";
+			player.m_PlayerNickname = string().Format("Test_%d", m_ClientChannelID);
 
-			if (mEnv->pGameSync->SpawnNetPlayer(player))
+			if (mEnv->pGameSync->SpawnNetPlayer(m_ClientChannelID, player))
 			{
-				//! Spawn local player in client
+				//! Spawn player on client
 				CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Result);
 				packet.WriteResult(EFireNetUdpResult::Result_PlayerSpawned);
 				packet.WriteInt(player.m_PlayerUID);
-				packet.WriteInt(player.m_ChanelId + 1);
+				packet.WriteInt(player.m_ChanelId);
 				packet.WriteVec3(player.m_PlayerSpawnPos);
 				packet.WriteQuat(player.m_PlayerSpawnRot);
 				packet.WriteString(player.m_PlayerModel.c_str());
@@ -145,22 +145,22 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 
 				SendPacket(packet);
 
-				//! Spawn all players connected to game server in local client
-				auto pAllPlayers = mEnv->pGameSync->GetAllPlayers();
+				//! Spawn all players connected to game server on client
+				auto pAllPlayers = mEnv->pGameSync->GetAllNetPlayers();
 				if (pAllPlayers)
 				{
 					for (const auto &it : *pAllPlayers)
 					{
-						if (it.m_PlayerUID != player.m_PlayerUID)
+						if (it.second.m_ChanelId != player.m_ChanelId)
 						{
 							CUdpPacket packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Request);
 							packet.WriteRequest(EFireNetUdpRequest::Request_SpawnPlayer);
-							packet.WriteInt(it.m_PlayerUID);
-							packet.WriteInt(it.m_ChanelId + 1);
-							packet.WriteVec3(it.pActor->GetEntity()->GetWorldPos());
-							packet.WriteQuat(it.pActor->GetEntity()->GetWorldRotation());
-							packet.WriteString(it.m_PlayerModel.c_str());
-							packet.WriteString(it.m_PlayerNickname.c_str());
+							packet.WriteInt(it.second.m_PlayerUID);
+							packet.WriteInt(it.second.m_ChanelId);
+							packet.WriteVec3(it.second.pActor->GetEntity()->GetWorldPos());
+							packet.WriteQuat(it.second.pActor->GetEntity()->GetWorldRotation());
+							packet.WriteString(it.second.m_PlayerModel.c_str());
+							packet.WriteString(it.second.m_PlayerNickname.c_str());
 
 							SendPacket(packet);
 						}
@@ -171,22 +171,19 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 				CUdpPacket packetToAll(m_LastOutputPacketNumber, EFireNetUdpPacketType::Request);
 				packetToAll.WriteRequest(EFireNetUdpRequest::Request_SpawnPlayer);
 				packetToAll.WriteInt(player.m_PlayerUID);
-				packetToAll.WriteInt(player.m_ChanelId + 1);
+				packetToAll.WriteInt(player.m_ChanelId);
 				packetToAll.WriteVec3(player.m_PlayerSpawnPos);
 				packetToAll.WriteQuat(player.m_PlayerSpawnRot);
 				packetToAll.WriteString(player.m_PlayerModel.c_str());
 				packetToAll.WriteString(player.m_PlayerNickname.c_str());
 
-				SendPacketToAllExcept(m_ClientID, packetToAll);
+				SendPacketToAllExcept(m_ClientChannelID, packetToAll);
 			
 			}	
-			else
-			{
-			}
 		}
 		else
 		{
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Spawn point for client (%d) not found!", m_ClientID);
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Spawn point for client (Channel ID = %d) not found!", m_ClientChannelID);
 		}
 
 		break;
@@ -195,32 +192,11 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 	{
 		SFireNetClientInput input;
 		input.m_flags = static_cast<EFireNetClientInputFlags>(packet.ReadInt());
-		input.m_value = packet.ReadFloat();
+		input.m_LookOrientation = packet.ReadQuat();
 
 		//! Sync input in server
-		mEnv->pGameSync->SyncNetPlayerInput(m_ClientID, input);
+		mEnv->pGameSync->SyncNetPlayerInput(m_ClientChannelID, input);
 
-		if (auto mPlayers = mEnv->pGameSync->GetAllPlayers())
-		{
-			for (const auto &it : *mPlayers)
-			{
-				if (it.m_PlayerUID == m_ClientID)
-				{
-					//! Sync player position with all clients
-					CUdpPacket sync_packet(m_LastOutputPacketNumber, EFireNetUdpPacketType::Request);
-					sync_packet.WriteRequest(EFireNetUdpRequest::Request_SyncPlayer);
-					sync_packet.WriteInt(m_ClientID);
-					sync_packet.WriteInt(input.m_flags);
-					sync_packet.WriteFloat(input.m_value);
-					sync_packet.WriteVec3(it.pActor->GetEntity()->GetWorldPos());
-					sync_packet.WriteQuat(it.pActor->GetEntity()->GetWorldRotation());
-
-					SendPacketToAllExcept(m_ClientID, sync_packet);
-
-					break;
-				}
-			}
-		}
 		break;
 	}
 	default:
@@ -268,7 +244,7 @@ SFireNetSpawnPosition CReadQueue::FindSpawnPosition()
 
 void CReadQueue::SendPacket(CUdpPacket & packet)
 {
-	mEnv->pUdpServer->SendToClient(packet, m_ClientID);
+	mEnv->pUdpServer->SendToClient(packet, m_ClientChannelID);
 	m_LastOutputPacketNumber++;
 }
 

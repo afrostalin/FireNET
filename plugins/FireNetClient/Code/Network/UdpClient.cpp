@@ -7,6 +7,9 @@
 #include "Network/SyncGameState.h"
 #include "ReadQueue.h"
 
+#include "Entities/FireNetPlayer/FireNetPlayer.h"
+#include "Entities/FireNetPlayer/Input/FireNetPlayerInput.h"
+
 #include <FireNet>
 
 CUdpClient::CUdpClient(BoostIO& io_service, const char* ip, short port) : m_IO_service(io_service)
@@ -21,6 +24,8 @@ CUdpClient::CUdpClient(BoostIO& io_service, const char* ip, short port) : m_IO_s
 	m_ConnectionTimeout = 0.f;
 	m_LastSendedMessageTime = 0.f;
 	m_LastOutPacketNumber = 0;
+
+	m_StatisticLastTime = -1;
 
 	Do_Connect();
 }
@@ -40,10 +45,10 @@ void CUdpClient::Update()
 
 	auto pTickrate = gEnv->pConsole->GetCVar("firenet_game_server_tickrate");
 	double tickrate = pTickrate ? 1000 / pTickrate->GetIVal() * 0.001 : 33 * 0.001;
-
+	 
 	//! Sending queue
 	if (m_CurrentTime > m_LastSendedMessageTime + tickrate)
-	{	
+	{
 		if (!m_Queue.empty())
 		{
 			Do_Write();
@@ -81,6 +86,9 @@ void CUdpClient::Update()
 			CloseConnection();
 		}
 	}
+
+	//! Calculate client statistic
+	CalculateStatisctic();
 }
 
 void CUdpClient::SendNetMessage(CUdpPacket & packet)
@@ -100,10 +108,11 @@ void CUdpClient::CloseConnection()
 	bIsConnected = false;
 	bIsStopped = true;
 
-	mEnv->pGameSync->Reset();
-
 	if (!gEnv->pSystem->IsQuitting())
+	{
 		gEnv->pConsole->ExecuteString("unload", true, true);
+		mEnv->pGameSync->Reset();
+	}
 
 	m_UdpSocket.close();
 	m_IO_service.stop();
@@ -130,8 +139,10 @@ void CUdpClient::Do_Read()
 
 	m_UdpSocket.async_receive_from(boost::asio::buffer(m_ReadBuffer, static_cast<int>(EFireNetUdpPackeMaxSize::SIZE)), m_UdpSenderEndPoint, [this](boost::system::error_code ec, std::size_t length)
 	{
-		if (!ec && length > 0)
+		if (!ec)
 		{
+			m_StatisticPacketsInputCount++;
+
 			CUdpPacket packet(m_ReadBuffer);
 			pReadQueue->ReadPacket(packet);		
 
@@ -147,6 +158,9 @@ void CUdpClient::Do_Read()
 
 void CUdpClient::Do_Write()
 {
+	if (gEnv->pSystem->IsQuitting() || bIsStopped)
+		return;
+
 	m_LastSendedMessageTime = gEnv->pTimer->GetAsyncCurTime();
 
 	CUdpPacket  packet = m_Queue.front();	
@@ -161,7 +175,11 @@ void CUdpClient::Do_Write()
 		{
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't send UDP packet : %s", ec.message().c_str());
 			On_Disconnected();
-		}		
+		}	
+		else
+		{
+			m_StatisticPacketsOutputCount++;
+		}
 	});
 }
 
@@ -198,4 +216,19 @@ void CUdpClient::UpdateStatus(EUdpClientStatus newStatus)
 {
 	m_ConnectionTimeout = 0.f;
 	m_Status = newStatus;
+}
+
+void CUdpClient::PrintClientStatistic()
+{
+	CryLog(TITLE "UDP client input speed (%d), output speed (%d)", m_StatisticPacketsInputCount, m_StatisticPacketsOutputCount);
+}
+
+void CUdpClient::CalculateStatisctic()
+{
+	if (gEnv->pTimer->GetAsyncCurTime() > m_StatisticLastTime + 1)
+	{
+		m_StatisticLastTime = gEnv->pTimer->GetAsyncCurTime();
+		m_StatisticPacketsInputCount = 0;
+		m_StatisticPacketsOutputCount = 0;
+	}
 }

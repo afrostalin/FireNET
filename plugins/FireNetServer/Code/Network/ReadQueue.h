@@ -28,7 +28,7 @@ struct SFireNetSpawnPosition
 class CReadQueue
 {
 public:
-	CReadQueue(uint32 id) : m_ClientID(id)
+	CReadQueue(uint32 id) : m_ClientChannelID(id)
 	{
 		m_LastInputPacketNumber = 0;
 		m_LastOutputPacketNumber = 0;
@@ -36,23 +36,23 @@ public:
 	}
 	~CReadQueue() {}
 public:
-	void   ReadPacket(CUdpPacket &packet);
-	float  GetLastTime() { return m_LastPacketTime; }
+	void                  ReadPacket(CUdpPacket &packet);
+	float                 GetLastTime() { return m_LastPacketTime; }
 private:
-	void   ReadAsk(CUdpPacket &packet, EFireNetUdpAsk ask);
-	void   ReadPing();
-	void   ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
+	void                  ReadAsk(CUdpPacket &packet, EFireNetUdpAsk ask);
+	void                  ReadPing();
+	void                  ReadRequest(CUdpPacket &packet, EFireNetUdpRequest request);
 private:
-	void   SendPacket(CUdpPacket &packet);
-	void   SendPacketToAll(CUdpPacket &packet);
-	void   SendPacketToAllExcept(uint32 id, CUdpPacket &packet);
+	void                  SendPacket(CUdpPacket &packet);
+	void                  SendPacketToAll(CUdpPacket &packet);
+	void                  SendPacketToAllExcept(uint32 id, CUdpPacket &packet);
 private:
-	SFireNetSpawnPosition   FindSpawnPosition();
+	SFireNetSpawnPosition FindSpawnPosition();
 private:
-	uint32 m_ClientID;
+	uint32                m_ClientChannelID;
 
-	int    m_LastInputPacketNumber;
-	int    m_LastOutputPacketNumber;
+	int                   m_LastInputPacketNumber;
+	int                   m_LastOutputPacketNumber;
 
-	float  m_LastPacketTime;
+	float                 m_LastPacketTime;
 };

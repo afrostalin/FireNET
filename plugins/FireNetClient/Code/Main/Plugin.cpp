@@ -23,6 +23,12 @@ void CmdConnect(IConsoleCmdArgs* args)
 		gFireNet->pClient->ConnectToGameServer();
 }
 
+void CmdPrintStatisctic(IConsoleCmdArgs* args)
+{
+	if (mEnv->pUdpClient)
+		mEnv->pUdpClient->PrintClientStatistic();
+}
+
 CFireNetClientPlugin::~CFireNetClientPlugin()
 {
 	//! Unregister entities
@@ -137,6 +143,9 @@ void CFireNetClientPlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UI
 
 		//! Register command
 		REGISTER_COMMAND("firenet_game_connect", CmdConnect, VF_NULL, "Connect to game server");
+#ifndef NDEBUG
+		REGISTER_COMMAND("firenet_client_status", CmdPrintStatisctic, VF_NULL, "Get UDP client statistic");
+#endif
 
 		break;
 	}
@@ -208,14 +217,14 @@ void CFireNetClientPlugin::DisconnectFromServer()
 	}
 }
 
-void CFireNetClientPlugin::SendUpdateInputRequest(TInputFlags flags, float value)
+void CFireNetClientPlugin::SendUpdateInputRequest(const SFireNetClientInput &input)
 {
 	if (mEnv->pUdpClient && mEnv->pUdpClient->IsConnected())
 	{
 		CUdpPacket packet(mEnv->pUdpClient->GetLastPacketNumber(), EFireNetUdpPacketType::Request);
 		packet.WriteRequest(EFireNetUdpRequest::Request_UpdateInput);
-		packet.WriteInt(flags);
-		packet.WriteFloat(value);
+		packet.WriteInt(input.m_flags);
+		packet.WriteQuat(input.m_LookOrientation);
 
 		mEnv->pUdpClient->SendNetMessage(packet);
 	}

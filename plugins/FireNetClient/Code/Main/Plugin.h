@@ -34,7 +34,7 @@ public:
 	// IFireNetClientCore
 	virtual void        ConnectToGameServer() override;
 	virtual void        DisconnectFromServer() override;
-	virtual void        SendUpdateInputRequest(TInputFlags flags, float value = 0.f) override;
+	virtual void        SendUpdateInputRequest(const SFireNetClientInput &input) override;
 	virtual void        SendSpawnRequest() override;
 	virtual bool        IsConnected() override;
 	virtual bool        IsLocalPlayerSpawned() override;

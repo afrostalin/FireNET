@@ -74,4 +74,7 @@ protected:
 
 	bool                         bGamePaused;
 	bool                         bPhysDebug;
+private:
+	Quat                         m_LastClientLookOrientation;
+	uint32                       m_LastClientInputFlags;
 };

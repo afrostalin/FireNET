@@ -3,13 +3,17 @@
 
 #include "StdAfx.h"
 #include "UdpServer.h"
+
 #include "Network/SyncGameState.h"
 #include "Network/UdpPacket.h"
+
+#include "Entities/FireNetPlayer/FireNetPlayer.h"
+#include "Entities/FireNetPlayer/Input/FireNetPlayerInput.h"
 
 CUdpServer::CUdpServer(BoostIO& io_service, const char* ip, short port)
 	: m_IO_service(io_service)
 	, m_UdpSocket(io_service, BoostUdpEndPoint(boost::asio::ip::address::from_string(ip), port))
-	, m_NextClientID(0L)
+	, m_NextClientID(1L)
 	, m_Status(EFireNetUdpServerStatus::None)
 	, m_LastSendedMessageTime(0.f)
 {
@@ -59,12 +63,12 @@ void CUdpServer::Update()
 
 		if (bFinded)
 		{
-			CryLogAlways(TITLE "Client (%d) disconnecting - Connection timeout", m_ID);
+			CryLogAlways(TITLE "Client (Channel ID = %d) disconnecting - Connection timeout", m_ID);
 			RemoveClient(m_ID);
 		}
 		else if (bNeedToRemove)
 		{
-			CryLogAlways(TITLE "Client (%d) removing - Client marked for removing", m_ID);
+			CryLogAlways(TITLE "Client (Channel ID = %d) removing - Client marked for removing", m_ID);
 			RemoveClient(m_ID);
 		}
 	}
@@ -72,7 +76,24 @@ void CUdpServer::Update()
 	//! Set tickrate
 	if (m_CurTime > m_LastSendedMessageTime + tickrate)
 	{
-		//! Send messages
+		//! Update world state queue
+		if (auto mPlayers = mEnv->pGameSync->GetAllNetPlayers())
+		{
+			for (const auto &it : *mPlayers)
+			{
+				CUdpPacket sync_packet(1, EFireNetUdpPacketType::Request);
+				sync_packet.WriteRequest(EFireNetUdpRequest::Request_SyncPlayer);
+				sync_packet.WriteInt(it.second.m_ChanelId);
+				sync_packet.WriteInt(it.second.pPlayer->GetInput()->GetInputFlags());
+				sync_packet.WriteQuat(it.second.pPlayer->GetInput()->GetLookOrientation());
+				sync_packet.WriteVec3(it.second.pActor->GetEntity()->GetWorldPos());
+				sync_packet.WriteQuat(it.second.pActor->GetEntity()->GetWorldRotation());
+
+				SendToAllExcept(it.second.m_ChanelId, sync_packet);
+			}
+		}
+
+		//! Send messages queue
 		if (!m_PacketQueue.empty())
 		{
 			Do_Send();
@@ -95,7 +116,7 @@ void CUdpServer::SendToClient(CUdpPacket & packet, uint32 clientID)
 
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't send message to client %d - client not found", clientID);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't send message to client (Channel ID = %d) - client not found", clientID);
 }
 
 void CUdpServer::SendToAll(CUdpPacket & packet)
@@ -149,8 +170,6 @@ uint32 CUdpServer::GetOrCreateClientID(BoostUdpEndPoint endpoint)
 	client.bInGame = false;
 	client.bNeedToRemove = false;
 
-	CryLog(TITLE "Add new client (%d)", id);
-
 	m_Clients.insert(UdpClient(id, client));
 
 	return id;
@@ -172,27 +191,31 @@ void CUdpServer::RemoveClient(uint32 id)
 {
 	try
 	{
-		CryLog(TITLE "Removing client (%d)...", id);
+		CryLog(TITLE "Removing client (Channel ID = %d)...", id);
 
 		if (auto pClient = GetClient(id))
 		{
 			if (pClient->bConnected)
-				On_ClientDisconnect(id);		
-
-			CryLog(TITLE "Client (%d) removed.", id);
+			{
+				mEnv->pGameSync->RemoveNetPlayer(id);
+				On_ClientDisconnect(id);			
+			}
+		
 			m_Clients.erase(id);
+
+			CryLog(TITLE "Client (Channel ID = %d) removed.", id);
 		}		
 
 		//! Reset client IDs
 		if (m_Clients.size() == 0)
 		{
-			m_NextClientID = 0L;
+			m_NextClientID = 1L;
 			mEnv->pGameSync->Reset();
 		}
 	}
 	catch (std::out_of_range)
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't remove client - unknown id (%d)", id);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't remove client (Channel ID = %d) - unknown id", id);
 	}
 }
 
@@ -279,7 +302,7 @@ void CUdpServer::On_RemoteError(const boost::system::error_code error_code, cons
 
 void CUdpServer::On_ClientDisconnect(uint32 id)
 {
-	CryLogAlways(TITLE "Client (%d) disconnected", id);
+	CryLogAlways(TITLE "Client (Channel ID = %d) disconnected", id);
 }
 
 void CUdpServer::MessageProcess(const char* data, uint32 id)
@@ -290,7 +313,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 	//! Mark to remove if client send broken packet
 	if (!packet.IsGoodPacket())
 	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Client (%d) send bad packet. Marked to remove", id);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Client (Channel ID = %d) send bad packet. Marked to remove", id);
 
 		if (pClient)
 			pClient->bNeedToRemove = true;
@@ -311,7 +334,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 				pClient->bConnected = true;
 				pClient->pReader = new CReadQueue(id);
 
-				CryLogAlways(TITLE "Client (%d) accepted", id);
+				CryLogAlways(TITLE "Client (Channel ID = %d) accepted", id);
 
 				CUdpPacket packet(0, EFireNetUdpPacketType::Result);
 				packet.WriteResult(EFireNetUdpResult::Result_ClientAccepted);
@@ -320,7 +343,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 			}
 			else if (m_Status == EFireNetUdpServerStatus::LevelLoaded && GetClientCount() >= m_MaxPlayers)
 			{
-				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server full");
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client (Channel ID = %d) - server full", id);
 
 				CUdpPacket packet(0, EFireNetUdpPacketType::Error);
 				packet.WriteError(EFireNetUdpError::Error_ServerFull);
@@ -332,7 +355,7 @@ void CUdpServer::MessageProcess(const char* data, uint32 id)
 			}
 			else if (m_Status != EFireNetUdpServerStatus::LevelLoaded)
 			{
-				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client - server not ready to accepting new players");
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't accept client (Channel ID = %d) - server not ready to accepting new players", id);
 
 				CUdpPacket packet(0, EFireNetUdpPacketType::Error);
 				packet.WriteError(EFireNetUdpError::Error_ServerBlockNewConnection);

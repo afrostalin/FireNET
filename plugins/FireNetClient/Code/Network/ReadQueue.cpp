@@ -26,10 +26,7 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 	else if (packet.getPacketNumber() >= m_LastInputPacketNumber)
 	{
 		m_LastInputPacketNumber = packet.getPacketNumber();
-	}*/
-
-	//! Reset timeout
-	mEnv->pUdpClient->ResetTimeout();
+	}*/	
 
 	//! Server can't send to client empty packet, it's wrong, but you can see that if it happened
 	switch (packet.getType())
@@ -66,6 +63,9 @@ void CReadQueue::ReadPacket(CUdpPacket & packet)
 	default:
 		break;
 	}
+
+	//! Reset timeout
+	mEnv->pUdpClient->ResetTimeout();
 }
 
 void CReadQueue::ReadAsk(CUdpPacket & packet, EFireNetUdpAsk ask)
@@ -89,24 +89,24 @@ void CReadQueue::ReadRequest(CUdpPacket & packet, EFireNetUdpRequest request)
 		player.m_PlayerNickname = packet.ReadString();
 
 		//! Spawn other player
-		mEnv->pGameSync->SpawnNetPlayer(player);
+		mEnv->pGameSync->SpawnNetPlayer(player.m_ChanelId, player);
 
 		break;
 	}
 	case EFireNetUdpRequest::Request_SyncPlayer:
 	{
 		//! Sync net input from other players
-		int playerUID = packet.ReadInt();
+		int channelID = packet.ReadInt();
 		SFireNetClientInput input;
 		input.m_flags = static_cast<EFireNetClientInputFlags>(packet.ReadInt());
-		input.m_value = packet.ReadFloat();
+		input.m_LookOrientation = packet.ReadQuat();
 		Vec3 playerPos = packet.ReadVec3();
 		Quat playerRot = packet.ReadQuat();
 
-		if (playerUID != m_LocalPlayerUID)
+		if (channelID != m_LocalPlayerChannelID)
 		{
-			mEnv->pGameSync->SyncNetPlayerInput(playerUID, input);
-			mEnv->pGameSync->SyncNetPlayerPosRot(playerUID, playerPos, playerRot);
+			mEnv->pGameSync->SyncNetPlayerInput(channelID, input);
+			//mEnv->pGameSync->SyncNetPlayerPosRot(playerUID, playerPos, playerRot);
 		}
 
 
@@ -154,9 +154,9 @@ void CReadQueue::ReadResult(CUdpPacket & packet, EFireNetUdpResult result)
 		player.m_PlayerNickname = packet.ReadString();
 
 		//! Spawn local player
-		if (mEnv->pGameSync->SpawnNetPlayer(player))
+		if (mEnv->pGameSync->SpawnNetPlayer(player.m_ChanelId, player))
 		{
-			m_LocalPlayerUID = player.m_PlayerUID;
+			m_LocalPlayerChannelID = player.m_ChanelId;
 
 			mEnv->pUdpClient->UpdateStatus(CUdpClient::EUdpClientStatus(CUdpClient::EUdpClientStatus::Connected | CUdpClient::EUdpClientStatus::Playing));
 		}

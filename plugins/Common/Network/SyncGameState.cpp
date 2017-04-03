@@ -6,10 +6,11 @@
 
 #include "Entities/FireNetPlayer/FireNetPlayer.h"
 
-#include <IActorSystem.h>
+
 
 CGameStateSynchronization::CGameStateSynchronization()
 {
+	pActorSystem = gEnv->pGameFramework->GetIActorSystem();
 }
 
 CGameStateSynchronization::~CGameStateSynchronization()
@@ -25,19 +26,26 @@ void CGameStateSynchronization::Reset()
 	mEnv->pLocalPlayer = nullptr;
 #endif
 
-	for (const auto &it : m_NetPlayers)
-	{
-		RemoveNetPlayer(it.m_PlayerUID);
-	}
-
 	m_NetPlayers.clear();
 }
 
-bool CGameStateSynchronization::SpawnNetPlayer(SFireNetClientPlayer & player)
+SFireNetClientPlayer* CGameStateSynchronization::GetNetPlayer(uint32 channel)
 {
-	CryLog(TITLE "Spawning FireNet player (%d)", player.m_PlayerUID);
+	try
+	{
+		return &m_NetPlayers.at(channel);
+	}
+	catch (std::out_of_range)
+	{
+		return nullptr;
+	}
+}
 
-	if (auto pActorSystem = gEnv->pGameFramework->GetIActorSystem())
+bool CGameStateSynchronization::SpawnNetPlayer(uint32 channel, SFireNetClientPlayer & player)
+{
+	CryLog(TITLE "Spawning FireNet player <%s> (Channel ID = %d)", player.m_PlayerNickname, channel);
+
+	if (pActorSystem)
 	{
 		auto pActor = pActorSystem->CreateActor(player.m_ChanelId, player.m_PlayerNickname, "FireNetPlayer", player.m_PlayerSpawnPos, player.m_PlayerSpawnRot, Vec3(1, 1, 1));
 
@@ -68,147 +76,112 @@ bool CGameStateSynchronization::SpawnNetPlayer(SFireNetClientPlayer & player)
 			pActor->SetHealth(pActor->GetMaxHealth());
 
 			player.pActor = pActor;
-			m_NetPlayers.push_back(player);
+			player.pPlayer = dynamic_cast<CFireNetPlayer*>(pActor);
 
-			CryLog(TITLE "FireNet player (%s : %d) successfully spawned", player.m_PlayerNickname, player.m_PlayerUID);
-
-			return true;
+			if (player.pPlayer)
+			{
+				CryLog(TITLE "FireNet player <%s>  (Channel ID = %d) successfully spawned", player.m_PlayerNickname, channel);
+				m_NetPlayers.insert(NetClientPlayer(channel, player));
+				return true;
+			}
+			else
+				CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player <%s>  (Channel ID = %d) - Can't get player pointer", player.m_PlayerNickname, channel);
 		}
 		else
-			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%s : %d) - Can't spawn actor", player.m_PlayerNickname, player.m_PlayerUID);
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player <%s>  (Channel ID = %d) - Can't spawn actor", player.m_PlayerNickname, channel);
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player (%s : %d) - Can't get actor system pointer", player.m_PlayerNickname, player.m_PlayerUID);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't spawn FireNet player <%s> (Channel ID = %d) - Can't get actor system pointer", player.m_PlayerNickname, channel);
 
 
 	return false;
 }
 
-void CGameStateSynchronization::RemoveNetPlayer(uint32 uid)
+void CGameStateSynchronization::RemoveNetPlayer(uint32 channel)
 {
-	CryLog(TITLE "Removing FireNet player (%d)", uid);
+	CryLog(TITLE "Removing FireNet player by channel (Channel ID = %d) ...", channel);
 
-	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
-
-	for (const auto &it : m_NetPlayers)
+	if (pActorSystem)
 	{
-		if (it.m_PlayerUID == uid && pActorSystem)
+		if (auto pNetPlayer = GetNetPlayer(channel))
 		{
-			if (auto pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId))
+			if (pNetPlayer->pActor && pNetPlayer->pActor->GetEntity())
 			{
-				pActorSystem->RemoveActor(pActor->GetEntityId());
-			}
-			break;
-		}
-	}
-}
-
-void CGameStateSynchronization::HideNetPlayer(uint32 uid)
-{
-	CryLog(TITLE "Hiding FireNet player (%d)", uid);
-
-	IEntity* pEntity = nullptr;
-
-	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
-
-	for (const auto &it : m_NetPlayers)
-	{
-		if (it.m_PlayerUID == uid && pActorSystem)
-		{
-			if (auto pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId))
-			{
-				pEntity = pActor->GetEntity();
-			}
-			
-			break;
-		}
-	}
-
-	if (pEntity)
-		pEntity->Hide(true);
-	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't hide FireNet player (%d)", uid);
-}
-
-void CGameStateSynchronization::UnhideNetPlayer(uint32 uid)
-{
-	CryLog(TITLE "Unhiding FireNet player (%d)", uid);
-
-	IEntity* pEntity = nullptr;
-
-	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
-
-	for (const auto &it : m_NetPlayers)
-	{
-		if (it.m_PlayerUID == uid && pActorSystem)
-		{
-			if (auto pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId))
-			{
-				pEntity = pActor->GetEntity();
+				pActorSystem->RemoveActor(pNetPlayer->pActor->GetEntityId());
+				CryLog(TITLE "FireNet player removed by channel (Channel ID = %d)", channel);
 			}
 
-			break;
+			RemoveNetPlayerForMap(channel);
 		}
-	}
-
-	if (pEntity)
-		pEntity->Hide(false);
-	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't unhide FireNet player (%d)", uid);
-}
-
-void CGameStateSynchronization::SyncNetPlayerInput(uint32 uid, const SFireNetClientInput &input)
-{
-	IActor* pActor = nullptr;
-	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
-
-	for (const auto &it : m_NetPlayers)
-	{
-		if (it.m_PlayerUID == uid && pActorSystem)
-		{
-			pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId);
-			break;
-		}
-	}
-
-	CFireNetPlayer* pPlayer = pActor ? dynamic_cast<CFireNetPlayer*>(pActor) : nullptr;
-
-	if (!pPlayer)
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync input for FireNet player (%d). Can't get player instance", uid);
-		return;
-	}
-
-	//! Sync input
-	pPlayer->SyncNetInput(input);
-}
-
-void CGameStateSynchronization::SyncNetPlayerPosRot(uint32 uid, const Vec3 & pos, const Quat & rot)
-{
-	IActor* pActor = nullptr;
-	auto pActorSystem = gEnv->pGameFramework->GetIActorSystem();
-
-	for (const auto &it : m_NetPlayers)
-	{
-		if (it.m_PlayerUID == uid && pActorSystem)
-		{
-			pActor = pActorSystem->GetActorByChannelId(it.m_ChanelId);
-			break;
-		}
-	}
-
-	CFireNetPlayer* pPlayer = pActor ? dynamic_cast<CFireNetPlayer*>(pActor) : nullptr;
-
-	if (!pPlayer)
-	{
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync position for FireNet player (%d). pPlayer = nullptr", uid);
-		return;
-	}
-
-	if (auto* pEntity = pPlayer->GetEntity())
-	{
-		pEntity->SetPosRotScale(pos, rot, Vec3(1, 1, 1));
+		else
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't remove FireNet player by channel (Channel ID = %d) - Can't get player pointer", channel);
 	}
 	else
-		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync position FireNet player (%d)", uid);
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't remove FireNet player by channel (Channel ID = %d) - Can't get actor system pointer", channel);
+}
+
+void CGameStateSynchronization::HideNetPlayer(uint32 channel, bool hide)
+{
+	CryLog(TITLE "Hiding (%s) FireNet player by channel (Channel ID = %d)", hide ? "true" : "false", channel);
+
+	if (pActorSystem)
+	{
+		if (auto pNetPlayer = GetNetPlayer(channel))
+		{
+			if (pNetPlayer->pActor && pNetPlayer->pActor->GetEntity())
+				pNetPlayer->pActor->GetEntity()->Hide(hide);
+		}
+		else
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't hide (%s) FireNet player by channel (Channel ID = %d) - Can't get player pointer", hide ? "true" : "false", channel);
+	}
+	else
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't hide (%s) FireNet player by channel (Channel ID = %d) - Can't get actor system pointer", hide ? "true" : "false", channel);
+}
+
+void CGameStateSynchronization::SyncNetPlayerInput(uint32 channel, const SFireNetClientInput &input)
+{
+	//CryLog(TITLE "Sync FireNet player input by channel (Channel ID = %d)", channel);
+
+	if (pActorSystem)
+	{
+		if (auto pNetPlayer = GetNetPlayer(channel))
+		{
+			if (pNetPlayer->pPlayer)
+				pNetPlayer->pPlayer->SyncNetInput(input);
+		}
+		else
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync FireNet player input by channel (Channel ID = %d) - Can't get player pointer", channel);
+	}
+	else
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync FireNet player input by channel (Channel ID = %d) - Can't get actor system pointer", channel);
+}
+
+void CGameStateSynchronization::SyncNetPlayerPosRot(uint32 channel, const Vec3 & pos, const Quat & rot)
+{
+	//CryLog(TITLE "Sync FireNet player pos/rot by channel (Channel ID = %d)", channel);
+
+	if (pActorSystem)
+	{
+		if (auto pNetPlayer = GetNetPlayer(channel))
+		{
+			if (pNetPlayer->pActor && pNetPlayer->pActor->GetEntity())
+				pNetPlayer->pActor->GetEntity()->SetPosRotScale(pos, rot, Vec3(1, 1, 1));
+		}
+		else
+			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync FireNet player pos/rot by channel (Channel ID = %d) - Can't get player pointer", channel);
+	}
+	else
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Can't sync FireNet player pos/rot by channel (Channel ID = %d) - Can't get actor system pointer", channel);
+}
+
+void CGameStateSynchronization::RemoveNetPlayerForMap(uint32 channel)
+{
+	try
+	{
+		m_NetPlayers.erase(channel);
+	}
+	catch (std::out_of_range)
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_WARNING, TITLE "Can't remove FireNet player for map - unknown channel (Channel ID = %d)", channel);
+	}
 }

@@ -17,7 +17,7 @@ struct IFireNetClientCore
 	virtual void DisconnectFromServer() = 0;
 
 	//! Send update input request
-	virtual void SendUpdateInputRequest(TInputFlags flags, float value = 0.f) = 0;
+	virtual void SendUpdateInputRequest(const SFireNetClientInput &input) = 0;
 
 	//! Send spawn request
 	virtual void SendSpawnRequest() = 0;

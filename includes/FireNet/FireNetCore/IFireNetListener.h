@@ -127,6 +127,11 @@ enum EFireNetEvents
 struct SFireNetEventArgs
 {
 public:
+	SFireNetEventArgs()
+	{
+		m_LastIndex = 0;
+	}
+public:
 	//! Write int variable
 	inline void AddInt(const int& value)
 	{
@@ -160,7 +165,18 @@ public:
 		{
 			try
 			{
-				return std::stoi(m_Data.at(m_LastIndex - 1));
+				std::string string;
+
+				try
+				{
+					string = m_Data.at(m_LastIndex - 1);				
+				}
+				catch (std::out_of_range &)
+				{
+					return 0;
+				}	
+
+				return std::stoi(string);
 			}
 			catch (std::invalid_argument &)
 			{
@@ -178,7 +194,14 @@ public:
 
 		if (CheckIndex())
 		{
-			return m_Data.at(m_LastIndex - 1).c_str();
+			try
+			{
+				return m_Data.at(m_LastIndex - 1).c_str();
+			}
+			catch (std::out_of_range &)
+			{
+				return nullptr;
+			}
 		}
 		else
 			return nullptr;
@@ -193,7 +216,18 @@ public:
 		{
 			try
 			{
-				return std::stod(m_Data.at(m_LastIndex - 1));
+				std::string string;
+
+				try
+				{
+					string = m_Data.at(m_LastIndex - 1);			
+				}
+				catch (std::out_of_range &)
+				{
+					return 0.0;
+				}
+
+				return std::stod(string);
 			}
 			catch (std::invalid_argument &)
 			{
@@ -213,7 +247,18 @@ public:
 		{
 			try
 			{
-				return std::stof(m_Data.at(m_LastIndex - 1));
+				std::string string;
+
+				try
+				{
+					string = m_Data.at(m_LastIndex - 1);
+				}
+				catch (std::out_of_range &)
+				{
+					return 0.0f;
+				}
+
+				return std::stof(string);
 			}
 			catch (std::invalid_argument &)
 			{
@@ -225,7 +270,7 @@ public:
 	}
 private:
 	std::vector<std::string> m_Data;
-	int                      m_LastIndex = 0;
+	int                      m_LastIndex;
 private:
 	bool CheckIndex()
 	{

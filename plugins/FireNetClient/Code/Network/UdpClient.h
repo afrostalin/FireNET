@@ -37,8 +37,10 @@ private:
 public:
 	void                            On_Connected(bool connected);
 	void                            ResetTimeout() { m_ConnectionTimeout = 0.f; }
+	void                            PrintClientStatistic();
 private:
 	void                            On_Disconnected();	
+	void                            CalculateStatisctic();
 public:
 	enum EUdpClientStatus : int
 	{
@@ -70,4 +72,8 @@ private:
 	float                           m_ConnectionTimeout;  
 	float                           m_LastSendedMessageTime;
 	int                             m_LastOutPacketNumber;
+private:
+	float                           m_StatisticLastTime;
+	int                             m_StatisticPacketsInputCount;
+	int                             m_StatisticPacketsOutputCount;
 };

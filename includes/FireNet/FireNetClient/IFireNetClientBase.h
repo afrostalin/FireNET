@@ -23,24 +23,25 @@ enum EFireNetClientInputFlags : TInputFlags
 	E_FIRENET_INPUT_MOUSE_ROTATE_PITCH = 1 << 8,
 };
 
-//! Structure for spawning player
+//! Client player structure
 struct SFireNetClientPlayer
 {
-	uint32 m_PlayerUID;
-	uint32 m_ChanelId;
+	uint32          m_PlayerUID;
+	uint32          m_ChanelId;
 
-	Vec3   m_PlayerSpawnPos;
-	Quat   m_PlayerSpawnRot;
+	Vec3            m_PlayerSpawnPos;
+	Quat            m_PlayerSpawnRot;
 
-	string m_PlayerModel;
-	string m_PlayerNickname;
+	string          m_PlayerModel;
+	string          m_PlayerNickname;
 
-	IActor* pActor;
+	IActor*         pActor;
+	CFireNetPlayer* pPlayer;
 };
 
 //! Structure for send/read input
 struct SFireNetClientInput
 {
 	EFireNetClientInputFlags m_flags;
-	float                    m_value;
+	Quat                     m_LookOrientation;
 };

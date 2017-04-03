@@ -28,15 +28,17 @@ void CFireNetPlayerInput::PostInit(IGameObject *pGameObject)
 
 void CFireNetPlayerInput::Update(SEntityUpdateContext &ctx, int updateSlot)
 {
-	Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));
+	if (m_pPlayer->IsLocalPlayer())
+	{
+		Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(m_lookOrientation));
 
-	ypr.x += m_mouseDeltaRotation.x * m_pPlayer->GetCVars().m_rotationSpeedYaw * ctx.fFrameTime;
-	ypr.y = CLAMP(ypr.y + m_mouseDeltaRotation.y * m_pPlayer->GetCVars().m_rotationSpeedPitch * ctx.fFrameTime, m_pPlayer->GetCVars().m_rotationLimitsMinPitch, m_pPlayer->GetCVars().m_rotationLimitsMaxPitch);
-	ypr.z = 0;
+		ypr.x += m_mouseDeltaRotation.x * m_pPlayer->GetCVars().m_rotationSpeedYaw * ctx.fFrameTime;
+		ypr.y = CLAMP(ypr.y + m_mouseDeltaRotation.y * m_pPlayer->GetCVars().m_rotationSpeedPitch * ctx.fFrameTime, m_pPlayer->GetCVars().m_rotationLimitsMinPitch, m_pPlayer->GetCVars().m_rotationLimitsMaxPitch);
+		ypr.z = 0;
 
-	m_lookOrientation = Quat(CCamera::CreateOrientationYPR(ypr));
-
-	m_mouseDeltaRotation = ZERO;
+		m_lookOrientation = Quat(CCamera::CreateOrientationYPR(ypr));
+		m_mouseDeltaRotation = ZERO;
+	}
 
 	if (auto pMovement = m_pPlayer->GetMovement())
 	{
@@ -77,11 +79,19 @@ void CFireNetPlayerInput::HandleInputFlagChange(EFireNetClientInputFlags flags, 
 		break;
 	}
 
+	//! Send input to server if input changed
 	if (m_pPlayer->IsLocalPlayer())
 	{
 		if (!gEnv->IsDedicated() && !gEnv->IsEditor() && gFireNet && gFireNet->pClient && gFireNet->pClient->IsConnected())
 		{
-			gFireNet->pClient->SendUpdateInputRequest(m_inputFlags, m_inputValues);
+			SFireNetClientInput input;
+			input.m_flags = static_cast<EFireNetClientInputFlags>(m_inputFlags);
+			input.m_LookOrientation = m_lookOrientation;
+
+			if (m_LastClientInputFlags != input.m_flags || m_LastClientLookOrientation != input.m_LookOrientation)
+			{
+				gFireNet->pClient->SendUpdateInputRequest(input);
+			}		
 		}
 	}
 }
@@ -90,31 +100,18 @@ void CFireNetPlayerInput::SyncInput(const SFireNetClientInput & input)
 {
 	//! Sync flags
 	m_inputFlags = input.m_flags;
-
-	//! Sync mouse yaw
-	if (m_inputFlags & E_FIRENET_INPUT_MOUSE_ROTATE_YAW)
-	{
-		//DoMouseYaw(input.m_value);
-	}
-
-	//! Sync mouse pitch
-	if (m_inputFlags & E_FIRENET_INPUT_MOUSE_ROTATE_PITCH)
-	{
-		//DoMousePitch(input.m_value);
-	}
+	m_lookOrientation = input.m_LookOrientation;
 
 	//! Sync jump
 	if (m_inputFlags & E_FIRENET_INPUT_JUMP)
 	{
 		DoJump();
 	}
-	
 	//! Sync sprint
 	if (m_inputFlags & E_FIRENET_INPUT_SPRINT)
 	{
 		DoSprint();
 	}
-
 	//! Sync shoot
 	if (m_inputFlags & E_FIRENET_INPUT_SHOOT)
 	{
@@ -340,7 +337,7 @@ bool CFireNetPlayerInput::OnActionPhysicDebug(EntityId entityId, const ActionId 
 
 bool CFireNetPlayerInput::OnActionMouseRotateYaw(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-//	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_YAW, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_YAW, activationMode);
 	m_inputValues = value;
 
 	DoMouseYaw(value);
@@ -350,7 +347,7 @@ bool CFireNetPlayerInput::OnActionMouseRotateYaw(EntityId entityId, const Action
 
 bool CFireNetPlayerInput::OnActionMouseRotatePitch(EntityId entityId, const ActionId& actionId, int activationMode, float value)
 {
-//	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_PITCH, activationMode);
+	HandleInputFlagChange(E_FIRENET_INPUT_MOUSE_ROTATE_PITCH, activationMode);
 	m_inputValues = value;
 
 	DoMousePitch(value);
