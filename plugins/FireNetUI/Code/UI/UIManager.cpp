@@ -51,7 +51,7 @@ CUIManager::~CUIManager()
 bool CUIManager::RegisterUIPage(const char * name, IUIPage * page)
 {
 	if(!name || !page)
-		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register UI page. Empty nama or nullpointer");
+		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, TITLE "Can't register UI page. Empty name or nullpointer");
 
 	m_Mutex.Lock();
 

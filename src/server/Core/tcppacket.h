@@ -8,6 +8,7 @@
 class CTcpPacket : public IFireNetTcpPacket
 {
 public:
+	CTcpPacket::CTcpPacket() {}
 	CTcpPacket::CTcpPacket(EFireNetTcpPacketType type);
 	CTcpPacket::CTcpPacket(const char* data);
 public:
