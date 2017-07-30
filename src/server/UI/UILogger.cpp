@@ -15,6 +15,7 @@ UILogger::~UILogger()
 
 void UILogger::append(const QDateTime & timeStamp, Logger::LogLevel logLevel, const char * file, int line, const char * function, const QString & category, const QString & message)
 {
+#ifndef NO_UI
 	if (!gEnv->pUI)
 		return;
 
@@ -56,4 +57,7 @@ void UILogger::append(const QDateTime & timeStamp, Logger::LogLevel logLevel, co
 	default:
 		break;
 	}
+#else
+	printf_s("%s\n", formattedString(timeStamp, logLevel, file, line, function, category, message).toStdString().c_str());
+#endif
 }

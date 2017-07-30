@@ -9,6 +9,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Enable using folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Options
+option(NO_UI "Disable UI" OFF)
+
 # Includes
 set(3RD_DIR ${PROJECT_SOURCE_DIR}/3rd)
 set(LOGGER_INCLUDES ${3RD_DIR}/cutelogger/includes)
@@ -156,7 +159,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinMain)
 target_link_libraries(${PROJECT_NAME} PRIVATE Logger cpp_redis tacopie)
 
 if(WIN32)
-	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+	if(NOT NO_UI)
+		set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+	else()
+		add_definitions(-DNO_UI)
+	endif()
+	
 	target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32)
 else()
 	target_link_libraries(${PROJECT_NAME} PRIVATE pthread)
