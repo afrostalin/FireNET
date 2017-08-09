@@ -9,6 +9,7 @@
 
 #include <CryAnimation/ICryAnimation.h>
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 CFireNetPlayerInput::CFireNetPlayerInput() : m_pPlayer(nullptr)
 	, bGamePaused(false)
 	, bPhysDebug(false)
@@ -366,3 +367,4 @@ bool CFireNetPlayerInput::OnActionShoot(EntityId entityId, const ActionId& actio
 
 	return true;
 }
+#endif

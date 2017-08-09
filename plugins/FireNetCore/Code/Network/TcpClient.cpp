@@ -102,7 +102,7 @@ bool CTcpClient::Do_VerifyCertificate(bool preverified, boost::asio::ssl::verify
 void CTcpClient::Do_Connect()
 { 
 	ICVar* ip = gEnv->pConsole->GetCVar("firenet_master_ip");
-	ICVar* port;
+	ICVar* port = nullptr;
 
 	if (gEnv->IsDedicated())
 		port = gEnv->pConsole->GetCVar("firenet_master_remote_port");

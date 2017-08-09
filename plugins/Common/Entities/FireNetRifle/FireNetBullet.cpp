@@ -6,6 +6,7 @@
 
 #include "Main/Plugin.h"
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 class CFireNetBulletRegistrator
 	: public IEntityRegistrator
 {
@@ -111,3 +112,4 @@ void CFireNetBullet::Physicalize()
 
 	GetEntity()->Physicalize(physParams);
 }
+#endif

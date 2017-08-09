@@ -7,6 +7,7 @@
 
 #include <CryEntitySystem/IEntitySystem.h>
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 class CFireNetSpawnPointRegistrator : public IEntityRegistrator
 {
 	virtual void Register() override
@@ -51,3 +52,4 @@ void CFireNetSpawnPoint::SpawnEntity(IEntity &otherEntity)
 	if (bEnabled)
 		otherEntity.SetWorldTM(GetEntity()->GetWorldTM());
 }
+#endif

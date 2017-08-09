@@ -19,6 +19,7 @@
 
 #include <FireNet>
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 class CPlayerRegistrator
 	: public IEntityRegistrator
 	, public CFireNetPlayer::SExternalCVars
@@ -267,3 +268,4 @@ void CFireNetPlayer::CreateWeapon(const char *name)
 	else
 		CryWarning(VALIDATOR_MODULE_GAME, VALIDATOR_ERROR, "Can't spawn weapon of type %s - class not found", name);
 }
+#endif

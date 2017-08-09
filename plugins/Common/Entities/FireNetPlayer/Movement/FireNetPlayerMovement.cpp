@@ -7,6 +7,7 @@
 #include "Entities/FireNetPlayer/FireNetPlayer.h"
 #include "Entities/FireNetPlayer/Input/FireNetPlayerInput.h"
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 CFireNetPlayerMovement::CFireNetPlayerMovement()
 	: m_bOnGround(false)
 {
@@ -105,3 +106,4 @@ Vec3 CFireNetPlayerMovement::GetLocalMoveDirection() const
 
 	return moveDirection;
 }
+#endif

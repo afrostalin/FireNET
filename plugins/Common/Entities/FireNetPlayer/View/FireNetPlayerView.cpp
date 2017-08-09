@@ -11,6 +11,7 @@
 #include <IViewSystem.h>
 #include <CryAnimation/ICryAnimation.h>
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 CFireNetPlayerView::CFireNetPlayerView()
 	: m_cameraJointId(0)
 	, bIsLocal(false)
@@ -82,3 +83,4 @@ void CFireNetPlayerView::UpdateView(SViewParams &viewParams)
 		viewParams.position.z += m_pPlayer->GetCVars().m_viewOffsetZ;
 	}
 }
+#endif

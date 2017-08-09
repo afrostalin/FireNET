@@ -9,6 +9,7 @@
 
 #include <IActorSystem.h>
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 class CFireNetRulesRegistrator : public IEntityRegistrator
 {
 	virtual void Register() override
@@ -94,3 +95,4 @@ bool CFireNetGameRules::OnClientEnteredGame(int channelId, bool isReset)
 
 	return true;
 }
+#endif

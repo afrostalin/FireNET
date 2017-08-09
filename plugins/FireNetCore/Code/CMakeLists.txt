@@ -7,6 +7,7 @@ if (${CMAKE_GENERATOR} MATCHES "^Visual Studio")
 endif()
 
 option(OPTION_PCH "Enable Precompiled headers" ON)
+option(DEFAULT_DEDICATED_SERVER "Use default dedicated server" ON)
 
 # CryEngine headers
 find_package (CryCommon REQUIRED)
@@ -25,6 +26,10 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 else()
   message("Boost NOT INCLUDED!")
+endif()
+
+if(DEFAULT_DEDICATED_SERVER)
+	add_definitions(-DUSE_DEFAULT_DEDICATED_SERVER)
 endif()
 
 # OpenSsl

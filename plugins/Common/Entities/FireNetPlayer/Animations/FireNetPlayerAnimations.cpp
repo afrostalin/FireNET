@@ -11,6 +11,7 @@
 #include <CryAnimation/ICryAnimation.h>
 #include <ICryMannequin.h>
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 CFireNetPlayerAnimations::CFireNetPlayerAnimations()
 	: m_pActionController(nullptr)
 	, m_pAnimationContext(nullptr)
@@ -168,3 +169,4 @@ void CFireNetPlayerAnimations::ActivateMannequinContext(const char *contextName,
 	// can change during the lifetime of an action controller.
 	m_pActionController->SetScopeContext(scopeContextId, entity, &character, &animationDatabase);
 }
+#endif

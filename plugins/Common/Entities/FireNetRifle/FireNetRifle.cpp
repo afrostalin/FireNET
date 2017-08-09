@@ -8,6 +8,7 @@
 
 #include "CryEntitySystem/IEntitySystem.h"
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 class CFireNetRifleRegistrator
 	: public IEntityRegistrator
 {
@@ -56,3 +57,4 @@ void CFireNetRifle::RequestFire(const Vec3 &initialBulletPosition, const Quat &i
 	// Spawn the entity, bullet is propelled in CBullet based on the rotation and position here
 	gEnv->pEntitySystem->SpawnEntity(spawnParams);
 }
+#endif
