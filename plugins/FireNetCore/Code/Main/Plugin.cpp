@@ -45,7 +45,7 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 		pConsole->UnregisterVariable("firenet_master_timeout");
 		pConsole->UnregisterVariable("firenet_master_remote_port");
 		pConsole->UnregisterVariable("firenet_master_timeout");
-
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 		pConsole->UnregisterVariable("firenet_game_server_ip");
 		pConsole->UnregisterVariable("firenet_game_server_map");
 		pConsole->UnregisterVariable("firenet_game_server_gamerules");
@@ -53,6 +53,7 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 		pConsole->UnregisterVariable("firenet_game_server_tickrate");
 		pConsole->UnregisterVariable("firenet_game_server_timeout");	
 		pConsole->UnregisterVariable("firenet_game_server_max_players");
+#endif
 
 #ifndef NDEBUG
 		pConsole->UnregisterVariable("firenet_packet_debug");
