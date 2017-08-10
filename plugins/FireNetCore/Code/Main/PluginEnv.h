@@ -23,14 +23,15 @@ struct SPluginEnv
 		net_master_remote_port = 0;
 		net_master_timeout = 0;
 
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 		net_game_server_ip = nullptr;
 		net_game_server_map = nullptr;
 		net_game_server_gamerules = nullptr;
 		net_game_server_port = 0;
 		net_game_server_tickrate = 0;
-	    net_game_server_timeout = 0;
+		net_game_server_timeout = 0;
 		net_game_server_max_players = 0;
-
+#endif
 		net_debug = 0;
 	}
 
@@ -46,6 +47,7 @@ struct SPluginEnv
 	int                               net_master_port;
 	int                               net_master_remote_port;
 	int                               net_master_timeout;
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 	// CVars - Game server
 	ICVar*                            net_game_server_ip;
 	ICVar*                            net_game_server_map;
@@ -54,6 +56,7 @@ struct SPluginEnv
 	int                               net_game_server_tickrate;
 	int                               net_game_server_timeout;
 	int                               net_game_server_max_players;
+#endif
 	// CVars - Other
 	int                               net_debug;
 };

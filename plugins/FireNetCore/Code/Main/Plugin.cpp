@@ -145,7 +145,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		REGISTER_CVAR2("firenet_master_port", &mEnv->net_master_port, 3322, VF_CHEAT, "FireNet master server port");
 		REGISTER_CVAR2("firenet_master_timeout", &mEnv->net_master_timeout, 10, VF_NULL, "FireNet master server timeout");
 		REGISTER_CVAR2("firenet_master_remote_port", &mEnv->net_master_remote_port, 5200, VF_CHEAT, "FireNet master server port for game server");
-
+#ifndef USE_DEFAULT_DEDICATED_SERVER
 		//! CVars - Game server
 		mEnv->net_game_server_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
 		mEnv->net_game_server_map = REGISTER_STRING("firenet_game_server_map", "", VF_NULL, "Map name for loading and register in master server");
@@ -154,6 +154,7 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 		REGISTER_CVAR2("firenet_game_server_tickrate", &mEnv->net_game_server_tickrate, 30, VF_NULL, "FireNet game server tickrate");
 		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_game_server_timeout, 10, VF_NULL, "FireNet game server timeout");
 		REGISTER_CVAR2("firenet_game_server_max_players", &mEnv->net_game_server_max_players, 64, VF_NULL, "FireNet game server max players count");
+#endif
 
 		//! CVars - Other
 #ifndef  NDEBUG

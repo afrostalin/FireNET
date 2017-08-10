@@ -67,6 +67,7 @@ set (SourceGroup_Network
 	"Network/TcpPacket.h"
 )
 
+if(NOT DEFAULT_DEDICATED_SERVER)
 # Entities 
 set(SourceGroup_Entities
 	"../../Common/Entities/ISimpleActor.h"
@@ -124,11 +125,13 @@ set(SourceGroup_FireNetGameRules
 	"Gamerules/FireNetGameRules.cpp"
 	"Gamerules/FireNetGameRules.h"
 )
+endif()
 
 # MSVC filters 
 source_group("Main" FILES ${SourceGroup_PluginMain})
 source_group("FlowNodes" FILES ${SourceGroup_FlowNodes})
 source_group("Network" FILES ${SourceGroup_Network})
+if(NOT DEFAULT_DEDICATED_SERVER)
 source_group("Entities" FILES ${SourceGroup_Entities})
 source_group("Entities\\FireNetSpawnPoint" FILES ${SourceGroup_FireNetSpawnPoint})
 source_group("Entities\\FireNetPlayer" FILES ${SourceGroup_FireNetPlayer})
@@ -138,7 +141,9 @@ source_group("Entities\\FireNetPlayer\\Movement" FILES ${SourceGroup_FireNetPlay
 source_group("Entities\\FireNetPlayer\\View" FILES ${SourceGroup_FireNetPlayerView})
 source_group("Entities\\FireNetRifle" FILES ${SourceGroup_FireNetRifle})
 source_group("GameRules" FILES ${SourceGroup_FireNetGameRules})
+endif()
 
+if(NOT DEFAULT_DEDICATED_SERVER)
 set (SOURCE
 	${SourceGroup_PluginMain}
 	${SourceGroup_FlowNodes}
@@ -153,6 +158,13 @@ set (SOURCE
 	${SourceGroup_FireNetRifle}
 	${SourceGroup_FireNetGameRules}
 )
+else()
+set (SOURCE
+	${SourceGroup_PluginMain}
+	${SourceGroup_FlowNodes}
+	${SourceGroup_Network}
+)
+endif()
 
 if(OPTION_PCH AND MSVC)
 	set (PRECOMPILED_SOURCE ${SOURCE})
