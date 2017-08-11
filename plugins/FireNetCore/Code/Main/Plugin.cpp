@@ -446,6 +446,16 @@ bool CFireNetCorePlugin::IsConnected()
 	return mEnv->pTcpClient ? mEnv->pTcpClient->IsConnected() : false;
 }
 
+bool CFireNetCorePlugin::GetHWID(std::string &hwid)
+{
+	HW_PROFILE_INFO hwProfileInfo;
+	if (GetCurrentHwProfile(&hwProfileInfo))
+	{
+		hwid = hwProfileInfo.szHwProfileGuid;
+	}
+	return false;
+}
+
 void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 {
 	if (listener == nullptr)

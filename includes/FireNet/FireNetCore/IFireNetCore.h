@@ -71,6 +71,9 @@ struct IFireNetCore
 
 	//! Return connection status
 	virtual bool IsConnected() = 0;
+	
+	//! Calculate and get HWID
+	virtual bool GetHWID(std::string &hwid) = 0;
 
 	//! Send FireNet event
 	virtual void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) = 0;

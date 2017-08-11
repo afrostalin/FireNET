@@ -56,6 +56,7 @@ public:
 	virtual void             GetGameServer(const std::string &map, const std::string &gamerules) override;
 	virtual void             SendRawRequestToMasterServer(CTcpPacket &packet) override;
 	virtual bool             IsConnected() override;
+	virtual bool             GetHWID(std::string &hwid) override;
 	virtual void             SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) override;
 	virtual bool             Quit() override;
 	// ~IFireNetCore
