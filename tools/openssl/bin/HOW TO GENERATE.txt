@@ -1,4 +1,4 @@
-set OPENSSL_CONF=E:\_Development\FireNET\tools\openssl\bin\openssl.cfg
+set OPENSSL_CONF=F:\Projects\safeguardscode\Code\FireNET\tools\openssl\bin\openssl.cfg
 
 openssl req -x509 -newkey rsa:1024 -keyout key.key -out key.pem -days 365 -nodes
 

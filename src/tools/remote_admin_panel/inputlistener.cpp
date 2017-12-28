@@ -1,41 +1,38 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#include <QTextStream>
-#include <QDebug>
 #include <QEventLoop>
-#include <QTimer>
 
 #include "inputlistener.h"
 #include "global.h"
 #include "client.h"
-#include "Core/netpacket.h"
+
+#include "Core/tcppacket.h"
 
 InputListener::InputListener(QObject *parent) : QObject(parent)
 {
 }
 
-void InputListener::Run()
+void InputListener::Run() const
 {
 	gEnv->pClient = new RemoteClient();
 
 	while (true)
 	{
 		QTextStream s(stdin);
-		QString input;
 
-		input = s.readLine();
+		QString input = s.readLine();
 
 		if (input == "list")
 		{
-			qDebug() << "connect <ip> <port> - connecting to FireNET with specific address";
-			qDebug() << "connect - connecting to FireNET with default address (127.0.0.1:64000)";
-			qDebug() << "login <login> <password> - authorization in FireNET by login and password";
-			qDebug() << "status - get full FireNET status";
-			qDebug() << "send_message <message> - Send message to all connected players";
-			qDebug() << "send_command <command> <arguments> - Send console command to all connected players";
-			qDebug() << "players - Get player list";
-			qDebug() << "servers - Get game server list";
+			LogInfo("connect <ip> <port> - connecting to FireNET with specific address");
+			LogInfo("connect - connecting to FireNET with default address (%s:%d)", gEnv->m_ServerIP.toStdString().c_str(), gEnv->m_ServerPort);
+			LogInfo("login <login> <password> - authorization in FireNET by login and password");
+			LogInfo("status - get full FireNET status");
+			LogInfo("send_message <message> - Send message to all connected players");
+			LogInfo("send_command <command> <arguments> - Send console command to all connected players");
+			LogInfo("players - Get player list");
+			LogInfo("servers - Get game server list");
 		}
 		else if (input.contains("connect"))
 		{
@@ -45,14 +42,14 @@ void InputListener::Run()
 				QString ip = list[1];
 				QString port = list[2];
 
-				qDebug() << "Start connection to FireNET (" << ip << ":" << port.toInt() << ")";
+				LogInfo("Start connection to FireNET <%s : %d>", ip.toStdString().c_str(), port.toInt());
 
 				gEnv->pClient->ConnectToServer(ip, port.toInt());
 			}
 			else
 			{
-				qDebug() << "Start connection to FireNET (127.0.0.1:64000)";
-				gEnv->pClient->ConnectToServer("127.0.0.1", 64000);
+				LogInfo("Start connection to FireNET <%s : %d>", gEnv->m_ServerIP.toStdString().c_str(), gEnv->m_ServerPort);
+				gEnv->pClient->ConnectToServer(gEnv->m_ServerIP, gEnv->m_ServerPort);
 			}
 		}
 		else if (input.contains("login"))
@@ -63,24 +60,23 @@ void InputListener::Run()
 				QString login = list[1];
 				QString password = list[2];
 
-				NetPacket packet(net_Query);
-				packet.WriteInt(net_query_remote_admin_login);
-				packet.WriteString(login.toStdString());
-				packet.WriteString(password.toStdString());
+				CTcpPacket packet(EFireNetTcpPacketType::Query);
+				packet.WriteQuery(EFireNetTcpQuery::AdminLogin);
+				packet.WriteString(login.toStdString().c_str());
+				packet.WriteString(password.toStdString().c_str());
 
 				gEnv->pClient->SendMessage(packet);
 			}
 			else
 			{
-				qDebug() << "Syntax error! Use login <login> <password>";
+				LogError("Syntax error! Use login <login> <password>");
 			}
 		}
 		else if (input == "status")
 		{
-			NetPacket packet(net_Query);
-			packet.WriteInt(net_query_remote_server_command);
-			packet.WriteString("status");
-			packet.WriteString("");
+			CTcpPacket packet(EFireNetTcpPacketType::Query);
+			packet.WriteQuery(EFireNetTcpQuery::AdminCommand);
+			packet.WriteAdminCommand(EFireNetAdminCommands::CMD_Status);
 
 			gEnv->pClient->SendMessage(packet);
 		}
@@ -90,15 +86,18 @@ void InputListener::Run()
 
 			if (!message.isEmpty())
 			{
-				NetPacket packet(net_Query);
-				packet.WriteInt(net_query_remote_server_command);
+				CTcpPacket packet(EFireNetTcpPacketType::Query);
+				packet.WriteQuery(EFireNetTcpQuery::AdminCommand);
+				packet.WriteAdminCommand(EFireNetAdminCommands::CMD_SendGlobalMessage);
 				packet.WriteString("send_message");
-				packet.WriteString(message.toStdString());
+				packet.WriteString(message.toStdString().c_str());
 
 				gEnv->pClient->SendMessage(packet);
 			}
 			else
-				qDebug() << "Syntax error! Use send_message <message>";
+			{
+				LogError("Syntax error! Use send_message <message>");
+			}
 		}
 		else if (input.contains("send_command"))
 		{
@@ -106,37 +105,40 @@ void InputListener::Run()
 
 			if (!message.isEmpty())
 			{
-				NetPacket packet(net_Query);
-				packet.WriteInt(net_query_remote_server_command);
+				CTcpPacket packet(EFireNetTcpPacketType::Query);
+				packet.WriteQuery(EFireNetTcpQuery::AdminCommand);
+				packet.WriteAdminCommand(EFireNetAdminCommands::CMD_SendGlobalCommand);
 				packet.WriteString("send_command");
-				packet.WriteString(message.toStdString());
+				packet.WriteString(message.toStdString().c_str());
 
 				gEnv->pClient->SendMessage(packet);
 			}
 			else
-				qDebug() << "Syntax error! Use send_console_command <command> <arguments>";
+			{
+				LogError("Syntax error! Use send_console_command <command> <arguments>");
+			}
 		}
 		else if (input == "players")
 		{
-			NetPacket packet(net_Query);
-			packet.WriteInt(net_query_remote_server_command);
+			CTcpPacket packet(EFireNetTcpPacketType::Query);
+			packet.WriteQuery(EFireNetTcpQuery::AdminCommand);
+			packet.WriteAdminCommand(EFireNetAdminCommands::CMD_GetPlayersList);
 			packet.WriteString("players");
-			packet.WriteString("");
 
 			gEnv->pClient->SendMessage(packet);
 		}
 		else if (input == "servers")
 		{
-			NetPacket packet(net_Query);
-			packet.WriteInt(net_query_remote_server_command);
+			CTcpPacket packet(EFireNetTcpPacketType::Query);
+			packet.WriteQuery(EFireNetTcpQuery::AdminCommand);
+			packet.WriteAdminCommand(EFireNetAdminCommands::CMD_GetGameServersList);
 			packet.WriteString("servers");
-			packet.WriteString("");
 
 			gEnv->pClient->SendMessage(packet);
 		}
 		else
 		{
-			qCritical() << "Unknown command";
+			LogError("Unknown command");
 		}
 
 		QEventLoop loop;

@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef TCPCONNECTION_H
-#define TCPCONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QSslSocket>
@@ -23,6 +22,7 @@ public:
     ~TcpConnection();
 public:
 	void                  SendMessage(CTcpPacket &packet);
+	SIpPort               GetPeerAddress() const;
 private:
 	QSslSocket*            CreateSocket();
 	void                   CalculateStatistic();
@@ -33,7 +33,7 @@ public slots:
 	void                   disconnected();
 	void                   readyRead();
 	void                   bytesWritten(qint64 bytes);
-	void                   stateChanged(QAbstractSocket::SocketState socketState);
+	void                   stateChanged(QAbstractSocket::SocketState socketState) const;
 	void                   socketError(QAbstractSocket::SocketError error);
 	void                   Update();
 signals:
@@ -42,9 +42,12 @@ signals:
 
 	void                   received();
 	void                   sended();
-private:
-	ClientQuerys*          pQuery;
+private:	
 	QSslSocket*            m_Socket;
+	std::string            m_PeerIP;
+	quint16                m_PeerPort;
+
+	ClientQuerys*          pQuery;
 	SClient                m_Client;
 	std::queue<CTcpPacket> m_Packets;
 private:
@@ -61,5 +64,3 @@ private:
 	bool                   bIsQuiting;
 	bool                   bLastMsgSended;
 };
-
-#endif // TCPCONNECTION_H

@@ -1,12 +1,12 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
 #include "tcppacket.h"
 
-#include "Tools/settings.h"
+#include "Tools/console.h"
 
-CTcpPacket::CTcpPacket(EFireNetTcpPacketType type)
+CTcpPacket::CTcpPacket(EFireNetTcpPacketType type) 
 {
 	m_Separator = '|';
 	m_Type = type;
@@ -16,7 +16,7 @@ CTcpPacket::CTcpPacket(EFireNetTcpPacketType type)
 	bIsGoodPacket = false;
 	m_LastIndex = 0;
 
-	GenerateSession();
+	CTcpPacket::GenerateSession();
 	WriteHeader();
 	WritePacketType(type);
 }
@@ -33,38 +33,43 @@ CTcpPacket::CTcpPacket(const char * data)
 		bIsGoodPacket = false;
 		m_LastIndex = 0;
 
-		GenerateSession();
-		ReadPacket();
+		CTcpPacket::GenerateSession();
+		CTcpPacket::ReadPacket();
 	}
 	else
 	{
-		qWarning() << "Empty TCP packet!";
+		LogWarning("Empty TCP packet!");
 		m_Type = EFireNetTcpPacketType::Empty;
 	}
 }
 
-void CTcpPacket::WriteString(const std::string & value)
+void CTcpPacket::WriteStdString(const std::string & value)
 {
 	m_Data = m_Data + value + m_Separator;
 }
 
-void CTcpPacket::WriteInt(int value)
+void CTcpPacket::WriteString(const char * value)
+{
+	m_Data = m_Data + value + m_Separator;
+}
+
+void CTcpPacket::WriteInt(const int value)
 {
 	m_Data = m_Data + std::to_string(value) + m_Separator;
 }
 
-void CTcpPacket::WriteBool(bool value)
+void CTcpPacket::WriteBool(const bool value)
 {
-	int m_value = value ? 1 : 0;
+	const int m_value = value ? 1 : 0;
 	m_Data = m_Data + std::to_string(m_value) + m_Separator;
 }
 
-void CTcpPacket::WriteFloat(float value)
+void CTcpPacket::WriteFloat(const float value)
 {
 	m_Data = m_Data + std::to_string(value) + m_Separator;
 }
 
-void CTcpPacket::WriteDouble(double value)
+void CTcpPacket::WriteDouble(const double value)
 {
 	m_Data = m_Data + std::to_string(value) + m_Separator;
 }
@@ -76,19 +81,22 @@ const char * CTcpPacket::ReadString()
 		if (m_Packet.size() - 1 > m_LastIndex)
 		{
 			m_LastIndex++;
-			return m_Packet.at(m_LastIndex - 1).c_str();
+
+			try
+			{
+				return m_Packet.at(m_LastIndex - 1).c_str();
+			}
+			catch (const std::exception&)
+			{
+				LogWarning("Error reading string from TCP packet. Out of range");
+				return nullptr;
+			}			
 		}
-		else
-		{
-			qWarning() << "Error reading string from TCP packet. Last index wrong";
-			return nullptr;
-		}
-	}
-	else
-	{
-		qWarning() << "Error reading string from TCP packet. Bad packet.";
+		LogWarning("Error reading string from TCP packet. Last index wrong");
 		return nullptr;
 	}
+	LogWarning("Error reading string from TCP packet. Bad packet.");
+	return nullptr;
 }
 
 int CTcpPacket::ReadInt()
@@ -101,25 +109,19 @@ int CTcpPacket::ReadInt()
 
 			try
 			{
-				return std::stoi(m_Packet.at(m_LastIndex - 1));
+				return stoi(m_Packet.at(m_LastIndex - 1));
 			}
 			catch (std::invalid_argument &)
 			{
-				qWarning() << "Error reading int from TCP packet. Can't convert string to int";
+				LogWarning("Error reading int from TCP packet. Can't convert string to int");
 				return 0;
 			}
 		}
-		else
-		{
-			qWarning() << "Error reading int from TCP packet. Last index wrong";
-			return 0;
-		}
-	}
-	else
-	{
-		qWarning() << "Error reading int from TCP packet. Bad packet.";
+		LogWarning("Error reading int from TCP packet. Last index wrong");
 		return 0;
 	}
+	LogWarning("Error reading int from TCP packet. Bad packet.");
+	return 0;
 }
 
 bool CTcpPacket::ReadBool()
@@ -137,25 +139,19 @@ float CTcpPacket::ReadFloat()
 
 			try
 			{
-				return std::stof(m_Packet.at(m_LastIndex - 1));
+				return stof(m_Packet.at(m_LastIndex - 1));
 			}
 			catch (std::invalid_argument &)
 			{
-				qWarning() << "Error reading float from TCP packet. Can't convert string to float";
+				LogWarning("Error reading float from TCP packet. Can't convert string to float");
 				return 0.0f;
 			}
 		}
-		else
-		{
-			qWarning() << "Error reading float from TCP packet. Last index wrong";
-			return 0.0f;
-		}
-	}
-	else
-	{
-		qWarning() << "Error reading float from TCP packet. Bad packet.";
+		LogWarning("Error reading float from TCP packet. Last index wrong");
 		return 0.0f;
 	}
+	LogWarning("Error reading float from TCP packet. Bad packet.");
+	return 0.0f;
 }
 
 double CTcpPacket::ReadDouble()
@@ -168,25 +164,19 @@ double CTcpPacket::ReadDouble()
 
 			try
 			{
-				return std::stod(m_Packet.at(m_LastIndex - 1));
+				return stod(m_Packet.at(m_LastIndex - 1));
 			}
 			catch (std::invalid_argument &)
 			{
-				qWarning() << "Error reading double from TCP packet. Can't convert string to double";
+				LogWarning("Error reading double from TCP packet. Can't convert string to double");
 				return 0.0;
 			}
 		}
-		else
-		{
-			qWarning() << "Error reading double from TCP packet. Last index wrong";
-			return 0.0;
-		}
-	}
-	else
-	{
-		qWarning() << "Error reading double from packet. Bad packet.";
+		LogWarning("Error reading double from TCP packet. Last index wrong");
 		return 0.0;
 	}
+	LogWarning("Error reading double from packet. Bad packet.");
+	return 0.0;
 }
 
 const char * CTcpPacket::toString()
@@ -196,22 +186,22 @@ const char * CTcpPacket::toString()
 		WriteFooter();
 
 		// Debugging packet
-		if (gEnv->pSettings->GetVariable("net_packet_debug").toBool())
+		if (gEnv->pConsole->GetBool("net_packet_debug"))
 		{
-			qDebug() << "TCP packet data : " << m_Data.c_str();
-			qDebug() << "TCP packet size :" << getLength();
+			LogDebug("TCP packet data : <%s>", m_Data.c_str());
+			LogDebug("TCP packet size : <%d>", getLength());
 		}
 
 		return m_Data.c_str();
 	}
-	else
-		return m_Data.c_str();
+	return m_Data.c_str();
 }
 
 void CTcpPacket::GenerateSession()
 {
-	// TODO
-	m_Header = "!0x0";
+	std::string networkVersion = gEnv->pConsole->GetString("net_version");
+
+	m_Header = "!0x" + networkVersion;
 	m_Footer = "0x0!";
 }
 
@@ -222,48 +212,56 @@ void CTcpPacket::ReadPacket()
 		m_Packet = Split(m_Data, m_Separator);
 
 		// Debugging packet
-		if (gEnv->pSettings->GetVariable("net_packet_debug").toBool())
+		if (gEnv->pConsole->GetBool("net_packet_debug"))
 		{
-			qDebug() << "TCP packet data : " << m_Data.c_str();
-			qDebug() << "TCP packet size :" << getLength();
+			LogDebug("TCP packet data : <%s>", m_Data.c_str());
+			LogDebug("TCP packet size : <%d>", getLength());
 		}
 
 		if (m_Packet.size() >= 3)
 		{
-			std::string packet_header = m_Packet.at(0);
-			std::string packet_type = m_Packet.at(1);
-			std::string packet_footer = m_Packet.at(m_Packet.size() - 1);
-
-			if (packet_header == m_Header && packet_footer == m_Footer)
+			try
 			{
-				m_Type = (EFireNetTcpPacketType)std::stoi(packet_type);
+				std::string packet_header = m_Packet.at(0);
+				std::string packet_type = m_Packet.at(1);
+				std::string packet_footer = m_Packet.at(m_Packet.size() - 1);
 
-				if (m_Type != EFireNetTcpPacketType::Empty)
+				if (packet_header == m_Header && packet_footer == m_Footer)
 				{
-					bIsGoodPacket = true;
-					m_LastIndex = 2; // 0 - header, 1 - type, 2 - start data
+					m_Type = (EFireNetTcpPacketType)stoi(packet_type);
+
+					if (m_Type != EFireNetTcpPacketType::Empty)
+					{
+						bIsGoodPacket = true;
+						m_LastIndex = 2; // 0 - header, 1 - type, 2 - start data
+					}
+					else
+					{
+						LogWarning("Error reading TCP packet. Empty packet type");
+						bIsGoodPacket = false;
+					}
 				}
 				else
 				{
-					qWarning() << "Error reading TCP packet. Empty packet type";
+					LogWarning("Error reading TCP packet. Wrong session key!");
 					bIsGoodPacket = false;
 				}
 			}
-			else
+			catch (const std::exception&)
 			{
-				qWarning() << "Error reading TCP packet. Wrong session key!";
+				LogWarning("Error reading TCP packet. Out of range");
 				bIsGoodPacket = false;
-			}
+			}		
 		}
 		else
 		{
-			qWarning() << "Error reading TCP packet. Packet soo small!";
+			LogWarning("Error reading TCP packet. Packet soo small!");
 			bIsGoodPacket = false;
 		}
 	}
 	else
 	{
-		qWarning() << "Error reading TCP packet. Packet empty!";
+		LogWarning("Error reading TCP packet. Packet empty!");
 		bIsGoodPacket = false;
 	}
 }

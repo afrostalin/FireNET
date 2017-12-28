@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef REMOTECONNECTION_H
-#define REMOTECONNECTION_H
+#pragma once
 
 #include <QObject>
 #include <QSslSocket>
@@ -21,25 +20,29 @@ public:
 	~RemoteConnection();
 public:
 	void                  SendMessage(CTcpPacket &packet);
+	SIpPort               GetPeerAddress() const;
 private:
 	void                  CalculateStatistic();
 public slots:
 	void                  accept(qint64 socketDescriptor);
-	void                  close();
+	void                  close() const;
 	void                  connected();
 	void                  disconnected();
 	void                  readyRead();
 	void                  bytesWritten(qint64 bytes);
-	void                  socketError(QAbstractSocket::SocketError error);
+	void                  socketError(QAbstractSocket::SocketError error) const;
 	void                  Update();
 signals:
 	void                  finished();
 	void                  received();
 	void                  sended();
 private:
-	QSslSocket*           m_socket;
-	RemoteClientQuerys*   pQuerys;
-	SRemoteClient         m_Client;
+	QSslSocket*            m_socket;
+	std::string            m_PeerIP;
+	quint16                m_PeerPort;
+
+	RemoteClientQuerys*    pQuerys;
+	SRemoteClient          m_Client;
 	std::queue<CTcpPacket> m_Packets;
 private:
 	int                   m_maxPacketSize;
@@ -54,5 +57,3 @@ private:
 	bool                  bConnected;
 	bool                  bLastMsgSended;
 };
-
-#endif // REMOTECONNECTION_H

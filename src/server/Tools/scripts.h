@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef SCRIPTS_H
-#define SCRIPTS_H
+#pragma once
 
 #include <QObject>
 #include "global.h"
@@ -14,15 +13,17 @@ public:
     explicit Scripts(QObject *parent = nullptr);
 	~Scripts();
 public:
-	void                    Clear();
-	void                    LoadShopScript();
-	void                    LoadTrustedServerList();
+	void                        Clear();
+	void                        ReloadAll();
+	void                        LoadShopScript();
+	void                        LoadTrustedServerList();
+	void                        LoadGameMaps();
 public:
-	QVector<SShopItem>      GetShop();
-	QVector<STrustedServer> GetTrustedList();
+	std::vector<SShopItem>      GetShop() const;
+	std::vector<STrustedServer> GetTrustedList() const;
+	std::vector<SGameMap>       GetGameMaps() const;
 private:
-	QVector<SShopItem>      m_shop;
-	QVector<STrustedServer> m_trustedServers;
+	std::vector<SShopItem>      m_shop;
+	std::vector<STrustedServer> m_trustedServers;
+	std::vector<SGameMap>       m_GameMaps;
 };
-
-#endif // SCRIPTS_H

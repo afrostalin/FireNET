@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
@@ -8,8 +8,8 @@
 
 RemoteClient::RemoteClient(QObject *parent) : QObject(parent),
 	m_socket(nullptr),
-	bConnected(false),
-	bLastMsgSended(true)
+	bLastMsgSended(true),
+	bConnected(false)
 {
 	connect(&m_Timer, &QTimer::timeout, this, &RemoteClient::Update);
 
@@ -20,7 +20,7 @@ void RemoteClient::Update()
 {
 	if (bConnected && bLastMsgSended && m_packets.size() > 0)
 	{
-		NetPacket packet = m_packets.front();
+		CTcpPacket packet = m_packets.front();
 		m_packets.pop();
 		bLastMsgSended = false;
 
@@ -40,142 +40,180 @@ void RemoteClient::ConnectToServer(const QString &ip, int port)
     m_socket->connectToHostEncrypted(ip ,port);
     if(!m_socket->waitForEncrypted(3000))
     {
-        qDebug() << "Connection timeout";
+        LogError("Connection timeout");
         return;
     }
 }
 
-void RemoteClient::SendMessage(NetPacket &packet)
+void RemoteClient::SendMessage(CTcpPacket &packet)
 {
 	m_packets.push(packet);
 }
 
 void RemoteClient::onConnectedToServer()
 {
-    qDebug() << "You connected to FireNET";
+    LogInfo("You connected to FireNET");
     bConnected = true;
 }
 
 void RemoteClient::onReadyRead()
 {
-    if(m_socket)
-    {
-       NetPacket packet(m_socket->readAll());
+	if (m_socket)
+	{
+		CTcpPacket packet(m_socket->readAll());
 
-       if(packet.getType() == net_Result)
-       {
-           switch (packet.ReadInt())
-           {
-           case net_result_remote_admin_login_complete:
-           {
-               qInfo() << "You successfully log in!";
-               break;
-           }
-           case net_result_remote_command_complete:
-           {
-               qInfo() << "Command successfully executed on server :";
+		EFireNetTcpPacketType packetType = packet.getType();
 
-               int type = packet.ReadInt();
-
-               if(type == 0)
-               {
-				   QString version = packet.ReadString();
-				   QString ip = packet.ReadString();
-				   int port = packet.ReadInt();
-				   int tickrate = packet.ReadInt();
-				   QString databaseMode = packet.ReadString();
-				   QString authMode = packet.ReadString();
-				   int playersCount = packet.ReadInt();
-				   int maxPlayers = packet.ReadInt();
-				   int gameServersCount = packet.ReadInt();
-				   int maxGameServers = packet.ReadInt();
-
-                   qInfo() << "Server status";
-                   qInfo() << "Version " << version;
-                   qInfo() << "IP " << ip;
-                   qInfo() << "Port " << port;
-                   qInfo() << "Tick rate " << tickrate << " per/sec.";
-                   qInfo() << "Database mode " << databaseMode;
-                   qInfo() << "Authorization mode " << authMode;
-                   qInfo() << "Players amount " << playersCount << "/" << maxPlayers;
-                   qInfo() << "Game servers amount " << gameServersCount << "/" << maxGameServers;
-               } 
-			   else if(type == 1)
-               {
-                   qInfo() << "Message sended";
-               } 
-			   else if(type == 2)
-               {
-                   qInfo() << "Command sended";
-               } 
-			   else if(type == 3)
-               {
-                   qInfo() << "Players : " << packet.ReadString();
-               } 
-			   else if(type == 4)
-               {
-                   qInfo() << "Servers : " << packet.ReadString();
-               }
-
-               break;
-           }
-           default:
-           {
-               qCritical() << "Unknown result type";
-               break;
-           }
-           }
-       } 
-	   else if(packet.getType() == net_Error)
-       {
-           switch (packet.ReadInt())
-           {
-           case net_error_remote_admin_login_fail:
-           {
-               int reason = packet.ReadInt();
-
-               if(reason == 0)
-               {
-                   qWarning() << "Can't log in in FireNet! Login not found!";
-               } else if (reason == 1)
-               {
-                   qWarning() << "Can't log in in FireNet! Incorrect password!";
-               } else if (reason == 2)
-               {
-                   qWarning() << "Can't log in in FireNet! Aministator alredy log in!";
-               }
-
-               break;
-           }
-           case net_error_remote_command_fail:
-           {
-               qWarning() << "Command not found in FireNET!";
-               break;
-           }
-           default:
-           {
-               qCritical() << "Unknown error type";
-               break;
-           }
-           }
-       }
-       else
-       {
-           qCritical() << "Unknown packet type!";
-       }
-    }
+		switch (packetType)
+		{
+		case EFireNetTcpPacketType::Empty:
+			break;
+		case EFireNetTcpPacketType::Query:
+			break;
+		case EFireNetTcpPacketType::Result:
+			ReadResult(packet);
+			break;
+		case EFireNetTcpPacketType::Error:
+			ReadError(packet);
+			break;
+		case EFireNetTcpPacketType::ServerMessage:
+			break;
+		default:
+			break;
+		}
+	}
 }
 
 void RemoteClient::onBytesWritten(qint64 bytes)
 {
-    //qDebug() << "Message to FireNET sended. Size =" << bytes;
 	bLastMsgSended = true;
 }
 
 void RemoteClient::onDisconnected()
 {
-    qDebug() << "Connection with FireNET lost!";
+    LogWarning("Connection with FireNET lost!");
     bConnected = false;
 }
 
+void RemoteClient::ReadResult(CTcpPacket & packet) const
+{
+	EFireNetTcpResult result = packet.ReadResult();
 
+	switch (result)
+	{
+	case EFireNetTcpResult::AdminLoginComplete:
+	{
+		LogInfo("You successfully log in!");
+		break;
+	}
+	case EFireNetTcpResult::AdminCommandComplete:
+	{
+		LogInfo("Command successfully executed on server");
+
+		EFireNetAdminCommands commandType = packet.ReadAdminCommand();
+
+		switch (commandType)
+		{
+		case EFireNetAdminCommands::CMD_Status:
+		{
+			std::vector<std::string> status = packet.ReadArray();
+
+			for (const auto &it : status)
+			{
+				LogInfo("%s", it.c_str());
+			}
+
+			break;
+		}
+		case EFireNetAdminCommands::CMD_SendGlobalMessage:
+		{
+			LogInfo("Global message sended");
+			break;
+		}
+		case EFireNetAdminCommands::CMD_SendGlobalCommand:
+		{
+			LogInfo("Global command sended");
+			break;
+		}
+		case EFireNetAdminCommands::CMD_SendRemoteMessage:
+		{
+			LogInfo("Global remote message sended");
+			break;
+		}
+		case EFireNetAdminCommands::CMD_SendRemoteCommand:
+		{
+			LogInfo("Global remote command sended");
+			break;
+		}
+		case EFireNetAdminCommands::CMD_GetPlayersList:
+		{
+			std::vector<std::string> players = packet.ReadArray();
+
+			for (const auto &it : players)
+			{
+				LogInfo("%s", it.c_str());
+			}
+
+			break;
+		}
+		case EFireNetAdminCommands::CMD_GetGameServersList:
+		{
+			std::vector<std::string> servers = packet.ReadArray();
+
+			for (const auto &it : servers)
+			{
+				LogInfo("%s", it.c_str());
+			}
+
+			break;
+		}
+		case EFireNetAdminCommands::CMD_RawMasterServerCommand:
+		{
+			LogInfo("Raw command executed!");
+			break;
+		}
+		default:
+			break;
+		}
+
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void RemoteClient::ReadError(CTcpPacket & packet) const
+{
+	EFireNetTcpError error = packet.ReadError();
+
+	switch (error)
+	{
+	case EFireNetTcpError::AdminLoginFail:
+	{
+		int reason = packet.ReadInt();
+
+		if (reason == 0)
+		{
+			LogWarning("Can't log in in FireNet! Login not found!");
+		}
+		else if (reason == 1)
+		{
+			LogWarning("Can't log in in FireNet! Incorrect password!");
+		}
+		else if (reason == 2)
+		{
+			LogWarning("Can't log in in FireNet! Aministator alredy log in!");
+		}
+
+		break;
+	}
+	case EFireNetTcpError::AdminCommandFail:
+	{
+		LogWarning("Command not found in FireNET!");
+		break;
+	}
+	default:
+		break;
+	}
+}

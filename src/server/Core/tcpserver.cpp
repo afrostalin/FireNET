@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
@@ -6,24 +6,22 @@
 #include "tcpthread.h"
 
 #include "Workers/Databases/dbworker.h"
-#include "Tools/settings.h"
+#include "Tools/console.h"
 
-TcpServer::TcpServer(QObject *parent) : QTcpServer(parent),
-	bClosed(false)
+TcpServer::TcpServer(QObject *parent) 
+	: QTcpServer(parent)
+	, m_maxThreads(0)
+	, m_maxConnections(0)
+	, m_connectionTimeout(0)
+	, m_Time(QTime::currentTime())
+	, m_InputPacketsCount(0)
+	, m_OutputPacketsCount(0)
+	, bClosed(false)
 {
-	m_maxThreads = 0;
-	m_maxConnections = 0;
-	m_connectionTimeout = 0;
-
-	m_Time = QTime::currentTime();
-	m_InputPacketsCount = 0;
-	m_OutputPacketsCount = 0;
 }
 
 TcpServer::~TcpServer()
 {
-	qDebug() << "~TcpServer";
-	QThreadPool::globalInstance()->clear();
 }
 
 void TcpServer::Clear()
@@ -51,43 +49,40 @@ void TcpServer::MessageSended()
 	m_OutputPacketsCount++;
 }
 
-void TcpServer::SetMaxThreads(int maximum)
+void TcpServer::SetMaxThreads(const int maximum)
 {
-	qDebug() << "Setting max threads to: " << maximum;
 	m_maxThreads = maximum;
 }
 
-void TcpServer::SetMaxConnections(int value)
+void TcpServer::SetMaxConnections(const int value)
 {
-	qDebug() << "Setting max connections to: " << value;
 	m_maxConnections = value;
 }
 
-void TcpServer::SetConnectionTimeout(int value)
+void TcpServer::SetConnectionTimeout(const int value)
 {
-	qDebug() << "Setting the connection timeout to: " << value;
 	m_connectionTimeout = value;
 }
 
-bool TcpServer::Listen(const QHostAddress & address, quint16 port)
+bool TcpServer::Listen(const QHostAddress & address, const quint16 port)
 {
 	if (m_maxThreads <= 0)
 	{
-		qCritical() << "Execute SetMaxThreads function before listen!";
+		LogError("[TcpServer] Execute SetMaxThreads function before listen!");
 		return false;
 	}
 
-	if (!QTcpServer::listen(address, port))
+	if (!listen(address, port))
 	{
-		qCritical() << errorString();
+		LogError("[TcpServer]  Can't start listen on port <%d>. Error = <%s>", port, errorString().toStdString().c_str());
 		return false;
 	}
 
-	qInfo() << "Start listing on port :" << port;
+	LogInfo("[TcpServer] Start listing on port <%d>", port);
 
 	Start();
 
-	gEnv->m_ServerStatus.m_MainServerStatus = "online";
+	gEnv->m_ServerStatus.m_MainServerStatus = "Online";
 
 	return true;
 }
@@ -99,7 +94,7 @@ void TcpServer::Start()
 		TcpThread *runnable = CreateRunnable();
 		if (!runnable)
 		{
-			qWarning() << "Could not find runable!";
+			LogError("[TcpServer] Could not found runable!");
 			return;
 		}
 
@@ -126,7 +121,7 @@ void TcpServer::CalculateStatistic()
 		gEnv->m_OutputMaxSpeed = m_OutputPacketsCount;
 
 	// Update max clients count
-	int m_ClientCount = GetClientCount();
+	const int m_ClientCount = GetClientCount();
 	if (m_ClientCount > gEnv->m_MaxClientCount)
 		gEnv->m_MaxClientCount = m_ClientCount;
 
@@ -137,7 +132,7 @@ void TcpServer::CalculateStatistic()
 
 TcpThread * TcpServer::CreateRunnable()
 {
-	qDebug() << "Creating runnable...";
+	LogDebug("[TcpServer] Creating runnable...");
 
 	TcpThread *runnable = new TcpThread();
 	runnable->setAutoDelete(false);
@@ -147,13 +142,13 @@ TcpThread * TcpServer::CreateRunnable()
 
 void TcpServer::StartRunnable(TcpThread * runnable)
 {
-	if (!runnable)
+	if (runnable == nullptr)
 	{
-		qWarning() << this << "Runnable is null!";
+		LogError("[TcpServer] Can't start runnable - nullptr");
 		return;
 	}
 
-	qDebug() << this << "Starting " << runnable;
+	LogDebug("[TcpServer] Starting <%p> runnable", runnable);
 
 	runnable->setAutoDelete(false);
 
@@ -169,11 +164,11 @@ void TcpServer::StartRunnable(TcpThread * runnable)
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-	qDebug() << "Accepting " << socketDescriptor;
+	LogDebug("[TcpServer] New incoming connection, accepting...");
 
 	if (GetClientCount() >= m_maxConnections)
 	{
-		qCritical() << "Can't accept new client, because server have limit" << m_maxConnections;
+		LogError("[TcpServer] Can't accept new client, because server have limit <%d>. Rejecting...", m_maxConnections);
 		Reject(socketDescriptor);
 	}
 
@@ -193,9 +188,9 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 		previous = count;
 	}
 
-	if (!runnable)
+	if (runnable == nullptr)
 	{
-		qWarning() << "Could not find runable!";
+		LogWarning("[TcpServer] Could not find runable!");
 		return;
 	}
 
@@ -204,15 +199,12 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
 void TcpServer::Accept(qintptr handle, TcpThread * runnable)
 {
-	qDebug() << "Accepting" << handle << "on" << runnable;
 	TcpConnection *connection = new TcpConnection;
 	emit connecting(handle, runnable, connection);
 }
 
 void TcpServer::Reject(qintptr handle)
 {
-	qDebug() << "Rejecting connection: " << handle;
-
 	QSslSocket *socket = new QSslSocket(this);
 	socket->setSocketDescriptor(handle);
 	socket->close();
@@ -221,37 +213,33 @@ void TcpServer::Reject(qintptr handle)
 
 void TcpServer::finished()
 {
-	qDebug() << this << "finished" << sender();
 	TcpThread *runnable = static_cast<TcpThread*>(sender());
 
-	if (!runnable)
+	if (runnable == nullptr)
 		return;
 
-	qDebug() << runnable << "has finished, removing from list";
-
 	m_threads.removeAll(runnable);
-	runnable->deleteLater();
+
+	SAFE_DELETE(runnable);
 
 	if (m_threads.size() <= 0)
 	{
 		bClosed = true;
-		//gEnv->isReadyToClose = true;
 	}
 }
 
 void TcpServer::stop()
 {
-	qDebug() << "Closing TcpServer and all connections...";
 	emit closing();
-	QTcpServer::close();
 }
 
 void TcpServer::started()
 {
 	TcpThread *runnable = static_cast<TcpThread*>(sender());
-	if (!runnable) 
+	if (runnable == nullptr) 
 		return;
-	qDebug() << runnable << "has started";
+
+	LogDebug("[TcpServer] Runnable <%p> has started");
 }
 
 void TcpServer::AddNewClient(SClient &client)
@@ -260,7 +248,7 @@ void TcpServer::AddNewClient(SClient &client)
 
 	if (client.socket == nullptr)
 	{
-		qWarning() << "Can't add client. Client socket = nullptr";
+		LogWarning("[TcpServer] Can't add client. Client socket = nullptr");
 		return;
 	}
 
@@ -268,12 +256,12 @@ void TcpServer::AddNewClient(SClient &client)
 	{
 		if (it->socket == client.socket)
 		{
-			qWarning() << "Can't add client" << client.socket << ". Client alredy added";
+			LogWarning("[TcpServer] Can' add client with socket <%p> (%s:%d). Client alredy added", client.socket, client.GetAddress().ip.c_str(), client.GetAddress().port);
 			return;
 		}
 	}
 
-	qDebug() << "Adding new client" << client.socket;
+	LogDebug("[TcpServer] Adding new client with socket <%p> (%s:%d)", client.socket, client.GetAddress().ip.c_str(), client.GetAddress().port);
 	m_Clients.push_back(client);
 }
 
@@ -283,7 +271,7 @@ void TcpServer::RemoveClient(SClient &client)
 
 	if (!client.socket)
 	{
-		qWarning() << "Can't remove client. Client socket = nullptr";
+		LogWarning("[TcpServer] Can't remove client. Client socket = nullptr");
 		return;
 	}
 
@@ -293,15 +281,15 @@ void TcpServer::RemoveClient(SClient &client)
 		{
 			if (it->socket == client.socket)
 			{
-				qDebug() << "Removing client" << client.socket;
+				LogDebug("[TcpServer] Removing client with socket <%p> (%s:%d)", client.socket, client.GetAddress().ip.c_str(), client.GetAddress().port);
 
 				m_Clients.erase(it);
 				return;
 			}
 		}
 	}
-
-	qWarning() << "Can't remove client. Client not found";
+	
+	LogWarning("[TcpServer] Can't remove client with socket <%p> (%s:%d). Client not found", client.socket, client.GetAddress().ip.c_str(), client.GetAddress().port);
 }
 
 void TcpServer::UpdateClient(SClient* client)
@@ -310,7 +298,7 @@ void TcpServer::UpdateClient(SClient* client)
 
 	if (client->socket == nullptr)
 	{
-		qWarning() << "Can't update client. Client socket = nullptr";
+		LogWarning("[TcpServer] Can't update client. Client socket = nullptr");
 		return;
 	}
 
@@ -323,18 +311,15 @@ void TcpServer::UpdateClient(SClient* client)
 				it->profile = client->profile;
 				it->status = client->status;
 
-				qDebug() << "Client" << it->socket << "updated.";
+				LogDebug("[TcpServer] Client with socket <%p> (%s:%d) updated.", client->socket, client->GetAddress().ip.c_str(), client->GetAddress().port);
 				return;
 			}
-			else
-			{
-				qWarning() << "Can't update client" << it->socket << ". Profile = nullptr";
-				return;
-			}
+			LogWarning("[TcpServer] Can't update client with socket <%p> (%s:%d). Profile = nullptr", it->socket, it->GetAddress().ip.c_str(), it->GetAddress().port);
+			return;
 		}
 	}
 
-	qWarning() << "Can't update client. Client" << client->socket << "not found";
+	LogWarning("[TcpServer] Can't update client with socket <%p> (%s:%d). Client not found", client->socket, client->GetAddress().ip.c_str(), client->GetAddress().port);
 }
 
 bool TcpServer::UpdateProfile(SProfile * profile)
@@ -351,27 +336,24 @@ bool TcpServer::UpdateProfile(SProfile * profile)
 				if (gEnv->pDBWorker->UpdateProfile(profile))
 				{
 					it->profile = profile;
-					qDebug() << "Profile" << profile->nickname << "updated";
+					LogDebug("[TcpServer] Profile <%s> updated.", profile->nickname.toStdString().c_str());
 					return true;
 				}
-				else
-				{
-					qWarning() << "Failed update" << profile->nickname << "profile in DB!";
-					return false;
-				}
+				LogWarning("[TcpServer] Failed update profile <%s> in DB!", profile->nickname.toStdString().c_str());
+				return false;
 			}
 		}
 	}
 
-	qDebug() << "Profile" << profile->nickname << "not found.";
+	LogDebug("[TcpServer] Profile <%s> not found.", profile->nickname.toStdString().c_str());
 	return false;
 }
 
-QStringList TcpServer::GetPlayersList()
+std::vector<std::string> TcpServer::DumpPlayerList()
 {
 	QMutexLocker locker(&m_Mutex);
 
-	QStringList playerList;
+	std::vector<std::string> playerList;
 
 	for (auto it = m_Clients.begin(); it != m_Clients.end(); ++it)
 	{
@@ -379,10 +361,11 @@ QStringList TcpServer::GetPlayersList()
 		{
 			if (!it->profile->nickname.isEmpty())
 			{
-				playerList.push_back("Uid: " + QString::number(it->profile->uid) +
-					" Nickname: " + it->profile->nickname +
-					" Level: " + QString::number(it->profile->lvl) +
-					" XP: " + QString::number(it->profile->xp));
+				playerList.push_back(_strFormat("[%d] - [%s] - [%d] - [%d]"
+					, it->profile->uid
+					, it->profile->nickname.toStdString().c_str()
+					, it->profile->lvl
+					, it->profile->xp));
 			}
 		}
 	}
@@ -393,7 +376,7 @@ QStringList TcpServer::GetPlayersList()
 int TcpServer::GetClientCount()
 {
 	QMutexLocker locker(&m_Mutex);
-	return m_Clients.size();
+	return static_cast<int>(m_Clients.size());
 }
 
 QSslSocket * TcpServer::GetSocketByUid(int uid)
@@ -409,13 +392,11 @@ QSslSocket * TcpServer::GetSocketByUid(int uid)
 		{
 			if (it->profile->uid == uid)
 			{
-				qDebug() << "Socket finded. Return";
 				return it->socket;
 			}
 		}
 	}
 
-	qDebug() << "Socket not finded.";
 	return nullptr;
 }
 
@@ -432,17 +413,15 @@ SProfile * TcpServer::GetProfileByUid(int uid)
 		{
 			if (it->profile->uid == uid)
 			{
-				qDebug() << "Profile finded. Return";
 				return it->profile;
 			}
 		}
 	}
 
-	qDebug() << "Profile not finded.";
 	return nullptr;
 }
 
-void TcpServer::sendMessageToClient(QSslSocket* socket, CTcpPacket &packet)
+void TcpServer::sendMessageToClient(QSslSocket* socket, CTcpPacket &packet) const
 {
 	if (socket)
 		socket->write(packet.toString());

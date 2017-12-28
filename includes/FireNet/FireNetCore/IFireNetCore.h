@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #pragma once
@@ -7,7 +7,6 @@
 #include "IFireNetListener.h"
 
 #include "IFireNetTcpPacket.h"
-#include "IFireNetUdpPacket.h"
 
 struct IFireNetEnv;
 class CTcpPacket;
@@ -20,17 +19,20 @@ struct IFireNetCore
 	//! Register FireNet listener for work with UI or somethings else
 	virtual void RegisterFireNetListener(IFireNetListener *listener) = 0;
 
+	//! Unregister FireNet listener
+	virtual void UnregisterFireNetListener(IFireNetListener *listener) = 0;
+
 	//! Connect to master server
 	virtual void ConnectToMasterServer() = 0;
 
 	//! Send authorization request to master server
-	virtual void Authorization(const std::string &login, const std::string &password) = 0;
+	virtual void Authorization(const char* login, const char* password) = 0;
 
 	//! Send register request to master server
-	virtual void Registration(const std::string &login, const std::string &password) = 0;
+	virtual void Registration(const char* login, const char* password) = 0;
 
 	//! Send create profile request to master server
-	virtual void CreateProfile(const std::string &nickname, const std::string &character) = 0;
+	virtual void CreateProfile(const char* nickname, const char* character) = 0;
 
 	//! Send get profile request to master server
 	virtual void GetProfile(int uid = 0) = 0;
@@ -42,10 +44,10 @@ struct IFireNetCore
 	virtual void GetShop() = 0;
 
 	//! Send buy item request to master server
-	virtual void BuyItem(const std::string &item) = 0;
+	virtual void BuyItem(const char* item) = 0;
 
 	//! Send remove item request to master server
-	virtual void RemoveItem(const std::string &item) = 0;
+	virtual void RemoveItem(const char* item) = 0;
 
 	//! Send invite to other player
 	virtual void SendInvite(EFireNetInviteType type, int uid) = 0;
@@ -62,8 +64,14 @@ struct IFireNetCore
 	//! Send chat message
 	virtual void SendChatMessage(EFireNetChatMsgType type, int uid = 0) = 0;
 
+	//! Register game server on master server (ONLY FOR DEDICATED SERVER)
+	virtual void RegisterGameServer(SFireNetGameServer serverInfo) = 0;
+
+	//! Update game server info on master server (ONLY FOR DEDICATED SERVER)
+	virtual void UpdateGameServer(SFireNetGameServer serverInfo) = 0;
+
 	//! Send get game server request to master server
-	virtual void GetGameServer(const std::string &map, const std::string &gamerules) = 0;
+	virtual void GetGameServer(const char* map, const char* gamerules) = 0;
 
 	//! Send some raw request to master server. For e.g. this may be login or register request
 	//! You need add to you project TcpPacket.h for using this function
@@ -71,12 +79,15 @@ struct IFireNetCore
 
 	//! Return connection status
 	virtual bool IsConnected() = 0;
-	
-	//! Calculate and get HWID
-	virtual bool GetHWID(std::string &hwid) = 0;
 
-	//! Send FireNet event
-	virtual void SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args = SFireNetEventArgs()) = 0;
+	//! Calculate and get HWID
+	virtual void GetHWID(string &hwid) = 0;
+
+	//! Get FireNet event listiners 
+	virtual void GetFireNetEventListeners(std::vector<IFireNetListener*> &vector) = 0;
+
+	//! Execute FireNet event
+	virtual void ExecuteEvent(EFireNetEvents eventName) = 0;
 
 	//! Normaly shutdown plugin
 	virtual bool Quit() = 0;

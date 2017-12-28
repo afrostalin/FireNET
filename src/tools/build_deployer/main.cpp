@@ -1,12 +1,10 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QCoreApplication>
 #include <QDebug>
-#include <QFile>
 #include <QDir>
 #include <QTextStream>
-#include <QTextCodec>
 
 QString m_root = "../";
 QString m_bin_folder = m_root + "bin";
@@ -19,8 +17,12 @@ QStringList m_ServerFileList = {
 	"server_files/scripts/shop.xml",
 	"server_files/settings/Debug/FireNET.cfg",
 	"server_files/settings/Debug/AutoTest.cfg",
+	"server_files/settings/Debug/RemoteAdmin.cfg",
+	"server_files/settings/Debug/DedicatedArbitrator.cfg",
 	"server_files/settings/Release/FireNET.cfg",
 	"server_files/settings/Release/AutoTest.cfg",
+	"server_files/settings/Release/RemoteAdmin.cfg",
+	"server_files/settings/Release/DedicatedArbitrator.cfg",
 	"server_files/key.key",
 	"server_files/key.pem"
 };
@@ -42,7 +44,8 @@ QStringList m_WinFileList = {
 	m_qt_folder + "bin/Qt5Widgets.dll",
 	m_3rd_folder + "openssl/bin/libeay32.dll",
 	m_3rd_folder + "openssl/bin/ssleay32.dll",
-	m_3rd_folder + "mysql/bin/libmySQL.dll"
+	m_3rd_folder + "mysql/bin/libmySQL.dll",
+	m_3rd_folder + "curl/bin/libcurl.dll"
 };
 
 bool DeployWindows(const QString &buildType)
@@ -68,7 +71,7 @@ bool DeployWindows(const QString &buildType)
 			{
 				if (QFile::exists(fileName))
 				{
-					qInfo() << fileName << "finded...";
+					qInfo() << fileName << "found...";
 				}
 				else
 				{
@@ -91,7 +94,7 @@ bool DeployWindows(const QString &buildType)
 			{
 				if (QFile::exists(fileName))
 				{
-					qInfo() << fileName << "finded...";
+					qInfo() << fileName << "found...";
 				}
 				else
 				{
@@ -120,6 +123,10 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/FireNET.cfg";
 			else if (fileName.contains("Debug/AutoTest.cfg"))
 				path = m_bin_folder + "/AutoTest.cfg";
+			else if (fileName.contains("Debug/RemoteAdmin.cfg"))
+				path = m_bin_folder + "/RemoteAdmin.cfg";
+			else if (fileName.contains("Debug/DedicatedArbitrator.cfg"))
+				path = m_bin_folder + "/DedicatedArbitrator.cfg";
 			else if (fileName.contains("key.key"))
 				path = m_bin_folder + "/key.key";
 			else if (fileName.contains("key.pem"))
@@ -155,6 +162,8 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/ssleay32.dll";
 			else if (fileName.contains("libmySQL.dll"))
 				path = m_bin_folder + "/libmySQL.dll";
+			else if (fileName.contains("libcurl.dll"))
+				path = m_bin_folder + "/libcurl.dll";
 
 			if (!path.isEmpty())
 				qInfo() << "Copying" << fileName << "to" << path << QFile::copy(fileName, path);
@@ -162,7 +171,7 @@ bool DeployWindows(const QString &buildType)
 
 		return true;
 	}
-	else if (buildType == "Release")
+	if (buildType == "Release")
 	{
 		QDir().mkdir(m_bin_folder);
 		QDir().mkdir(m_bin_folder + "/Windows");
@@ -183,7 +192,7 @@ bool DeployWindows(const QString &buildType)
 			{
 				if (QFile::exists(fileName))
 				{
-					qInfo() << fileName << "finded...";
+					qInfo() << fileName << "found...";
 				}
 				else
 				{
@@ -206,7 +215,7 @@ bool DeployWindows(const QString &buildType)
 			{
 				if (QFile::exists(fileName))
 				{
-					qInfo() << fileName << "finded...";
+					qInfo() << fileName << "found...";
 				}
 				else
 				{
@@ -235,6 +244,10 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/FireNET.cfg";
 			else if (fileName.contains("Release/AutoTest.cfg"))
 				path = m_bin_folder + "/AutoTest.cfg";
+			else if (fileName.contains("Release/RemoteAdmin.cfg"))
+				path = m_bin_folder + "/RemoteAdmin.cfg";
+			else if (fileName.contains("Release/DedicatedArbitrator.cfg"))
+				path = m_bin_folder + "/DedicatedArbitrator.cfg";
 			else if (fileName.contains("key.key"))
 				path = m_bin_folder + "/key.key";
 			else if (fileName.contains("key.pem"))
@@ -270,6 +283,8 @@ bool DeployWindows(const QString &buildType)
 				path = m_bin_folder + "/ssleay32.dll";
 			else if (fileName.contains("libmySQL.dll"))
 				path = m_bin_folder + "/libmySQL.dll";
+			else if (fileName.contains("libcurl.dll"))
+				path = m_bin_folder + "/libcurl.dll";
 
 			if (!path.isEmpty())
 				qInfo() << "Copying" << fileName << "to" << path << QFile::copy(fileName, path);
@@ -277,8 +292,7 @@ bool DeployWindows(const QString &buildType)
 
 		return true;
 	}
-	else
-		qWarning() << "ERROR : Can't deploy - Unknown build type";
+	qWarning() << "ERROR : Can't deploy - Unknown build type";
 
 	return false;
 }

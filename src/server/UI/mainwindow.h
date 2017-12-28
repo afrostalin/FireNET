@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QTimer>
@@ -29,12 +28,12 @@ public:
     ~MainWindow();
 public:
 	void            LogToOutput(ELogType type, const QString& msg);
-private:
 	void            ClearOutput();
-	void            ClearStatus();
+private:
+	void            ClearStatus() const;
 public slots:
 	void            CleanUp();
-	void            UpdateServerStatus();
+	void            UpdateServerStatus() const;
 	void            EnableStressMode();
 private slots:
 	void            on_Input_returnPressed();
@@ -47,5 +46,3 @@ private:
 	QTimer          m_UpdateTimer;
 	QMutex          m_Mutex;
 };	
-
-#endif // MAINWINDOW_H

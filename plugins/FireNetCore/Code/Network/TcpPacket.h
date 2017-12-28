@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #pragma once
@@ -8,23 +8,27 @@
 class CTcpPacket : public IFireNetTcpPacket
 {
 public:
-	CTcpPacket::CTcpPacket(EFireNetTcpPacketType type);
+	CTcpPacket::CTcpPacket(EFireNetTcpPacketType type, bool waitable = false);
 	CTcpPacket::CTcpPacket(const char* data);
 public:
-	virtual void               WriteString(const std::string &value) override;
-	virtual void               WriteInt(int value) override;
-	virtual void               WriteBool(bool value) override;
-	virtual void               WriteFloat(float value) override;
-	virtual void               WriteDouble(double value) override;
+	void               WriteStdString(const std::string &value) override;
+	void               WriteString(const char* value) override;
+	void               WriteInt(int value) override;
+	void               WriteBool(bool value) override;
+	void               WriteFloat(float value) override;
+	void               WriteDouble(double value) override;
 public:
-	virtual const char*        ReadString() override;
-	virtual int                ReadInt() override;
-	virtual bool               ReadBool() override;
-	virtual float              ReadFloat() override;
-	virtual double             ReadDouble() override;
+	const char*        ReadString() override;
+	int                ReadInt() override;
+	bool               ReadBool() override;
+	float              ReadFloat() override;
+	double             ReadDouble() override;
 public:
-	virtual const char*        toString() override;
+	const char*        toString() override;
+	bool               IsWaitable() const { return m_isWaitable; };
 private:
-	virtual void               GenerateSession() override;
-	virtual void               ReadPacket() override;
+	void               GenerateSession() override;
+	void               ReadPacket() override;
+private:
+	bool               m_isWaitable;
 };

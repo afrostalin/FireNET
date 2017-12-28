@@ -1,16 +1,19 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QDebug>
+
+#include "global.h"
 #include "tcpclient.h"
 
 
-tcpclient::tcpclient(QString ip, int port, QObject *parent) : QObject(parent),
-    m_socket(nullptr),
-    bConnected(false),
-    bLastMsgSended(true),
-	m_ip(ip),
-	m_port(port)
+tcpclient::tcpclient(QString ip, int port, QObject *parent)
+	: QObject(parent)
+	, m_socket(nullptr)
+	, bConnected(false)
+	, bLastMsgSended(true)
+	, m_ip(ip)
+	, m_port(port)
 {
 
 }
@@ -19,7 +22,7 @@ void tcpclient::update()
 {
     if(bConnected && bLastMsgSended && m_packets.size() > 0)
     {
-        NetPacket packet = m_packets.front();
+        CTcpPacket packet = m_packets.front();
 		m_packets.pop();
 		bLastMsgSended = false;
 
@@ -32,15 +35,13 @@ void tcpclient::update()
     }
 }
 
-void tcpclient::SendMsg(NetPacket &packet)
+void tcpclient::SendMsg(CTcpPacket &packet)
 {
     m_packets.push(packet);
 }
 
 void tcpclient::CreateClient()
 {
-    qDebug() << this << "Creating TcpClient";
-
     m_socket = new QSslSocket(this);
 	
     connect(m_socket, &QSslSocket::encrypted, this, &tcpclient::onConnectedToServer);
@@ -50,19 +51,24 @@ void tcpclient::CreateClient()
 
 	m_socket->addCaCertificates("key.pem");
     m_socket->connectToHostEncrypted(m_ip.toStdString().c_str(), m_port);
+	if (!m_socket->waitForEncrypted(3000))
+	{
+		LogError("%p - Connection timeout", this);
+		return;
+	}
 }
 
 void tcpclient::CreateTestList()
 {
     //qDebug() << this << "Creating test list...";
 
-	NetPacket reg_packet(net_Query);
-	reg_packet.WriteInt(net_query_register);
+	CTcpPacket reg_packet(EFireNetTcpPacketType::Query);
+	reg_packet.WriteQuery(EFireNetTcpQuery::Register);
 	reg_packet.WriteString("test@test");
 	reg_packet.WriteString("testtest");
 
-    NetPacket auth_packet(net_Query);
-    auth_packet.WriteInt(net_query_auth);
+	CTcpPacket auth_packet(EFireNetTcpPacketType::Query);
+	auth_packet.WriteQuery(EFireNetTcpQuery::Login);
     auth_packet.WriteString("test@test");
     auth_packet.WriteString("testtest");
 
@@ -76,14 +82,12 @@ void tcpclient::onConnectedToServer()
     bConnected = true;
 }
 
-void tcpclient::onReadyRead()
+void tcpclient::onReadyRead() const
 {
-    //qDebug() << this << "Server answer :" << m_socket->readAll();
 }
 
 void tcpclient::onBytesWritten(qint64 bytes)
 {
-    //qDebug() << this << "Message sended" << bytes;
     bLastMsgSended = true;
 }
 

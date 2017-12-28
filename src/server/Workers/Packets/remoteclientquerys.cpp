@@ -1,60 +1,149 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
 #include "remoteclientquerys.h"
-#include "clientquerys.h"
+#include "serverThread.h"
 
 #include "Core/tcpserver.h"
 #include "Core/remoteserver.h"
 #include "Core/tcppacket.h"
 
-#include "Workers/Databases/dbworker.h"
-
-#include "Tools/settings.h"
+#include "Tools/console.h"
 #include "Tools/scripts.h"
 
 #include <QCoreApplication>
 
-RemoteClientQuerys::RemoteClientQuerys(QObject *parent) : QObject(parent),
-	m_socket(nullptr),
-	m_client(nullptr),
-	m_connection(nullptr)
+RemoteClientQuerys::RemoteClientQuerys(QObject *parent) 
+	: QObject(parent)
+	, m_socket(nullptr)
+	, m_client(nullptr)
+	, m_connection(nullptr)
+	, bReloadRequestSended(false)
+	, m_ServerAlive(false)
 {
 }
 
 RemoteClientQuerys::~RemoteClientQuerys()
 {
-	qDebug() << "~RemoteClientQuerys";
+	m_Timer.stop();
 	SAFE_DELETE(m_client->server);
+	SAFE_DELETE(m_client->pArbitrator);
 }
 
 void RemoteClientQuerys::SetClient(SRemoteClient * client)
 {
 	m_client = client;
 	m_client->server = new SGameServer;
-
-	m_client->server->name = "";
-	m_client->server->ip = "";
-	m_client->server->port = 0;
-	m_client->server->map = "";
-	m_client->server->gamerules = "";
-	m_client->server->online = 0;
-	m_client->server->maxPlayers = 0;
+	m_client->pArbitrator = new SDedicatedArbitrator;
+	m_client->pQuerys = this;
 }
 
-// Error types : 0 - Login not found, 1 - Incorrect password, 2 - Admin alredy log in
-void RemoteClientQuerys::onAdminLogining(CTcpPacket &packet)
+void RemoteClientQuerys::SetConnection(RemoteConnection * connection)
 {
-	qWarning() << "Client (" << m_socket << ") trying login in administrator mode!";
+	m_connection = connection;
+	connect(m_connection, &RemoteConnection::finished, this, &RemoteClientQuerys::OnConnectionClosed);
+}
+
+bool RemoteClientQuerys::ReadPacket(CTcpPacket & packet)
+{
+	EFireNetTcpPacketType type = packet.getType();
+
+	switch (type)
+	{
+	case EFireNetTcpPacketType::Empty:
+	{
+		return false;
+	}
+	case EFireNetTcpPacketType::Query:
+	{
+		return ReadQuery(packet);
+	}
+	case EFireNetTcpPacketType::Result:
+	{
+		return false;
+	}
+	case EFireNetTcpPacketType::Error:
+	{
+		return false;
+	}
+	case EFireNetTcpPacketType::ServerMessage:
+	{
+		return false;
+	}
+	default:
+	{
+		return false;
+	}
+	}
+}
+
+bool RemoteClientQuerys::ReadQuery(CTcpPacket & packet)
+{
+	const EFireNetTcpQuery type = packet.ReadQuery();
+
+	switch (type)
+	{
+	case EFireNetTcpQuery::AdminLogin:
+	{
+		onAdminLogining(packet);
+		break;
+	}
+	case EFireNetTcpQuery::AdminCommand:
+	{
+		onConsoleCommandRecived(packet);
+		break;
+	}
+	case EFireNetTcpQuery::RegisterServer:
+	{
+		onGameServerRegister(packet);
+		break;
+	}
+	case EFireNetTcpQuery::UpdateServer:
+	{
+		onGameServerUpdateInfo(packet);
+		break;
+	}
+	case EFireNetTcpQuery::UpdateProfile:
+	{
+		onGameServerUpdateOnlineProfile(packet);
+		break;
+	}
+	case EFireNetTcpQuery::PingPong:
+	{
+		onPingPong(packet);
+		break;
+	}
+	case EFireNetTcpQuery::RegisterArbitrator:
+	{
+		onArbitratorRegister(packet);
+		break;
+	}
+	case EFireNetTcpQuery::UpdateArbitrator:
+	{
+		onArbitratorUpdate(packet);
+		break;
+	}
+	default:
+	{
+		return false;
+	}
+	}
+
+	return true;
+}
+
+void RemoteClientQuerys::onAdminLogining(CTcpPacket &packet) const
+{
+	LogWarning("Client with socket <%p> trying login in administrator mode!", m_socket);
 
 	if (gEnv->pRemoteServer->IsHaveAdmin())
 	{
-		qCritical() << "Error authorization in administator mode! Reason = Administrator alredy has entered";
+		LogError("Error authorization in administator mode! Reason = Administrator alredy has entered");
 
 		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
 		m_packet.WriteError(EFireNetTcpError::AdminLoginFail);
-		m_packet.WriteInt(2);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::AdminAlredyLogined);
 		m_connection->SendMessage(m_packet);
 
 		return;
@@ -65,16 +154,16 @@ void RemoteClientQuerys::onAdminLogining(CTcpPacket &packet)
 
 	if (login.isEmpty() || password.isEmpty())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "Login = " << login << "Password = " << password;
+		LogWarning("Wrong packet data! Some values empty!");
+		LogDebug("Login = <%s>, password = <%s>", login.toStdString().c_str(), password.toStdString().c_str());
 		return;
 	}
 
-	if (login == gEnv->pSettings->GetVariable("remote_root_user").toString())
+	if (login == gEnv->pConsole->GetString("remote_root_user").c_str())
 	{
-		if (password == gEnv->pSettings->GetVariable("remote_root_password").toString())
+		if (password == gEnv->pConsole->GetString("remote_root_password").c_str())
 		{
-			qWarning() << "Client (" << m_socket << ") success login in administator mode!";
+			LogWarning("Client with socket <%p> success login in administrator mode!", m_socket);
 			gEnv->pRemoteServer->SetAdmin(true);
 
 			m_client->isAdmin = true;
@@ -86,268 +175,303 @@ void RemoteClientQuerys::onAdminLogining(CTcpPacket &packet)
 
 			return;
 		}
-		else
-		{
-			qCritical() << "Error authorization in administator mode! Reason = Wrong password. Password = " << password;
-
-			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
-			m_packet.WriteError(EFireNetTcpError::AdminLoginFail);
-			m_packet.WriteInt(1);
-			m_connection->SendMessage(m_packet);
-
-			return;
-		}
-
-	}
-	else
-	{
-		qCritical() << "Error authorization in administator mode! Reason = Wrong login. Login = " << login;
+		LogError("Error authorization in administator mode! Reason = Wrong password. Password = <%s>", password.toStdString().c_str());
 
 		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
 		m_packet.WriteError(EFireNetTcpError::AdminLoginFail);
-		m_packet.WriteInt(0);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::AdminIncorrectPassword);
 		m_connection->SendMessage(m_packet);
 
 		return;
 	}
+	LogError("Error authorization in administator mode! Reason = Wrong login. Login = <%s>", login.toStdString().c_str());
+
+	CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+	m_packet.WriteError(EFireNetTcpError::AdminLoginFail);
+	m_packet.WriteErrorCode(EFireNetTcpErrorCode::AdminLoginNotFound);
+	m_connection->SendMessage(m_packet);
+
+	return;
 }
 
-// Error types : 0 - Command not found
-// Complete types : 0 - status, 1 - message, 2 - command, 3 - players, 4 - servers
 void RemoteClientQuerys::onConsoleCommandRecived(CTcpPacket &packet)
 {
 	if (!m_client->isAdmin)
 	{
-		qCritical() << "Only administrator can use console commands!";
+		LogError("Only administrator can use console commands!");
 		return;
 	}
 
-	QString command = packet.ReadString();
-	QString value = packet.ReadString();
+	EFireNetAdminCommands commandType = packet.ReadAdminCommand();
 
-	if (command == "status")
+	switch (commandType)
+	{
+	case EFireNetAdminCommands::CMD_Status:
 	{
 		CTcpPacket m_packet(EFireNetTcpPacketType::Result);
 		m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-		m_packet.WriteInt(0);
-		m_packet.WriteString(qApp->applicationVersion().toStdString()); // Server version
-		m_packet.WriteString(gEnv->pSettings->GetVariable("sv_ip").toString().toStdString()); // Server ip
-		m_packet.WriteInt(gEnv->pSettings->GetVariable("sv_port").toInt()); // Server port
-		m_packet.WriteInt(gEnv->pSettings->GetVariable("sv_tickrate").toInt()); // Server tick rate
-		m_packet.WriteString(gEnv->pSettings->GetVariable("db_mode").toString().toStdString()); // Database mode
-		m_packet.WriteInt(gEnv->pServer->GetClientCount()); // Players ammount
-		m_packet.WriteInt(gEnv->pSettings->GetVariable("sv_max_players").toInt()); // Max players count
-		m_packet.WriteInt(gEnv->pRemoteServer->GetClientCount()); // Game servers count
-		m_packet.WriteInt(gEnv->pSettings->GetVariable("sv_max_servers").toInt()); // Max game servers count
-		m_connection->SendMessage(m_packet);
+		m_packet.WriteAdminCommand(commandType);
 
-		return;
+		std::vector<std::string> status = gEnv->pMainThread->DumpStatistic();
+
+		m_packet.WriteArray(status);
+
+		m_connection->SendMessage(m_packet);
+		break;
 	}
-	else if (command == "send_message")
+	case EFireNetAdminCommands::CMD_SendGlobalMessage:
 	{
+		const char* message = packet.ReadString();
+
 		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
 		msg.WriteServerMessage(EFireNetTcpSMessage::ServerMessage);
-		msg.WriteString(value.toStdString());
+		msg.WriteString(message);
 		gEnv->pServer->sendGlobalMessage(msg);
 
-		CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-		m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-		m_packet.WriteInt(1);
-		m_connection->SendMessage(m_packet);
 
-		return;
+		CTcpPacket callback(EFireNetTcpPacketType::Result);
+		callback.WriteResult(EFireNetTcpResult::AdminCommandComplete);
+		callback.WriteAdminCommand(commandType);
+		m_connection->SendMessage(callback);
+		break;
 	}
-	else if (command == "send_command")
+	case EFireNetAdminCommands::CMD_SendGlobalCommand:
 	{
+		const char* command = packet.ReadString();
+
 		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
 		msg.WriteServerMessage(EFireNetTcpSMessage::ServerCommand);
-		msg.WriteString(value.toStdString());
+		msg.WriteString(command);
 		gEnv->pServer->sendGlobalMessage(msg);
 
-		CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-		m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-		m_packet.WriteInt(2);
+		CTcpPacket callback(EFireNetTcpPacketType::Result);
+		callback.WriteResult(EFireNetTcpResult::AdminCommandComplete);
+		callback.WriteAdminCommand(commandType);
+		m_connection->SendMessage(callback);
+		break;
+	}
+	case EFireNetAdminCommands::CMD_SendRemoteMessage:
+	{
+		break;
+	}
+	case EFireNetAdminCommands::CMD_SendRemoteCommand:
+	{
+		const char* command = packet.ReadString();
+
+		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
+		msg.WriteServerMessage(EFireNetTcpSMessage::ServerCommand);
+		msg.WriteString(command);
+		gEnv->pRemoteServer->SendMessageToAllRemoteClients(msg);
+
+		CTcpPacket callback(EFireNetTcpPacketType::Result);
+		callback.WriteResult(EFireNetTcpResult::AdminCommandComplete);
+		callback.WriteAdminCommand(commandType);
+		m_connection->SendMessage(callback);
+		break;
+	}
+	case EFireNetAdminCommands::CMD_GetPlayersList:
+	{
+		std::vector<std::string> playerList = gEnv->pServer->DumpPlayerList();
+
+		CTcpPacket callback(EFireNetTcpPacketType::Result);
+		callback.WriteResult(EFireNetTcpResult::AdminCommandComplete);
+		callback.WriteAdminCommand(commandType);
+		callback.WriteArray(playerList);
+
+		m_connection->SendMessage(callback);
+		break;
+	}
+	case EFireNetAdminCommands::CMD_GetGameServersList:
+	{
+		std::vector<std::string> serverList = gEnv->pRemoteServer->DumpServerList();
+
+		CTcpPacket callback(EFireNetTcpPacketType::Result);
+		callback.WriteResult(EFireNetTcpResult::AdminCommandComplete);
+		callback.WriteAdminCommand(commandType);
+		callback.WriteArray(serverList);
+		m_connection->SendMessage(callback);
+		break;
+	}
+	case EFireNetAdminCommands::CMD_RawMasterServerCommand:
+	{
+		const char* command = packet.ReadString();
+
+		gEnv->pConsole->ExecuteCommand(command);
+
+		CTcpPacket callback(EFireNetTcpPacketType::Result);
+		callback.WriteResult(EFireNetTcpResult::AdminCommandComplete);
+		callback.WriteAdminCommand(commandType);
+		m_connection->SendMessage(callback);
+		break;
+	}
+	default:
+	{
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::AdminCommandFail);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::AdminCommandNotFound);
 		m_connection->SendMessage(m_packet);
-
-		return;
+		break;
 	}
-	else if (command == "players")
-	{
-		QStringList players = gEnv->pServer->GetPlayersList();
-
-		if (!players.isEmpty())
-		{
-			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-			m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-			m_packet.WriteInt(3);
-			m_packet.WriteString(players.join(",").toStdString());
-			m_connection->SendMessage(m_packet);
-		}
-		else
-		{
-			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-			m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-			m_packet.WriteInt(3);
-			m_packet.WriteString("No any players");
-			m_connection->SendMessage(m_packet);
-		}
-
-		return;
 	}
-	else if (command == "servers")
-	{
-		QStringList servers = gEnv->pRemoteServer->GetServerList();
-
-		if (!servers.isEmpty())
-		{
-			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-			m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-			m_packet.WriteInt(4);
-			m_packet.WriteString(servers.join(",").toStdString());
-			m_connection->SendMessage(m_packet);
-		}
-		else
-		{
-			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-			m_packet.WriteResult(EFireNetTcpResult::AdminCommandComplete);
-			m_packet.WriteInt(4);
-			m_packet.WriteString("No any game servers");
-			m_connection->SendMessage(m_packet);
-		}
-
-		return;
-	}
-
-	CTcpPacket m_packet(EFireNetTcpPacketType::Error);
-	m_packet.WriteError(EFireNetTcpError::AdminCommandFail);
-	m_packet.WriteInt(0);
-	m_connection->SendMessage(m_packet);
 }
 
-// Error types : 0 - Game server not found in trusted list, 1 - Server alredy registered
 void RemoteClientQuerys::onGameServerRegister(CTcpPacket &packet)
 {
-	QString serverName = packet.ReadString();
-	QString serverIp = packet.ReadString();
-	int serverPort = packet.ReadInt();
-	QString mapName = packet.ReadString();
-	QString gamerules = packet.ReadString();
-	int online = packet.ReadInt();
-	int maxPlayers = packet.ReadInt();
+	SGameServer gameServerInfo;
+	gameServerInfo.name = packet.ReadString();
+	gameServerInfo.ip = packet.ReadString();
+	gameServerInfo.port = packet.ReadInt();
+	gameServerInfo.map = packet.ReadString();
+	gameServerInfo.gamerules = packet.ReadString();
+	gameServerInfo.online = packet.ReadInt();
+	gameServerInfo.maxPlayers = packet.ReadInt();
+	gameServerInfo.status = static_cast<EFireNetGameServerStatus>(packet.ReadInt());
+	gameServerInfo.currentPID = packet.ReadInt();
 
-	if (serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
+	if (!gameServerInfo.IsValid())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+		LogWarning("Wrong packet data! Some values empty!");
+		LogDebug("Server name = %s, ip = %s, map = %s, gamerules = %s", gameServerInfo.name.toStdString().c_str(), gameServerInfo.ip.toStdString().c_str(), gameServerInfo.map.toStdString().c_str(), gameServerInfo.gamerules.toStdString().c_str());
 		return;
 	}
 
-	if (!CheckInTrustedList(serverName, serverIp, serverPort))
+	gameServerInfo.name = _strFormat("%s_%s_%d", gameServerInfo.name.toStdString().c_str(), gameServerInfo.ip.toStdString().c_str(), gameServerInfo.port).c_str();
+
+	if (gEnv->pConsole->GetBool("bUseTrustedServers") && !CheckInTrustedList(gameServerInfo.name, gameServerInfo.ip, gameServerInfo.port))
 	{
-		qWarning() << "Game server" << serverName << "not found in trusted server list. Registration not posible!";
+		LogWarning("Game server <%s> not found in trusted server list. Registration not posible!", gameServerInfo.name.toStdString().c_str());
 
 		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
 		m_packet.WriteError(EFireNetTcpError::RegisterServerFail);
-		m_packet.WriteInt(0);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::GameServerNotFoundInTrustedList);
 		m_connection->SendMessage(m_packet);
 		return;
 	}
 
-	if (!gEnv->pRemoteServer->CheckGameServerExists(serverName, serverIp, serverPort))
+	if (!gEnv->pRemoteServer->CheckGameServerExists(gameServerInfo.name, gameServerInfo.ip, gameServerInfo.port))
 	{
 		m_client->isGameServer = true;
-		m_client->server->name = serverName;
-		m_client->server->ip = serverIp;
-		m_client->server->port = serverPort;
-		m_client->server->map = mapName;
-		m_client->server->gamerules = gamerules;
-		m_client->server->online = online;
-		m_client->server->maxPlayers = maxPlayers;
+		m_client->server->socket = m_client->socket;
+		m_client->server->name = gameServerInfo.name;
+		m_client->server->ip = gameServerInfo.ip;
+		m_client->server->port = gameServerInfo.port;
+		m_client->server->map = gameServerInfo.map;
+		m_client->server->gamerules = gameServerInfo.gamerules;
+		m_client->server->online = gameServerInfo.online;
+		m_client->server->maxPlayers = gameServerInfo.maxPlayers;
+		m_client->server->status = gameServerInfo.status;
+		m_client->server->currentPID = gameServerInfo.currentPID;
 
 		gEnv->pRemoteServer->UpdateClient(m_client);
 
-		int gameServersCount = 0;
-		gEnv->pRemoteServer->IsHaveAdmin() ? gameServersCount = gEnv->pRemoteServer->GetClientCount() - 1 : gameServersCount = gEnv->pRemoteServer->GetClientCount();
+		gEnv->m_GameServersRegistered++;
 
 		CTcpPacket m_packet(EFireNetTcpPacketType::Result);
 		m_packet.WriteResult(EFireNetTcpResult::RegisterServerComplete);
 		m_connection->SendMessage(m_packet);
 
-		qDebug() << "Game server [" << serverName << "] registered!";
-		qDebug() << "Connected game servers count = " << gameServersCount;
+		LogInfo("Game server <%s> registered!", gameServerInfo.name.toStdString().c_str());
+
+		connect(&m_Timer, &QTimer::timeout, this, &RemoteClientQuerys::OnUpdate);
+		m_Timer.start(gEnv->pConsole->GetInt("remote_ping_timeout"));
+		m_ServerAlive = true;
 	}
 	else
 	{
-		qDebug() << "----------Server with this address or name alredy registered---------";
-		qDebug() << "---------------------REGISTER GAME SERVER FAILED---------------------";
+		LogError("Can't register gamer server <%s>. Server with some information alredy registered!", gameServerInfo.name.toStdString().c_str());
 
 		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
 		m_packet.WriteError(EFireNetTcpError::RegisterServerFail);
-		m_packet.WriteInt(1);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::GameServerAlredyRegistered);
 		m_connection->SendMessage(m_packet);
 	}
 }
 
-// Error tyoes : 0 - Game server not found
 void RemoteClientQuerys::onGameServerUpdateInfo(CTcpPacket &packet)
 {
 	if (!m_client->isGameServer)
 	{
-		qWarning() << "Only registered game servers can update info";
+		LogWarning("Only registered game servers can update info");
 		return;
 	}
 
-	QString serverName = packet.ReadString();
-	QString serverIp = packet.ReadString();
-	int serverPort = packet.ReadInt();
-	QString mapName = packet.ReadString();
-	QString gamerules = packet.ReadString();
-	int online = packet.ReadInt();
-	int maxPlayers = packet.ReadInt();
+	SGameServer gameServerInfo;
+	gameServerInfo.name = packet.ReadString();
+	gameServerInfo.ip = packet.ReadString();
+	gameServerInfo.port = packet.ReadInt();
+	gameServerInfo.map = packet.ReadString();
+	gameServerInfo.gamerules = packet.ReadString();
+	gameServerInfo.online = packet.ReadInt();
+	gameServerInfo.maxPlayers = packet.ReadInt();
+	gameServerInfo.status = static_cast<EFireNetGameServerStatus>(packet.ReadInt());
+	gameServerInfo.currentPID = packet.ReadInt();
 
-	if (serverName.isEmpty() || serverIp.isEmpty() || mapName.isEmpty() || gamerules.isEmpty())
+	if (!gameServerInfo.IsValid())
 	{
-		qWarning() << "Wrong packet data! Some values empty!";
-		qDebug() << "ServerName = " << serverName << "ServerIp = " << serverIp << "MapName = " << mapName << "Gamerules = " << gamerules;
+		LogWarning("Wrong packet data! Some values empty!");
+		LogDebug("Server name = %s, ip = %s, map = %s, gamerules = %s", gameServerInfo.name.toStdString().c_str(), gameServerInfo.ip.toStdString().c_str(), gameServerInfo.map.toStdString().c_str(), gameServerInfo.gamerules.toStdString().c_str());
 		return;
 	}
 
-	if (gEnv->pRemoteServer->CheckGameServerExists(serverName, serverIp, serverPort))
+	gameServerInfo.name = _strFormat("%s_%s_%d", gameServerInfo.name.toStdString().c_str(), gameServerInfo.ip.toStdString().c_str(), gameServerInfo.port).c_str();
+
+	if (gEnv->pRemoteServer->CheckGameServerExists(gameServerInfo.name, gameServerInfo.ip, gameServerInfo.port))
 	{
-		m_client->server->name = serverName;
-		m_client->server->ip = serverIp;
-		m_client->server->port = serverPort;
-		m_client->server->map = mapName;
-		m_client->server->gamerules = gamerules;
-		m_client->server->online = online;
-		m_client->server->maxPlayers = maxPlayers;
+		if (m_client->server->status != gameServerInfo.status)
+		{
+			LogDebug("Game server <%s> update game status from <%s> to <%s>", gameServerInfo.name.toStdString().c_str(), GetStatusString(m_client->server->status), GetStatusString(gameServerInfo.status));
+		}
+
+		m_client->server->name = gameServerInfo.name;
+		m_client->server->ip = gameServerInfo.ip;
+		m_client->server->port = gameServerInfo.port;
+		m_client->server->map = gameServerInfo.map;
+		m_client->server->gamerules = gameServerInfo.gamerules;
+		m_client->server->online = gameServerInfo.online;
+		m_client->server->maxPlayers = gameServerInfo.maxPlayers;
+		m_client->server->status = gameServerInfo.status;
+		m_client->server->currentPID = gameServerInfo.currentPID;
 
 		gEnv->pRemoteServer->UpdateClient(m_client);
 
-		CTcpPacket m_packet(EFireNetTcpPacketType::Result);
-		m_packet.WriteResult(EFireNetTcpResult::UpdateServerComplete);
-		m_connection->SendMessage(m_packet);
+		CTcpPacket Result(EFireNetTcpPacketType::Result);
+		Result.WriteResult(EFireNetTcpResult::UpdateServerComplete);
+		m_connection->SendMessage(Result);
 
-		qDebug() << "Game server [" << serverName << "] updated info";
+		LogDebug("Game server <%s> updated info", gameServerInfo.name.toStdString().c_str());
+
+		// When server finish game we need reload it
+		if (gameServerInfo.status == EGStatus_GameFinished  && !bReloadRequestSended)
+		{
+			LogDebug("Game server <%s> finished game. Reload it...", gameServerInfo.name.toStdString().c_str());
+
+			CTcpPacket ReloadRequest(EFireNetTcpPacketType::Query);
+			ReloadRequest.WriteQuery(EFireNetTcpQuery::RequestServerReload);
+			m_connection->SendMessage(ReloadRequest);
+
+			bReloadRequestSended = true;
+		}
+		else
+		{
+			bReloadRequestSended = false;
+		}
 	}
 	else
 	{
-		qDebug() << "-------------------------Server not found--------------------------";
-		qDebug() << "---------------------UPDATE GAME SERVER FAILED---------------------";
+		LogError("Update game server failed - server <%s> not found", gameServerInfo.name.toStdString().c_str());
 
-		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
-		m_packet.WriteError(EFireNetTcpError::UpdateServerFail);
-		m_packet.WriteInt(0);
-		m_connection->SendMessage(m_packet);
+		CTcpPacket Error(EFireNetTcpPacketType::Error);
+		Error.WriteError(EFireNetTcpError::UpdateServerFail);
+		Error.WriteErrorCode(EFireNetTcpErrorCode::GameServerNotRegistered);
+		m_connection->SendMessage(Error);
 	}
 }
 
-// Error types :  0 - Profile not found
 void RemoteClientQuerys::onGameServerGetOnlineProfile(CTcpPacket &packet)
 {
 	if (!m_client->isGameServer)
 	{
-		qWarning() << "Only registered game servers can get online profiles";
+		LogWarning("Only registered game servers can get online profiles");
 		return;
 	}
 
@@ -360,34 +484,32 @@ void RemoteClientQuerys::onGameServerGetOnlineProfile(CTcpPacket &packet)
 		CTcpPacket profile(EFireNetTcpPacketType::Result);
 		profile.WriteResult(EFireNetTcpResult::GetProfileComplete);
 		profile.WriteInt(pProfile->uid);
-		profile.WriteString(pProfile->nickname.toStdString());
-		profile.WriteString(pProfile->fileModel.toStdString());
+		profile.WriteStdString(pProfile->nickname.toStdString());
+		profile.WriteStdString(pProfile->fileModel.toStdString());
 		profile.WriteInt(pProfile->lvl);
 		profile.WriteInt(pProfile->xp);
 		profile.WriteInt(pProfile->money);
-		profile.WriteString(pProfile->items.toStdString());
-		profile.WriteString(pProfile->friends.toStdString());
+		profile.WriteStdString(pProfile->items.toStdString());
+#ifndef STEAM_SDK_ENABLED
+		profile.WriteStdString(pProfile->friends.toStdString());
+#endif
 
 		m_connection->SendMessage(profile);
 		return;
 	}
-	else
-	{
-		qDebug() << "Failed get online profile";
+	LogDebug("Failed get online profile");
 
-		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
-		m_packet.WriteError(EFireNetTcpError::GetProfileFail);
-		m_packet.WriteInt(0);
-		m_connection->SendMessage(m_packet);
-	}
+	CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+	m_packet.WriteError(EFireNetTcpError::GetProfileFail);
+	m_packet.WriteErrorCode(EFireNetTcpErrorCode::CantGetProfile);
+	m_connection->SendMessage(m_packet);
 }
 
-// Error types : 0 - Profile not found, 1 - Can't update profile
 void RemoteClientQuerys::onGameServerUpdateOnlineProfile(CTcpPacket &packet)
 {
 	if (!m_client->isGameServer)
 	{
-		qWarning() << "Only registered game servers can update profiles";
+		LogWarning("Only registered game servers can update profiles");
 		return;
 	}
 
@@ -398,7 +520,9 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(CTcpPacket &packet)
 	int xp = packet.ReadInt();
 	int money = packet.ReadInt();
 	QString items = packet.ReadString();
+#ifndef STEAM_SDK_ENABLED
 	QString friends = packet.ReadString();
+#endif
 
 	SProfile* pOldProfile = gEnv->pServer->GetProfileByUid(uid);
 
@@ -413,7 +537,9 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(CTcpPacket &packet)
 		pNewProfile->xp = xp;
 		pNewProfile->money = money;
 		pNewProfile->items = pOldProfile->items;
+#ifndef STEAM_SDK_ENABLED
 		pNewProfile->friends = pOldProfile->friends;
+#endif
 
 		if (gEnv->pServer->UpdateProfile(pNewProfile))
 		{
@@ -423,28 +549,143 @@ void RemoteClientQuerys::onGameServerUpdateOnlineProfile(CTcpPacket &packet)
 		}
 		else
 		{
-			qDebug() << "Failed update online profile";
+			LogDebug("Failed update online profile!");
 
 			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
 			m_packet.WriteError(EFireNetTcpError::UpdateProfileFail);
-			m_packet.WriteInt(1);
+			m_packet.WriteErrorCode(EFireNetTcpErrorCode::CantUpdateProfile);
 			m_connection->SendMessage(m_packet);
 		}
 	}
 	else
 	{
-		qDebug() << "Failed get online profile";
+		LogDebug("Failed get online profile");
 
 		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
 		m_packet.WriteError(EFireNetTcpError::UpdateProfileFail);
-		m_packet.WriteInt(0);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::CantGetProfile);
+		m_connection->SendMessage(m_packet);
+	}
+}
+
+void RemoteClientQuerys::onPingPong(CTcpPacket & packet)
+{
+	if (!m_client->isGameServer)
+	{
+		LogWarning("Only registered game servers can use ping pong");
+		return;
+	}
+
+	m_ServerAlive = true;
+}
+
+void RemoteClientQuerys::onArbitratorRegister(CTcpPacket & packet)
+{
+	if (gEnv->pConsole->GetBool("bUseDedicatedArbitrators"))
+	{
+		if (gEnv->m_ArbitratorsCount >= gEnv->pConsole->GetInt("sv_max_arbitrators"))
+		{
+			LogWarning("Can't register dedicated arbitrator - Maximum arbitrators for registering = <%d>", gEnv->pConsole->GetInt("sv_max_arbitrators"));
+
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::RegisterArbitratorFail);
+			m_packet.WriteErrorCode(EFireNetTcpErrorCode::ArbitratorBlockedRegister);
+			m_connection->SendMessage(m_packet);
+
+			return;
+		}
+
+		if (!m_client->isArbitrator)
+		{
+			LogDebug("Remote client with socket <%p> registered in arbitrator mode", m_socket);
+
+			QString name = packet.ReadString();
+			int maxGameServersCount = packet.ReadInt();
+			int gameServersCount = packet.ReadInt();
+
+			m_client->isArbitrator = true;
+			m_client->pArbitrator->socket = m_client->socket;
+			m_client->pArbitrator->name = name;
+			m_client->pArbitrator->m_GameServersMaxCount = maxGameServersCount;
+			m_client->pArbitrator->m_GameServersCount = gameServersCount;
+
+			gEnv->pRemoteServer->UpdateClient(m_client);
+
+			LogInfo("Arbitrator <%s> registered!", name.toStdString().c_str());
+
+			gEnv->m_ArbitratorsCount++;
+
+			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+			m_packet.WriteResult(EFireNetTcpResult::RegisterArbitratorComplete);
+			m_connection->SendMessage(m_packet);
+		}
+		else
+		{
+			LogWarning("Can't register dedicated arbitrator - this client alredy register in arbitrator mode");
+
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::RegisterArbitratorFail);
+			m_packet.WriteErrorCode(EFireNetTcpErrorCode::ArbitratorDoubleRegistration);
+			m_connection->SendMessage(m_packet);
+		}
+	}
+	else
+	{
+		LogWarning("Can't register dedicated arbitrator - this future disabled");
+
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::RegisterArbitratorFail);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::ArbitratorFunctionalityDisabled);
+		m_connection->SendMessage(m_packet);
+	}
+}
+
+void RemoteClientQuerys::onArbitratorUpdate(CTcpPacket & packet)
+{
+	if (gEnv->pConsole->GetBool("bUseDedicatedArbitrators"))
+	{
+		if (m_client->isArbitrator)
+		{
+			LogDebug("Remote client with socket <%p> updated arbitrator data", m_socket);
+
+			QString name = packet.ReadString();
+			int maxGameServersCount = packet.ReadInt();
+			int gameServersCount = packet.ReadInt();
+
+			m_client->pArbitrator->name = name;
+			m_client->pArbitrator->m_GameServersMaxCount = maxGameServersCount;
+			m_client->pArbitrator->m_GameServersCount = gameServersCount;
+
+			gEnv->pRemoteServer->UpdateClient(m_client);
+
+			CTcpPacket m_packet(EFireNetTcpPacketType::Result);
+			m_packet.WriteResult(EFireNetTcpResult::UpdateArbitratorComplete);
+			m_connection->SendMessage(m_packet);
+		}
+		else
+		{
+			LogWarning("Can't update dedicated arbitrator - this client not registered in arbitrator mode");
+
+			CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+			m_packet.WriteError(EFireNetTcpError::UpdateArbitratorFail);
+			m_packet.WriteErrorCode(EFireNetTcpErrorCode::ArbitratorNotRegistered);
+			m_connection->SendMessage(m_packet);
+		}
+	}
+	else
+	{
+		LogWarning("Can't update dedicated arbitrator - this future disabled");
+
+		CTcpPacket m_packet(EFireNetTcpPacketType::Error);
+		m_packet.WriteError(EFireNetTcpError::UpdateArbitratorFail);
+		m_packet.WriteErrorCode(EFireNetTcpErrorCode::ArbitratorFunctionalityDisabled);
 		m_connection->SendMessage(m_packet);
 	}
 }
 
 bool RemoteClientQuerys::CheckInTrustedList(const QString &name, const QString &ip, int port)
 {
-	QVector<STrustedServer> m_server = gEnv->pScripts->GetTrustedList();
+	std::vector<STrustedServer> m_server = gEnv->pScripts->GetTrustedList();
 
 	if (m_server.size() > 0)
 	{
@@ -452,12 +693,71 @@ bool RemoteClientQuerys::CheckInTrustedList(const QString &name, const QString &
 		{
 			if (it->name == name && it->ip == ip && it->port == port)
 			{
-				qDebug() << "Server found in trusted server list";
+				LogDebug("Server <%s> found in trusted server list", name.toStdString().c_str());
 				return true;
 			}
 		}
 	}
 
-	qWarning() << "Server not found in trusted server list!";
+	LogWarning("Server <%s> not found in trusted server list!", name.toStdString().c_str());
 	return false;
+}
+
+const char * RemoteClientQuerys::GetStatusString(EFireNetGameServerStatus status) const
+{
+	static const char* const s_Statuses[] =
+	{
+		"EGStatus_Empty",           // EGStatus_Empty,
+		"EGStatus_PreparingToPlay", // EGStatus_PreparingToPlay,
+		"EGStatus_GameStarted",     // EGStatus_GameStarted,
+		"EGStatus_GameFinished",    // EGStatus_GameFinished,
+		"EGStatus_Reloading",       // EGStatus_Reloading,
+		"EGStatus_WaitingPlayers",  // EGStatus_WaitingPlayers,
+		"EGStatus_Unknown",         // EGStatus_Unknown,
+	};
+
+	try
+	{
+		return s_Statuses[status];
+	}
+	catch (const std::exception&)
+	{
+		return nullptr;
+	}
+}
+
+void RemoteClientQuerys::OnConnectionClosed()
+{
+	m_Timer.stop();
+}
+
+void RemoteClientQuerys::OnUpdate()
+{
+	if (m_client->isGameServer && m_ServerAlive)
+	{
+		CTcpPacket ping(EFireNetTcpPacketType::Query);
+		ping.WriteQuery(EFireNetTcpQuery::PingPong);
+		m_connection->SendMessage(ping);
+
+		m_ServerAlive = false;
+	}
+	else if (m_client->isGameServer && !m_ServerAlive)
+	{
+		// Server R.I.P.
+		LogWarning("Game server <%s> R.I.P. Ping timeout = %d ms.", 
+			m_client->server->name.toStdString().c_str(), 
+			gEnv->pConsole->GetInt("remote_ping_timeout"));
+
+		// Finish him!
+		gEnv->pConsole->ExecuteCommand(_strFormat("killPID %d", m_client->server->currentPID).c_str());
+
+		// Spawn new game server if need
+		if (gEnv->pConsole->GetBool("bAutoSpawningGameSevers"))
+		{
+			QString exeArgs = _strFormat("spawnGameServer -dedicated -simple_console +sv_gamerules %s +map %s", m_client->server->gamerules.toStdString().c_str(), m_client->server->map.toStdString().c_str()).c_str();
+			gEnv->pConsole->ExecuteCommand(exeArgs.toStdString().c_str());
+		}
+
+		m_Timer.stop();
+	}
 }

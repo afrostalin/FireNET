@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.6.0)
-project (FireNET VERSION 2.1 LANGUAGES CXX)
+project (FireNet VERSION 2.6 LANGUAGES CXX)
 
 # QT automoc + autouic
 set(CMAKE_AUTOMOC ON)
@@ -11,6 +11,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Options
 option(NO_UI "Disable UI" OFF)
+option(USE_STEAM_SDK "Disable some features for Steam integration" OFF)
 
 # Includes
 set(3RD_DIR ${PROJECT_SOURCE_DIR}/3rd)
@@ -43,8 +44,9 @@ find_package(Qt5 COMPONENTS Core Network Widgets Gui Sql REQUIRED PATHS "${QT_DI
 set(CPP_REDIS_LIBS ${3RD_DIR}/cpp_redis/lib)
 set(TACOPIE_LIBS ${3RD_DIR}/tacopie/lib)
 set(LOGGER_LIBS ${3RD_DIR}/cutelogger/lib)
+set(CURL_LIBS  ${3RD_DIR}/curl/lib)
 
-link_directories(${CPP_REDIS_LIBS} ${TACOPIE_LIBS} ${LOGGER_LIBS})
+link_directories(${CPP_REDIS_LIBS} ${TACOPIE_LIBS} ${LOGGER_LIBS} ${CURL_LIBS})
 	
 # CODE - Main
 set (SourceGroup_Main
@@ -80,8 +82,8 @@ set (SourceGroup_Core_RS
 set (SourceGroup_Tools
 	"src/server/tools/scripts.cpp"
 	"src/server/tools/scripts.h"
-	"src/server/tools/settings.cpp"
-	"src/server/tools/settings.h"	
+	"src/server/tools/console.cpp"
+	"src/server/tools/console.h"	
 )
 # CODE - UI
 set (SourceGroup_UI
@@ -141,6 +143,8 @@ endif()
 add_executable(${PROJECT_NAME} ${SOURCE})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/includes/FireNet)
+target_include_directories(${PROJECT_NAME} PRIVATE ${3RD_DIR}/curl/includes)
+target_include_directories(${PROJECT_NAME} PRIVATE ${3RD_DIR}/json/includes)
 
 # Update build number
 if(WIN32)
@@ -156,7 +160,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Gui)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Sql)
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::WinMain)
-target_link_libraries(${PROJECT_NAME} PRIVATE Logger cpp_redis tacopie)
+target_link_libraries(${PROJECT_NAME} PRIVATE Logger cpp_redis tacopie libcurl)
+
+if(USE_STEAM_SDK)
+	add_definitions(-DSTEAM_SDK_ENABLED)
+endif()
 
 if(WIN32)
 	if(NOT NO_UI)
@@ -172,6 +180,11 @@ endif()
 
 set_target_properties (${PROJECT_NAME} PROPERTIES FOLDER Server)
 
+# Set startup project 
+if ("${CMAKE_GENERATOR}" MATCHES "^Visual Studio")
+	set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+endif()
+
 # Tools - Remote administration panel
 add_subdirectory("src/tools/remote_admin_panel" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/remote_admin")
 # Tools - Build updater
@@ -180,3 +193,5 @@ add_subdirectory("src/tools/build_update" "${CMAKE_CURRENT_BINARY_DIR}/Projects/
 add_subdirectory("src/tools/build_deployer" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/build_deployer")
 # Tools - Auto test
 add_subdirectory("src/tools/auto_test" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/auto_test")
+# Tools - Dedicated arbitrator
+add_subdirectory("src/tools/dedicated_arbitrator" "${CMAKE_CURRENT_BINARY_DIR}/Projects/tools/dedicated_arbitrator")

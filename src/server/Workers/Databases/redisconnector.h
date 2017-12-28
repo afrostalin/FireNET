@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef REDISCONNECTOR_H
-#define REDISCONNECTOR_H
+#pragma once
 
 #include <QObject>
 #include <QTimer>
@@ -21,7 +20,7 @@ public:
 public:
 	void                                         run();
 	bool                                         Connect();
-	bool                                         IsConnected();
+	bool                                         IsConnected() const;
 	void                                         Disconnect();
 public:
 	bool                                         HEXISTS(const QString &key, const QString &field);
@@ -37,5 +36,3 @@ private:
 	cpp_redis::redis_client*                     pClient;
 	QTimer                                       m_Timer;
 };
-
-#endif // REDISCONNECTOR_H

@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QTimer>
@@ -6,29 +6,27 @@
 #include "global.h"
 #include "tcpthread.h"
 #include "tcpserver.h"
-#include "Tools/settings.h"
+#include "Tools/console.h"
 
-TcpThread::TcpThread(QObject *parent) : QObject(parent),
-	m_loop(nullptr)
+TcpThread::TcpThread(QObject *parent) 
+	: QObject(parent)
+	, m_loop(nullptr)
 {
 	Q_UNUSED(parent);
 }
 
 TcpThread::~TcpThread()
 {
-	qDebug() << "~TcpThread";
-	SAFE_RELEASE(m_loop);
 	m_connections.clear();
+	SAFE_DELETE(m_loop);
 }
 
 void TcpThread::run()
 {
 	//Make an event loop to keep this alive on the thread
 	m_loop = new QEventLoop();
-	connect(this, &TcpThread::quit, m_loop, &QEventLoop::quit);
 	m_loop->exec();
 
-	qDebug() << this << "finished on" << QThread::currentThread();
 	emit finished();
 }
 
@@ -46,12 +44,10 @@ void TcpThread::SendGlobalMessage(CTcpPacket & packet)
 	}
 }
 
-void TcpThread::connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection)
+void TcpThread::connecting(const qintptr handle, TcpThread *runnable, TcpConnection* connection)
 {
 	if (runnable != this) 
 		return;
-
-	qDebug() << "Connecting: " << handle << " on " << runnable << " with " << connection;
 
 	connection->moveToThread(QThread::currentThread());
 
@@ -63,47 +59,39 @@ void TcpThread::connecting(qintptr handle, TcpThread *runnable, TcpConnection* c
 void TcpThread::closing()
 {
 	emit quit();
+	m_loop->exit();
 }
 
-void TcpThread::opened()
+void TcpThread::opened() const
 {
 	TcpConnection *connection = static_cast<TcpConnection*>(sender());
 	if (!connection)
 		return;
 
 	// Block very fast connection
-	if (!gEnv->pSettings->GetVariable("stress_mode").toBool() && gEnv->pServer->GetClientCount() > gEnv->pSettings->GetVariable("sv_max_players").toInt())
+	if (!gEnv->pConsole->GetBool("bUseStressMode") && gEnv->pServer->GetClientCount() > gEnv->pConsole->GetInt("sv_max_players"))
 	{
 		connection->quit();
 	}
-
-	qDebug() << connection << "opened";
 }
 
 void TcpThread::closed()
 {
-	qDebug() << this << "Attempting closed";
-	TcpConnection *connection = static_cast<TcpConnection*>(sender());
-	if (!connection) return;
+	TcpConnection* connection = static_cast<TcpConnection*>(sender());
+	if (connection == nullptr)
+		return;
 
-	qDebug() << connection << "closed";
 	m_connections.removeAll(connection);
-
-	qDebug() << this << "deleting" << connection;
-
 	connection->deleteLater();
 }
 
 TcpConnection* TcpThread::CreateConnection()
 {
-	TcpConnection *connection = new TcpConnection();
-
-	qDebug() << this << "created" << connection;
-
+	TcpConnection* connection = new TcpConnection();
 	return connection;
 }
 
-void TcpThread::AddSignals(TcpConnection * connection)
+void TcpThread::AddSignals(TcpConnection * connection) const
 {
 	connect(connection, &TcpConnection::opened, this, &TcpThread::opened, Qt::QueuedConnection);
 	connect(connection, &TcpConnection::closed, this, &TcpThread::closed, Qt::QueuedConnection);

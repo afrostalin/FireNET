@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QCoreApplication>
@@ -72,32 +72,18 @@ int main(int argc, char *argv[])
                     qInfo() << "main.cpp updated!";
                     return 0;
                 }
-                else
-                {
-                    qDebug() << "Can't save main.cpp !!!";
-					return -2;
-                }
+	            qDebug() << "Can't save main.cpp !!!";
+	            return -2;
             }
-            else
-            {
-				qDebug() << "Can't update main.cpp !!!";
-                mainCPP.close();
-				return -3;
-            }
-
+	        qDebug() << "Can't update main.cpp !!!";
+	        mainCPP.close();
+	        return -3;
         }
-        else
-        {
-			qDebug() << "Can't open main.cpp";
-			return -4;
-        }
-
+	    qDebug() << "Can't open main.cpp";
+	    return -4;
     }
-    else
-    {
-		qDebug() << "Can't find main.cpp!!!";
-		return -5;
-    }
+	qDebug() << "Can't find main.cpp!!!";
+	return -5;
 
-    return a.exec();
+	return a.exec();
 }

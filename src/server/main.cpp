@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include <QApplication>
@@ -14,16 +14,21 @@ int main(int argc, char *argv[])
 	QApplication* pApp = new QApplication(argc, argv);
 
 	// Server buid version, number and type
-	QString buildVersion = "v.2.1.5";
-	int buildNumber = 25;
-	QString appVersion = buildVersion + "." + QString::number(buildNumber);
+	const QString buildVersion = "v.2.1.6";
+	int buildNumber = 9;
+	const QString appVersion = buildVersion + "." + QString::number(buildNumber);
+
+	gEnv->m_buildVersion = buildVersion;
+	gEnv->m_buildNumber = buildNumber;
 #ifdef QT_NO_DEBUG
-	QString buildType = ". Release profile";
+	const QString buildType = ". Release profile";
+	gEnv->m_buildType = "Release";
 #else
-	QString buildType = ". Debug profile";
+	const QString buildType = ". Debug profile";
+	gEnv->m_buildType = "Debug";
 #endif 
 
-	// Config QAppligcation
+	// Config QApplication
 	pApp->addLibraryPath("plugins");
 	pApp->setApplicationName("FireNET");
 	pApp->setApplicationVersion(appVersion);
@@ -44,6 +49,8 @@ int main(int argc, char *argv[])
 	QThread* m_Thread = new QThread();
 	CServerThread* pServerThread = new CServerThread();
 	pServerThread->moveToThread(m_Thread);
+
+	gEnv->pMainThread = pServerThread;
 #ifndef NO_UI
 	QObject::connect(pServerThread, &CServerThread::EnableStressMode, gEnv->pUI, &MainWindow::EnableStressMode);
 #endif

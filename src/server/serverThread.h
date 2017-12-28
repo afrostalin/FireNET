@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef UITHREAD_H
-#define UITHREAD_H
+#pragma once
 
 #include <QObject>
 #include <QEventLoop>
@@ -14,18 +13,18 @@ public:
 	explicit CServerThread(QObject *parent = nullptr);
 	~CServerThread();
 private:
-	bool        Init();
+	bool        Init() const;
 	void        StartLogging();
 	void        RegisterVariables();
-	void        ReadServerCFG();
+public:	
 	void        EnableStressTest();
+	void        ReadServerCFG(bool online = false);
+	std::vector<std::string> DumpStatistic();
 public slots:
 	void        start();
-	void        stop();
+	void        stop() const;
 signals:
 	void        EnableStressMode();
 private:
 	QEventLoop* m_loop;
 };
-
-#endif

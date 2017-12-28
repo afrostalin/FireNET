@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "StdAfx.h"
@@ -10,54 +10,62 @@
 
 #include <CryExtension/ICryPluginManager.h>
 #include <CryCore/Platform/platform_impl.inl>
-#include <CryExtension/ICryPluginManager.h>
-#include <CryThreading/IThreadConfigManager.h>
+
+#include <CrySchematyc/Env/IEnvRegistry.h>
 
 #include <FireNet.inl>
-
-USE_CRYPLUGIN_FLOWNODES
-
-IEntityRegistrator *IEntityRegistrator::g_pFirst = nullptr;
-IEntityRegistrator *IEntityRegistrator::g_pLast = nullptr;
 
 void CmdConnect(IConsoleCmdArgs* args)
 {
 	if (gFireNet)
+	{
 		gFireNet->pCore->ConnectToMasterServer();
+	}
+}
+
+void CFireNetCorePlugin::RegisterCVars()
+{
+	//! CVars - Master server
+	mEnv->net_master_ip = REGISTER_STRING("net_firenetMasterIP", "127.0.0.1", VF_NULL, "Sets the FireNet master server ip address");
+	mEnv->net_version = REGISTER_STRING("net_firenetVersion", "1.0.0.0", gEnv->IsDedicated() ? VF_NULL : VF_CHEAT, "Sets the FireNet version for packet validation");
+
+	if (!gEnv->IsDedicated())
+	{
+		REGISTER_CVAR2("net_firenetMasterPort", &mEnv->net_master_port, 3322, VF_NULL, "FireNet master server port");
+	}
+	else
+	{
+		REGISTER_CVAR2("net_firenetMasterPort", &mEnv->net_master_port, 64000, VF_NULL, "FireNet master server port");
+	}
+	
+	REGISTER_CVAR2("net_firenetConnectionTimeout", &mEnv->net_master_timeout, 10, VF_CHEAT, "FireNet connection timeout");
+	REGISTER_CVAR2("net_firenetAnswerTimeout", &mEnv->net_answer_timeout, 5, VF_CHEAT, "FireNet answer timeout");
+	REGISTER_CVAR2("net_firenetAutoConnect", &mEnv->net_auto_connect, 0, VF_NULL, "Auto connect to FireNet after client init");
+	//! CVars - Other
+#ifndef  NDEBUG
+	REGISTER_CVAR2("net_firenetPacketDebug", &mEnv->net_debug, 0, VF_CHEAT, "FireNet packet debugging");
+	REGISTER_COMMAND("net_firenetConnect", CmdConnect, VF_CHEAT, "Connect to FireNet master server");
+#endif
+	REGISTER_CVAR2("net_firenetLogLevel", &mEnv->net_LogLevel, 0, VF_NULL, "FireNet log level (0 - 2)");
 }
 
 CFireNetCorePlugin::~CFireNetCorePlugin()
 {
-	//! Unregister entities
-	IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
-	while (pTemp != nullptr)
-	{
-		pTemp->Unregister();
-		pTemp = pTemp->m_pNext;
-	}
-
 	//! Unregister CVars
 	IConsole* pConsole = gEnv->pConsole;
-	if (pConsole)
+	if (pConsole != nullptr)
 	{
-		pConsole->UnregisterVariable("firenet_master_ip");
-		pConsole->UnregisterVariable("firenet_master_port");
-		pConsole->UnregisterVariable("firenet_master_timeout");
-		pConsole->UnregisterVariable("firenet_master_remote_port");
-		pConsole->UnregisterVariable("firenet_master_timeout");
-#ifndef USE_DEFAULT_DEDICATED_SERVER
-		pConsole->UnregisterVariable("firenet_game_server_ip");
-		pConsole->UnregisterVariable("firenet_game_server_map");
-		pConsole->UnregisterVariable("firenet_game_server_gamerules");
-		pConsole->UnregisterVariable("firenet_game_server_port");
-		pConsole->UnregisterVariable("firenet_game_server_tickrate");
-		pConsole->UnregisterVariable("firenet_game_server_timeout");	
-		pConsole->UnregisterVariable("firenet_game_server_max_players");
-#endif
-
+		pConsole->UnregisterVariable("net_firenetMasterIP", true);
+		pConsole->UnregisterVariable("net_firenetVersion", true);
+		pConsole->UnregisterVariable("net_firenetMasterPort", true);
+		pConsole->UnregisterVariable("net_firenetConnectionTimeout", true);
+		pConsole->UnregisterVariable("net_firenetAnswerTimeout", true);
+		pConsole->UnregisterVariable("net_firenetAutoConnect", true);
 #ifndef NDEBUG
-		pConsole->UnregisterVariable("firenet_packet_debug");
+		pConsole->UnregisterVariable("net_firenetPacketDebug", true);
+		pConsole->RemoveCommand("net_firenetConnect");
 #endif
+		pConsole->UnregisterVariable("net_firenetLogLevel", true);
 	}
 
 	//! Close network thread
@@ -79,7 +87,7 @@ CFireNetCorePlugin::~CFireNetCorePlugin()
 	SAFE_DELETE(mEnv->pNetworkThread);
 	SAFE_DELETE(gFireNet);
 
-	CryLogAlways(TITLE "Unloaded.");
+	FireNetLog(TITLE "Unloaded.");
 }
 
 bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams)
@@ -90,21 +98,13 @@ bool CFireNetCorePlugin::Initialize(SSystemGlobalEnvironment& env, const SSystem
 	if (initParams.bDedicatedServer && !gEnv->IsDedicated())
 		gEnv->SetIsDedicated(true);
 
-	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
+	gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this, "CryFireNetCore_Listener");
 
 	// Init FireNet core pointer
 	gFireNet = new IFireNetEnv();
-	gFireNet->pCore = dynamic_cast<IFireNetCore*>(this);
+	gFireNet->pCore = static_cast<IFireNetCore*>(this);
 
-	// Load FireNet thread config
-	gEnv->pThreadManager->GetThreadConfigManager()->LoadConfig("config/firenet.thread_config");
-
-	ICryPlugin::SetUpdateFlags(EUpdateType_Update);
-	
-/*	if (!gEnv->IsDedicated())
-		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Client", "FireNetClient_Plugin");
-	else if(gEnv->IsDedicated())
-		gEnv->pSystem->GetIPluginManager()->LoadPluginFromDisk(ICryPluginManager::EPluginType::EPluginType_CPP, "FireNet-Server", "FireNetServer_Plugin");*/
+	SetUpdateFlags(EUpdateType_Update);
 
 	return true;
 }
@@ -113,12 +113,18 @@ void CFireNetCorePlugin::OnPluginUpdate(EPluginUpdateType updateType)
 {
 	switch (updateType)
 	{
-	case IPluginUpdateListener::EUpdateType_Update:
+	case EUpdateType_Update:
 	{
 		//! Automatic deleting network thread if it's ready to close
 		if (mEnv->pNetworkThread && mEnv->pNetworkThread->IsReadyToClose() && !gEnv->pSystem->IsQuitting())
 		{
+			FireNetLog(TITLE "Network thread stopped - delete it");
 			SAFE_DELETE(mEnv->pNetworkThread);
+
+			for (const auto &it : mEnv->m_Listeners)
+			{
+				it->OnReadyToReconnect();
+			}
 		}
 		break;
 	}
@@ -133,44 +139,20 @@ void CFireNetCorePlugin::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT
 	{
 	case ESYSTEM_EVENT_GAME_POST_INIT:
 	{
-		//! Register entities
-		IEntityRegistrator* pTemp = IEntityRegistrator::g_pFirst;
-		while (pTemp != nullptr)
-		{
-			pTemp->Register();
-			pTemp = pTemp->m_pNext;
-		}
-
-		//! CVars - Master server
-		mEnv->net_master_ip = REGISTER_STRING("firenet_master_ip", "127.0.0.1", VF_NULL, "Sets the FireNet master server ip address");
-		REGISTER_CVAR2("firenet_master_port", &mEnv->net_master_port, 3322, VF_CHEAT, "FireNet master server port");
-		REGISTER_CVAR2("firenet_master_timeout", &mEnv->net_master_timeout, 10, VF_NULL, "FireNet master server timeout");
-		REGISTER_CVAR2("firenet_master_remote_port", &mEnv->net_master_remote_port, 5200, VF_CHEAT, "FireNet master server port for game server");
-#ifndef USE_DEFAULT_DEDICATED_SERVER
-		//! CVars - Game server
-		mEnv->net_game_server_ip = REGISTER_STRING("firenet_game_server_ip", "127.0.0.1", VF_NULL, "Sets the FireNet game server ip address");
-		mEnv->net_game_server_map = REGISTER_STRING("firenet_game_server_map", "", VF_NULL, "Map name for loading and register in master server");
-		mEnv->net_game_server_gamerules = REGISTER_STRING("firenet_game_server_gamerules", "TDM", VF_NULL, "Gamerules name for loading and register in master server");
-		REGISTER_CVAR2("firenet_game_server_port", &mEnv->net_game_server_port, 64000, VF_CHEAT, "FireNet game server port");
-		REGISTER_CVAR2("firenet_game_server_tickrate", &mEnv->net_game_server_tickrate, 30, VF_NULL, "FireNet game server tickrate");
-		REGISTER_CVAR2("firenet_game_server_timeout", &mEnv->net_game_server_timeout, 10, VF_NULL, "FireNet game server timeout");
-		REGISTER_CVAR2("firenet_game_server_max_players", &mEnv->net_game_server_max_players, 64, VF_NULL, "FireNet game server max players count");
-#endif
-
-		//! CVars - Other
-#ifndef  NDEBUG
-		REGISTER_CVAR2("firenet_packet_debug", &mEnv->net_debug, 0, VF_NULL, "FireNet packet debugging");
-		REGISTER_COMMAND("firenet_master_connect", CmdConnect, VF_NULL, "Connect to FireNet master server");
-#endif
+		//! Register console vars and commands
+		RegisterCVars();
 		break;
 	}
 	case ESYSTEM_EVENT_GAME_FRAMEWORK_INIT_DONE:
 	{
-		//! Load FireNet settings
-		gEnv->pConsole->ExecuteString("exec firenet.cfg");
+		//! Read firenet.cfg
+		if (gEnv->IsDedicated())
+		{
+			gEnv->pConsole->ExecuteString("exec firenet.cfg");
+		}
 
 		//! Automatic connect to master server
-		if (!gEnv->IsEditor())
+		if (!gEnv->IsEditor() && mEnv->net_auto_connect > 0)
 			ConnectToMasterServer();
 
 		break;
@@ -200,41 +182,56 @@ void CFireNetCorePlugin::ConnectToMasterServer()
 		gEnv->pThreadManager->JoinThread(mEnv->pNetworkThread, eJM_Join);
 
 		SAFE_DELETE(mEnv->pNetworkThread);
+
+		FireNetLog(TITLE "FireNet core thread removed.");
 	}
 
 	if (mEnv->pNetworkThread == nullptr)
 	{
-		FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
+		FireNetLog(TITLE "Spawning FireNet core tread ...");
+
+		FireNet::SendEmptyEvent(FIRENET_EVENT_MASTER_SERVER_START_CONNECTION);
 
 		mEnv->pNetworkThread = new CNetworkThread();
 
 		if (!gEnv->pThreadManager->SpawnThread(mEnv->pNetworkThread, "FireNetCore_Thread"))
 		{
-			SFireNetEventArgs args;
-			args.AddInt(0);
-			args.AddString("cant_spawn_network_thread");
-
-			FireNet::SendFireNetEvent(FIRENET_EVENT_MASTER_SERVER_CONNECTION_ERROR, args);
+			for (const auto &it : mEnv->m_Listeners)
+			{
+				it->OnConnectionError(EFireNetCoreErrorCodes::CantSpawnThread);
+			}
 
 			SAFE_DELETE(mEnv->pNetworkThread);
 
 			CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't spawn FireNet core thread!");
 		}
 		else
-			CryLog(TITLE "FireNet core thread spawned");
+			FireNetLog(TITLE "FireNet core thread spawned");
+	}
+	else
+	{
+		FireNetLog(TITLE "Network thread not deleted, try later");
+
+		for (const auto &it : mEnv->m_Listeners)
+		{
+			it->OnConnectionError(EFireNetCoreErrorCodes::CantRemoveThread);
+		}
 	}
 }
 
-void CFireNetCorePlugin::Authorization(const std::string & login, const std::string & password)
+void CFireNetCorePlugin::Authorization(const char* login, const char* password)
 {
-	CryLog(TITLE "Try authorizate by login and password");
+	FireNetLog(TITLE "Try authorizate by login and password");
 
-	if (!login.empty() && !password.empty())
+	std::string m_login(login);
+	std::string m_password(password);
+
+	if (!m_login.empty() && !m_password.empty())
 	{
-		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::Login);
-		packet.WriteString(login.c_str());
-		packet.WriteString(password.c_str());
+		packet.WriteString(login);
+		packet.WriteString(password);
 
 		FireNet::SendPacket(packet);
 	}
@@ -244,16 +241,19 @@ void CFireNetCorePlugin::Authorization(const std::string & login, const std::str
 	}	
 }
 
-void CFireNetCorePlugin::Registration(const std::string & login, const std::string & password)
+void CFireNetCorePlugin::Registration(const char* login, const char* password)
 {
-	CryLog(TITLE "Try register new account by login and password");
+	FireNetLog(TITLE "Try register new account by login and password");
 
-	if (!login.empty() && !password.empty())
+	std::string m_login(login);
+	std::string m_password(password);
+
+	if (!m_login.empty() && !m_password.empty())
 	{
-		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::Register);
-		packet.WriteString(login.c_str());
-		packet.WriteString(password.c_str());
+		packet.WriteString(login);
+		packet.WriteString(password);
 
 		FireNet::SendPacket(packet);
 	}
@@ -263,16 +263,19 @@ void CFireNetCorePlugin::Registration(const std::string & login, const std::stri
 	}
 }
 
-void CFireNetCorePlugin::CreateProfile(const std::string & nickname, const std::string & character)
+void CFireNetCorePlugin::CreateProfile(const char* nickname, const char* character)
 {
-	CryLog(TITLE "Try create profile by nickname and character model");
+	FireNetLog(TITLE "Try create profile by nickname and character model");
 
-	if (!nickname.empty() && !character.empty())
+	std::string m_nickname(nickname);
+	std::string m_character(character);
+
+	if (!m_nickname.empty() && !m_character.empty())
 	{
-		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::CreateProfile);
-		packet.WriteString(nickname.c_str());
-		packet.WriteString(character.c_str());
+		packet.WriteString(nickname);
+		packet.WriteString(character);
 
 		FireNet::SendPacket(packet);
 	}
@@ -284,9 +287,9 @@ void CFireNetCorePlugin::CreateProfile(const std::string & nickname, const std::
 
 void CFireNetCorePlugin::GetProfile(int uid)
 {
-	CryLog(TITLE "Try get profile");
+	FireNetLog(TITLE "Try get profile");
 
-	CTcpPacket packet(EFireNetTcpPacketType::Query);
+	CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 	packet.WriteQuery(EFireNetTcpQuery::GetProfile);
 
 	FireNet::SendPacket(packet);
@@ -294,29 +297,31 @@ void CFireNetCorePlugin::GetProfile(int uid)
 
 SFireNetProfile * CFireNetCorePlugin::GetLocalProfile()
 {
-	// TODO
+	FireNetLog(TITLE "%s - TODO", __FUNCTION__);
 	return nullptr;
 }
 
 void CFireNetCorePlugin::GetShop()
 {
-	CryLog(TITLE "Try get shop");
+	FireNetLog(TITLE "Try get shop");
 
-	CTcpPacket packet(EFireNetTcpPacketType::Query);
+	CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 	packet.WriteQuery(EFireNetTcpQuery::GetShop);
 
 	FireNet::SendPacket(packet);
 }
 
-void CFireNetCorePlugin::BuyItem(const std::string & item)
+void CFireNetCorePlugin::BuyItem(const char* item)
 {
-	CryLog(TITLE "Try buy item by name");
+	FireNetLog(TITLE "Try buy item by name");
 
-	if (!item.empty())
+	std::string m_item(item);
+
+	if (!m_item.empty())
 	{
-		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::BuyItem);
-		packet.WriteString(item.c_str());
+		packet.WriteString(item);
 
 		FireNet::SendPacket(packet);
 	}
@@ -326,15 +331,16 @@ void CFireNetCorePlugin::BuyItem(const std::string & item)
 	}
 }
 
-void CFireNetCorePlugin::RemoveItem(const std::string & item)
+void CFireNetCorePlugin::RemoveItem(const char* item)
 {
-	CryLog(TITLE "Try remove item by name");
+	FireNetLog(TITLE "Try remove item by name");
 
-	if (!item.empty())
+	std::string m_item(item);
+	if (!m_item.empty())
 	{
-		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::RemoveItem);
-		packet.WriteString(item.c_str());
+		packet.WriteString(item);
 
 		FireNet::SendPacket(packet);
 	}
@@ -346,7 +352,7 @@ void CFireNetCorePlugin::RemoveItem(const std::string & item)
 
 void CFireNetCorePlugin::SendInvite(EFireNetInviteType type, int uid)
 {
-	CryLog(TITLE "Try send invite");
+	FireNetLog(TITLE "Try send invite");
 
 	if (uid > 0)
 	{
@@ -365,7 +371,7 @@ void CFireNetCorePlugin::SendInvite(EFireNetInviteType type, int uid)
 
 void CFireNetCorePlugin::DeclineInvite()
 {
-	CryLog(TITLE "Try decline invite");
+	FireNetLog(TITLE "Try decline invite");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::DeclineInvite);
@@ -375,7 +381,7 @@ void CFireNetCorePlugin::DeclineInvite()
 
 void CFireNetCorePlugin::AcceptInvite()
 {
-	CryLog(TITLE "Try accept invite");
+	FireNetLog(TITLE "Try accept invite");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::AcceptInvite);
@@ -385,11 +391,11 @@ void CFireNetCorePlugin::AcceptInvite()
 
 void CFireNetCorePlugin::RemoveFriend(int uid)
 {
-	CryLog(TITLE "Try remove friend");
+	FireNetLog(TITLE "Try remove friend");
 
 	if (uid > 0)
 	{
-		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::RemoveFriend);
 		packet.WriteInt(uid);
 
@@ -403,7 +409,7 @@ void CFireNetCorePlugin::RemoveFriend(int uid)
 
 void CFireNetCorePlugin::SendChatMessage(EFireNetChatMsgType type, int uid)
 {
-	CryLog(TITLE "Try send chat message");
+	FireNetLog(TITLE "Try send chat message");
 
 	CTcpPacket packet(EFireNetTcpPacketType::Query);
 	packet.WriteQuery(EFireNetTcpQuery::SendChatMsg);
@@ -417,16 +423,71 @@ void CFireNetCorePlugin::SendChatMessage(EFireNetChatMsgType type, int uid)
 	FireNet::SendPacket(packet);
 }
 
-void CFireNetCorePlugin::GetGameServer(const std::string & map, const std::string & gamerules)
+void CFireNetCorePlugin::RegisterGameServer(SFireNetGameServer serverInfo)
 {
-	CryLog(TITLE "Try get game server");
-
-	if (!map.empty() && !gamerules.empty())
+	if (serverInfo.IsValid() && gEnv->IsDedicated())
 	{
+		FireNetLog(TITLE "Try register game server");
+
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
+		packet.WriteQuery(EFireNetTcpQuery::RegisterServer);
+		packet.WriteString(serverInfo.name);
+		packet.WriteString(serverInfo.ip);
+		packet.WriteInt(serverInfo.port);
+		packet.WriteString(serverInfo.map);
+		packet.WriteString(serverInfo.gamerules);
+		packet.WriteInt(serverInfo.online);
+		packet.WriteInt(serverInfo.maxPlayers);
+		packet.WriteInt(static_cast<int>(serverInfo.status));
+		packet.WriteInt(serverInfo.currentPID);
+
+		FireNet::SendPacket(packet);
+	}
+	else
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't register game server. Server info not valid!");
+	}
+}
+
+void CFireNetCorePlugin::UpdateGameServer(SFireNetGameServer serverInfo)
+{
+	if (serverInfo.IsValid() && gEnv->IsDedicated())
+	{
+		FireNetLog(TITLE "Try update game server info ");
+
 		CTcpPacket packet(EFireNetTcpPacketType::Query);
+		packet.WriteQuery(EFireNetTcpQuery::UpdateServer);
+		packet.WriteString(serverInfo.name);
+		packet.WriteString(serverInfo.ip);
+		packet.WriteInt(serverInfo.port);
+		packet.WriteString(serverInfo.map);
+		packet.WriteString(serverInfo.gamerules);
+		packet.WriteInt(serverInfo.online);
+		packet.WriteInt(serverInfo.maxPlayers);
+		packet.WriteInt(static_cast<int>(serverInfo.status));
+		packet.WriteInt(serverInfo.currentPID);
+
+		FireNet::SendPacket(packet);
+	}
+	else
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE  "Can't update game server info. Server info not valid!");
+	}
+}
+
+void CFireNetCorePlugin::GetGameServer(const char* map, const char* gamerules)
+{
+	FireNetLog(TITLE "Try get game server");
+
+	std::string m_map(map);
+	std::string m_gamerules(gamerules);
+
+	if (!m_map.empty() && !m_gamerules.empty())
+	{
+		CTcpPacket packet(EFireNetTcpPacketType::Query, true);
 		packet.WriteQuery(EFireNetTcpQuery::GetServer);
-		packet.WriteString(map.c_str());
-		packet.WriteString(gamerules.c_str());
+		packet.WriteString(map);
+		packet.WriteString(gamerules);
 
 		FireNet::SendPacket(packet);
 	}
@@ -446,14 +507,24 @@ bool CFireNetCorePlugin::IsConnected()
 	return mEnv->pTcpClient ? mEnv->pTcpClient->IsConnected() : false;
 }
 
-bool CFireNetCorePlugin::GetHWID(std::string &hwid)
+void CFireNetCorePlugin::GetFireNetEventListeners(std::vector<IFireNetListener*>& vector)
+{
+	vector = mEnv->m_Listeners;
+}
+
+void CFireNetCorePlugin::GetHWID(string &hwid)
 {
 	HW_PROFILE_INFO hwProfileInfo;
 	if (GetCurrentHwProfile(&hwProfileInfo))
 	{
-		hwid = hwProfileInfo.szHwProfileGuid;
+		std::string str_hwid  = hwProfileInfo.szHwProfileGuid;
+		hwid = str_hwid.c_str();
 	}
-	return false;
+}
+
+void CFireNetCorePlugin::ExecuteEvent(EFireNetEvents eventName)
+{
+	FireNet::SendEmptyEvent(eventName);
 }
 
 void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
@@ -473,19 +544,32 @@ void CFireNetCorePlugin::RegisterFireNetListener(IFireNetListener * listener)
 		}
 	}
 
-	CryLog(TITLE "FireNet event listener registered (%p)", listener);
+	FireNetLog(TITLE "FireNet event listener registered (%p)", listener);
 
 	mEnv->m_Listeners.push_back(listener);
 }
 
-void CFireNetCorePlugin::SendFireNetEvent(EFireNetEvents event, SFireNetEventArgs& args)
+void CFireNetCorePlugin::UnregisterFireNetListener(IFireNetListener * listener)
 {
-	FireNet::SendFireNetEvent(event, args);
+	if (!listener)
+	{
+		CryWarning(VALIDATOR_MODULE_NETWORK, VALIDATOR_ERROR, TITLE "Failed unregister FireNetEventListener. Null pointer");
+		return;
+	}
+
+	for (auto it = mEnv->m_Listeners.begin(); it != mEnv->m_Listeners.end(); ++it)
+	{
+		if (*it == listener)
+		{
+			mEnv->m_Listeners.erase(it);
+			return;
+		}
+	}
 }
 
 bool CFireNetCorePlugin::Quit()
 {
-	CryLogAlways(TITLE "Closing plugin...");
+	FireNetLog(TITLE "Closing plugin...");
 
 	if (mEnv->pNetworkThread)
 	{
@@ -497,7 +581,7 @@ bool CFireNetCorePlugin::Quit()
 
 	if (mEnv->pNetworkThread == nullptr)
 	{
-		CryLogAlways(TITLE "Plugin ready to unload");
+		FireNetLog(TITLE "Plugin ready to unload");
 		return true;
 	}
 	else

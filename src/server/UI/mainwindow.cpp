@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
@@ -9,15 +9,11 @@
 #include "Core/tcpserver.h"
 #include "Core/remoteserver.h"
 
-#include "Workers/Databases/dbworker.h"
-#include "Workers/Databases/mysqlconnector.h"
+#include "Tools/console.h"
 
-#include "Tools/settings.h"
-#include "Tools/scripts.h"
-
-MainWindow::MainWindow(QWidget *parent) :
-	QMainWindow(parent),
-	ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent) 
+	: QMainWindow(parent)
+	, ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
 
@@ -29,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(&m_UpdateTimer, &QTimer::timeout, this, &MainWindow::UpdateServerStatus);
 	connect(this, &MainWindow::scroll, ui->Output, &QListWidget::scrollToBottom);
 
-	m_UpdateTimer.start(500);
+	m_UpdateTimer.start(250);
 }
 
 MainWindow::~MainWindow()
@@ -47,12 +43,19 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	// If log level 0 or 1 - We not need use scroll and save all lines
 	if (m_OutputItemID >= 24 && gEnv->m_UILogLevel < 2)
 	{
-		auto pItem = ui->Output->item(0);
-
-		if (pItem)
+		try
 		{
-			SAFE_DELETE(pItem);
-			m_OutputItemID--;
+			auto pItem = ui->Output->item(0);
+
+			if (pItem)
+			{
+				SAFE_DELETE(pItem);
+				m_OutputItemID--;
+			}
+		}
+		catch (const std::exception&)
+		{
+
 		}
 	}
 
@@ -63,44 +66,72 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 	{
 	case ELog_Debug:
 	{
-		auto pItem = ui->Output->item(m_OutputItemID);
-
-		if (pItem)
+		try
 		{
-			pItem->setForeground(Qt::darkGreen);
+			auto pItem = ui->Output->item(m_OutputItemID);
+
+			if (pItem)
+			{
+				pItem->setForeground(Qt::darkGreen);
+			}
 		}
+		catch (const std::exception&)
+		{
+
+		}	
 
 		break;
 	}
 	case ELog_Info:
 	{
-		auto pItem = ui->Output->item(m_OutputItemID);
-
-		if (pItem)
+		try
 		{
-			pItem->setForeground(Qt::white);
+			auto pItem = ui->Output->item(m_OutputItemID);
+
+			if (pItem)
+			{
+				pItem->setForeground(Qt::white);
+			}
 		}
+		catch (const std::exception&)
+		{
+
+		}	
 
 		break;
 	}
 	case ELog_Warning:
 	{
-		auto pItem = ui->Output->item(m_OutputItemID);
-
-		if (pItem)
+		try
 		{
-			pItem->setForeground(Qt::darkYellow);
+			auto pItem = ui->Output->item(m_OutputItemID);
+
+			if (pItem)
+			{
+				pItem->setForeground(Qt::darkYellow);
+			}
 		}
+		catch (const std::exception&)
+		{
+
+		}		
 
 		break;
 	}
 	case ELog_Error:
 	{
-		auto pItem = ui->Output->item(m_OutputItemID);
-
-		if (pItem)
+		try
 		{
-			pItem->setForeground(Qt::red);
+			auto pItem = ui->Output->item(m_OutputItemID);
+
+			if (pItem)
+			{
+				pItem->setForeground(Qt::red);
+			}
+		}
+		catch (const std::exception&)
+		{
+
 		}
 
 		break;
@@ -109,13 +140,13 @@ void MainWindow::LogToOutput(ELogType type, const QString& msg)
 		break;
 	};
 
-	if (gEnv && !gEnv->isQuiting && gEnv->m_UILogLevel == 2)
+	if (gEnv && !gEnv->isQuiting && gEnv->m_UILogLevel >= 2)
 	{
 		emit scroll();
 	}
 }
 
-void MainWindow::UpdateServerStatus()
+void MainWindow::UpdateServerStatus() const
 {
 	if (gEnv->isQuiting || !ui || !ui->Status)
 		return;
@@ -142,16 +173,17 @@ void MainWindow::UpdateServerStatus()
 		maxGsCount = gEnv->pRemoteServer->GetMaxClientCount();
 	}
 
-	QString status = "MServer : " + gEnv->m_ServerStatus.m_MainServerStatus +
-		" | MClients : " + QString::number(clientCount) + "/" + QString::number(maxClientCount) +
-		" | RServer : " + gEnv->m_ServerStatus.m_RemoteServerStatus +
-		" | RClients : " + QString::number(gsCount) + "/" + QString::number(maxGsCount) +
-		" | DBMode : " + gEnv->m_ServerStatus.m_DBMode +
-		" | DBStatus : " + gEnv->m_ServerStatus.m_DBStatus +	
-		" | IPackets : " + QString::number(gEnv->m_InputPacketsCount) +
-		" | OPackets : " + QString::number(gEnv->m_OutputPacketsCount) + 
-		" | ISpeed : " + QString::number(gEnv->m_InputSpeed) + 
-		" | OSpeed : " + QString::number(gEnv->m_OutputSpeed);
+	QString status = _strFormat("MServer : %s | MClients : %d/%d | RServer : %s | RClients : %d/%d | DBMode : %s | DBStatus : %s | IPackets : %d | OPackets : %d | ISpeed : %d | OSpeed : %d",
+		gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str(),
+		clientCount, maxClientCount,
+		gEnv->m_ServerStatus.m_RemoteServerStatus.toStdString().c_str(), 
+		gsCount, maxGsCount,
+		gEnv->m_ServerStatus.m_DBMode.toStdString().c_str(),
+		gEnv->m_ServerStatus.m_DBStatus.toStdString().c_str(),
+		gEnv->m_InputPacketsCount,
+		gEnv->m_OutputPacketsCount,
+		gEnv->m_InputSpeed,
+		gEnv->m_OutputSpeed).c_str();
 
 	ui->Status->addItem(status);
 
@@ -164,7 +196,7 @@ void MainWindow::UpdateServerStatus()
 void MainWindow::EnableStressMode()
 {
 	ClearOutput();
-	qWarning() << "YOU ENABLED STRESS TEST MODE, RESTART SERVER IF YOU NEED DISABLE IT";
+	LogWarning("YOU ENABLED STRESS TEST MODE, RESTART SERVER IF YOU NEED DISABLE IT");
 }
 
 void MainWindow::CleanUp()
@@ -176,7 +208,7 @@ void MainWindow::CleanUp()
 	while (!gEnv->isReadyToClose)
 	{
 		QEventLoop loop;
-		QTimer::singleShot(33, &loop, &QEventLoop::quit);
+		QTimer::singleShot(100, &loop, &QEventLoop::quit);
 		loop.exec();
 	}
 
@@ -188,6 +220,8 @@ void MainWindow::CleanUp()
 
 void MainWindow::ClearOutput()
 {
+	QMutexLocker locker(&m_Mutex);
+
 	if (ui && ui->Output)
 	{
 		ui->Output->clear();
@@ -195,7 +229,7 @@ void MainWindow::ClearOutput()
 	}
 }
 
-void MainWindow::ClearStatus()
+void MainWindow::ClearStatus() const
 {
 	if (ui && ui->Status)
 		ui->Status->clear();
@@ -206,197 +240,105 @@ void MainWindow::on_Input_returnPressed()
 	QString input = ui->Input->text();
 	ui->Input->clear();
 
-	if (input == "status")
+	CConsole* pConsole = gEnv->pConsole;
+	if (pConsole == nullptr)
 	{
-		qWarning() << "***FULL SERVER STATUS***";
-
-		// Main server status
-		qWarning() << "Server version :" << gEnv->m_serverFullName.toStdString().c_str();
-		qWarning() << "Main server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("sv_port").toInt() << ") - " << gEnv->m_ServerStatus.m_MainServerStatus.toStdString().c_str();
-		qWarning() << "Clients count :" << gEnv->pServer->GetClientCount() << "/" << gEnv->pServer->GetMaxClientCount();
-		qWarning() << "Maximum active clients count :" << gEnv->m_MaxClientCount;
-		qWarning() << "Thread count :" << gEnv->pSettings->GetVariable("sv_thread_count").toInt();
-		qWarning() << "Server tickrate :" << gEnv->pSettings->GetVariable("sv_tickrate").toInt() << "per/sec.";
-
-		// Packets info
-		qWarning() << "Input packets count :" << gEnv->m_InputPacketsCount;
-		qWarning() << "Input packets current speed :" << gEnv->m_InputSpeed << "packets/sec.";
-		qWarning() << "Input packets max speed :" << gEnv->m_InputMaxSpeed << "packets/sec.";
-
-		qWarning() << "Output packets :" << gEnv->m_OutputPacketsCount;
-		qWarning() << "Output packets current speed :" << gEnv->m_OutputSpeed << "packets/sec.";
-		qWarning() << "Output packets max speed :" << gEnv->m_OutputMaxSpeed << "packets/sec.";
-
-		// Remote server status
-		QString remoteAdminStatus = gEnv->pRemoteServer->IsHaveAdmin() ? "online" : "offline";
-
-		qWarning() << "Remote server (" << gEnv->pSettings->GetVariable("sv_ip").toString().toStdString().c_str() << ":" << gEnv->pSettings->GetVariable("remote_server_port").toInt() << ") - " << gEnv->m_ServerStatus.m_RemoteServerStatus.toStdString().c_str();
-		qWarning() << "Remote admin :" << remoteAdminStatus.toStdString().c_str();
-		qWarning() << "Game servers :" << gEnv->pRemoteServer->GetClientCount() << "/" << gEnv->pRemoteServer->GetMaxClientCount();
-		
-		// Databases mode
-		qWarning() << "Database mode :" << gEnv->m_ServerStatus.m_DBMode.toStdString().c_str();
-
-		// Databases status
-		qWarning() << "Database status :" << gEnv->m_ServerStatus.m_DBStatus.toStdString().c_str();
-
-		// Debug messages
-		qWarning() << "Debug messages :" << gEnv->m_DebugsCount;
-		qWarning() << "Warning messages :" << gEnv->m_WarningsCount;
-		qWarning() << "Error messages :" << gEnv->m_ErrorsCount;
+		LogError("Can't get console!");
+		return;
 	}
-	else if (input.contains("send_message")) // TODO
-	{
-		QString message = input.remove("send_message ");
 
-		qInfo() << "Try send message to all clients <" << message.toStdString().c_str() << ">";
 
-		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
-		msg.WriteServerMessage(EFireNetTcpSMessage::ServerMessage);
-		msg.WriteString(message.toStdString());
-		gEnv->pServer->sendGlobalMessage(msg);
-	}
-	else if (input.contains("send_command")) // TODO
-	{
-		QString command = input.remove("send_command ");
-
-		qInfo() << "Try send command to all clients <" << command.toStdString().c_str() << ">";
-
-		CTcpPacket msg(EFireNetTcpPacketType::ServerMessage);
-		msg.WriteServerMessage(EFireNetTcpSMessage::ServerCommand);
-		msg.WriteString(command.toStdString());
-		gEnv->pServer->sendGlobalMessage(msg);
-	}
-	else if (input == "players")
-	{
-		QStringList players = gEnv->pServer->GetPlayersList();
-
-		if (players.size() <= 0)
-		{
-			qWarning() << "No available  players for display";
-			return;
-		}
-
-		for (int i = 0; i < players.size(); i++)
-		{
-			qInfo() << players[i];
-		}
-	}
-	else if (input == "servers")
-	{
-		QStringList servers = gEnv->pRemoteServer->GetServerList();
-
-		if (servers.size() <= 0)
-		{
-			qWarning() << "No available  server for display";
-			return;
-		}
-
-		for (int i = 0; i < servers.size(); i++)
-		{
-			qInfo() << servers[i];
-		}
-	}
-	else if (input == "clear")
-	{
-		ClearOutput();
-	}
-	else if (input == "quit")
-	{
-		CleanUp();
-	}
-	else if (input == "list")
-	{
-		qInfo() << "status - get full server status";
-		qInfo() << "send_message ... - send server message to all connected clients";
-		qInfo() << "send_command ... - send console command to all connected clients";
-		qInfo() << "servers - get connected game servers list";
-		qInfo() << "players - get connected players list";
-		qInfo() << "quit - full server shutdown";
-	}
-	else
+	if (!pConsole->ExecuteCommand(input))
 	{
 		QStringList keys = input.split(" ");
 
 		// Get variable description
 		if (keys.size() > 0 && keys[0].contains("?"))
 		{
-			qInfo() << keys[0].toStdString().c_str();
+			LogInfo("%s", keys[0].toStdString().c_str());
+
 			QString key = keys[0].remove("?");
-			QString description = gEnv->pSettings->GetDescription(key);
+			QString description = gEnv->pConsole->GetDescription(key);
 
 			if (!description.isEmpty())
-				qInfo() << key.toStdString().c_str() << "-" << description.toStdString().c_str();
-			else if (!gEnv->pSettings->FindVariabelMatches(key))
-				qWarning() << "No one similar variable is found";
+			{
+				LogInfo("%s - %s", key.toStdString().c_str(), description.toStdString().c_str());
+			}
+			else
+			{
+				if (!gEnv->pConsole->FindVariabelMatches(key))
+				{
+					LogWarning("No one similar variable is found");
+				}
+			}
 
 			return;
 		}
 
 		// Find variable and get type, value or set new value
-		if (keys.size() > 0 && gEnv->pSettings->CheckVariableExists(keys[0]))
+		if (keys.size() > 0 && gEnv->pConsole->CheckVariableExists(keys[0]))
 		{
 			if (keys.size() == 1)
 			{
 				// Get variable type and value
-				QVariant::Type var_type = gEnv->pSettings->GetVariable(keys[0]).type();
+				QVariant::Type var_type = gEnv->pConsole->GetVariable(keys[0]).type();
 
 				switch (var_type)
 				{
 				case QVariant::Bool:
 				{
-					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toBool();
+					LogInfo("%s = %s", keys[0].toStdString().c_str(), gEnv->pConsole->GetBool(keys[0].toStdString().c_str()) ? "true" : "false");
 					break;
 				}
 				case QVariant::Int:
 				{
-					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toInt();
+					LogInfo("%s = %d", keys[0].toStdString().c_str(), gEnv->pConsole->GetInt(keys[0].toStdString().c_str()));
 					break;
 				}
 				case QVariant::Double:
 				{
-					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toDouble();
+					LogInfo("%s = %f", keys[0].toStdString().c_str(), gEnv->pConsole->GetDouble(keys[0].toStdString().c_str()));
 					break;
 				}
 				case QVariant::String:
 				{
-					qInfo() << keys[0].toStdString().c_str() << "=" << gEnv->pSettings->GetVariable(keys[0]).toString().toStdString().c_str();
+					LogInfo("%s = %s", keys[0].toStdString().c_str(), gEnv->pConsole->GetString(keys[0].toStdString().c_str()).c_str());
 					break;
 				}
 				default:
 					break;
 				}
 			}
-			else if (keys.size() == 2) // Set new value for variable
+			else if (keys.size() == 2 && !keys[1].isEmpty()) // Set new value for variable
 			{
-				qInfo() << keys[0].toStdString().c_str() << "=" << keys[1].toStdString().c_str();
+				LogInfo("%s = %s", keys[0].toStdString().c_str(), keys[1].toStdString().c_str());
 
-				QVariant::Type var_type = gEnv->pSettings->GetVariable(keys[0]).type();
+				QVariant::Type var_type = gEnv->pConsole->GetVariable(keys[0]).type();
 
 				switch (var_type)
 				{
 				case QVariant::Bool:
 				{
 					bool value = (keys[1].toInt() == 1) ? true : false;
-					gEnv->pSettings->SetVariable(keys[0], value);
+					gEnv->pConsole->SetVariable(keys[0], value);
 					break;
 				}
 				case QVariant::Int:
 				{
 					int value = keys[1].toInt();
-					gEnv->pSettings->SetVariable(keys[0], value);
+					gEnv->pConsole->SetVariable(keys[0], value);
 					break;
 				}
 				case QVariant::Double:
 				{
 					double value = keys[1].toDouble();
-					gEnv->pSettings->SetVariable(keys[0], value);
+					gEnv->pConsole->SetVariable(keys[0], value);
 					break;
 				}
 				case QVariant::String:
 				{
 					QString value = keys[1];
-					gEnv->pSettings->SetVariable(keys[0], value);
+					gEnv->pConsole->SetVariable(keys[0], value);
 					break;
 				}
 				default:
@@ -406,7 +348,7 @@ void MainWindow::on_Input_returnPressed()
 		}
 		else 
 		{
-			qWarning() << "Unknown console command or variable" << input;
+			LogWarning("Unknown console command or variable <%s>", input.toStdString().c_str());
 		}		
 	}
 }

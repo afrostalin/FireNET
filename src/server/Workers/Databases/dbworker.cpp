@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
@@ -6,26 +6,24 @@
 #include "redisconnector.h"
 #include "mysqlconnector.h"
 
-#include "Workers/Packets/clientquerys.h"
-#include "Tools/settings.h"
+#include "Tools/console.h"
 
-#include <QRegExp>
 #include <QSqlQuery>
 
-DBWorker::DBWorker(QObject *parent) : QObject(parent),
-	pRedis(nullptr),
-	pMySql(nullptr)
+DBWorker::DBWorker(QObject *parent) 
+	: QObject(parent)
+	, pRedis(nullptr)
+	, pMySql(nullptr)
 {
 }
 
 DBWorker::~DBWorker()
 {
-	qDebug() << "~DBWorker";
 	SAFE_RELEASE(pRedis);
 	SAFE_RELEASE(pMySql);
 }
 
-void DBWorker::Clear()
+void DBWorker::Clear() const
 {
 	if (pRedis != nullptr)
 	{
@@ -39,21 +37,21 @@ void DBWorker::Clear()
 
 void DBWorker::Init()
 {
-	gEnv->m_ServerStatus.m_DBStatus = "init";
+	gEnv->m_ServerStatus.m_DBStatus = "Init";
 
 	// Create Redis connection
-	if (gEnv->pSettings->GetVariable("bUseRedis").toBool())
+	if (gEnv->pConsole->GetBool("bUseRedis"))
 	{
-		qInfo() << "Start Redis service...";
+		LogInfo("Start Redis service...");
 		pRedis = new RedisConnector;
 		pRedis->run();
 	}
 
 	// Create MySQL connection
-	if (gEnv->pSettings->GetVariable("bUseMySQL").toBool())
+	if (gEnv->pConsole->GetBool("bUseMySQL"))
 	{
-		qInfo() << "Start MySql service...";
-		gEnv->pSettings->SetVariable("redis_bg_saving", true);
+		LogInfo("Start MySql service...");
+		gEnv->pConsole->SetVariable("redis_bg_saving", true);
 		pMySql = new MySqlConnector;
 		pMySql->run();
 	}
@@ -73,7 +71,7 @@ bool DBWorker::UserExists(const QString &login)
 		}
 		else
 		{
-			qCritical() << "Failed found user" << login << "in Redis DB because Redis DB not connected!";
+			LogError("Failed found user <%s> in Redis DB, bacause Redis DB not connected!", login.toStdString().c_str());
 			return false;
 		}
 	}	
@@ -91,24 +89,24 @@ bool DBWorker::UserExists(const QString &login)
 			{
 				if (query->next())
 				{
-					qDebug() << "Login" << login << "finded in MySql DB";
+					LogDebug("Login <%s> found in MySql DB", login.toStdString().c_str());
 					result = true;
 				}
 				else
 				{
-					qDebug() << "Login" << login << "not found in MySql DB";
+					LogDebug("Login <%s> not found in MySql DB", login.toStdString().c_str());
 					return false;
 				}
 			}
 			else
 			{
-				qWarning() << "Failed send query to MySql DB";
+				LogWarning("Failed send query to MySql DB");
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed found user" << login << "in MySql DB because MySql DB not opened!";
+			LogError("Failed found login <%s> in MySql DB becuse MySql DB not opened!", login.toStdString().c_str());
 			return false;
 		}
 
@@ -131,7 +129,7 @@ bool DBWorker::ProfileExists(int uid)
 		}
 		else
 		{
-			qCritical() << "Failed found profile" << uid << "in Redis DB because Redis DB not connected!";
+			LogError("Failed found profile <%d> in Redis DB because Redis DB not connected!", uid);
 			return false;
 		}
 	}
@@ -149,24 +147,24 @@ bool DBWorker::ProfileExists(int uid)
 			{
 				if (query->next())
 				{
-					qDebug() << "Profile" << uid << "finded in MySql DB";
+					LogDebug("Profile <%d> found in MySql DB", uid);
 					result = true;
 				}
 				else
 				{
-					qDebug() << "Profile" << uid << "not found in MySql DB";
+					LogDebug("Profile <%d> not found in MySql DB", uid);
 					return false;
 				}
 			}
 			else
 			{
-				qWarning() << "Failed send query to MySql DB";
+				LogWarning("Failed send query to MySql DB");
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed found profile" << uid << "in MySql DB because MySql DB not opened!";
+			LogError("Failed found profile <%d> in MySql DB because MySql DB not opened!", uid);
 			return false;
 		}
 	}
@@ -188,18 +186,18 @@ bool DBWorker::NicknameExists(const QString &nickname)
 
 			if (!buff.isEmpty())
 			{
-				qDebug() << "Nickname" << nickname << "finded in Redis DB";
+				LogDebug("Nickname <%s> found in Redis DB", nickname.toStdString().c_str());
 				result = true;
 			}
 			else
 			{
-				qDebug() << "Nickname" << nickname << "not found in Redis DB";
+				LogDebug("Nickname <%s> not found in Redis DB", nickname.toStdString().c_str());
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed found nickname" << nickname << "in Redis DB because Redis DB not connected!";
+			LogError("Failed found nickname <%s> in Redis DB because Redis DB not connected!", nickname.toStdString().c_str());
 			return false;
 		}
 	}
@@ -217,24 +215,24 @@ bool DBWorker::NicknameExists(const QString &nickname)
 			{
 				if (query->next())
 				{
-					qDebug() << "Nickname" << nickname << "finded in MySql DB";
+					LogDebug("Nickname <%s> found in MySql DB", nickname.toStdString().c_str());
 					result = true;
 				}
 				else
 				{
-					qDebug() << "Nickname" << nickname << "not found in MySql DB";
+					LogDebug("Nickname <%s> not found in MySql DB", nickname.toStdString().c_str());
 					return false;
 				}
 			}
 			else
 			{
-				qWarning() << "Failed send query to MySql DB";
+				LogWarning("Failed send query to MySql DB");
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed found nickname" << nickname << "in MySql DB because MySql DB not opened!";
+			LogError("Failed found nickname <%s> in MySql DB because MySql DB bacuse MySql DB not opened!", nickname.toStdString().c_str());
 			return false;
 		}
 	}
@@ -256,43 +254,31 @@ int DBWorker::GetFreeUID()
 
 			if (buff.isEmpty())
 			{
-				qDebug() << "Key 'uids' not found! Creating key 'uids'...";
+				LogDebug("Key 'uids' not found! Creating key 'uids'...");
 
 				if (pRedis->SET("uids", "100001"))
 				{
 					uid = 100001;
 					return uid;
 				}
-				else
-				{
-					qCritical() << "Error creating key 'uids'!!!";
-					return uid;
-				}
+				LogError("Error creating key 'uids'!!!");
+				return uid;
 			}
-			else
+			int tmp = buff.toInt() + 1;
+
+			LogDebug("Key 'uids' found! Creating new uid = %d", tmp);
+
+			if (pRedis->SET("uids", QString::number(tmp)))
 			{
-				int tmp = buff.toInt() + 1;
-
-				qDebug() << "Key 'uids' found! Creating new uid = " << tmp;
-
-				if (pRedis->SET("uids", QString::number(tmp)))
-				{
-					uid = tmp;
-					qDebug() << "New uid created =" << uid;
-					return uid;
-				}
-				else
-				{
-					qCritical() << "Error creating uid!";
-					return uid;
-				}
+				uid = tmp;
+				LogDebug("New uid created = <%d>", uid);
+				return uid;
 			}
-		}
-		else
-		{
-			qCritical() << "Failed found free uid in Redis DB because Redis DB not opened!";
+			LogError("Error creating uid!");
 			return uid;
 		}
+		LogError("Failed found free uid in Redis DB because Redis DB not opened!");
+		return uid;
 	}
 	
 	// MySql
@@ -309,28 +295,21 @@ int DBWorker::GetFreeUID()
 				{
 					int last_uid = query->value(0).toInt();
 
-					qDebug() << "Last uid from table = " << last_uid;
+					LogDebug("Last uid from table = %d", last_uid);
+
 					uid = last_uid + 1;
 					return uid;
 				}
-				else
-				{
-					qDebug() << "Not any users in table, get first uid";
-					uid = 100001;
-					return uid;
-				}
-			}
-			else
-			{
-				qWarning() << "Failed send query to MySql DB";
+				LogDebug("Not any users in table, get first uid");
+
+				uid = 100001;
 				return uid;
 			}
-		}
-		else
-		{
-			qCritical() << "Failed found free uid in MySql DB because MySql DB not opened!";
+			LogWarning("Failed send query to MySql DB");
 			return uid;
 		}
+		LogWarning("Failed found free uid in MySql DB because MySql DB not opened!");
+		return uid;
 	}
 	
 	return uid;
@@ -350,22 +329,16 @@ int DBWorker::GetUIDbyNick(const QString &nickname)
 
 			if (!buff.isEmpty())
 			{
-				qDebug() << "UID for" << nickname << "found in Redis DB";
+				LogDebug("UID for <%s> found in Redis DB", nickname.toStdString().c_str());
 
 				uid = buff.toInt();
 				return uid;
 			}
-			else
-			{
-				qDebug() << "UID for" << nickname << "not found in Redis DB";
-				return uid;
-			}
-		}
-		else
-		{
-			qCritical() << "Failed found UID for " << nickname << "in Redis DB because Redis DB not connected!";
+			LogDebug("UID for <%s> not found in Redis DB", nickname.toStdString().c_str());
 			return uid;
 		}
+		LogError("Failed found UID for <%s> in Redis DB because Redis DB not connected!", nickname.toStdString().c_str());
+		return uid;
 	}
 	
 	// MySql
@@ -381,27 +354,19 @@ int DBWorker::GetUIDbyNick(const QString &nickname)
 			{
 				if (query->next())
 				{
-					qDebug() << "UID for" << nickname << "found in MySql DB";
+					LogDebug("UID for <%s> found in MySql DB", nickname.toStdString().c_str());
+
 					uid = query->value(0).toInt();
 					return uid;
 				}
-				else
-				{
-					qDebug() << "UID for" << nickname << "not found in MySql DB";
-					return uid;
-				}
-			}
-			else
-			{
-				qWarning() << "Failed send query to MySql DB";
+				LogDebug("UID for <%s> not found in MySql DB", nickname.toStdString().c_str());
 				return uid;
 			}
-		}
-		else
-		{
-			qCritical() << "Failed found UID for " << nickname << "in MySql DB because MySql DB not opened!";
+			LogWarning("Failed send query to MySql DB");
 			return uid;
 		}
+		LogError("Failed found UID for <%s> in MySql DB because MySql DB not opened!", nickname.toStdString().c_str());
+		return uid;
 	}
 
 	return uid;
@@ -429,21 +394,21 @@ SUser* DBWorker::GetUserData(const QString &login)
 				for (auto it = result.begin(); it!= result.end(); ++it)
 				{
 					if (it->first == "uid")
-						dbUid = std::atoi(it->second.c_str());
+						dbUid = atoi(it->second.c_str());
 					else if (it->first == "login")
 						dbLogin = it->second.c_str();
 					else if (it->first == "password")
 						dbPassword = it->second.c_str();
 					else if (it->first == "ban")
 					{
-						dbBanStatus = std::atoi(it->second.c_str());
+						dbBanStatus = atoi(it->second.c_str());
 						break;
 					}
 				}
 
 				if (dbUid > 0 && !dbLogin.isEmpty() && !dbPassword.isEmpty())
 				{
-					qDebug() << "User data for" << login << "is found in Redis DB";
+					LogDebug("User data for <%s> is found in Redis DB", login.toStdString().c_str());
 
 					dbUser->uid = dbUid;
 					dbUser->login = dbLogin;
@@ -456,23 +421,14 @@ SUser* DBWorker::GetUserData(const QString &login)
 
 					return dbUser;
 				}
-				else
-				{
-					qWarning() << "Wrong user data for" << login;
-					return nullptr;
-				}
-			}
-			else
-			{
-				qDebug() << "User data for" << login << "not found in Redis DB";
+				LogWarning("Wrong user data for <%s>", login.toStdString().c_str());
 				return nullptr;
-			}		
-		}
-		else
-		{
-			qCritical() << "Failed found login" << login << "in Redis DB because Redis DB not opened!";
+			}
+			LogDebug("User data for <%s> not found in Redis DB", login.toStdString().c_str());
 			return nullptr;
 		}
+		LogError("Failed found login <%s> in Redis DB bacause Redis DB not opened!", login.toStdString().c_str());
+		return nullptr;
 	}
 	
 	// MySql
@@ -488,11 +444,12 @@ SUser* DBWorker::GetUserData(const QString &login)
 			{
 				if (query->next())
 				{
-					qDebug() << "User data for" << login << "is found in MySql DB";
-					dbUser->uid = query->value("uid").toInt(); // uid
-					dbUser->login = query->value("login").toString(); // login
+					LogDebug("User data for <%s> is found in MySql DB", login.toStdString().c_str());
+
+					dbUser->uid = query->value("uid").toInt();              // uid
+					dbUser->login = query->value("login").toString();       // login
 					dbUser->password = query->value("password").toString(); // password
-					int dbBanStatus = query->value("ban").toInt(); // ban status
+					int dbBanStatus = query->value("ban").toInt();          // ban status
 
 					if (dbBanStatus > 0)
 						dbUser->bBanStatus = true;
@@ -501,23 +458,14 @@ SUser* DBWorker::GetUserData(const QString &login)
 
 					return dbUser;
 				}
-				else
-				{
-					qDebug() << "User data for" << login << "not found in MySql DB";
-					return nullptr;
-				}
-			}
-			else
-			{
-				qWarning() << "Failed send query to MySql DB";
+				LogDebug("User data for <%s> not found in MySql DB", login.toStdString().c_str());
 				return nullptr;
 			}
-		}
-		else
-		{
-			qCritical() << "Failed found login" << login << "in MySql DB because MySql DB not opened!";
+			LogWarning("Failed send query to MySql DB");
 			return nullptr;
 		}
+		LogError("Failed found login <%s> in MySql DB because MySql DB not opened!", login.toStdString().c_str());
+		return nullptr;
 	}
 	
 	return nullptr;
@@ -542,7 +490,9 @@ SProfile* DBWorker::GetUserProfile(int uid)
 			int dbXp = 0;
 			int dbMoney = 0;
 			QString dbItems = QString();
+#ifndef STEAM_SDK_ENABLED
 			QString dbFriends = QString();
+#endif
 
 
 			if (result.size() > 0)
@@ -550,29 +500,31 @@ SProfile* DBWorker::GetUserProfile(int uid)
 				for (auto it = result.begin(); it != result.end(); ++it)
 				{
 					if (it->first == "uid")
-						dbUid = std::atoi(it->second.c_str());
+						dbUid = atoi(it->second.c_str());
 					else if (it->first == "nickname")
 						dbNickname = it->second.c_str();
 					else if (it->first == "fileModel")
 						dbModel = it->second.c_str();
 					else if (it->first == "lvl")
-						dbLvl = std::atoi(it->second.c_str());
+						dbLvl = atoi(it->second.c_str());
 					else if (it->first == "xp")
-						dbXp = std::atoi(it->second.c_str());
+						dbXp = atoi(it->second.c_str());
 					else if (it->first == "money")
-						dbMoney = std::atoi(it->second.c_str());
+						dbMoney = atoi(it->second.c_str());
 					else if (it->first == "items")
 						dbItems = it->second.c_str();
+#ifndef STEAM_SDK_ENABLED
 					else if (it->first == "friends")
 					{
 						dbFriends = it->second.c_str();
 						break;
 					}
+#endif
 				}
 
 				if (dbUid > 0 && !dbNickname.isEmpty() && !dbModel.isEmpty())
 				{
-					qDebug() << "Profile" << uid << "is found in Redis DB";
+					LogDebug("Profile <%d> is found in Redis DB", uid);
 
 					dbProfile->uid = dbUid;
 					dbProfile->nickname = dbNickname;
@@ -581,27 +533,20 @@ SProfile* DBWorker::GetUserProfile(int uid)
 					dbProfile->xp = dbXp;
 					dbProfile->money = dbMoney;
 					dbProfile->items = dbItems;
+#ifndef STEAM_SDK_ENABLED
 					dbProfile->friends = dbFriends;
+#endif
 
 					return dbProfile;
 				}
-				else
-				{
-					qWarning() << "Wrong profile data for" << uid;
-					return nullptr;
-				}
-			}
-			else
-			{
-				qDebug() << "Profile" << uid << "not found in Redis DB";
+				LogWarning("Wrong profile data for <%d>", uid);
 				return nullptr;
-			}		
-		}
-		else
-		{
-			qCritical() << "Failed found profile" << uid << "in Redis DB because Redis DB not connected!";
+			}
+			LogDebug("Profile <%d> not found in Redis DB", uid);
 			return nullptr;
 		}
+		LogError("Failed found profile <%d> in Redis DB because Redis DB not connected!", uid);
+		return nullptr;
 	}
 
 	// MySql
@@ -617,7 +562,7 @@ SProfile* DBWorker::GetUserProfile(int uid)
 			{
 				if (query->next())
 				{
-					qDebug() << "Profile" << uid << "is found in MySql DB";
+					LogDebug("Profile <%d> is found in MySql DB", uid);
 
 					dbProfile->uid = query->value("uid").toInt();
 					dbProfile->nickname = query->value("nickname").toString();
@@ -626,27 +571,20 @@ SProfile* DBWorker::GetUserProfile(int uid)
 					dbProfile->xp = query->value("xp").toInt();
 					dbProfile->money = query->value("money").toInt();
 					dbProfile->items = query->value("items").toString();
+#ifndef STEAM_SDK_ENABLED
 					dbProfile->friends = query->value("friends").toString();
+#endif
 
 					return dbProfile;
 				}
-				else
-				{
-					qDebug() << "Profile" << uid << "not found in MySql DB";
-					return nullptr;
-				}
-			}
-			else
-			{
-				qWarning() << "Failed send query to MySql DB";
+				LogDebug("Profile <%d> not found in MySql DB", uid);
 				return nullptr;
 			}
-		}
-		else
-		{
-			qCritical() << "Failed found profile" << uid << "in MySql DB because MySql DB not opened!";
+			LogWarning("Failed send query to MySql DB");
 			return nullptr;
 		}
+		LogError("Failed found profile <%d> in MySql DB because MySql DB not opened!", uid);
+		return nullptr;
 	}
 	
 	return nullptr;
@@ -654,7 +592,7 @@ SProfile* DBWorker::GetUserProfile(int uid)
 
 bool DBWorker::CreateUser(int uid, const QString &login, const QString &password)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
+	CConsole* pConsole = gEnv->pConsole;
 	bool result = false;
 
 	// Redis
@@ -690,7 +628,7 @@ bool DBWorker::CreateUser(int uid, const QString &login, const QString &password
 		}
 		else
 		{
-			qCritical() << "Failed create user" << login << "in Redis DB because Redis DB not connected!";
+			LogError("Failed create user <%s> in Redis DB because Redis DB not connected!", login.toStdString().c_str());
 			return false;
 		}
 	}
@@ -709,32 +647,136 @@ bool DBWorker::CreateUser(int uid, const QString &login, const QString &password
 
 			if (query->exec())
 			{
-				qDebug() << "User" << login << "created in MySql DB";
+				LogDebug("User <%s> created in MySql DB", login.toStdString().c_str());
 				result = true;
 			}
 			else
 			{
-				qWarning() << "Failed create user" << login << "in MySql DB";
+				LogDebug("Failed create user <%s> in MySql DB", login.toStdString().c_str());
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed create user" << login << "in MySql DB because MySql DB not opened!";
+			LogError("Failed create user <%s> in MySql DB because MySql DB not opened!", login.toStdString().c_str());
 			return false;
 		}
 	}
 	
 	// Redis background saving
-	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
+	if (pRedis && pConsole->GetBool("redis_bg_saving") && result)
 		pRedis->BGSAVE();
+
+	return result;
+}
+
+bool DBWorker::UpdateUser(const QString & login, const QString & password, bool banned)
+{
+	CConsole* pConsole = gEnv->pConsole;
+	bool result = false;
+
+	// Get user data before
+	SUser* pUserData = GetUserData(login);
+	if (pUserData == nullptr)
+	{
+		LogError("Failed update user <%s> because can't get user data!", login.toStdString().c_str());
+	}
+
+	// Redis
+	if (pRedis)
+	{
+		if (pRedis->IsConnected())
+		{
+			QString key = "users:" + login;
+			std::vector<std::pair<std::string, std::string>> field;
+
+			std::pair<std::string, std::string> row_uid;
+			row_uid.first = "uid";
+			row_uid.second = std::to_string(pUserData->uid);
+
+			std::pair<std::string, std::string> row_login;
+			row_login.first = "login";
+			row_login.second = login.toStdString();
+
+			std::pair<std::string, std::string> row_password;
+			if (!password.isEmpty())
+			{
+				row_password.first = "password";
+				row_password.second = password.toStdString();
+			}
+			else
+			{
+				row_password.first = "password";
+				row_password.second = pUserData->password.toStdString();
+			}
+
+			std::pair<std::string, std::string> row_ban;
+			row_ban.first = "ban";
+			row_ban.second = std::to_string(banned ? 1 : 0);
+
+			field.push_back(row_uid);
+			field.push_back(row_login);
+			field.push_back(row_password);
+			field.push_back(row_ban);
+
+			result = pRedis->HMSET(key, field);
+		}
+		else
+		{
+			LogError("Failed update user <%s> in Redis DB because Redis DB not conneted!", login.toStdString().c_str());
+			return false;
+		}
+	}
+
+	// MySql
+	if (pMySql)
+	{
+		if (pMySql->IsConnected())
+		{
+			QSqlQuery *query = new QSqlQuery(pMySql->GetDatabase());
+			query->prepare("UPDATE users SET login=:login, password=:password, ban=:ban WHERE uid=:uid");
+			query->bindValue(":uid", pUserData->uid);
+			query->bindValue(":login", login);
+			if (!password.isEmpty())
+			{
+				query->bindValue(":password", password);
+			}
+			else
+			{
+				query->bindValue(":password", pUserData->password);
+			}
+			query->bindValue(":ban", banned ? 1 : 0);
+
+			if (query->exec())
+			{
+				LogDebug("User <%s> updated in MySql DB", login.toStdString().c_str());
+				result = true;
+			}
+			else
+			{
+				LogWarning("Failed update user <%s> in MySql DB", login.toStdString().c_str());
+				return false;
+			}
+		}
+		else
+		{
+			LogError("Failed update user <%s> in MySql DB because MySql DB not opened!", login.toStdString().c_str());
+			return false;
+		}
+	}
+
+	// Redis background saving
+	if (pRedis && pConsole->GetVariable("redis_bg_saving").toBool() && result)
+	{
+		pRedis->BGSAVE();
+	}
 
 	return result;
 }
 
 bool DBWorker::CreateProfile(SProfile *profile)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
+	CConsole* pConsole = gEnv->pConsole;
 	bool result = false;
 
 	// Redis
@@ -769,10 +811,11 @@ bool DBWorker::CreateProfile(SProfile *profile)
 			std::pair<std::string, std::string> row_items;
 			row_items.first = "items";
 			row_items.second = profile->items.toStdString();
-
+#ifndef STEAM_SDK_ENABLED
 			std::pair<std::string, std::string> row_friends;
 			row_friends.first = "friends";
 			row_friends.second = profile->friends.toStdString();
+#endif
 
 			QString key = "profiles:" + QString::number(profile->uid);
 			QString key2 = "nicknames:" + profile->nickname;
@@ -786,22 +829,24 @@ bool DBWorker::CreateProfile(SProfile *profile)
 			field.push_back(row_xp);
 			field.push_back(row_money);
 			field.push_back(row_items);
+#ifndef STEAM_SDK_ENABLED
 			field.push_back(row_friends);
+#endif
 
 			if (pRedis->HMSET(key, field) && pRedis->SET(key2, QString::number(profile->uid)))
 			{
-				qDebug() << "Profile" << profile->nickname << "created in Redis DB";
+				LogDebug("Profile <%s> created in Redis DB", profile->nickname.toStdString().c_str());
 				result = true;
 			}
 			else
 			{
-				qDebug() << "Failed create" << profile->nickname << " profile in Redis DB";
+				LogDebug("Failed create <%s> profile in Redis DB", profile->nickname.toStdString().c_str());
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed create profile" << profile->nickname << "in Redis DB because Redis DB not opened!";
+			LogError("Failed create profile <%s> in Redis DB because Redis DB not opened!", profile->nickname.toStdString().c_str());
 			return false;
 		}
 	}
@@ -821,29 +866,30 @@ bool DBWorker::CreateProfile(SProfile *profile)
 			query->bindValue(":xp", profile->xp);
 			query->bindValue(":money", profile->money);
 			query->bindValue(":items", profile->items);
+#ifndef STEAM_SDK_ENABLED
 			query->bindValue(":friends", profile->friends);
-
+#endif
 
 			if (query->exec())
 			{
-				qDebug() << "Profile" << profile->nickname << "created in MySql DB";
+				LogDebug("Profile <%s> created in MySql DB", profile->nickname.toStdString().c_str());
 				result = true;
 			}
 			else
 			{
-				qWarning() << "Failed create profile" << profile->nickname << "in MySql DB";
+				LogWarning("Failed create profile <%s> in MySql DB", profile->nickname.toStdString().c_str());
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed create profile" << profile->nickname << "in MySql DB because MySql DB not opened!";
+			LogError("Failed create profile <%s> in MySql DB because MySql DB not opened!", profile->nickname.toStdString().c_str());
 			return false;
 		}
 	}
 	
 	// Redis background saving
-	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
+	if (pRedis && pConsole->GetVariable("redis_bg_saving").toBool() && result)
 		pRedis->BGSAVE();
 
 	return result;
@@ -851,7 +897,7 @@ bool DBWorker::CreateProfile(SProfile *profile)
 
 bool DBWorker::UpdateProfile(SProfile *profile)
 {
-	SettingsManager* pSettings = gEnv->pSettings;
+	CConsole* pConsole = gEnv->pConsole;
 	bool result = false;
 
 	// Redis
@@ -886,10 +932,11 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 			std::pair<std::string, std::string> row_items;
 			row_items.first = "items";
 			row_items.second = profile->items.toStdString();
-
+#ifndef STEAM_SDK_ENABLED
 			std::pair<std::string, std::string> row_friends;
 			row_friends.first = "friends";
 			row_friends.second = profile->friends.toStdString();
+#endif
 
 			QString key = "profiles:" + QString::number(profile->uid);
 			QString key2 = "nicknames:" + profile->nickname;
@@ -903,22 +950,24 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 			field.push_back(row_xp);
 			field.push_back(row_money);
 			field.push_back(row_items);
+#ifndef STEAM_SDK_ENABLED
 			field.push_back(row_friends);
+#endif
 
 			if (pRedis->HMSET(key, field))
 			{
-				qDebug() << "Profile" << profile->nickname << "updated in Redis DB";
+				LogDebug("Profile <%s> updated in Redis DB", profile->nickname.toStdString().c_str());
 				result = true;
 			}
 			else
 			{
-				qDebug() << "Failed update profile" << profile->nickname << " in Redis DB";
+				LogDebug("Failed update profile <%s> in Redis DB", profile->nickname.toStdString().c_str());
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed update profile" << profile->nickname << "in Redis DB because Redis DB not connected!";
+			LogError("Failed update profile <%s> in Redis DB because Redis DB not connected!", profile->nickname.toStdString().c_str());
 			return false;
 		}
 	}
@@ -937,28 +986,30 @@ bool DBWorker::UpdateProfile(SProfile *profile)
 			query->bindValue(":xp", profile->xp);
 			query->bindValue(":money", profile->money);
 			query->bindValue(":items", profile->items);
+#ifndef STEAM_SDK_ENABLED
 			query->bindValue(":friends", profile->friends);
+#endif
 
 			if (query->exec())
 			{
-				qDebug() << "Profile" << profile->nickname << "updated in MySql DB";
+				LogDebug("Profile <%s> updated in MySql DB", profile->nickname.toStdString().c_str());
 				result = true;
 			}
 			else
 			{
-				qWarning() << "Failed update profile" << profile->nickname << "in MySql DB";
+				LogWarning("Failed update profile <%s> in MySql DB", profile->nickname.toStdString().c_str());
 				return false;
 			}
 		}
 		else
 		{
-			qCritical() << "Failed update profile" << profile->nickname << "in MySql DB because MySql DB not opened!";
+			LogError("Failed update profile <%s> in MySql DB because MySql DB not opened!", profile->nickname.toStdString().c_str());
 			return false;
 		}
 	}
 	
 	// Redis background saving
-	if (pRedis && pSettings->GetVariable("redis_bg_saving").toBool() && result)
+	if (pRedis && pConsole->GetBool("redis_bg_saving") && result)
 		pRedis->BGSAVE();
 
 	return result;

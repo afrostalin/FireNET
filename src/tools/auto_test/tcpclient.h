@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #pragma once
@@ -8,7 +8,7 @@
 
 #include <queue>
 
-#include "Core/netpacket.h"
+#include "Core/tcppacket.h"
 
 class tcpclient : public QObject
 {
@@ -16,23 +16,23 @@ class tcpclient : public QObject
 public:
     explicit tcpclient(QString ip = "127.0.0.1", int port = 3322, QObject *parent = nullptr);
 public:
-    void                  CreateClient();
-    void                  CreateTestList();
+    void                   CreateClient();
+    void                   CreateTestList();
 private:
-    void                  SendMsg(NetPacket &packet);
+    void                   SendMsg(CTcpPacket &packet);
 public slots:
-	void                  onConnectedToServer();
-	void                  onReadyRead();
-	void                  onBytesWritten(qint64 bytes);
-	void                  onDisconnected();
-	void                  update();
+	void                   onConnectedToServer();
+	void                   onReadyRead() const;
+	void                   onBytesWritten(qint64 bytes);
+	void                   onDisconnected();
+	void                   update();
 private:
-    QSslSocket*           m_socket;
-    std::queue<NetPacket> m_packets;
+    QSslSocket*            m_socket;
+    std::queue<CTcpPacket> m_packets;
 
-    bool                  bConnected;
-    bool                  bLastMsgSended;
+    bool                   bConnected;
+    bool                   bLastMsgSended;
 private:
-	QString               m_ip;
-	int                   m_port;
+	QString                m_ip;
+	int                    m_port;
 };

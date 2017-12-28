@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef CLIENTQUERYS_H
-#define CLIENTQUERYS_H
+#pragma once
 
 #include <QObject>
 
@@ -21,12 +20,15 @@ public:
 	void           SetSocket(QSslSocket* socket) { this->m_socket = socket; }
 	void           SetClient(SClient* client);
 	void           SetConnection(TcpConnection* connection) { this->m_Connection = connection; }
+
+	bool           ReadPacket(CTcpPacket &packet);
+	bool           ReadQuery(CTcpPacket &packet);
 	
 	void           onLogin(CTcpPacket &packet);
 	void           onRegister(CTcpPacket &packet);
 	
 	void           onCreateProfile(CTcpPacket &packet);
-	void           onGetProfile();
+	void           onGetProfile() const;
 	
 	void           onGetShopItems();
 	void           onBuyItem(CTcpPacket &packet);
@@ -40,9 +42,9 @@ public:
 	void           onInvite(CTcpPacket &packet);
 	void           onDeclineInvite(CTcpPacket &packet);
 	
-	void           onGetGameServer(CTcpPacket &packet);
+	void           onGetGameServer(CTcpPacket &packet) const;
 private:
-	bool           UpdateProfile(SProfile* profile);
+	bool           UpdateProfile(SProfile* profile) const;
 	// Depricated. TODO - Remove this
 	SShopItem      GetShopItemByName(const QString &name);
 private:
@@ -53,4 +55,3 @@ private:
 	bool           bRegistered;
 	bool           bProfileCreated;
 };
-#endif // CLIENTQUERYS_H

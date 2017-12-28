@@ -1,0 +1,13 @@
+<ThreadConfig>
+
+	<Platform name="PC">
+		<ThreadDefault Affinity="-1" Priority="normal" StackSizeKB="ignore"/>
+		<Thread name ="FireNetCore_Thread"/>	
+	</Platform>
+	
+	<Platform name="PC_Common">
+		<ThreadDefault Affinity="-1" Priority="normal" StackSizeKB="ignore"/>
+		<Thread name ="FireNetCore_Thread"/>	
+	</Platform>
+	
+</ThreadConfig>

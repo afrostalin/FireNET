@@ -1,8 +1,7 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef DBWORKER_H
-#define DBWORKER_H
+#pragma once
 
 #include <QObject>
 
@@ -19,7 +18,7 @@ public:
 	~DBWorker();
 public:
 	void            Init();
-	void            Clear();
+	void            Clear() const;
 public:
 	bool            UserExists(const QString &login);
 	bool            ProfileExists(int uid);
@@ -31,11 +30,11 @@ public:
 	SProfile*       GetUserProfile(int uid);
 public:
 	bool            CreateUser(int uid, const QString &login, const QString &password);
+	// If password = nullptr - used password from user data
+	bool            UpdateUser(const QString &login, const QString &password, bool banned);
 	bool            CreateProfile(SProfile *profile);
 	bool            UpdateProfile(SProfile *profile);
 public:
 	RedisConnector* pRedis;
 	MySqlConnector* pMySql;
 };
-
-#endif // DBWORKER_H

@@ -1,21 +1,15 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
-#ifndef TCPTHREAD_H
-#define TCPTHREAD_H
+#pragma once
 
 #include <QObject>
-#include <QThread>
 #include <QRunnable>
 #include <QEventLoop>
-#include <QDebug>
-#include <QReadWriteLock>
 #include <QReadLocker>
 
 #include "tcpthread.h"
 #include "tcpconnection.h"
-
-#include "Workers/Databases/redisconnector.h"
 
 class TcpThread : public QObject, public QRunnable
 {
@@ -28,12 +22,12 @@ public:
 	int                   Count();
 	void                  SendGlobalMessage(CTcpPacket &packet);
 private:
-	TcpConnection*        CreateConnection();
-	void                  AddSignals(TcpConnection* connection);
+	static TcpConnection* CreateConnection();
+	void                  AddSignals(TcpConnection* connection) const;
 public slots:
 	void                  connecting(qintptr handle, TcpThread *runnable, TcpConnection* connection);
 	void                  closing();
-	void                  opened();
+	void                  opened() const;
 	void                  closed();
 signals:
 	void                  started();
@@ -44,5 +38,3 @@ private:
 	QReadWriteLock        m_lock;
 	QList<TcpConnection*> m_connections;
 };
-
-#endif // TCPTHREAD_H

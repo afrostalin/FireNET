@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
@@ -6,44 +6,38 @@
 
 #include "Core/tcpserver.h"
 #include "Workers/Databases/dbworker.h"
-#include "Tools/settings.h"
 #include "Tools/scripts.h"
 
-ClientQuerys::ClientQuerys(QObject *parent) : QObject(parent),
-	m_socket(nullptr),
-	m_Client(nullptr),
-	m_Connection(nullptr),
-	bAuthorizated(false),
-	bRegistered(false),
-	bProfileCreated(false)
+ClientQuerys::ClientQuerys(QObject *parent) 
+	: QObject(parent)
+	, m_socket(nullptr)
+	, m_Client(nullptr)
+	, m_Connection(nullptr)
+	, bAuthorizated(false)
+	, bRegistered(false)
+	, bProfileCreated(false)
 {
 }
 
 ClientQuerys::~ClientQuerys()
 {
-	qDebug() << "~ClientQuerys";
 	SAFE_DELETE(m_Client->profile);
 }
 
 void ClientQuerys::SetClient(SClient * client)
 {
 	m_Client = client;
-	m_Client->profile = new SProfile;
-	m_Client->profile->uid = 0;
-	m_Client->profile->nickname = "";
-	m_Client->profile->fileModel = "";
-	m_Client->profile->lvl = 0;
-	m_Client->profile->xp = 0;
-	m_Client->profile->money = 0;
-	m_Client->profile->items = "";
-	m_Client->profile->friends = "";
+	if (m_Client != nullptr)
+	{
+		m_Client->profile = new SProfile();
+	}
 }
 
-bool ClientQuerys::UpdateProfile(SProfile* profile)
+bool ClientQuerys::UpdateProfile(SProfile* profile) const
 {
 	if (!gEnv->pDBWorker->pRedis && !gEnv->pDBWorker->pMySql)
 	{
-        qCritical() << "Can't update profile, because no connected database";
+        LogError("Can't update profile, because no connected database");
         return false;
     }
 
@@ -56,11 +50,12 @@ bool ClientQuerys::UpdateProfile(SProfile* profile)
 			gEnv->pServer->UpdateClient(m_Client);
 			return true;
         }
-        else
-            qCritical() << "Profile can't be updated! Database return error!!!";
+	    LogError("Profile can't be updated! Database return error!!!");
     }
-    else
-        qCritical() << "Profile can't be updated, because profile not found!!!";
+	else
+	{
+		LogError("Profile can't be updated, because profile not found!!!");
+	}
 
     return false;
 }
@@ -69,7 +64,7 @@ SShopItem ClientQuerys::GetShopItemByName(const QString &name)
 {
     SShopItem item;
 
-	QVector<SShopItem> m_shop = gEnv->pScripts->GetShop();
+	std::vector<SShopItem> m_shop = gEnv->pScripts->GetShop();
 
 	if (m_shop.size() > 0)
 	{
@@ -79,7 +74,7 @@ SShopItem ClientQuerys::GetShopItemByName(const QString &name)
 			{
 				item.name = it->name;
 				item.cost = it->cost;
-				item.minLnl = it->minLnl;
+				item.minLvl = it->minLvl;
 				item.canBuy = it->canBuy;
 
 				return item;

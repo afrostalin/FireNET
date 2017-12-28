@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2017 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
+// Copyright (C) 2014-2018 Ilya Chernetsov. All rights reserved. Contacts: <chernecoff@gmail.com>
 // License: https://github.com/afrostalin/FireNET/blob/master/LICENSE
 
 #include "global.h"
@@ -7,32 +7,31 @@
 #include "tcppacket.h"
 
 #include "Workers/Packets/clientquerys.h"
-#include "Workers/Databases/mysqlconnector.h"
-#include "Workers/Databases/dbworker.h"
-#include "Tools/settings.h"
+#include "Tools/console.h"
 
-TcpConnection::TcpConnection(QObject *parent) : QObject(parent),
-	pQuery(nullptr),
-	m_Socket(nullptr),
-	bConnected(false),
-	bIsQuiting(false),
-	bLastMsgSended(true)
+TcpConnection::TcpConnection(QObject *parent) 
+	: QObject(parent)
+	, m_Socket(nullptr)
+	, m_PeerPort(0)
+	, pQuery(nullptr)
+	, bConnected(false)
+	, bIsQuiting(false)
+	, bLastMsgSended(true)
 {
 	Q_UNUSED(parent);
 
-	m_maxPacketSize = gEnv->pSettings->GetVariable("net_max_packet_read_size").toInt();
-	m_maxBadPacketsCount = gEnv->pSettings->GetVariable("net_max_bad_packets_count").toInt();
+	m_maxPacketSize = gEnv->pConsole->GetInt("net_max_packet_size");
+	m_maxBadPacketsCount = gEnv->pConsole->GetInt("net_max_bad_packets_count");
 	m_BadPacketsCount = 0;
 
 	m_Time = QTime::currentTime();
 	m_InputPacketsCount = 0;
 	m_PacketsSpeed = 0;
-	m_maxPacketSpeed = gEnv->pSettings->GetVariable("net_max_packets_speed").toInt();
+	m_maxPacketSpeed = gEnv->pConsole->GetInt("net_max_packets_speed");
 }
 
 TcpConnection::~TcpConnection()
 {
-	qDebug() << "~TcpConnection";
 	SAFE_RELEASE(m_Socket);
 	SAFE_RELEASE(pQuery);
 }
@@ -59,29 +58,26 @@ void TcpConnection::SendMessage(CTcpPacket& packet)
 	m_Packets.push(packet);
 }
 
+SIpPort TcpConnection::GetPeerAddress() const
+{
+	return SIpPort(m_PeerIP, m_PeerPort);
+}
+
 void TcpConnection::quit()
 {
-	qDebug() << "Quit called, closing client";
-
 	bIsQuiting = true;
 	m_Socket->close();
 }
 
-void TcpConnection::accept(qint64 socketDescriptor)
+void TcpConnection::accept(const qint64 socketDescriptor)
 {
-	qDebug() << "Accepting new client...";
+	LogDebug("[TcpConnection] Accepting new client...");
 
 	m_Socket = CreateSocket();
 
-	if (!m_Socket)
-	{
-		qDebug() << "Could not find created socket!";
-		return;
-	}
-
 	if (!m_Socket->setSocketDescriptor(socketDescriptor))
 	{
-		qDebug() << "Can't accept socket!";
+		LogWarning("[TcpConnection] Can't accept socket <%p>!", m_Socket);
 		return;
 	}
 
@@ -89,21 +85,22 @@ void TcpConnection::accept(qint64 socketDescriptor)
 	m_Socket->setPrivateKey("key.key");
 	m_Socket->startServerEncryption();
 
-	int timeout = gEnv->pSettings->GetVariable("net_encryption_timeout").toInt();
+	const int timeout = gEnv->pConsole->GetInt("net_encryption_timeout");
 
 	if (!m_Socket->waitForEncrypted(timeout * 1000))
 	{
-		qDebug() << "Can't accept socket! Encryption timeout!";
+		LogDebug("[TcpConnection] Can't accept socket <%p>! Encryption timeout!", m_Socket);
 		emit quit();
 		return;
 	}
 
-	qDebug() << "Client accepted. Socket " << m_Socket;
+	m_PeerIP = m_Socket->peerAddress().toString().toStdString();
+	m_PeerPort = m_Socket->peerPort();
 }
 
 void TcpConnection::connected()
 {
-    if(!m_Socket)
+    if(m_Socket == nullptr)
 		return;
 
 	m_Client.socket = m_Socket;
@@ -124,14 +121,14 @@ void TcpConnection::connected()
 
 	bConnected = true;
 
-	qInfo() << "Client" << m_Socket << "connected.";
+	LogDebug("[TcpConnection] Client with socket <%p> (%s:%d) connected.", m_Socket, m_PeerIP.c_str(), m_PeerPort);
 
 	emit opened();
 }
 
 void TcpConnection::disconnected()
 {
-	if (!m_Socket || !bConnected)
+	if (m_Socket == nullptr || !bConnected)
 	{
 		emit closed();
 		return;
@@ -140,14 +137,14 @@ void TcpConnection::disconnected()
 	// Remove client from server client list
 	gEnv->pServer->RemoveClient(m_Client);
 
-	qInfo() << "Client" << m_Socket << "disconnected.";
+	LogDebug("[TcpConnection] Client with socket <%p> (%s:%d) disconnected.", m_Socket, m_PeerIP.c_str(), m_PeerPort);
 
 	emit closed();
 }
 
 void TcpConnection::readyRead()
 {
-    if(!m_Socket || bIsQuiting)
+    if(m_Socket == nullptr || bIsQuiting)
 		return;
 
 	m_InputPacketsCount++;
@@ -157,116 +154,36 @@ void TcpConnection::readyRead()
 	// If client send a lot bad packet we need disconnect him
 	if (m_BadPacketsCount >= m_maxBadPacketsCount)
 	{
-		qWarning() << "Exceeded the number of bad packets from a client. Connection will be closed" << m_Socket;
+		LogWarning("[TcpConnection] Exceeded the number of bad packets from a client with socket <%p> (%s:%d). Connection will be closed!", m_Socket, m_PeerIP.c_str(), m_PeerPort);
 		quit();
 		return;
 	}
 
-	// STACK OVERFLOW HERE !!!
-    //qDebug() << "Read message from client" << m_Socket;
- 	//qDebug() << "Available bytes for read" << m_Socket->bytesAvailable();
-
 	// Check bytes count before reading
 	if (m_Socket->bytesAvailable() > m_maxPacketSize)
 	{
-		qWarning() << "Very big packet from client" << m_Socket;
-		m_BadPacketsCount++;
-		return;
-	}
-	else if (m_Socket->bytesAvailable() <= 0)
-	{
-		qDebug() << "Very small packet from client" << m_Socket;
+		LogWarning("[TcpConnection] Very big packet from client with socket <%p> (%s:%d)", m_Socket, m_PeerIP.c_str(), m_PeerPort);
 		m_BadPacketsCount++;
 		return;
 	}
 
+	if (m_Socket->bytesAvailable() <= 0)
+	{
+		LogWarning("[TcpConnection] Very small packet from client with socket <%p> (%s:%d)", m_Socket, m_PeerIP.c_str(), m_PeerPort);
+		m_BadPacketsCount++;
+		return;
+	}
+
+	// Read packet
 	CTcpPacket packet(m_Socket->readAll());
 
-	if(packet.getType() == EFireNetTcpPacketType::Query)
+	if (!pQuery->ReadPacket(packet))
 	{
-		switch (packet.ReadQuery())
-		{
-		case EFireNetTcpQuery::Login :
-		{
-			pQuery->onLogin(packet);
-			break;
-		}
-		case EFireNetTcpQuery::Register :
-		{
-			pQuery->onRegister(packet);
-			break;
-		}
-		case EFireNetTcpQuery::CreateProfile :
-		{
-			pQuery->onCreateProfile(packet);
-			break;
-		}
-		case EFireNetTcpQuery::GetProfile :
-		{
-			pQuery->onGetProfile();
-			break;
-		}
-		case EFireNetTcpQuery::GetShop :
-		{
-			pQuery->onGetShopItems();
-			break;
-		}
-		case EFireNetTcpQuery::BuyItem :
-		{
-			pQuery->onBuyItem(packet);
-			break;
-		}
-		case EFireNetTcpQuery::RemoveItem :
-		{
-			pQuery->onRemoveItem(packet);
-			break;
-		}		
-		case EFireNetTcpQuery::SendInvite :
-		{
-			pQuery->onInvite(packet);
-			break;
-		}
-		case EFireNetTcpQuery::DeclineInvite :
-		{
-			pQuery->onDeclineInvite(packet);
-			break;
-		}
-		case EFireNetTcpQuery::AcceptInvite :
-		{
-			break;
-		}
-		case EFireNetTcpQuery::RemoveFriend :
-		{
-			pQuery->onRemoveFriend(packet);
-			break;
-		}
-		case EFireNetTcpQuery::SendChatMsg :
-		{
-			pQuery->onChatMessage(packet);
-			break;
-		}
-		case EFireNetTcpQuery::GetServer :
-		{
-			pQuery->onGetGameServer(packet);
-			break;
-		}
-
-		default:
-		{
-			qCritical() << "Error reading query. Can't get query type!";
-			m_BadPacketsCount++;
-			break;
-		}
-		}
-	}
-	else
-	{
-		qCritical() << "Error reading packet. Can't get packet type!";
 		m_BadPacketsCount++;
 	}
 }
 
-void TcpConnection::bytesWritten(qint64 bytes)
+void TcpConnection::bytesWritten(const qint64 bytes)
 {
     if(!m_Socket)
 		return;
@@ -275,33 +192,36 @@ void TcpConnection::bytesWritten(qint64 bytes)
 
 	bLastMsgSended = true;
 
-    qDebug() << "Message to client" << m_Socket << "sended! Size =" << bytes;
+	if (gEnv->pConsole->GetBool("net_packet_debug"))
+	{
+		LogDebug("[TcpConnection] Message to client with socket <%p> (%s:%d) sended! Size <%d>", m_Socket, m_PeerIP.c_str(), m_PeerPort, bytes);
+	}
 }
 
-void TcpConnection::stateChanged(QAbstractSocket::SocketState socketState)
+void TcpConnection::stateChanged(const QAbstractSocket::SocketState socketState) const
 {
     if(!m_Socket)
 		return;
 
-    qDebug() << "Client" << m_Socket << "changed socket state to " << socketState;
+	LogDebug("[TcpConnection] Client with socket <%p> (%s:%d) changed socket state to <%d>", m_Socket, m_PeerIP.c_str(), m_PeerPort, static_cast<int>(socketState));
 }
 
-void TcpConnection::socketError(QAbstractSocket::SocketError error)
+void TcpConnection::socketError(const QAbstractSocket::SocketError error)
 {
 	if (error == QAbstractSocket::SocketError::RemoteHostClosedError)
+	{
 		quit();
+	}
 	else
 	{
-		qCritical() << "Client" << m_Socket << "return socket error" << error;
+		LogDebug("[TcpConnection] Client with socket <%p> (%s:%d) return socket error <%d>", m_Socket, m_PeerIP.c_str(), m_PeerPort, static_cast<int>(error));
 		quit();
 	}
 }
 
 QSslSocket * TcpConnection::CreateSocket()
 {
-	qDebug() << "Creating socket for client";
-
-	QSslSocket *socket = new QSslSocket(this);
+	QSslSocket* socket = new QSslSocket(this);
 	connect(socket, &QSslSocket::encrypted, this, &TcpConnection::connected, Qt::QueuedConnection);
 	connect(socket, &QSslSocket::disconnected, this, &TcpConnection::disconnected, Qt::QueuedConnection);
 	connect(socket, &QSslSocket::readyRead, this, &TcpConnection::readyRead, Qt::QueuedConnection);
@@ -318,7 +238,7 @@ void TcpConnection::CalculateStatistic()
 
 	if (m_PacketsSpeed >= m_maxPacketSpeed)
 	{
-		qWarning() << "Client" << m_Socket << "exceeded the limit of the number of packets per second. Speed:" << m_PacketsSpeed << ". Maximum speed :" << m_maxPacketSpeed;
+		LogWarning("[TcpConnection] Client with socket <%p> (%s:%d) exceeded the limit of the number of packets per second. Speed <%d>. Maximum speed <%d>", m_Socket, m_PeerIP.c_str(), m_PeerPort, m_PacketsSpeed, m_maxPacketSpeed);
 		quit();
 	}
 

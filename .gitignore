@@ -2,6 +2,7 @@
 /temp/*
 /.vs/*
 /build/*
+/solution/*
 /bin/*
 
 # 3rd projects
@@ -11,6 +12,8 @@
 /3rd/openssl/*
 /3rd/qt/*
 /3rd/tacopie/*
+/3rd/curl/*
+/3rd/json/*
 
 # Solution temp files
 *.db
@@ -38,15 +41,10 @@
 # Plugins temp files
 /plugins/3rd/boost/*
 /plugins/3rd/openssl/*
-/plugins/FireNetClient/bin/*
-/plugins/FireNetClient/Solutions/*
-/plugins/FireNetClient/Backup/*
 /plugins/FireNetCore/bin/*
 /plugins/FireNetCore/Solutions/*
 /plugins/FireNetCore/Backup/*
-/plugins/FireNetServer/bin/*
-/plugins/FireNetServer/Solutions/*
-/plugins/FireNetServer/Backup/*
-/plugins/FireNetUI/bin/*
-/plugins/FireNetUI/Solutions/*
-/plugins/FireNetUI/Backup/*
+
+/plugins/FireNetCore 5.3 (Deprecated)/bin/*
+/plugins/FireNetCore 5.3 (Deprecated)/Solutions/*
+/plugins/FireNetCore 5.3 (Deprecated)/Backup/*

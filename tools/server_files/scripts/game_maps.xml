@@ -1,0 +1,3 @@
+<maps>
+    <map name = "Multiplayer/airfield" gamerules = "TeamInstantAction" id = "1"/>
+</maps>
