@@ -1,6 +1,6 @@
 ![](https://pp.userapi.com/c638128/v638128053/258f5/hflY6sGj5rA.jpg)
 
-**FireNet** - a set of tools for creating and managing MMO games based on CryEngine V
+**FireNet** - a master-server for creating and managing MMO games based on CryEngine V
 
 **Master-server includes (C++ 11, Qt 5.7) :** 
 * Authorization system 
@@ -10,20 +10,11 @@
 * Chat system (global/private/in-game)
 * Matchmacking system (find/join/host game)
 
-**FireNet plugins includes (C++ 11, Boost.Asio 1.62, OpenSSL 1.1.0e) :**
-* Core plugin to work with master-server
-* Client plugin to work with game-server
-* Server plugin to create dedicated game-server without CryEngine network code
-* UI plugin for easy interaction with FireNet through Flash
-
 **Main advantages :**
 * FireNet absolutely free and not have any royalties
 * Low latency and very fast work 
 * SSL encryption for all transferred  data
 * Easy integration in CryEngine with plugin system
-* Full functionality documentation with youtube lessons
-* Excellent smoothing network for players and physics
-* Supports up to 64 players on one map at a time
 
 # Building (Windows)
 
@@ -66,7 +57,7 @@ This will generate a `FireNET.sln` file (that is, a Visual Studio solution).
 * Go to plugins/3rd folder and unpack 3rd.7z archive
 
 ### Compiling
-* Go to plugins folder and choose plugin (FireNetCore/FireNetClient/FireNetServer/FireNetUI)
+* Go to plugins folder
 * Use .cryproject file to generate solution
 * Open solution with Visual Studio.
 * Build the solution in the configuration (Debug, Release, ...) of your choice.
@@ -78,7 +69,7 @@ This will generate a `FireNET.sln` file (that is, a Visual Studio solution).
 * Go to bin/Windows/Server/Release folder and run FireNet.exe
 
 ## Plugins :
-* Copy plugins in bin folder
+* Copy plugin in bin folder
 * Use cryplugin.csv to include plugin
 
 # TODO
